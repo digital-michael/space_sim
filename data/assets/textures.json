@@ -1,0 +1,134 @@
+{
+  "textures": {
+    "Sun": {
+      "diffuse": "data/assets/textures/sun_8k.jpg",
+      "resolutions": {
+        "8k": "data/assets/textures/sun_8k.jpg",
+        "2k": "data/assets/textures/sun_2k.jpg"
+      },
+      "type": "emissive"
+    },
+    "Mercury": {
+      "diffuse": "data/assets/textures/mercury_4k.jpg",
+      "resolutions": {
+        "4k": "data/assets/textures/mercury_4k.jpg",
+        "1k": "data/assets/textures/mercury_1k.jpg"
+      }
+    },
+    "Venus": {
+      "diffuse": "data/assets/textures/venus_surface_4k.jpg",
+      "atmosphere": "data/assets/textures/venus_atmosphere_4k.jpg",
+      "resolutions": {
+        "4k": "data/assets/textures/venus_surface_4k.jpg",
+        "1k": "data/assets/textures/venus_surface_1k.jpg"
+      }
+    },
+    "Earth": {
+      "diffuse": "data/assets/textures/earth_daymap_8k.jpg",
+      "normal": "data/assets/textures/earth_normal_8k.jpg",
+      "specular": "data/assets/textures/earth_specular_8k.jpg",
+      "night_lights": "data/assets/textures/earth_nightmap_8k.jpg",
+      "clouds": "data/assets/textures/earth_clouds_8k.jpg",
+      "resolutions": {
+        "8k": "data/assets/textures/earth_daymap_8k.jpg",
+        "4k": "data/assets/textures/earth_daymap_4k.jpg",
+        "2k": "data/assets/textures/earth_daymap_2k.jpg",
+        "1k": "data/assets/textures/earth_daymap_1k.jpg"
+      }
+    },
+    "Moon": {
+      "diffuse": "data/assets/textures/moon_8k.jpg",
+      "normal": "data/assets/textures/moon_normal_4k.jpg",
+      "resolutions": {
+        "8k": "data/assets/textures/moon_8k.jpg",
+        "4k": "data/assets/textures/moon_4k.jpg",
+        "2k": "data/assets/textures/moon_2k.jpg"
+      }
+    },
+    "Mars": {
+      "diffuse": "data/assets/textures/mars_8k.jpg",
+      "normal": "data/assets/textures/mars_normal_4k.jpg",
+      "resolutions": {
+        "8k": "data/assets/textures/mars_8k.jpg",
+        "4k": "data/assets/textures/mars_4k.jpg",
+        "2k": "data/assets/textures/mars_2k.jpg"
+      }
+    },
+    "Jupiter": {
+      "diffuse": "data/assets/textures/jupiter_4k.jpg",
+      "resolutions": {
+        "4k": "data/assets/textures/jupiter_4k.jpg",
+        "2k": "data/assets/textures/jupiter_2k.jpg",
+        "1k": "data/assets/textures/jupiter_1k.jpg"
+      }
+    },
+    "Saturn": {
+      "diffuse": "data/assets/textures/saturn_4k.jpg",
+      "ring": "data/assets/textures/saturn_ring_alpha.png",
+      "resolutions": {
+        "4k": "data/assets/textures/saturn_4k.jpg",
+        "2k": "data/assets/textures/saturn_2k.jpg"
+      }
+    },
+    "Uranus": {
+      "diffuse": "data/assets/textures/uranus_2k.jpg",
+      "resolutions": {
+        "2k": "data/assets/textures/uranus_2k.jpg",
+        "1k": "data/assets/textures/uranus_1k.jpg"
+      }
+    },
+    "Neptune": {
+      "diffuse": "data/assets/textures/neptune_2k.jpg",
+      "resolutions": {
+        "2k": "data/assets/textures/neptune_2k.jpg",
+        "1k": "data/assets/textures/neptune_1k.jpg"
+      }
+    },
+    "Pluto": {
+      "diffuse": "data/assets/textures/pluto_1k.jpg",
+      "resolutions": {
+        "1k": "data/assets/textures/pluto_1k.jpg",
+        "512": "data/assets/textures/pluto_512.jpg"
+      }
+    },
+    "generic_moon": {
+      "diffuse": "data/assets/textures/generic_moon_2k.jpg",
+      "resolutions": {
+        "2k": "data/assets/textures/generic_moon_2k.jpg",
+        "1k": "data/assets/textures/generic_moon_1k.jpg",
+        "512": "data/assets/textures/generic_moon_512.jpg"
+      }
+    },
+    "starfield": {
+      "diffuse": "data/assets/textures/starfield_8k.jpg",
+      "type": "background",
+      "resolutions": {
+        "8k": "data/assets/textures/starfield_8k.jpg",
+        "4k": "data/assets/textures/starfield_4k.jpg"
+      }
+    }
+  },
+  "texture_loading_strategy": {
+    "importance_100": "8k",
+    "importance_90": "4k",
+    "importance_80": "4k",
+    "importance_70": "2k",
+    "importance_60": "2k",
+    "importance_50": "1k",
+    "importance_40": "1k",
+    "importance_30": "512",
+    "importance_10": "512"
+  },
+  "sources": {
+    "solar_system_scope": {
+      "url": "https://www.solarsystemscope.com/textures/",
+      "license": "Creative Commons Attribution 4.0 International",
+      "note": "Free for personal and commercial use with attribution"
+    },
+    "nasa_cgi": {
+      "url": "https://nasa3d.arc.nasa.gov/images",
+      "license": "Public Domain",
+      "note": "NASA images are generally free of copyright restrictions"
+    }
+  }
+}

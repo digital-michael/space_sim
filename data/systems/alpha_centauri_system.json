@@ -1,0 +1,189 @@
+{
+  "name": "Alpha Centauri System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Alpha Centauri A",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 29.0,
+        "mass": 2.187e+30,
+        "rotation_period": 528.0,
+        "axial_tilt": 0.0,
+        "color": [
+          255,
+          244,
+          234,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 100
+    },
+    {
+      "type": "star",
+      "name": "Alpha Centauri B",
+      "parent": "Alpha Centauri A",
+      "orbit": {
+        "semi_major_axis": 1800,
+        "eccentricity": 0.52,
+        "inclination": 0.02,
+        "longitude_ascending_node": 0.8,
+        "argument_periapsis": 2.1,
+        "orbital_period": 29191.0,
+        "initial_mean_anomaly": "1.2"
+      },
+      "physical": {
+        "radius": 24.0,
+        "mass": 1.804e+30,
+        "rotation_period": 984.0,
+        "axial_tilt": 0.0,
+        "color": [
+          255,
+          204,
+          144,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 100
+    },
+    {
+      "type": "star",
+      "name": "Proxima Centauri",
+      "parent": "Alpha Centauri A",
+      "orbit": {
+        "semi_major_axis": 15000,
+        "eccentricity": 0.35,
+        "inclination": 0.24,
+        "longitude_ascending_node": 1.3,
+        "argument_periapsis": 0.7,
+        "orbital_period": 2007500.0,
+        "initial_mean_anomaly": "3.6"
+      },
+      "physical": {
+        "radius": 12.0,
+        "mass": 2.43e+29,
+        "rotation_period": 1992.0,
+        "axial_tilt": 0.0,
+        "color": [
+          255,
+          120,
+          90,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 100
+    },
+    {
+      "type": "planet",
+      "name": "Proxima b",
+      "parent": "Proxima Centauri",
+      "orbit": {
+        "semi_major_axis": 4.85,
+        "eccentricity": 0.02,
+        "inclination": 0.0,
+        "longitude_ascending_node": 0.0,
+        "argument_periapsis": 0.0,
+        "orbital_period": 11.186,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.48,
+        "mass": 7.6e+24,
+        "rotation_period": 268.0,
+        "axial_tilt": 0.0,
+        "color": [
+          118,
+          144,
+          168,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 80
+    },
+    {
+      "type": "planet",
+      "name": "Proxima d",
+      "parent": "Proxima Centauri",
+      "orbit": {
+        "semi_major_axis": 2.9,
+        "eccentricity": 0.04,
+        "inclination": 0.03,
+        "longitude_ascending_node": 0.2,
+        "argument_periapsis": 1.1,
+        "orbital_period": 5.122,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.28,
+        "mass": 2.6e+24,
+        "rotation_period": 123.0,
+        "axial_tilt": 0.0,
+        "color": [
+          170,
+          126,
+          98,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 70
+    },
+    {
+      "type": "planet",
+      "name": "Proxima c",
+      "parent": "Proxima Centauri",
+      "orbit": {
+        "semi_major_axis": 149,
+        "eccentricity": 0.1,
+        "inclination": 0.05,
+        "longitude_ascending_node": 0.4,
+        "argument_periapsis": 2.0,
+        "orbital_period": 1928.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.62,
+        "mass": 4.8e+25,
+        "rotation_period": 384.0,
+        "axial_tilt": 8.0,
+        "color": [
+          116,
+          168,
+          146,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    }
+  ],
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  }
+}

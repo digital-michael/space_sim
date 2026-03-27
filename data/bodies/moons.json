@@ -1,0 +1,32 @@
+{
+  "moons": {
+    "large_moon": {
+      "type": "moon",
+      "importance": 60,
+      "physical": {
+        "radius": 0.136,
+        "mass": 7.342e22,
+        "rotation_period": 655.7,
+        "color": [200, 200, 210, 255],
+        "albedo": 0.12
+      },
+      "rendering": {
+        "material": "diffuse"
+      }
+    },
+    "small_moon": {
+      "type": "moon",
+      "importance": 40,
+      "physical": {
+        "radius": 0.01,
+        "mass": 1.0e16,
+        "rotation_period": 24.0,
+        "color": [170, 165, 160, 255],
+        "albedo": 0.1
+      },
+      "rendering": {
+        "material": "diffuse"
+      }
+    }
+  }
+}

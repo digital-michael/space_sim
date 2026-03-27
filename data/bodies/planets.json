@@ -1,0 +1,46 @@
+{
+  "planets": {
+    "terrestrial_planet": {
+      "type": "planet",
+      "importance": 80,
+      "physical": {
+        "radius": 0.5,
+        "mass": 5.972e24,
+        "rotation_period": 24.0,
+        "color": [150, 150, 150, 255],
+        "albedo": 0.3
+      },
+      "rendering": {
+        "material": "diffuse"
+      }
+    },
+    "gas_giant": {
+      "type": "planet",
+      "importance": 90,
+      "physical": {
+        "radius": 2.8,
+        "mass": 1.898e27,
+        "rotation_period": 10.0,
+        "color": [200, 180, 130, 255],
+        "albedo": 0.52
+      },
+      "rendering": {
+        "material": "diffuse"
+      }
+    },
+    "ice_giant": {
+      "type": "planet",
+      "importance": 70,
+      "physical": {
+        "radius": 1.0,
+        "mass": 8.681e25,
+        "rotation_period": 17.0,
+        "color": [175, 238, 238, 255],
+        "albedo": 0.51
+      },
+      "rendering": {
+        "material": "diffuse"
+      }
+    }
+  }
+}

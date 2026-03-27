@@ -1,0 +1,8993 @@
+{
+  "name": "Solar System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "time_scale": 1,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Sun",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 27.25,
+        "mass": 1.989e+30,
+        "color": [
+          245,
+          245,
+          255,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 100
+    },
+    {
+      "type": "planet",
+      "name": "Mercury",
+      "orbit": {
+        "semi_major_axis": 39,
+        "eccentricity": 0.206,
+        "inclination": 0.122173,
+        "longitude_ascending_node": 0.843392,
+        "argument_periapsis": 0.508274,
+        "orbital_period": 87.969,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.19,
+        "mass": 3.301e+23,
+        "rotation_period": 1407.6,
+        "axial_tilt": 0.034,
+        "color": [
+          167,
+          167,
+          167,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 80
+    },
+    {
+      "type": "planet",
+      "name": "Venus",
+      "orbit": {
+        "semi_major_axis": 72,
+        "eccentricity": 0.007,
+        "inclination": 0.059341,
+        "longitude_ascending_node": 1.33843,
+        "argument_periapsis": 0.955317,
+        "orbital_period": 224.701,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.48,
+        "mass": 4.867e+24,
+        "rotation_period": 5832.5,
+        "axial_tilt": 177.4,
+        "color": [
+          255,
+          227,
+          132,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 80
+    },
+    {
+      "type": "planet",
+      "name": "Earth",
+      "orbit": {
+        "semi_major_axis": 100,
+        "eccentricity": 0.017,
+        "inclination": 0.0,
+        "longitude_ascending_node": 0.0,
+        "argument_periapsis": 1.796158,
+        "orbital_period": 365.256,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.5,
+        "mass": 5.972e+24,
+        "rotation_period": 24.0,
+        "axial_tilt": 23.4,
+        "color": [
+          100,
+          149,
+          237,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 80
+    },
+    {
+      "type": "planet",
+      "name": "Mars",
+      "orbit": {
+        "semi_major_axis": 152,
+        "eccentricity": 0.093,
+        "inclination": 0.032289,
+        "longitude_ascending_node": 0.865398,
+        "argument_periapsis": 5.001154,
+        "orbital_period": 686.98,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.27,
+        "mass": 6.417e+23,
+        "rotation_period": 24.6,
+        "axial_tilt": 25.2,
+        "color": [
+          193,
+          68,
+          14,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 80
+    },
+    {
+      "type": "planet",
+      "name": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 260,
+        "eccentricity": 0.048,
+        "inclination": 0.022689,
+        "longitude_ascending_node": 1.75403,
+        "argument_periapsis": 4.781371,
+        "orbital_period": 4332.59,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2.8,
+        "mass": 1.898e+27,
+        "rotation_period": 9.9,
+        "axial_tilt": 3.1,
+        "color": [
+          201,
+          176,
+          129,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 90
+    },
+    {
+      "type": "ring",
+      "name": "Jupiter-Ring-Main",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 3.8,
+        "inner_radius": 3.2,
+        "mass": 10000000000000000000,
+        "axial_tilt": 3.1,
+        "color": [
+          180,
+          160,
+          140,
+          60
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "planet",
+      "name": "Saturn",
+      "orbit": {
+        "semi_major_axis": 475,
+        "eccentricity": 0.056,
+        "inclination": 0.043633,
+        "longitude_ascending_node": 1.984516,
+        "argument_periapsis": 5.925043,
+        "orbital_period": 10759.22,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2.35,
+        "mass": 5.683e+26,
+        "rotation_period": 10.7,
+        "axial_tilt": 26.7,
+        "color": [
+          249,
+          219,
+          144,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 90
+    },
+    {
+      "type": "ring",
+      "name": "Saturn-Ring-D",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.19,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 3,
+        "inner_radius": 2.6,
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          210,
+          190,
+          140,
+          180
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring",
+      "name": "Saturn-Ring-C",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.23,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 3.8,
+        "inner_radius": 3,
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          230,
+          210,
+          160,
+          200
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring",
+      "name": "Saturn-Ring-B",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.42,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 4.7,
+        "inner_radius": 3.8,
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          245,
+          225,
+          180,
+          240
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring",
+      "name": "Saturn-Ring-A",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.58,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 5.6,
+        "inner_radius": 4.9,
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          240,
+          220,
+          175,
+          220
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "planet",
+      "name": "Uranus",
+      "orbit": {
+        "semi_major_axis": 960,
+        "eccentricity": 0.046,
+        "inclination": 0.013963,
+        "longitude_ascending_node": 1.291544,
+        "argument_periapsis": 1.684246,
+        "orbital_period": 30688.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1,
+        "mass": 8.681e+25,
+        "rotation_period": 17.2,
+        "axial_tilt": 97.8,
+        "color": [
+          175,
+          238,
+          238,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 70
+    },
+    {
+      "type": "ring",
+      "name": "Uranus-Ring-6",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.35,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1.68,
+        "inner_radius": 1.65,
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8,
+        "color": [
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring",
+      "name": "Uranus-Ring-Epsilon",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.35,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2.05,
+        "inner_radius": 1.95,
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8,
+        "color": [
+          120,
+          120,
+          120,
+          140
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "planet",
+      "name": "Neptune",
+      "orbit": {
+        "semi_major_axis": 1505,
+        "eccentricity": 0.009,
+        "inclination": 0.030892,
+        "longitude_ascending_node": 2.300524,
+        "argument_periapsis": 4.770057,
+        "orbital_period": 60182.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.98,
+        "mass": 1.024e+26,
+        "rotation_period": 16.1,
+        "axial_tilt": 28.3,
+        "color": [
+          99,
+          133,
+          255,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 70
+    },
+    {
+      "type": "ring",
+      "name": "Neptune-Ring-Galle",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.25,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1.7,
+        "inner_radius": 1.65,
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3,
+        "color": [
+          110,
+          110,
+          130,
+          80
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring",
+      "name": "Neptune-Ring-Adams",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.33,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2.55,
+        "inner_radius": 2.45,
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3,
+        "color": [
+          130,
+          130,
+          150,
+          100
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Ceres",
+      "orbit": {
+        "semi_major_axis": 173.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1681.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.047,
+        "mass": 938400000000000000000,
+        "rotation_period": 9.1,
+        "axial_tilt": 4.0,
+        "color": [
+          160,
+          150,
+          140,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Pluto",
+      "orbit": {
+        "semi_major_axis": 2460,
+        "eccentricity": 0.248,
+        "inclination": 0.298451,
+        "longitude_ascending_node": 1.924955,
+        "argument_periapsis": 1.98576,
+        "orbital_period": 90560.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.093,
+        "mass": 1.309e+22,
+        "rotation_period": 153.3,
+        "axial_tilt": 122.5,
+        "color": [
+          220,
+          200,
+          180,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Haumea",
+      "orbit": {
+        "semi_major_axis": 2710,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 103410.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.078,
+        "mass": 4.006e+21,
+        "rotation_period": 3.9,
+        "axial_tilt": 0.0,
+        "color": [
+          200,
+          210,
+          220,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Makemake",
+      "orbit": {
+        "semi_major_axis": 2860,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 112897.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.071,
+        "mass": 3.1e+21,
+        "rotation_period": 22.8,
+        "axial_tilt": 0.0,
+        "color": [
+          190,
+          170,
+          150,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Eris",
+      "orbit": {
+        "semi_major_axis": 4250,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 203830.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.092,
+        "mass": 1.66e+22,
+        "rotation_period": 25.9,
+        "axial_tilt": 0.0,
+        "color": [
+          230,
+          230,
+          240,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Orcus",
+      "orbit": {
+        "semi_major_axis": 2460,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 90465.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.046,
+        "mass": 640000000000000000000,
+        "rotation_period": 10.0,
+        "axial_tilt": 0.0,
+        "color": [
+          210,
+          205,
+          200,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Quaoar",
+      "orbit": {
+        "semi_major_axis": 2160,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 104260.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.055,
+        "mass": 1.4e+21,
+        "rotation_period": 17.7,
+        "axial_tilt": 0.0,
+        "color": [
+          180,
+          175,
+          170,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Gonggong",
+      "orbit": {
+        "semi_major_axis": 3350,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 80280.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.062,
+        "mass": 1.75e+21,
+        "rotation_period": 22.4,
+        "axial_tilt": 0.0,
+        "color": [
+          200,
+          100,
+          100,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Sedna",
+      "orbit": {
+        "semi_major_axis": 2550,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 4130000.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.05,
+        "mass": 1e+21,
+        "rotation_period": 10.0,
+        "axial_tilt": 0.0,
+        "color": [
+          230,
+          150,
+          140,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Salacia",
+      "orbit": {
+        "semi_major_axis": 2100,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 103600.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.042,
+        "mass": 450000000000000000000,
+        "rotation_period": 6.1,
+        "axial_tilt": 0.0,
+        "color": [
+          195,
+          190,
+          185,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Varda",
+      "orbit": {
+        "semi_major_axis": 2150,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 86640.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.036,
+        "mass": 270000000000000000000,
+        "rotation_period": 5.9,
+        "axial_tilt": 0.0,
+        "color": [
+          215,
+          210,
+          205,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 50
+    },
+    {
+      "type": "moon",
+      "name": "Moon",
+      "parent": "Earth",
+      "orbit": {
+        "semi_major_axis": 1.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 27.322,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.136,
+        "mass": 7.342e+22,
+        "rotation_period": 655.7,
+        "axial_tilt": 6.7,
+        "color": [
+          200,
+          200,
+          210,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Phobos",
+      "parent": "Mars",
+      "orbit": {
+        "semi_major_axis": 0.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.31891,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.011,
+        "mass": 10659000000000000,
+        "color": [
+          170,
+          160,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.31891
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Deimos",
+      "parent": "Mars",
+      "orbit": {
+        "semi_major_axis": 0.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1.26244,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.006,
+        "mass": 1476200000000000,
+        "color": [
+          175,
+          165,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1.26244
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Metis",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 2.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.295,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "color": [
+          170,
+          165,
+          160,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.295
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Adrastea",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 2.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.298,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.01,
+        "mass": 2000000000000000,
+        "color": [
+          175,
+          170,
+          165,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.298
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Amalthea",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 2.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.498,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.083,
+        "mass": 50000000000000000,
+        "color": [
+          185,
+          100,
+          90,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.498
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Thebe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.675,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.049,
+        "mass": 10000000000000000,
+        "color": [
+          180,
+          175,
+          170,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.675
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Io",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 3.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1.769,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.143,
+        "mass": 8.93e+22,
+        "rotation_period": 42.5,
+        "axial_tilt": 0.0,
+        "color": [
+          240,
+          230,
+          100,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Europa",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 4.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 3.551,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.122,
+        "mass": 4.8e+22,
+        "rotation_period": 85.2,
+        "axial_tilt": 0.1,
+        "color": [
+          220,
+          230,
+          240,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Ganymede",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 7.155,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.206,
+        "mass": 1.48e+23,
+        "rotation_period": 171.7,
+        "axial_tilt": 0.2,
+        "color": [
+          180,
+          175,
+          165,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Callisto",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 6.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 16.689,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.189,
+        "mass": 1.08e+23,
+        "rotation_period": 400.5,
+        "axial_tilt": 0.0,
+        "color": [
+          150,
+          145,
+          140,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Themisto",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 7.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 130.02,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 130.02
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Leda",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 238.72,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.005,
+        "mass": 500000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 238.72
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Himalia",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 9.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 250.56,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.067,
+        "mass": 50000000000000000,
+        "color": [
+          170,
+          165,
+          160,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 250.56
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Lysithea",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 9.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 259.22,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.018,
+        "mass": 2000000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 259.22
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Elara",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 10,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 259.65,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.043,
+        "mass": 10000000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 259.65
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Dia",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 10.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 287.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 287.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Carpo",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 11.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 456.1,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 456.1
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Orthosie",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 622.56,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 622.56
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Euanthe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 620.64,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 620.64
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Thione",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 627.21,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          154,
+          149,
+          144,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 627.21
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Euporie",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 550.74,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          155,
+          150,
+          145,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 550.74
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Ananke",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 629.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.014,
+        "mass": 2000000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 629.77
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Hermippe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 633.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 633.9
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Praxidike",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 625.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 625.3
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Thelxinoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 628.09,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 628.09
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Helike",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 634.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 634.77
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Iocaste",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 631.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 631.5
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Aitne",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 730.18,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 730.18
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Erinome",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 728.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 728.3
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Taygete",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 732.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 732.2
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Carme",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 734.17,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.023,
+        "mass": 10000000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 734.17
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Chaldene",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 723.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 723.8
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Kalyke",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 742.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 742.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Isonoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 726.23,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 726.23
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Kale",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 729.47,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 729.47
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Eirene",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 728.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 728.3
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Kallichore",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 717.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 717.8
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Pasithee",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 719.44,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 719.44
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Eukelade",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 746.4,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 746.4
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Arche",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 723.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 723.9
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Pasiphae",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 743.63,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.03,
+        "mass": 10000000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 743.63
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Sponde",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 748.34,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          155,
+          150,
+          145,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 748.34
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Autonoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 761.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 761.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Megaclite",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 752.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 752.8
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Callirrhoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 758.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 758.77
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Cyllene",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 737.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 737.8
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Sinope",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 758.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.019,
+        "mass": 2000000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 758.9
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Aoede",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 761.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 761.5
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Kore",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 776.02,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 776.02
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 981.55,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          154,
+          149,
+          144,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 981.55
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 583.88,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          155,
+          150,
+          145,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 583.88
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 723.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 723.2
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J5",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 738.73,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 738.73
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J9",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 683.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 683.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J10",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 716.25,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 716.25
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J12",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 489.72,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 489.72
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J15",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 689.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 689.77
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J16",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 616.33,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          155,
+          150,
+          145,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 616.33
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J18",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 596.58,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 596.58
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J19",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 740.43,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 740.43
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J23",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 732.45,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 732.45
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2010 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 723.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 723.2
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2010 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 726.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 726.8
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2011 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 582.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 582.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2011 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 726.1,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          154,
+          149,
+          144,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 726.1
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2016 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 603.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 603.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2016 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 632.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 632.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 734.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 734.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 723.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 723.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 732.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 732.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J5",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 690.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 690.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J6",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 612.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          155,
+          150,
+          145,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 612.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J7",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 724.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          158,
+          153,
+          148,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 724.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J8",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 621.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          156,
+          151,
+          146,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 621.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J9",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 733.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 733.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Pandia",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 251.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 251.77
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Philophrosyne",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 689.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          157,
+          152,
+          147,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 689.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Eupheme",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 584.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          159,
+          154,
+          149,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 584.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Valetudo",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 532.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 532.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Ersa",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 250.23,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 250.23
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 730.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 730.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 628.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 628.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 583.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 583.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 720.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 720.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 726.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 726.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 688.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 688.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 732.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 732.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 620.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 620.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J5",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 734.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 734.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J6",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 735.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 735.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2022 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 728.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 728.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2022 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 730.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 730.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2022 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 732.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 732.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 725.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 725.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 729.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 729.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 731.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 731.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 733.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 733.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Pan",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 2.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.575,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.014,
+        "mass": 2000000000000000,
+        "color": [
+          220,
+          215,
+          210,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.575
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Daphnis",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 2.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.594,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          218,
+          213,
+          208,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.594
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Atlas",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 2.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.602,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.015,
+        "mass": 2000000000000000,
+        "color": [
+          222,
+          217,
+          212,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.602
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Prometheus",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 2.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.613,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.043,
+        "mass": 10000000000000000,
+        "color": [
+          225,
+          220,
+          215,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.613
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Pandora",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 2.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.629,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.04,
+        "mass": 10000000000000000,
+        "color": [
+          223,
+          218,
+          213,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.629
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Epimetheus",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 2.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.694,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.058,
+        "mass": 50000000000000000,
+        "color": [
+          220,
+          215,
+          210,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.694
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Janus",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 2.85,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.695,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.089,
+        "mass": 50000000000000000,
+        "color": [
+          218,
+          213,
+          208,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.695
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Mimas",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.942,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.02,
+        "mass": 37500000000000000000,
+        "color": [
+          215,
+          210,
+          205,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.942
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Enceladus",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 3.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1.37,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.025,
+        "mass": 108000000000000000000,
+        "rotation_period": 32.9,
+        "axial_tilt": 0.0,
+        "color": [
+          250,
+          250,
+          255,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Tethys",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 4.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1.888,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.053,
+        "mass": 617000000000000000000,
+        "color": [
+          230,
+          230,
+          235,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1.888
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Dione",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 4.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 2.737,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.056,
+        "mass": 1.1e+21,
+        "color": [
+          220,
+          220,
+          225,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 2.737
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Rhea",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 4.518,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.076,
+        "mass": 2.31e+21,
+        "color": [
+          210,
+          210,
+          215,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 4.518
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Titan",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 7.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 15.945,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.202,
+        "mass": 1.35e+23,
+        "rotation_period": 382.7,
+        "axial_tilt": 0.3,
+        "color": [
+          230,
+          180,
+          100,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Hyperion",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 8.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 21.277,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.135,
+        "mass": 100000000000000000,
+        "color": [
+          200,
+          190,
+          180,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 21.277
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Iapetus",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 10,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 79.33,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.073,
+        "mass": 1.81e+21,
+        "color": [
+          180,
+          180,
+          180,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 79.33
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Phoebe",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 12,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 550.48,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.106,
+        "mass": 100000000000000000,
+        "color": [
+          140,
+          135,
+          130,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 550.48
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Ijiraq",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 12.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 451.42,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.006,
+        "mass": 500000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 451.42
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Kiviuq",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 13,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 449.22,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.008,
+        "mass": 500000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 449.22
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Paaliaq",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 13.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 686.95,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.011,
+        "mass": 2000000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 686.95
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Skathi",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 13.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 728.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 728.2
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Albiorix",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 13.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 783.45,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.016,
+        "mass": 2000000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 783.45
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2007 S2",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 13.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 808.08,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 808.08
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Bebhionn",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 13.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 834.84,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 834.84
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Erriapus",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 13.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 871.19,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.005,
+        "mass": 500000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 871.19
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Skoll",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 878.29,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 878.29
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Siarnaq",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 895.53,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.02,
+        "mass": 10000000000000000,
+        "color": [
+          169,
+          164,
+          159,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 895.53
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Tarqeq",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 887.48,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 887.48
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Greip",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 921.19,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 921.19
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Hyrrokkin",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 931.86,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 931.86
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Jarnsaxa",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 943.78,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 943.78
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Mundilfari",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 951.41,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 951.41
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Narvi",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1003.86,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1003.86
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Bergelmir",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1005.74,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1005.74
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Suttungr",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1016.67,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1016.67
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Hati",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 14.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1038.61,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1038.61
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Bestla",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1088.72,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1088.72
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Farbauti",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1085.55,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1085.55
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Thrymr",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1094.11,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1094.11
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Aegir",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1117.52,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1117.52
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2004 S7",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1140.24,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1140.24
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2004 S12",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1046.19,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1046.19
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2004 S13",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 933.48,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 933.48
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2004 S17",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 985.45,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 985.45
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Kari",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1230.97,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1230.97
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Fenrir",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 15.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1260.35,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1260.35
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Surtur",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1297.36,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1297.36
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Ymir",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1315.14,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.009,
+        "mass": 500000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1315.14
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Loge",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1311.36,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1311.36
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Fornjot",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1494.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1494.2
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S1",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1100.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1100.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S2",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1150.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1150.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S3",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1200.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1200.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S4",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1250.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1250.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S5",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 16.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1050.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1050.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S6",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1180.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1180.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S7",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1220.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1220.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S8",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1130.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1130.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S9",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1170.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1170.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S10",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1210.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1210.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S11",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1240.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1240.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S12",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1090.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1090.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S13",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1140.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1140.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S14",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1190.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1190.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S15",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 17.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1230.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1230.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S16",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1270.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1270.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S17",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1110.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1110.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S18",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1160.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1160.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S19",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1200.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1200.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S20",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1250.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1250.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2019 S21",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1280.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1280.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S1",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.65,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1095.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1095.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S2",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1145.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1145.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S3",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.75,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1195.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1195.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S4",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.800001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1245.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1245.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S5",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.85,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1085.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1085.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S6",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1135.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1135.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S7",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 18.95,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1185.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1185.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S8",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1235.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1235.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S9",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.050001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1075.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          169,
+          164,
+          159,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1075.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S10",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1125.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1125.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S11",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.15,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1175.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1175.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S12",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1225.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1225.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S13",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.25,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1065.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1065.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S14",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.300001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1115.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1115.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S15",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.35,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1165.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1165.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S16",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1215.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1215.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S17",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.45,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1265.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1265.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S18",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1055.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1055.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S19",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.550001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1105.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          169,
+          164,
+          159,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1105.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S20",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1155.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1155.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S21",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.65,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1205.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1205.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S22",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1255.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1255.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S23",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.75,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1045.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1045.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S24",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.800001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1095.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1095.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S25",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.85,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1145.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1145.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S26",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1195.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1195.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S27",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 19.95,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1245.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1245.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S28",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1035.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1035.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S29",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.050001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1085.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          169,
+          164,
+          159,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1085.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S30",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1135.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1135.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S31",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.15,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1185.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1185.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S32",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1235.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1235.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S33",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.25,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1025.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1025.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S34",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.300001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1075.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1075.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S35",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.35,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1125.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1125.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S36",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1175.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1175.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S37",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.45,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1225.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1225.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S38",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1015.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1015.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S39",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.550001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1065.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          169,
+          164,
+          159,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1065.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S40",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1115.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1115.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S41",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.65,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1165.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1165.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S42",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1215.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1215.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S43",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.75,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1005.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1005.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S44",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.800001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1055.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1055.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S45",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.85,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1105.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1105.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S46",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1155.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1155.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S47",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 20.95,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1205.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1205.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S48",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1255.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1255.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S49",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.050001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 995.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          169,
+          164,
+          159,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 995.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S50",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.1,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1045.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1045.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S51",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.15,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1095.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1095.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S52",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1145.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1145.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S53",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.25,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1195.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          163,
+          158,
+          153,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1195.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S54",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.300001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1245.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          164,
+          159,
+          154,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1245.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S55",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.35,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 985.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          165,
+          160,
+          155,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 985.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S56",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1035.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          166,
+          161,
+          156,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1035.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S57",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.45,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1085.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          167,
+          162,
+          157,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1085.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S58",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1135.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          168,
+          163,
+          158,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1135.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S59",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.550001,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1185.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          169,
+          164,
+          159,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1185.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S60",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1235.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          160,
+          155,
+          150,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1235.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S61",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.65,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 975.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          161,
+          156,
+          151,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 975.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "S/2020 S62",
+      "parent": "Saturn",
+      "orbit": {
+        "semi_major_axis": 21.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1025.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "color": [
+          162,
+          157,
+          152,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1025.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Cordelia",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.335,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.02,
+        "mass": 10000000000000000,
+        "color": [
+          190,
+          190,
+          195,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.335
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Ophelia",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.376,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "color": [
+          192,
+          192,
+          197,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.376
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Bianca",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.435,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.025,
+        "mass": 10000000000000000,
+        "color": [
+          194,
+          194,
+          199,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.435
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Cressida",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.464,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.04,
+        "mass": 10000000000000000,
+        "color": [
+          196,
+          196,
+          201,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.464
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Desdemona",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.474,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.032,
+        "mass": 10000000000000000,
+        "color": [
+          193,
+          193,
+          198,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.474
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Juliet",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.75,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.493,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.047,
+        "mass": 10000000000000000,
+        "color": [
+          198,
+          198,
+          203,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.493
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Portia",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.513,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.068,
+        "mass": 50000000000000000,
+        "color": [
+          197,
+          197,
+          202,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.513
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Rosalind",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.85,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.558,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.036,
+        "mass": 10000000000000000,
+        "color": [
+          195,
+          195,
+          200,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.558
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Cupid",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.88,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.618,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.009,
+        "mass": 500000000000000,
+        "color": [
+          191,
+          191,
+          196,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.618
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Belinda",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.624,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.04,
+        "mass": 10000000000000000,
+        "color": [
+          199,
+          199,
+          204,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.624
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Perdita",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.92,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.638,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.013,
+        "mass": 2000000000000000,
+        "color": [
+          192,
+          192,
+          197,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.638
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Puck",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.95,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.762,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.081,
+        "mass": 50000000000000000,
+        "color": [
+          200,
+          195,
+          195,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.762
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Mab",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.98,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.923,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.012,
+        "mass": 2000000000000000,
+        "color": [
+          193,
+          193,
+          198,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.923
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Miranda",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1.413,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.023,
+        "mass": 10000000000000000,
+        "color": [
+          195,
+          195,
+          200,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1.413
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Ariel",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 2.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 2.52,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.058,
+        "mass": 50000000000000000,
+        "color": [
+          205,
+          205,
+          210,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 2.52
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Umbriel",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 3.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 4.144,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.058,
+        "mass": 50000000000000000,
+        "color": [
+          160,
+          160,
+          165,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 4.144
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Titania",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 4.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 8.706,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.078,
+        "mass": 50000000000000000,
+        "color": [
+          210,
+          205,
+          205,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 8.706
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Oberon",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 5.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 13.463,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.076,
+        "mass": 50000000000000000,
+        "color": [
+          205,
+          200,
+          200,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 13.463
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Francisco",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 6.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 266.56,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.011,
+        "mass": 2000000000000000,
+        "color": [
+          170,
+          165,
+          165,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 266.56
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Caliban",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 579.73,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.036,
+        "mass": 10000000000000000,
+        "color": [
+          165,
+          160,
+          160,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 579.73
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Stephano",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 7.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 677.36,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.016,
+        "mass": 2000000000000000,
+        "color": [
+          168,
+          163,
+          163,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 677.36
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Trinculo",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 7.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 758.1,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.009,
+        "mass": 500000000000000,
+        "color": [
+          166,
+          161,
+          161,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 758.1
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Sycorax",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1288.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.075,
+        "mass": 50000000000000000,
+        "color": [
+          172,
+          167,
+          167,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1288.3
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Margaret",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1687.01,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.01,
+        "mass": 2000000000000000,
+        "color": [
+          167,
+          162,
+          162,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1687.01
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Prospero",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1978.29,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.025,
+        "mass": 10000000000000000,
+        "color": [
+          169,
+          164,
+          164,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1978.29
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Setebos",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 2225.21,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.024,
+        "mass": 10000000000000000,
+        "color": [
+          171,
+          166,
+          166,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 2225.21
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Ferdinand",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 2887.21,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.01,
+        "mass": 2000000000000000,
+        "color": [
+          168,
+          163,
+          163,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 2887.21
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Naiad",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 1.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.294,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.033,
+        "mass": 10000000000000000,
+        "color": [
+          230,
+          225,
+          230,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.294
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Thalassa",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.311,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.041,
+        "mass": 10000000000000000,
+        "color": [
+          232,
+          227,
+          232,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.311
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Despina",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.335,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.075,
+        "mass": 50000000000000000,
+        "color": [
+          235,
+          230,
+          235,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.335
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Galatea",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.429,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.088,
+        "mass": 50000000000000000,
+        "color": [
+          237,
+          232,
+          237,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.429
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Larissa",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.555,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.097,
+        "mass": 50000000000000000,
+        "color": [
+          234,
+          229,
+          234,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.555
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Hippocamp",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0.95,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.018,
+        "mass": 2000000000000000,
+        "color": [
+          233,
+          228,
+          233,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 0.95
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Proteus",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 3.2,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1.122,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.21,
+        "mass": 100000000000000000,
+        "color": [
+          230,
+          225,
+          230,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1.122
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Triton",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 3.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 5.877,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.106,
+        "mass": 2.14e+22,
+        "rotation_period": 141.0,
+        "axial_tilt": 0.0,
+        "color": [
+          240,
+          230,
+          240,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Nereid",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 5.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 360.14,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.17,
+        "mass": 100000000000000000,
+        "color": [
+          220,
+          215,
+          220,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 360.14
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Halimede",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 7,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 1879.71,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.031,
+        "mass": 10000000000000000,
+        "color": [
+          200,
+          195,
+          200,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 1879.71
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Sao",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 7.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 2912.72,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.022,
+        "mass": 10000000000000000,
+        "color": [
+          205,
+          200,
+          205,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 2912.72
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Laomedeia",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 7.8,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 3171.33,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "color": [
+          202,
+          197,
+          202,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 3171.33
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Psamathe",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 8.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 9115.91,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.02,
+        "mass": 10000000000000000,
+        "color": [
+          208,
+          203,
+          208,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 9115.91
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Neso",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 9740.73,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.03,
+        "mass": 10000000000000000,
+        "color": [
+          210,
+          205,
+          210,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 9740.73
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Charon",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 6.387,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.06,
+        "mass": 50000000000000000,
+        "rotation_period": 153.3,
+        "axial_tilt": 122.5,
+        "color": [
+          210,
+          205,
+          200,
+          255
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Styx",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 20.16,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.005,
+        "mass": 500000000000000,
+        "color": [
+          205,
+          200,
+          195,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 20.16
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Nix",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.75,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 24.85,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.018,
+        "mass": 2000000000000000,
+        "color": [
+          215,
+          210,
+          205,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 24.85
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Kerberos",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.9,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 32.17,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.008,
+        "mass": 500000000000000,
+        "color": [
+          200,
+          195,
+          190,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 32.17
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Hydra",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 1.05,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 38.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "color": [
+          220,
+          215,
+          210,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 38.2
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Dysnomia",
+      "parent": "Eris",
+      "orbit": {
+        "semi_major_axis": 0.5,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 15.774,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.035,
+        "mass": 10000000000000000,
+        "color": [
+          225,
+          225,
+          235,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 15.774
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Hi'iaka",
+      "parent": "Haumea",
+      "orbit": {
+        "semi_major_axis": 0.6,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 49.12,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.016,
+        "mass": 2000000000000000,
+        "color": [
+          205,
+          215,
+          225,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 49.12
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Namaka",
+      "parent": "Haumea",
+      "orbit": {
+        "semi_major_axis": 0.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 18.28,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.008,
+        "mass": 500000000000000,
+        "color": [
+          195,
+          205,
+          215,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 18.28
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "MK2",
+      "parent": "Makemake",
+      "orbit": {
+        "semi_major_axis": 0.35,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 12.4,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.008,
+        "mass": 500000000000000,
+        "color": [
+          185,
+          165,
+          145,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 12.4
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Vanth",
+      "parent": "Orcus",
+      "orbit": {
+        "semi_major_axis": 0.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 12.44,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.022,
+        "mass": 10000000000000000,
+        "color": [
+          205,
+          200,
+          195,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 12.44
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Weywot",
+      "parent": "Quaoar",
+      "orbit": {
+        "semi_major_axis": 0.35,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 12.438,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.009,
+        "mass": 500000000000000,
+        "color": [
+          175,
+          170,
+          165,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 12.438
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Xiangliu",
+      "parent": "Gonggong",
+      "orbit": {
+        "semi_major_axis": 0.4,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 25.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.012,
+        "mass": 2000000000000000,
+        "color": [
+          195,
+          95,
+          95,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 25.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Actaea",
+      "parent": "Salacia",
+      "orbit": {
+        "semi_major_axis": 0.35,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 12.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.014,
+        "mass": 2000000000000000,
+        "color": [
+          190,
+          185,
+          180,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 12.5
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    },
+    {
+      "type": "moon",
+      "name": "Ilmar\u00eb",
+      "parent": "Varda",
+      "orbit": {
+        "semi_major_axis": 0.3,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 10.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.013,
+        "mass": 2000000000000000,
+        "color": [
+          210,
+          205,
+          200,
+          255
+        ],
+        "axial_tilt": 0.0,
+        "rotation_period": 10.0
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 40
+    }
+  ],
+  "features": [
+    {
+      "type": "asteroid_belt",
+      "name": "Main Asteroid Belt",
+      "parent": "Sun",
+      "distribution": {
+        "inner_radius": 195,
+        "outer_radius": 240,
+        "thickness": 15,
+        "density_profile": "uniform"
+      },
+      "procedural": {
+        "seed": 42,
+        "size_range": [
+          0.05,
+          0.25
+        ],
+        "color_palette": [
+          [
+            128,
+            128,
+            128,
+            255
+          ]
+        ],
+        "color_variation": 0.1,
+        "shape_model": "sphere"
+      },
+      "count_levels": [
+        200,
+        1200,
+        2400,
+        24000
+      ],
+      "object_types": {
+        "large": {
+          "count_by_level": [
+            200,
+            200,
+            400,
+            4000
+          ],
+          "size_range": [
+            0.15,
+            0.25
+          ],
+          "importance_by_level": [
+            15,
+            12,
+            10,
+            8
+          ],
+          "description": "100+ km diameter asteroids"
+        },
+        "medium": {
+          "count_by_level": [
+            0,
+            1000,
+            2000,
+            20000
+          ],
+          "size_range": [
+            0.05,
+            0.13
+          ],
+          "importance_by_level": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "description": "30-100 km diameter asteroids"
+        }
+      },
+      "orbital_mechanics": {
+        "use_kepler_law": true,
+        "distance_to_au_ratio": 100,
+        "eccentricity_range": [
+          0.0,
+          0.05
+        ],
+        "inclination_range": [
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "type": "kuiper_belt",
+      "name": "Kuiper Belt",
+      "parent": "Sun",
+      "distribution": {
+        "inner_radius": 3000,
+        "outer_radius": 5000,
+        "thickness": 50,
+        "density_profile": "classical_belt",
+        "classical_belt_range": [
+          4200,
+          4800
+        ],
+        "classical_belt_probability": 0.6
+      },
+      "procedural": {
+        "seed": 43,
+        "size_range": [
+          0.05,
+          0.3
+        ],
+        "color_palette": [
+          [
+            180,
+            140,
+            120,
+            255
+          ],
+          [
+            220,
+            180,
+            160,
+            255
+          ],
+          [
+            200,
+            160,
+            140,
+            255
+          ]
+        ],
+        "color_variation": 0.15,
+        "shape_model": "sphere"
+      },
+      "count_levels": [
+        200,
+        1200,
+        2400,
+        24000
+      ],
+      "object_types": {
+        "large": {
+          "count_by_level": [
+            200,
+            200,
+            400,
+            4000
+          ],
+          "size_range": [
+            0.15,
+            0.3
+          ],
+          "importance_by_level": [
+            15,
+            12,
+            10,
+            8
+          ],
+          "description": "100-300 km diameter KBOs (dwarf planet candidates)"
+        },
+        "medium": {
+          "count_by_level": [
+            0,
+            1000,
+            2000,
+            20000
+          ],
+          "size_range": [
+            0.05,
+            0.15
+          ],
+          "importance_by_level": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "description": "30-100 km diameter KBOs"
+        }
+      },
+      "orbital_mechanics": {
+        "use_kepler_law": true,
+        "distance_to_au_ratio": 100,
+        "eccentricity_range": [
+          0.01,
+          0.16
+        ],
+        "inclination_range": [
+          -0.15,
+          0.15
+        ]
+      }
+    }
+  ],
+  "templates": "data/bodies",
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  }
+}

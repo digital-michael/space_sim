@@ -1,0 +1,18 @@
+{
+  "dwarf_planets": {
+    "dwarf_planet_base": {
+      "type": "dwarf_planet",
+      "importance": 50,
+      "physical": {
+        "radius": 0.093,
+        "mass": 1.309e22,
+        "rotation_period": 153.3,
+        "color": [220, 200, 180, 255],
+        "albedo": 0.6
+      },
+      "rendering": {
+        "material": "diffuse"
+      }
+    }
+  }
+}
