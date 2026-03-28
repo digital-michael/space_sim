@@ -97,6 +97,16 @@ func (s *SimulationState) GetChildren() []*Object {
 // Clone creates a deep copy of the state for rendering.
 // Strategy 5: lazy clone — only deep-clone visible objects.
 func (s *SimulationState) Clone() *SimulationState {
+	return s.clone(nil)
+}
+
+// CloneWithPool creates a deep copy of the state using pooled objects for
+// transient front-buffer clones.
+func (s *SimulationState) CloneWithPool(pool *ObjectPool) *SimulationState {
+	return s.clone(pool)
+}
+
+func (s *SimulationState) clone(pool *ObjectPool) *SimulationState {
 	cloned := &SimulationState{
 		Objects:            make([]*Object, len(s.Objects)),
 		ObjectMap:          make(map[string]*Object, len(s.Objects)),
@@ -117,11 +127,20 @@ func (s *SimulationState) Clone() *SimulationState {
 
 	for i, obj := range s.Objects {
 		if obj.Dataset == -1 || obj.Visible {
-			newObj := &Object{
-				Meta:    obj.Meta,
-				Anim:    obj.Anim,
-				Visible: obj.Visible,
-				Dataset: obj.Dataset,
+			var newObj *Object
+			if pool != nil {
+				newObj = pool.Borrow()
+				newObj.Meta = obj.Meta
+				newObj.Anim = obj.Anim
+				newObj.Visible = obj.Visible
+				newObj.Dataset = obj.Dataset
+			} else {
+				newObj = &Object{
+					Meta:    obj.Meta,
+					Anim:    obj.Anim,
+					Visible: obj.Visible,
+					Dataset: obj.Dataset,
+				}
 			}
 			cloned.Objects[i] = newObj
 			cloned.ObjectMap[newObj.Meta.Name] = newObj
@@ -131,8 +150,21 @@ func (s *SimulationState) Clone() *SimulationState {
 		}
 	}
 
-	// TODO: Strategy 6 — object pooling (see object_pool.go)
 	return cloned
+}
+
+// ReleasePooledObjects returns any pooled clone objects held by the state.
+func (s *SimulationState) ReleasePooledObjects(pool *ObjectPool) {
+	if pool == nil {
+		return
+	}
+	for i, obj := range s.Objects {
+		if obj != nil && obj.pooled {
+			pool.Return(obj)
+			s.Objects[i] = nil
+		}
+	}
+	s.ObjectMap = nil
 }
 
 // DoubleBuffer provides lock-safe front/back state access.
@@ -140,6 +172,7 @@ func (s *SimulationState) Clone() *SimulationState {
 type DoubleBuffer struct {
 	front           *SimulationState
 	back            *SimulationState
+	objectPool      *ObjectPool
 	mu              sync.RWMutex
 	lockingDisabled bool
 	useInPlaceSwap  bool
@@ -147,9 +180,14 @@ type DoubleBuffer struct {
 
 // NewDoubleBuffer creates a double buffer seeded with the given state.
 func NewDoubleBuffer(initial *SimulationState) *DoubleBuffer {
+	return newDoubleBufferWithPool(initial, globalObjectPool)
+}
+
+func newDoubleBufferWithPool(initial *SimulationState, pool *ObjectPool) *DoubleBuffer {
 	return &DoubleBuffer{
-		front: initial,
-		back:  initial.Clone(),
+		front:      initial,
+		back:       initial.Clone(),
+		objectPool: pool,
 	}
 }
 
@@ -193,7 +231,11 @@ func (db *DoubleBuffer) Swap() {
 		db.mu.Lock()
 		defer db.mu.Unlock()
 	}
-	db.front = db.back.Clone()
+	oldFront := db.front
+	db.front = db.back.CloneWithPool(db.objectPool)
+	if oldFront != nil {
+		oldFront.ReleasePooledObjects(db.objectPool)
+	}
 }
 
 // SwapInPlace performs a zero-allocation swap by reusing buffers.

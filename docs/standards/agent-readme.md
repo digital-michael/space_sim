@@ -317,7 +317,9 @@ Documentation convention already established in this repo:
 
 ## 9. Current Gaps and Cautions
 
-- High-priority runtime and architecture debt is tracked in [docs/wip/todo.md](../wip/todo.md), including ring-system generation and object-pool disposition.
+- High-priority next work is the runtime system selector tracked in [docs/wip/todo.md](../wip/todo.md).
+- `ring_system` features are now part of the supported loader path; keep rings defined through the feature pipeline rather than reintroducing duplicate body-based ring data.
+- Clone-mode swapping now uses the engine object pool when in-place swap is disabled; preserve the double-buffer ownership rules documented in the lessons-learned docs when extending this path.
 - Legacy scripts have been isolated under [scripts/legacy/](../../scripts/legacy) and should be treated as historical reference only.
 - Performance-related changes can regress correctness or inter-thread safety if front/back buffer assumptions are not preserved.
 

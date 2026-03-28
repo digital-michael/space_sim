@@ -4,14 +4,13 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-03-26
+2026-03-28
 
 ## Table of Contents
 1. How to Use This File
 2. Status Key
 3. Active Work
-	3.1 Fullscreen Support
-	3.2 High-Priority Architecture and Runtime Debt
+	3.1 Runtime System Selector
 4. Planned Phases
 	4.1 Phase 3 - Event Queue System
 	4.2 Phase 4 - Event Loop and Worker Pool
@@ -39,67 +38,27 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 
 ## 3. Active Work
 
-### 3.1 Fullscreen Support
+### 3.1 Runtime System Selector
 
-**Value**: Toggle key exists (`Cmd+F`) but UI still needs fully validated responsive behavior, config persistence coverage, and remaining magic-number cleanup for all target resolutions.
+**Value**: Enable fast manual testing by allowing the running app to switch between JSON systems from `data/systems/` without a restart.
 **Status**: 📋 Not started
 **Start Date**: Not started
-**Ref**: `TODO(tech-debt-8)` in `cmd/space-sim/main.go`
-
-#### Remaining Magic Number Audit
-
-| ID | Location | Value(s) | Used In | Next Action |
-|----|----------|----------|---------|-------------|
-| TD-MN-01 | `main.go:22-23` | `screenWidth=1280`, `screenHeight=720` | `rl.InitWindow()` | Replace with config-driven startup values |
-| TD-MN-05 | `main.go:2139-2140` | `bgWidth=500`, `bgHeight=500` | `drawSelectionPanel()` | Derive from live screen fractions |
-| TD-MN-06 | `main.go:2420-2421` | `bgWidth=500`, `bgHeight=500` | `drawPerformancePanel()` | Derive from live screen fractions |
-| TD-MN-07 | `main.go:1826-1827` | `bgWidth=260`, `bgHeight=60` | Jump or zoom banner | Recheck against responsive layout rules |
-| TD-MN-08 | `main.go:881-942` | `bgHeight=500`, `lineHeight=30`, `startY=75+...` | Selection scroll math | Extract shared layout helper |
-| TD-MN-09 | `main.go:1686-1788` | `y=10,35,60,85,108,133,158` | HUD row positions | Replace with derived row layout |
-| TD-MN-10 | `main.go:2183-2184` | `tabWidth=95`, `tabHeight=30` | `drawSelectionPanel()` tabs | Compute from panel width |
-| TD-MN-11 | `main.go:2430` | `tabWidth=250`, `tabHeight` | `drawPerformancePanel()` tabs | Compute from panel width |
-| TD-MN-12 | `main.go:2453` | `lineHeight=60` | Performance panel row height | Derive from font and spacing |
-| TD-MN-13 | `main.go:2258,2263,2276,2277` | `bgX+250`, `bgX+350`, `bgX+40` | Selection column offsets | Make panel-relative |
+**Ref**: [data/systems/](../../data/systems)
 
 #### Work Items
 
-- [ ] Add `configs/app.json` with persisted window width, height, and fullscreen state
-- [ ] Add `AppConfig` and `WindowConfig` load and save helpers
-- [ ] Replace `rl.InitWindow(screenWidth, screenHeight, ...)` with config-driven values
-- [ ] Add `rl.SetConfigFlags(rl.FlagWindowResizable)` before window initialization
-- [ ] Fix selection and performance panel sizing and tab math
-- [ ] Extract shared selection layout math for draw and input paths
-- [ ] Replace hardcoded HUD and banner layout values with derived layout constants
-- [ ] Remove `TODO(tech-debt-8)` after the remaining items are closed
-- [ ] Run manual test coverage at 800×600, 1280×720, and native display resolution
+- [ ] Add a fixed modal selector listing JSON files from `data/systems/`
+- [ ] Bind the selector to `Cmd+L`
+- [ ] Close the selector without action when the selected system is already loaded
+- [ ] Reload the session cleanly when a different system is selected
+- [ ] Add focused tests for selector behavior where practical and stop for manual runtime testing
 
 #### Acceptance Criteria
 
-- Window opens at last saved size on relaunch and falls back to 1280×720 if no config exists
-- `Cmd+F` toggles fullscreen without clipped or corrupted UI
-- Drag-resize reflows overlays and HUD each frame
-- `configs/app.json` persists width, height, and fullscreen state on clean shutdown
-- No remaining panel-layout magic numbers stay in draw paths for the affected UI surfaces
-
-### 3.2 High-Priority Architecture and Runtime Debt
-
-**Value**: Closes known runtime and architecture gaps that are already called out in current docs and can mislead agents if they remain untracked.
-**Status**: 📋 Not started
-**Start Date**: Not started
-**Priority**: High
-
-#### Work Items
-
-- [ ] Implement or explicitly retire ring system generation in the loader path so `createRingSystemFromConfig()` is no longer a silent stub
-- [ ] Decide whether `engine.ObjectPool` should be wired into the active runtime, kept deferred with stronger documentation, or removed entirely
-- [ ] Add focused tests for whichever ring-generation and object-pool direction is chosen
-- [ ] Update [internal/space/package.md](../../internal/space/package.md) and related docs once the gap status changes
-
-#### Acceptance Criteria
-
-- Ring configuration behavior is either fully implemented or clearly rejected with intentional documented behavior
-- Object pool status is no longer ambiguous for future contributors
-- Tests and docs reflect the chosen direction
+- `Cmd+L` opens a system selector from the running app
+- Selecting the already-loaded system behaves like cancel and closes the selector
+- Selecting a different system reloads the active session cleanly
+- Work stops after implementation for manual runtime verification
 
 ## 4. Planned Phases
 

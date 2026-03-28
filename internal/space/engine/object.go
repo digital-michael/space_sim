@@ -84,4 +84,5 @@ type Object struct {
 	Anim    AnimationState  // Mutable per-frame animation data
 	Visible bool            // Whether this object should be rendered
 	Dataset AsteroidDataset // Which dataset this belongs to (-1 for non-asteroids)
+	pooled  bool
 }

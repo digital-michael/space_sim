@@ -60,6 +60,8 @@ func LoadSystemFromFile(path string) (*engine.SimulationState, error) {
 			configCopy := featureConfig
 			state.KuiperBeltConfig = &configCopy
 			seenCategories[engine.CategoryBelt] = true
+		} else if strings.ToLower(featureConfig.Type) == "ring_system" {
+			seenCategories[engine.CategoryRing] = true
 		}
 
 		if err := createFeatureFromConfig(state, featureConfig, templates, rng); err != nil {
@@ -331,6 +333,21 @@ func createFeatureFromConfig(state *engine.SimulationState, config engine.Featur
 	}
 }
 
+func parseFeatureMaterial(material string) (engine.MaterialType, error) {
+	switch strings.ToLower(material) {
+	case "", "diffuse":
+		return engine.MaterialDiffuse, nil
+	case "emissive":
+		return engine.MaterialEmissive, nil
+	case "metallic":
+		return engine.MaterialMetallic, nil
+	case "mirror":
+		return engine.MaterialMirror, nil
+	default:
+		return engine.MaterialDiffuse, fmt.Errorf("unsupported ring material %q", material)
+	}
+}
+
 func createBeltFromConfig(state *engine.SimulationState, config engine.FeatureConfig, rng *rand.Rand) error {
 	datasetLevel := engine.AsteroidDatasetSmall
 
@@ -402,5 +419,80 @@ func createBeltFromConfig(state *engine.SimulationState, config engine.FeatureCo
 }
 
 func createRingSystemFromConfig(state *engine.SimulationState, config engine.FeatureConfig) error {
+	if strings.TrimSpace(config.Parent) == "" {
+		return fmt.Errorf("ring system %q is missing parent", config.Name)
+	}
+	if config.Distribution.OuterRadius <= 0 {
+		return fmt.Errorf("ring system %q must define distribution.outer_radius > 0", config.Name)
+	}
+	if config.Distribution.InnerRadius <= 0 {
+		return fmt.Errorf("ring system %q must define distribution.inner_radius > 0", config.Name)
+	}
+	if config.Distribution.InnerRadius >= config.Distribution.OuterRadius {
+		return fmt.Errorf("ring system %q must define inner_radius < outer_radius", config.Name)
+	}
+
+	parent := state.GetObject(config.Parent)
+	if parent == nil {
+		return fmt.Errorf("ring system %q parent %q not found", config.Name, config.Parent)
+	}
+
+	material, err := parseFeatureMaterial(config.Rendering.Material)
+	if err != nil {
+		return err
+	}
+
+	importance := config.Importance
+	if importance == 0 {
+		importance = 30
+	}
+
+	mass := config.Physical.Mass
+	if mass == 0 {
+		mass = 1.0e19
+	}
+
+	color := parent.Meta.Color
+	color.A = 180
+	if len(config.Procedural.ColorPalette) > 0 {
+		base := config.Procedural.ColorPalette[0]
+		color = engine.Color{R: base[0], G: base[1], B: base[2], A: base[3]}
+	}
+	if config.Physical.Color[3] != 0 {
+		color = engine.Color{
+			R: config.Physical.Color[0],
+			G: config.Physical.Color[1],
+			B: config.Physical.Color[2],
+			A: config.Physical.Color[3],
+		}
+	}
+
+	obj := &engine.Object{
+		Meta: engine.ObjectMetadata{
+			Name:           config.Name,
+			Category:       engine.CategoryRing,
+			Mass:           mass,
+			PhysicalRadius: config.Distribution.OuterRadius,
+			InnerRadius:    config.Distribution.InnerRadius,
+			Color:          color,
+			Material:       material,
+			Importance:     importance,
+			AxialTilt:      config.Physical.AxialTilt,
+			OrbitRadius:    0,
+			OrbitSpeed:     0,
+			ParentName:     config.Parent,
+		},
+		Anim: engine.AnimationState{
+			Position:    parent.Anim.Position,
+			Velocity:    engine.Vector3{},
+			OrbitCenter: parent.Anim.Position,
+			OrbitAngle:  0,
+			OrbitAxis:   engine.Vector3{X: 0, Y: 1, Z: 0},
+		},
+		Visible: true,
+		Dataset: -1,
+	}
+
+	state.AddObject(obj)
 	return nil
 }

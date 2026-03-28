@@ -500,17 +500,19 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	// Convert to local timezone
 	localTime := currentTime.Local()
 
-	// Format: YYYY/MM/DD HH:MM:SS.ms
 	year := localTime.Year()
 	month := int(localTime.Month())
 	day := localTime.Day()
-	hour := localTime.Hour()
-	minute := localTime.Minute()
-	second := localTime.Second()
-	millisecond := localTime.Nanosecond() / 1000000
 
-	timeText := fmt.Sprintf("Date: %04d/%02d/%02d %02d:%02d:%02d.%03d",
-		year, month, day, hour, minute, second, millisecond)
+	timeText := fmt.Sprintf("Date: %04d/%02d/%02d", year, month, day)
+	if state.SecondsPerSecond < 86400.0 {
+		hour := localTime.Hour()
+		minute := localTime.Minute()
+		second := localTime.Second()
+		millisecond := localTime.Nanosecond() / 1000000
+		timeText = fmt.Sprintf("Date: %04d/%02d/%02d %02d:%02d:%02d.%03d",
+			year, month, day, hour, minute, second, millisecond)
+	}
 	rl.DrawText(timeText, 10, 60, 20, rl.White)
 
 	// Time rate indicator (simulation seconds per real second)

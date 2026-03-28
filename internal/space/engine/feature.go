@@ -8,12 +8,27 @@ type FeatureConfig struct {
 	Name             string                    `json:"name"`
 	Parent           string                    `json:"parent"`
 	Template         string                    `json:"template,omitempty"`
+	Importance       int                       `json:"importance,omitempty"`
 	Overrides        map[string]any            `json:"overrides,omitempty"`
+	Physical         FeaturePhysical           `json:"physical,omitempty"`
+	Rendering        FeatureRendering          `json:"rendering,omitempty"`
 	Distribution     FeatureDistribution       `json:"distribution"`
 	Procedural       FeatureProcedural         `json:"procedural,omitempty"`
 	CountLevels      []int                     `json:"count_levels,omitempty"`
 	ObjectTypes      map[string]FeatureObjSpec `json:"object_types,omitempty"`
 	OrbitalMechanics FeatureOrbitalMechanics   `json:"orbital_mechanics,omitempty"`
+}
+
+// FeaturePhysical defines physical characteristics for feature-driven objects.
+type FeaturePhysical struct {
+	Mass      float64  `json:"mass,omitempty"`
+	AxialTilt float32  `json:"axial_tilt,omitempty"`
+	Color     [4]uint8 `json:"color,omitempty"`
+}
+
+// FeatureRendering defines visual representation for feature-driven objects.
+type FeatureRendering struct {
+	Material string `json:"material,omitempty"`
 }
 
 // FeatureDistribution defines spatial distribution of a feature.

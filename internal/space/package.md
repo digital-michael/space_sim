@@ -66,12 +66,12 @@ Scene container and double-buffer synchronization.
 - `LockFrontWrite()` / `UnlockFrontWrite()` — exclusive write access to the front buffer (used when both buffers must be mutated in sync)
 
 ### `pool.go`
-Pre-allocated object pool for GC pressure reduction — **implemented but not yet wired in**.
+Reusable object pool for clone-mode front-buffer swaps.
 
 - `ObjectPool` — sync.Pool-backed pool of `*Object`
-- `Borrow()` / `Return()` — acquire/release pooled objects
-- `PoolStats` — allocation counters
-- **Status**: deferred; Strategy 1+5 already reduce allocations by ~98%, pool not yet needed
+- `Borrow()` / `Return()` — acquire/release pooled objects used during clone-based swaps
+- `PoolStats` — borrow, return, and allocation counters for pool activity
+- **Status**: active for clone-mode swapping when in-place swap is disabled
 
 ### `constants.go`
 All rendering, camera, and spatial constants.
@@ -151,13 +151,12 @@ JSON-to-simulation-state pipeline.
 - `applyOverrides()` — deep merge of template and instance config
 - `createFeatureFromConfig()` — dispatches `asteroid_belt` / `kuiper_belt` to `createBeltFromConfig()`, rings to `createRingSystemFromConfig()`
 - `createBeltFromConfig()` — translates `engine.FeatureConfig` into `BeltConfig`, calls `CreateBelt` at the initial dataset level
-- `createRingSystemFromConfig()` — stub; ring system support not yet implemented
+- `createRingSystemFromConfig()` — validates feature config, resolves the parent object, and creates runtime ring objects from `ring_system` features
 
 ### `objects.go`
-Constructor functions for each celestial body type.
+Constructor functions for core celestial body types.
 
 - `NewSun()`, `NewPlanet()`, `NewMoon()`, `NewDwarfPlanet()`, `NewSatellite()` — typed constructors returning `*engine.Object`
-- `NewSaturnRing()`, `NewPlanetRing()` — ring system objects (zero orbit radius = sticks to parent)
 - `NewAsteroid()` — minimal asteroid with category and dataset flags
 - `PlanetColors` — predefined color palette for planets
 
@@ -176,9 +175,7 @@ Procedural generation of large-scale debris populations.
 | Gap | Location | Notes |
 |-----|----------|-------|
 | Kuiper Belt dataset switching parity | `simulation.go` | ✅ Resolved: dataset allocation/visibility path now applies to both `asteroid_belt` and `kuiper_belt` features via shared belt config translation |
-| Object pool not wired in | `engine/pool.go`, `engine/state.go:Clone()` | Infrastructure ready; `TODO(Strategy 6)` marker in `Clone()` |
 | Help screen layout hardcoded | `cmd/space-sim/main.go` | `TODO(tech-debt-8)`: magic number offsets in `drawHelpScreen()` |
-| Ring system generation | `loader.go:createRingSystemFromConfig()` | Stub; returns nil with no objects created |
 
 ---
 
@@ -214,7 +211,7 @@ graph TD
         STATE["state.go\nDoubleBuffer · SimulationState"]
         ENGOBJ["object.go · math.go\nObject · Vector3 · AsteroidDataset"]
         FEAT["feature.go\nFeatureConfig"]
-        POOL["pool.go\nObjectPool (deferred)"]
+        POOL["pool.go\nObjectPool for clone-mode swaps"]
         CONST["constants.go\nLOD · Frustum · Camera"]
     end
 

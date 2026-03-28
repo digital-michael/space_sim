@@ -175,34 +175,6 @@
       "importance": 90
     },
     {
-      "type": "ring",
-      "name": "Jupiter-Ring-Main",
-      "parent": "Jupiter",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.3,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 3.8,
-        "inner_radius": 3.2,
-        "mass": 10000000000000000000,
-        "axial_tilt": 3.1,
-        "color": [
-          180,
-          160,
-          140,
-          60
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
-    },
-    {
       "type": "planet",
       "name": "Saturn",
       "orbit": {
@@ -230,118 +202,6 @@
         "material": "diffuse"
       },
       "importance": 90
-    },
-    {
-      "type": "ring",
-      "name": "Saturn-Ring-D",
-      "parent": "Saturn",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.19,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 3,
-        "inner_radius": 2.6,
-        "mass": 15000000000000000000,
-        "axial_tilt": 26.7,
-        "color": [
-          210,
-          190,
-          140,
-          180
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
-    },
-    {
-      "type": "ring",
-      "name": "Saturn-Ring-C",
-      "parent": "Saturn",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.23,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 3.8,
-        "inner_radius": 3,
-        "mass": 15000000000000000000,
-        "axial_tilt": 26.7,
-        "color": [
-          230,
-          210,
-          160,
-          200
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
-    },
-    {
-      "type": "ring",
-      "name": "Saturn-Ring-B",
-      "parent": "Saturn",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.42,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 4.7,
-        "inner_radius": 3.8,
-        "mass": 15000000000000000000,
-        "axial_tilt": 26.7,
-        "color": [
-          245,
-          225,
-          180,
-          240
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
-    },
-    {
-      "type": "ring",
-      "name": "Saturn-Ring-A",
-      "parent": "Saturn",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.58,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 5.6,
-        "inner_radius": 4.9,
-        "mass": 15000000000000000000,
-        "axial_tilt": 26.7,
-        "color": [
-          240,
-          220,
-          175,
-          220
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
     },
     {
       "type": "planet",
@@ -373,62 +233,6 @@
       "importance": 70
     },
     {
-      "type": "ring",
-      "name": "Uranus-Ring-6",
-      "parent": "Uranus",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.35,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 1.68,
-        "inner_radius": 1.65,
-        "mass": 10000000000000000000,
-        "axial_tilt": 97.8,
-        "color": [
-          100,
-          100,
-          100,
-          100
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
-    },
-    {
-      "type": "ring",
-      "name": "Uranus-Ring-Epsilon",
-      "parent": "Uranus",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.35,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 2.05,
-        "inner_radius": 1.95,
-        "mass": 10000000000000000000,
-        "axial_tilt": 97.8,
-        "color": [
-          120,
-          120,
-          120,
-          140
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
-    },
-    {
       "type": "planet",
       "name": "Neptune",
       "orbit": {
@@ -456,62 +260,6 @@
         "material": "diffuse"
       },
       "importance": 70
-    },
-    {
-      "type": "ring",
-      "name": "Neptune-Ring-Galle",
-      "parent": "Neptune",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.25,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 1.7,
-        "inner_radius": 1.65,
-        "mass": 10000000000000000000,
-        "axial_tilt": 28.3,
-        "color": [
-          110,
-          110,
-          130,
-          80
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
-    },
-    {
-      "type": "ring",
-      "name": "Neptune-Ring-Adams",
-      "parent": "Neptune",
-      "orbit": {
-        "semi_major_axis": 0,
-        "eccentricity": 0,
-        "inclination": 0,
-        "orbital_period": 0.33,
-        "initial_mean_anomaly": "random"
-      },
-      "physical": {
-        "radius": 2.55,
-        "inner_radius": 2.45,
-        "mass": 10000000000000000000,
-        "axial_tilt": 28.3,
-        "color": [
-          130,
-          130,
-          150,
-          100
-        ]
-      },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 30
     },
     {
       "type": "dwarf_planet",
@@ -8794,6 +8542,213 @@
     }
   ],
   "features": [
+    {
+      "type": "ring_system",
+      "name": "Jupiter-Ring-Main",
+      "parent": "Jupiter",
+      "distribution": {
+        "inner_radius": 3.2,
+        "outer_radius": 3.8
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 3.1,
+        "color": [
+          180,
+          160,
+          140,
+          60
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-D",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 2.6,
+        "outer_radius": 3.0
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          210,
+          190,
+          140,
+          180
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-C",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 3.0,
+        "outer_radius": 3.8
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          230,
+          210,
+          160,
+          200
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-B",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 3.8,
+        "outer_radius": 4.7
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          245,
+          225,
+          180,
+          240
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-A",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 4.9,
+        "outer_radius": 5.6
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7,
+        "color": [
+          240,
+          220,
+          175,
+          220
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Uranus-Ring-6",
+      "parent": "Uranus",
+      "distribution": {
+        "inner_radius": 1.65,
+        "outer_radius": 1.68
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8,
+        "color": [
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Uranus-Ring-Epsilon",
+      "parent": "Uranus",
+      "distribution": {
+        "inner_radius": 1.95,
+        "outer_radius": 2.05
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8,
+        "color": [
+          120,
+          120,
+          120,
+          140
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Neptune-Ring-Galle",
+      "parent": "Neptune",
+      "distribution": {
+        "inner_radius": 1.65,
+        "outer_radius": 1.7
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3,
+        "color": [
+          110,
+          110,
+          130,
+          80
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Neptune-Ring-Adams",
+      "parent": "Neptune",
+      "distribution": {
+        "inner_radius": 2.45,
+        "outer_radius": 2.55
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3,
+        "color": [
+          130,
+          130,
+          150,
+          100
+        ]
+      },
+      "rendering": {
+        "material": "diffuse"
+      },
+      "importance": 30
+    },
     {
       "type": "asteroid_belt",
       "name": "Main Asteroid Belt",

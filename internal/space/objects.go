@@ -155,62 +155,6 @@ func NewSatellite(name, parentName string, parentDistance, localDistance, speed 
 	}
 }
 
-// NewSaturnRing creates a ring around Saturn.
-func NewSaturnRing(name string, parentDistance, innerRadius, outerRadius float32, color engine.Color) *engine.Object {
-	return &engine.Object{
-		Meta: engine.ObjectMetadata{
-			Name:           name,
-			Category:       engine.CategoryRing,
-			Mass:           1.5e19,
-			PhysicalRadius: outerRadius,
-			InnerRadius:    innerRadius,
-			Color:          color,
-			Material:       engine.MaterialDiffuse,
-			Importance:     30,
-			OrbitRadius:    0,
-			OrbitSpeed:     0,
-			ParentName:     "Saturn",
-		},
-		Anim: engine.AnimationState{
-			Position:    engine.Vector3{X: parentDistance, Y: 0, Z: 0},
-			Velocity:    engine.Vector3{},
-			OrbitCenter: engine.Vector3{X: parentDistance, Y: 0, Z: 0},
-			OrbitAngle:  0,
-			OrbitAxis:   engine.Vector3{X: 0, Y: 1, Z: 0},
-		},
-		Visible: true,
-		Dataset: -1,
-	}
-}
-
-// NewPlanetRing creates a ring around any planet.
-func NewPlanetRing(name, parentName string, parentDistance, innerRadius, outerRadius float32, color engine.Color) *engine.Object {
-	return &engine.Object{
-		Meta: engine.ObjectMetadata{
-			Name:           name,
-			Category:       engine.CategoryRing,
-			Mass:           1.0e19,
-			PhysicalRadius: outerRadius,
-			InnerRadius:    innerRadius,
-			Color:          color,
-			Material:       engine.MaterialDiffuse,
-			Importance:     30,
-			OrbitRadius:    0,
-			OrbitSpeed:     0,
-			ParentName:     parentName,
-		},
-		Anim: engine.AnimationState{
-			Position:    engine.Vector3{X: parentDistance, Y: 0, Z: 0},
-			Velocity:    engine.Vector3{},
-			OrbitCenter: engine.Vector3{X: parentDistance, Y: 0, Z: 0},
-			OrbitAngle:  0,
-			OrbitAxis:   engine.Vector3{X: 0, Y: 1, Z: 0},
-		},
-		Visible: true,
-		Dataset: -1,
-	}
-}
-
 // NewDwarfPlanet creates a dwarf planet orbiting the sun.
 func NewDwarfPlanet(name string, distance, speed, radius float32, mass float64, color engine.Color) *engine.Object {
 	period := float32(0.0)

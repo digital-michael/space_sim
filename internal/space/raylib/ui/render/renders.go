@@ -16,6 +16,8 @@ import (
 var layoutWidth int32
 var layoutHeight int32
 
+const hideDateAtOrAboveSecondsPerSecond = 86400.0
+
 // Renderer owns Raylib-specific drawing behavior for the Space Sim application.
 type Renderer struct {
 	renderWidth  int32
@@ -47,6 +49,28 @@ func currentScreenHeight() int {
 		return int(layoutHeight)
 	}
 	return rl.GetScreenHeight()
+}
+
+func formatSimulationDateText(simSeconds float64, secondsPerSecond float32) string {
+	j2000 := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
+	currentTime := j2000.Add(time.Duration(simSeconds * float64(time.Second)))
+	localTime := currentTime.Local()
+
+	year := localTime.Year()
+	month := int(localTime.Month())
+	day := localTime.Day()
+
+	if secondsPerSecond >= hideDateAtOrAboveSecondsPerSecond {
+		return fmt.Sprintf("Date: %04d/%02d/%02d", year, month, day)
+	}
+
+	hour := localTime.Hour()
+	minute := localTime.Minute()
+	second := localTime.Second()
+	millisecond := localTime.Nanosecond() / 1000000
+
+	return fmt.Sprintf("Date: %04d/%02d/%02d %02d:%02d:%02d.%03d",
+		year, month, day, hour, minute, second, millisecond)
 }
 
 func uiScale() float32 {
@@ -672,29 +696,8 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	datasetName := space.GetDatasetName(asteroidDataset)
 	rl.DrawText(fmt.Sprintf("Objects: %d total / %d visible (Dataset: %s)", totalObjects, visibleObjects, datasetName), leftPad, line2Y, fontLarge, rl.White)
 
-	// Simulation time display - show date since J2000.0 epoch (Jan 1, 2000, 12:00 TT)
-	simSeconds := state.Time
-
-	// J2000.0 epoch: January 1, 2000, 12:00:00 TT (approximately 12:00 UTC)
-	// Using 12:00 UTC as base to match the astronomical J2000.0 standard
-	j2000 := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
-	currentTime := j2000.Add(time.Duration(simSeconds * float64(time.Second)))
-
-	// Convert to local timezone
-	localTime := currentTime.Local()
-
-	// Format: YYYY/MM/DD HH:MM:SS.ms
-	year := localTime.Year()
-	month := int(localTime.Month())
-	day := localTime.Day()
-	hour := localTime.Hour()
-	minute := localTime.Minute()
-	second := localTime.Second()
-	millisecond := localTime.Nanosecond() / 1000000
-
-	timeText := fmt.Sprintf("Date: %04d/%02d/%02d %02d:%02d:%02d.%03d",
-		year, month, day, hour, minute, second, millisecond)
-	rl.DrawText(timeText, leftPad, line3Y, fontLarge, rl.White)
+	dateText := formatSimulationDateText(state.Time, state.SecondsPerSecond)
+	rl.DrawText(dateText, leftPad, line3Y, fontLarge, rl.White)
 
 	// Time rate indicator (simulation seconds per real second)
 	var timeRateText string
