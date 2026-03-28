@@ -77,6 +77,30 @@ func TestCancelSelection(t *testing.T) {
 	}
 }
 
+// TestMainWindowInputSuspended verifies modal dialogs suspend main-window controls.
+func TestMainWindowInputSuspended(t *testing.T) {
+	inp := NewInputState(engine.CategoryStar)
+
+	if inp.MainWindowInputSuspended() {
+		t.Fatal("MainWindowInputSuspended should be false without an active dialog")
+	}
+
+	inp.StartSelection(SelectionModeTrack)
+	if !inp.MainWindowInputSuspended() {
+		t.Fatal("MainWindowInputSuspended should be true while a dialog is active")
+	}
+
+	inp.CancelSelection()
+	if inp.MainWindowInputSuspended() {
+		t.Fatal("MainWindowInputSuspended should be false after the dialog closes")
+	}
+
+	var nilInput *InputState
+	if nilInput.MainWindowInputSuspended() {
+		t.Fatal("MainWindowInputSuspended should be false for a nil InputState")
+	}
+}
+
 // TestConfirmSelectionReturnsValues verifies ConfirmSelection returns the current index and mode.
 func TestConfirmSelectionReturnsValues(t *testing.T) {
 	inp := NewInputState(engine.CategoryStar)

@@ -14,28 +14,30 @@ import (
 
 // handleInput processes keyboard input for camera modes and object selection
 func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, gridVisible bool, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, mouseModeEnabled bool, labelsVisible bool, debugEnabled bool) (bool, bool, engine.AsteroidDataset, bool, bool, bool, bool) {
+	mainWindowInputSuspended := inputState.MainWindowInputSuspended()
+
 	// G: Toggle grid
-	if rl.IsKeyPressed(rl.KeyG) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyG) {
 		gridVisible = !gridVisible
 	}
 
 	// H: Toggle HUD
-	if rl.IsKeyPressed(rl.KeyH) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyH) {
 		hudVisible = !hudVisible
 	}
 
 	// L: Toggle object labels
-	if rl.IsKeyPressed(rl.KeyL) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyL) {
 		labelsVisible = !labelsVisible
 	}
 
 	// ?: Toggle help screen
-	if rl.IsKeyPressed(rl.KeySlash) && (rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeySlash) && (rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)) {
 		helpVisible = !helpVisible
 	}
 
 	// M key: Toggle mouse mode (camera control vs UI cursor)
-	if rl.IsKeyPressed(rl.KeyM) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyM) {
 		mouseModeEnabled = !mouseModeEnabled
 		if mouseModeEnabled {
 			rl.DisableCursor()
@@ -45,19 +47,19 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 	}
 
 	// Cmd+F key: Toggle fullscreen with proper display resolution handling
-	if rl.IsKeyPressed(rl.KeyF) && (rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyF) && (rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)) {
 		app.toggleFullscreen()
 	}
 
 	// Cmd+Q key: Quit application
-	if rl.IsKeyPressed(rl.KeyQ) && (rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyQ) && (rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)) {
 		return true, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
 	}
 
 	// , and . keys: Decrease/increase time scale (simulation seconds per real second)
 	// Guard: skip when Shift is held — SHIFT+, is the Anim Speed control (</>)
 	shiftHeld := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
-	if rl.IsKeyPressed(rl.KeyComma) && !shiftHeld {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyComma) && !shiftHeld {
 		back := sim.GetState().GetBack()
 		// Time rates: paused, real-time, 1 hour/sec, 1 day/sec, 1 week/sec, 1 month/sec, 1 year/sec
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
@@ -85,7 +87,7 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 			}
 		}
 	}
-	if rl.IsKeyPressed(rl.KeyPeriod) && !shiftHeld {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyPeriod) && !shiftHeld {
 		back := sim.GetState().GetBack()
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
 		timeLabels := []string{"PAUSED", "real-time", "1 hr/sec", "1 day/sec", "1 week/sec", "1 month/sec", "1 year/sec"}
@@ -114,13 +116,13 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 	}
 
 	// +/- keys: Increase/decrease asteroid dataset
-	if rl.IsKeyPressed(rl.KeyEqual) || rl.IsKeyPressed(rl.KeyKpAdd) { // + key (Shift+= or numpad +)
+	if !mainWindowInputSuspended && (rl.IsKeyPressed(rl.KeyEqual) || rl.IsKeyPressed(rl.KeyKpAdd)) { // + key (Shift+= or numpad +)
 		if asteroidDataset < 3 {
 			asteroidDataset++
 			sim.SetAsteroidDataset(asteroidDataset)
 		}
 	}
-	if rl.IsKeyPressed(rl.KeyMinus) || rl.IsKeyPressed(rl.KeyKpSubtract) { // - key (or numpad -)
+	if !mainWindowInputSuspended && (rl.IsKeyPressed(rl.KeyMinus) || rl.IsKeyPressed(rl.KeyKpSubtract)) { // - key (or numpad -)
 		if asteroidDataset > 0 {
 			asteroidDataset--
 			sim.SetAsteroidDataset(asteroidDataset)
@@ -129,7 +131,7 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 
 	// < and > keys: Decrease/increase animation speed (Shift + , and Shift + .)
 	// Controls the physics tick rate — how many sim ticks fire per real second (0%–100%)
-	if rl.IsKeyPressed(rl.KeyComma) && shiftHeld {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyComma) && shiftHeld {
 		// Decrease anim speed: < key
 		currentSpeed := sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
@@ -140,7 +142,7 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 			}
 		}
 	}
-	if rl.IsKeyPressed(rl.KeyPeriod) && shiftHeld {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyPeriod) && shiftHeld {
 		// Increase anim speed: > key
 		currentSpeed := sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
@@ -153,12 +155,12 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 	}
 
 	// P: Performance options
-	if rl.IsKeyPressed(rl.KeyP) && !inputState.SelectionActive {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyP) {
 		inputState.StartSelection(ui.SelectionModePerformance)
 	}
 
 	// C: Center view - behavior depends on mode
-	if rl.IsKeyPressed(rl.KeyC) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyC) {
 		if cameraState.Mode == ui.CameraModeFree {
 			// Free-fly mode: center camera view on origin (sun)
 			toOrigin := engine.Vector3{X: 0, Y: 0, Z: 0}.Sub(cameraState.Position)
@@ -179,7 +181,7 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 
 	// F key: Drill down to closest child (Forward in hierarchy)
 	// B key: Move up to parent (Back in hierarchy)
-	if cameraState.Mode == ui.CameraModeTracking && !inputState.SelectionActive {
+	if cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended {
 		if rl.IsKeyPressed(rl.KeyF) {
 			if cameraState.TrackTargetIndex >= 0 && cameraState.TrackTargetIndex < len(state.Objects) {
 				currentObj := state.Objects[cameraState.TrackTargetIndex]
@@ -286,7 +288,7 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 	}
 
 	// TAB / Shift+TAB: Cycle through siblings when tracking (objects with same parent and category)
-	if cameraState.Mode == ui.CameraModeTracking && !inputState.SelectionActive {
+	if cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended {
 		isShiftPressed := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
 
 		if rl.IsKeyPressed(rl.KeyTab) {
@@ -648,7 +650,7 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 	}
 
 	// J: Jump to object (free-fly mode only)
-	if rl.IsKeyPressed(rl.KeyJ) && cameraState.Mode == ui.CameraModeFree {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyJ) && cameraState.Mode == ui.CameraModeFree {
 		inputState.StartSelection(ui.SelectionModeJump)
 		inputState.FilterText = ""
 		inputState.ScrollOffset = 0
@@ -658,7 +660,7 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 	// T/t: Track object (free-fly mode or tracking mode to switch target)
 	// Shift+T: Track from above with comfortable distance
 	// t (lowercase): Track from equatorial plane
-	if rl.IsKeyPressed(rl.KeyT) && (cameraState.Mode == ui.CameraModeFree || cameraState.Mode == ui.CameraModeTracking) {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyT) && (cameraState.Mode == ui.CameraModeFree || cameraState.Mode == ui.CameraModeTracking) {
 		if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
 			// Uppercase T - track from above
 			inputState.StartSelection(ui.SelectionModeTrack)
@@ -679,14 +681,19 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 
 // updateCameraState updates camera position and orientation based on mode
 func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, dt, speed, sensitivity float32, mouseModeEnabled bool) float32 {
+	mainWindowInputSuspended := inputState.MainWindowInputSuspended()
+
 	// Mouse look (only active when mouse mode is enabled)
 	var mouseDelta rl.Vector2
-	if mouseModeEnabled {
+	if mouseModeEnabled && !mainWindowInputSuspended {
 		mouseDelta = rl.GetMouseDelta()
 	}
 
 	// Mouse wheel for zoom in all modes
-	wheelMove := rl.GetMouseWheelMove()
+	wheelMove := float32(0.0)
+	if !mainWindowInputSuspended {
+		wheelMove = rl.GetMouseWheelMove()
+	}
 	zoomSpeed := float32(0.0)
 
 	if wheelMove != 0 {
@@ -722,37 +729,41 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 	case ui.CameraModeJumping:
 		cameraState.UpdateJump(float64(dt))
 
-		// Mouse changes camera facing in jumping mode
-		cameraState.Yaw -= float64(mouseDelta.X * sensitivity)
-		cameraState.Pitch -= float64(mouseDelta.Y * sensitivity)
+		if !mainWindowInputSuspended {
+			// Mouse changes camera facing in jumping mode
+			cameraState.Yaw -= float64(mouseDelta.X * sensitivity)
+			cameraState.Pitch -= float64(mouseDelta.Y * sensitivity)
 
-		// Clamp pitch
-		if cameraState.Pitch > 1.5 {
-			cameraState.Pitch = 1.5
-		}
-		if cameraState.Pitch < -1.5 {
-			cameraState.Pitch = -1.5
+			// Clamp pitch
+			if cameraState.Pitch > 1.5 {
+				cameraState.Pitch = 1.5
+			}
+			if cameraState.Pitch < -1.5 {
+				cameraState.Pitch = -1.5
+			}
+
+			cameraState.UpdateForwardFromAngles()
 		}
 
-		cameraState.UpdateForwardFromAngles()
-
-		// Arrow keys move camera position in jumping mode
-		if rl.IsKeyDown(rl.KeyUp) {
-			cameraState.Position.Y += arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyDown) {
-			cameraState.Position.Y -= arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyLeft) {
-			cameraState.Position.X -= arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyRight) {
-			cameraState.Position.X += arrowSpeed
+		if !mainWindowInputSuspended {
+			// Arrow keys move camera position in jumping mode
+			if rl.IsKeyDown(rl.KeyUp) {
+				cameraState.Position.Y += arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyDown) {
+				cameraState.Position.Y -= arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyLeft) {
+				cameraState.Position.X -= arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyRight) {
+				cameraState.Position.X += arrowSpeed
+			}
 		}
 
 	case ui.CameraModeTracking:
-		// Mouse changes viewing angle around target in tracking mode
-		if mouseDelta.X != 0 || mouseDelta.Y != 0 {
+		// Keep automatic tracking updates active, but suspend user input while a dialog is open.
+		if !mainWindowInputSuspended && (mouseDelta.X != 0 || mouseDelta.Y != 0) {
 			cameraState.AdjustTrackAngles(
 				-float64(mouseDelta.X*sensitivity*0.5),
 				float64(-mouseDelta.Y*sensitivity*0.5),
@@ -770,62 +781,66 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 		// Get camera-relative directions
 		right := cameraState.GetRight()
 
-		if rl.IsKeyDown(rl.KeyW) {
-			// Move forward (closer to target)
-			cameraState.TrackOffset = cameraState.TrackOffset.Add(cameraState.Forward.Scale(moveSpeed))
-		}
-		if rl.IsKeyDown(rl.KeyS) {
-			// Move backward (away from target)
-			cameraState.TrackOffset = cameraState.TrackOffset.Sub(cameraState.Forward.Scale(moveSpeed))
-		}
-		if rl.IsKeyDown(rl.KeyA) {
-			// Pan left
-			cameraState.TrackOffset = cameraState.TrackOffset.Sub(right.Scale(moveSpeed))
-		}
-		if rl.IsKeyDown(rl.KeyD) {
-			// Pan right
-			cameraState.TrackOffset = cameraState.TrackOffset.Add(right.Scale(moveSpeed))
-		}
+		if !mainWindowInputSuspended {
+			if rl.IsKeyDown(rl.KeyW) {
+				// Move forward (closer to target)
+				cameraState.TrackOffset = cameraState.TrackOffset.Add(cameraState.Forward.Scale(moveSpeed))
+			}
+			if rl.IsKeyDown(rl.KeyS) {
+				// Move backward (away from target)
+				cameraState.TrackOffset = cameraState.TrackOffset.Sub(cameraState.Forward.Scale(moveSpeed))
+			}
+			if rl.IsKeyDown(rl.KeyA) {
+				// Pan left
+				cameraState.TrackOffset = cameraState.TrackOffset.Sub(right.Scale(moveSpeed))
+			}
+			if rl.IsKeyDown(rl.KeyD) {
+				// Pan right
+				cameraState.TrackOffset = cameraState.TrackOffset.Add(right.Scale(moveSpeed))
+			}
 
-		// Space for up (camera-relative) - DISABLED FOR TESTING
-		// if rl.IsKeyDown(rl.KeySpace) {
-		// 	cameraState.TrackOffset = cameraState.TrackOffset.Add(cameraState.Up.Scale(moveSpeed))
-		// }
+			// Space for up (camera-relative) - DISABLED FOR TESTING
+			// if rl.IsKeyDown(rl.KeySpace) {
+			// 	cameraState.TrackOffset = cameraState.TrackOffset.Add(cameraState.Up.Scale(moveSpeed))
+			// }
 
-		// Arrow keys modify offset in tracking mode
-		if rl.IsKeyDown(rl.KeyUp) {
-			cameraState.TrackOffset.Y += arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyDown) {
-			cameraState.TrackOffset.Y -= arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyLeft) {
-			cameraState.TrackOffset.X -= arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyRight) {
-			cameraState.TrackOffset.X += arrowSpeed
-		}
+			// Arrow keys modify offset in tracking mode
+			if rl.IsKeyDown(rl.KeyUp) {
+				cameraState.TrackOffset.Y += arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyDown) {
+				cameraState.TrackOffset.Y -= arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyLeft) {
+				cameraState.TrackOffset.X -= arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyRight) {
+				cameraState.TrackOffset.X += arrowSpeed
+			}
 
-		// R key to reset offset
-		if rl.IsKeyPressed(rl.KeyR) {
-			cameraState.TrackOffset = engine.Vector3{X: 0, Y: 0, Z: 0}
+			// R key to reset offset
+			if rl.IsKeyPressed(rl.KeyR) {
+				cameraState.TrackOffset = engine.Vector3{X: 0, Y: 0, Z: 0}
+			}
 		}
 
 	case ui.CameraModeFree:
-		// Mouse look
-		cameraState.Yaw -= float64(mouseDelta.X * sensitivity)
-		cameraState.Pitch -= float64(mouseDelta.Y * sensitivity)
+		if !mainWindowInputSuspended {
+			// Mouse look
+			cameraState.Yaw -= float64(mouseDelta.X * sensitivity)
+			cameraState.Pitch -= float64(mouseDelta.Y * sensitivity)
 
-		// Clamp pitch
-		if cameraState.Pitch > 1.5 {
-			cameraState.Pitch = 1.5
-		}
-		if cameraState.Pitch < -1.5 {
-			cameraState.Pitch = -1.5
-		}
+			// Clamp pitch
+			if cameraState.Pitch > 1.5 {
+				cameraState.Pitch = 1.5
+			}
+			if cameraState.Pitch < -1.5 {
+				cameraState.Pitch = -1.5
+			}
 
-		// Update forward vector
-		cameraState.UpdateForwardFromAngles()
+			// Update forward vector
+			cameraState.UpdateForwardFromAngles()
+		}
 
 		// WASD movement with Shift for 2x speed
 		moveSpeed := speed * dt
@@ -834,39 +849,41 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 		}
 		right := cameraState.GetRight()
 
-		if rl.IsKeyDown(rl.KeyW) {
-			cameraState.Position = cameraState.Position.Add(cameraState.Forward.Scale(moveSpeed))
-		}
-		if rl.IsKeyDown(rl.KeyS) {
-			cameraState.Position = cameraState.Position.Sub(cameraState.Forward.Scale(moveSpeed))
-		}
-		if rl.IsKeyDown(rl.KeyA) {
-			cameraState.Position = cameraState.Position.Sub(right.Scale(moveSpeed))
-		}
-		if rl.IsKeyDown(rl.KeyD) {
-			cameraState.Position = cameraState.Position.Add(right.Scale(moveSpeed))
-		}
+		if !mainWindowInputSuspended {
+			if rl.IsKeyDown(rl.KeyW) {
+				cameraState.Position = cameraState.Position.Add(cameraState.Forward.Scale(moveSpeed))
+			}
+			if rl.IsKeyDown(rl.KeyS) {
+				cameraState.Position = cameraState.Position.Sub(cameraState.Forward.Scale(moveSpeed))
+			}
+			if rl.IsKeyDown(rl.KeyA) {
+				cameraState.Position = cameraState.Position.Sub(right.Scale(moveSpeed))
+			}
+			if rl.IsKeyDown(rl.KeyD) {
+				cameraState.Position = cameraState.Position.Add(right.Scale(moveSpeed))
+			}
 
-		// Space for up, Ctrl for down (Shift used for speed) - DISABLED FOR TESTING
-		// if rl.IsKeyDown(rl.KeySpace) {
-		// 	cameraState.Position.Y += moveSpeed
-		// }
-		// if rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl) {
-		// 	cameraState.Position.Y -= moveSpeed
-		// }
+			// Space for up, Ctrl for down (Shift used for speed) - DISABLED FOR TESTING
+			// if rl.IsKeyDown(rl.KeySpace) {
+			// 	cameraState.Position.Y += moveSpeed
+			// }
+			// if rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl) {
+			// 	cameraState.Position.Y -= moveSpeed
+			// }
 
-		// Arrow keys move camera position in free-fly mode
-		if rl.IsKeyDown(rl.KeyUp) {
-			cameraState.Position.Y += arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyDown) {
-			cameraState.Position.Y -= arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyLeft) {
-			cameraState.Position.X -= arrowSpeed
-		}
-		if rl.IsKeyDown(rl.KeyRight) {
-			cameraState.Position.X += arrowSpeed
+			// Arrow keys move camera position in free-fly mode
+			if rl.IsKeyDown(rl.KeyUp) {
+				cameraState.Position.Y += arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyDown) {
+				cameraState.Position.Y -= arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyLeft) {
+				cameraState.Position.X -= arrowSpeed
+			}
+			if rl.IsKeyDown(rl.KeyRight) {
+				cameraState.Position.X += arrowSpeed
+			}
 		}
 	}
 

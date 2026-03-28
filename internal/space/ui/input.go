@@ -75,6 +75,11 @@ func (i *InputState) StartSelection(mode SelectionMode) {
 	i.SelectionMode = mode
 }
 
+// MainWindowInputSuspended reports whether a modal dialog currently owns input.
+func (i *InputState) MainWindowInputSuspended() bool {
+	return i != nil && i.SelectionActive
+}
+
 // CancelSelection cancels the current selection.
 func (i *InputState) CancelSelection() {
 	i.SelectionActive = false
