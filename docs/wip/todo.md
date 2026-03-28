@@ -48,14 +48,14 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 #### Work Items
 
 - [ ] Add a fixed modal selector listing JSON files from `data/systems/`
-- [ ] Bind the selector to `Cmd+L`
+- [ ] Bind the selector to `Cmd+S`
 - [ ] Close the selector without action when the selected system is already loaded
 - [ ] Reload the session cleanly when a different system is selected
 - [ ] Add focused tests for selector behavior where practical and stop for manual runtime testing
 
 #### Acceptance Criteria
 
-- `Cmd+L` opens a system selector from the running app
+- `Cmd+S` opens a system selector from the running app
 - Selecting the already-loaded system behaves like cancel and closes the selector
 - Selecting a different system reloads the active session cleanly
 - Work stops after implementation for manual runtime verification

@@ -4,7 +4,7 @@
 Provide a high-signal, agent-oriented map of this repository so an LLM Agent can understand the architecture, runtime behavior, data model, validation surface, and operational constraints before making changes.
 
 ## Last Updated
-2026-03-26
+2026-03-28
 
 ## Table of Contents
 1. Mission and Defaults
@@ -230,13 +230,13 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 
 ### App and Display Controls
 
-- `G`: toggle grid.
-- `H`: toggle HUD.
-- `L`: toggle labels.
-- `Shift+/`: toggle help screen.
-- `M`: toggle mouse-look mode and cursor capture.
-- `Cmd+F`: toggle fullscreen.
-- `Cmd+Q`: quit.
+- `Ctrl+G`: toggle grid.
+- `Ctrl+H`: toggle HUD.
+- `Ctrl+L`: toggle labels.
+- `Ctrl+/`: toggle help screen.
+- `Ctrl+M`: toggle mouse-look mode and cursor capture.
+- `Ctrl+F`: toggle fullscreen.
+- `Ctrl+Q`: quit.
 
 ### Simulation Time and Dataset Controls
 
@@ -247,10 +247,13 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 ### Selection and Performance Controls
 
 - `J`: open jump-to-object selection when in free camera mode.
-- `T`: open track-from-equator selection.
-- `Shift+T`: open track-from-above selection.
-- `P`: open performance options UI.
-- In selection UIs: arrows navigate, `Tab` changes categories or siblings depending on mode, `PageUp/PageDown/Home/End` accelerate navigation, text input filters results, `Enter` confirms, `Escape` cancels.
+- `T`: open the tracking selection dialog from free or tracking mode; confirmed selections start equatorial tracking.
+- `Ctrl+P`: open performance options UI.
+- Dialog invocation rule: unmodified letter keys open navigation-target dialogs, while `Ctrl+...` is reserved for system/configuration actions and dialogs.
+- `Ctrl`, `Alt`/`Option`, and `Cmd` modified variants of navigation keys are ignored so modified shortcuts do not fall through to navigation actions.
+- While help, selection, or performance dialogs are open, main-window keyboard and mouse controls are suspended until the dialog closes.
+- `Escape`: closes help first, then active selection/performance dialogs, then exits tracking, then exits mouse-look mode.
+- In selection UIs: `Left/Right` changes category, `Up/Down` navigates the current list, `PageUp/PageDown/Home/End` accelerate navigation, text input filters results, `Enter` confirms, and `Escape` cancels.
 
 ### Camera and Navigation Controls
 
@@ -279,7 +282,7 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 - [internal/space/engine/objectcategory_test.go](../../internal/space/engine/objectcategory_test.go)
 	- locks enum values and enum count.
 - [internal/space/ui/input_test.go](../../internal/space/ui/input_test.go)
-	- validates selection-state defaults and transitions.
+	- validates selection-state defaults, transitions, and dialog input suspension state.
 - [internal/space/ui/cycle_test.go](../../internal/space/ui/cycle_test.go)
 	- validates category cycling behavior.
 
@@ -318,6 +321,7 @@ Documentation convention already established in this repo:
 ## 9. Current Gaps and Cautions
 
 - High-priority next work is the runtime system selector tracked in [docs/wip/todo.md](../wip/todo.md).
+- The planned runtime system selector is currently assigned to `Cmd+S` in backlog docs so it does not conflict with the live `Ctrl+L` labels toggle.
 - `ring_system` features are now part of the supported loader path; keep rings defined through the feature pipeline rather than reintroducing duplicate body-based ring data.
 - Clone-mode swapping now uses the engine object pool when in-place swap is disabled; preserve the double-buffer ownership rules documented in the lessons-learned docs when extending this path.
 - Legacy scripts have been isolated under [scripts/legacy/](../../scripts/legacy) and should be treated as historical reference only.

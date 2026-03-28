@@ -44,7 +44,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			a.cfg.Debug,
 		)
 
-		zoomIndicator := updateCameraState(session.cameraState, session.inputState, state, dt, a.runtime.CameraSpeed, a.runtime.MouseSensitivity, a.runtime.MouseModeEnabled)
+		zoomIndicator := updateCameraState(session.cameraState, session.inputState, state, dt, a.runtime.CameraSpeed, a.runtime.MouseSensitivity, a.runtime.MouseModeEnabled, a.runtime.HelpVisible)
 
 		renderWidth := a.runtime.RenderWidth
 		renderHeight := a.runtime.RenderHeight
@@ -143,7 +143,6 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		}
 		if a.runtime.LabelsVisible {
 			a.renderer.DrawObjectLabels(state, session.cameraState, camera, objectsToRender)
-			rl.DrawText("[Labels: ON]", 10, renderHeight-55, 16, rl.Color{R: 100, G: 255, B: 100, A: 200})
 		}
 		if zoomIndicator != 0 {
 			a.renderer.DrawZoomIndicator(zoomIndicator)

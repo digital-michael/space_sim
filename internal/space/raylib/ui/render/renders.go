@@ -808,7 +808,7 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	rl.DrawText(processingText, leftPad, debugLine2Y, debugFontSize, processingColor)
 
 	// Help hint (only shows when HUD is visible)
-	rl.DrawText("? for help | Cmd+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
+	rl.DrawText("Ctrl+/ for help | Ctrl+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
 
 	// Object selection UI
 	if inputState.SelectionActive {
@@ -1686,7 +1686,7 @@ func drawHelpScreen() {
 	titleText := "KEYBOARD & MOUSE CONTROLS"
 	titleX := bgX + (bgWidth-rl.MeasureText(titleText, titleSize))/2
 	rl.DrawText(titleText, titleX, bgY+10, titleSize, rl.White)
-	hintText := "Press ? to close"
+	hintText := "Press Ctrl+/ or ESC to close"
 	hintX := bgX + (bgWidth-rl.MeasureText(hintText, hintSize))/2
 	rl.DrawText(hintText, hintX, bgY+45, hintSize, rl.Gray)
 
@@ -1701,7 +1701,7 @@ func drawHelpScreen() {
 	y += lineHeight
 
 	rl.DrawText("Mouse Wheel", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Rotate view (tracking)", leftCol+valueGap, y, bodySize, rl.LightGray)
+	rl.DrawText("Zoom / adjust tracking distance", leftCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText("W / S", leftCol, y, bodySize, rl.White)
@@ -1710,14 +1710,6 @@ func drawHelpScreen() {
 
 	rl.DrawText("A / D", leftCol, y, bodySize, rl.White)
 	rl.DrawText("Strafe left/right", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Space", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Move up", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Ctrl", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Move down (free-fly)", leftCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText("Shift", leftCol, y, bodySize, rl.White)
@@ -1737,15 +1729,11 @@ func drawHelpScreen() {
 	y += lineHeight
 
 	rl.DrawText("J", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Jump to object", leftCol+valueGap, y, bodySize, rl.LightGray)
+	rl.DrawText("Open jump dialog", leftCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText("T", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Track object (from above)", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("t", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Track object (equatorial)", leftCol+valueGap, y, bodySize, rl.LightGray)
+	rl.DrawText("Open track dialog", leftCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText("TAB", leftCol, y, bodySize, rl.White)
@@ -1772,31 +1760,31 @@ func drawHelpScreen() {
 	rl.DrawText("Exit tracking/mouse mode", leftCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Cmd+Q", leftCol, y, bodySize, rl.White)
+	rl.DrawText("Ctrl+Q", leftCol, y, bodySize, rl.White)
 	rl.DrawText("Quit application", leftCol+valueGap, y, bodySize, rl.LightGray)
 
 	// Right column - Display & Options
 	y = bgY + 80
-	rl.DrawText("DISPLAY OPTIONS", rightCol, y, headerSize, rl.Yellow)
+	rl.DrawText("SYSTEM & DISPLAY", rightCol, y, headerSize, rl.Yellow)
 	y += lineHeight + 5
 
-	rl.DrawText("G", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Ctrl+G", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle grid", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("H", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Ctrl+H", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle HUD", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("L", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Ctrl+L", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle object labels", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("M", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Ctrl+M", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle mouse mode", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Cmd+F", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Ctrl+F", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle fullscreen", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
@@ -1812,16 +1800,16 @@ func drawHelpScreen() {
 	rl.DrawText("Anim speed (0%->100% of 60Hz)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("P", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Performance options", rightCol+valueGap, y, bodySize, rl.LightGray)
+	rl.DrawText("Ctrl+P", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("?", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Show this help", rightCol+valueGap, y, bodySize, rl.LightGray)
+	rl.DrawText("Ctrl+/", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Open help dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight + 10
 
-	// Selection Mode
-	rl.DrawText("SELECTION MODE", rightCol, y, headerSize, rl.Yellow)
+	// Dialog controls
+	rl.DrawText("DIALOG CONTROLS", rightCol, y, headerSize, rl.Yellow)
 	y += lineHeight + 5
 
 	rl.DrawText("Up / Down", rightCol, y, bodySize, rl.White)
@@ -1841,7 +1829,11 @@ func drawHelpScreen() {
 	y += lineHeight
 
 	rl.DrawText("ESC", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Cancel selection", rightCol+valueGap, y, bodySize, rl.LightGray)
+	rl.DrawText("Close help or active dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText("Modal", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Dialogs suspend main controls", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight + 10
 
 	// Camera Modes

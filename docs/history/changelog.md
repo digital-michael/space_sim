@@ -37,6 +37,10 @@ Completed early cleanup needed before larger workstreams.
 | Q2 | Removed stale `Reserved for future dereference` comment from `cmd/space-sim/main.go` |
 | Q3 | Made help layout constants responsive and closed the first fullscreen-related layout cleanup items |
 | Q4 | Fullscreen and dynamic-resize implementation moved out of active backlog and treated as complete pending manual runtime verification |
+| Q5 | Standardized dialog invocation keys so navigation dialogs stay on plain letters while system/config dialogs and actions move under a dedicated modifier, and the help/docs now match the live controls |
+| Q6 | Standardized `Escape` as the close action for help, selection, and performance dialogs |
+| Q7 | Moved system and display actions under `Ctrl+...`, blocked modified navigation keys from falling through, and made the help overlay modal like other dialogs |
+| Q8 | Reduced tracking-menu invocation to a single `T` binding and removed the extra shifted tracking opener from the help/docs |
 
 ### 2.2 Runtime Loader and Engine Cleanup
 
