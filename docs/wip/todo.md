@@ -41,18 +41,20 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 ### 3.1 Runtime System Selector
 
 **Value**: Enable fast manual testing by allowing the running app to switch between JSON systems from `data/systems/` without a restart.
-**Status**: 📋 Not started
-**Start Date**: Not started
+**Status**: 🔄 In progress
+**Start Date**: 2026-03-28
 **Ref**: [data/systems/](../../data/systems)
 **Plan**: [docs/wip/runtime-system-selector-plan.md](runtime-system-selector-plan.md)
 
+**Current State**: Implementation and focused regression coverage are in place. Work remains active pending manual runtime verification and final documentation closure.
+
 #### Work Items
 
-- [ ] Add a fixed modal selector listing JSON files from `data/systems/`
-- [ ] Bind the selector to `Cmd+S`
-- [ ] Close the selector without action when the selected system is already loaded
-- [ ] Reload the session cleanly when a different system is selected
-- [ ] Add focused tests for selector behavior where practical and stop for manual runtime testing
+- [x] Add a fixed modal selector listing JSON files from `data/systems/`
+- [x] Bind the selector to `Cmd+S`
+- [x] Close the selector without action when the selected system is already loaded
+- [x] Reload the session cleanly when a different system is selected
+- [x] Add focused tests for selector behavior where practical and stop for manual runtime testing
 
 #### Acceptance Criteria
 

@@ -10,6 +10,18 @@ import (
 )
 
 func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error {
+	startSession := func(activeSession *runtimeSession) context.CancelFunc {
+		simCtx, cancel := context.WithCancel(ctx)
+		go activeSession.sim.Start(simCtx)
+		return cancel
+	}
+
+	sessionCancel := startSession(session)
+	defer func() {
+		sessionCancel()
+		session.sim.Stop()
+	}()
+
 	shouldQuit := false
 	for !rl.WindowShouldClose() && !shouldQuit {
 		select {
@@ -153,6 +165,24 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 
 		a.renderer.EndFrame(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
 		session.sim.GetState().UnlockFront()
+
+		if pendingSystemPath := session.inputState.ConsumePendingSystemPath(); pendingSystemPath != "" {
+			newSession, err := a.newRuntimeSession(pendingSystemPath)
+			if err != nil {
+				log.Printf("Failed to reload runtime session for %s: %v", pendingSystemPath, err)
+				session.inputState.SetSystemSelectorStatus(err.Error())
+				continue
+			}
+
+			sessionCancel()
+			session.sim.Stop()
+
+			a.cfg.SystemConfig = pendingSystemPath
+			session = newSession
+			a.runtime.HelpVisible = false
+			sessionCancel = startSession(session)
+			log.Printf("Reloaded runtime session using %s", pendingSystemPath)
+		}
 	}
 
 	log.Println("Exiting app loop")

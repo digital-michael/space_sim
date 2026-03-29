@@ -1,7 +1,7 @@
 # Runtime System Selector Plan
 
 ## Purpose
-Define the concrete implementation checklist for adding an in-app JSON system selector before code changes begin. This document is for design review and sequencing, not for recording completed work.
+Track the concrete implementation checklist for the in-app JSON system selector while implementation and manual verification are still in progress.
 
 ## Last Updated
 2026-03-28
@@ -68,65 +68,65 @@ Add a modal selector that lists JSON systems from [data/systems/](../../data/sys
 
 Objective: define the selector state model and collect valid system entries.
 
-- [ ] Add a new selection mode for the runtime system selector in [internal/space/ui/input.go](../../internal/space/ui/input.go)
-- [ ] Extend `InputState` with selector-specific fields that do not interfere with object-selection behavior
-- [ ] Add helper methods for:
+- [x] Add a new selection mode for the runtime system selector in [internal/space/ui/input.go](../../internal/space/ui/input.go)
+- [x] Extend `InputState` with selector-specific fields that do not interfere with object-selection behavior
+- [x] Add helper methods for:
 	- opening the selector with a discovered file list
 	- cancelling the selector cleanly
 	- confirming the selected system path
 	- reporting whether a confirmed selection requires reload
-- [ ] Add an app helper in [internal/space/app/](../../internal/space/app) to enumerate `.json` files under [data/systems/](../../data/systems)
-- [ ] Normalize selector entries so comparisons use stable paths relative to the app’s active `SystemConfig`
-- [ ] Decide whether the selector stores display names only or display name plus absolute/relative path pair; prefer the pair to avoid brittle string matching
+- [x] Add an app helper in [internal/space/app/](../../internal/space/app) to enumerate `.json` files under [data/systems/](../../data/systems)
+- [x] Normalize selector entries so comparisons use stable paths relative to the app’s active `SystemConfig`
+- [x] Store selector entries as label/path pairs to avoid brittle string matching
 
 Validation after Phase 1:
 
-- [ ] Focused unit tests for selector state transitions in [internal/space/ui/input_test.go](../../internal/space/ui/input_test.go)
-- [ ] Focused unit test for system-file discovery filtering and stable ordering if discovery is factored for testability
+- [x] Focused unit tests for selector state transitions in [internal/space/ui/input_test.go](../../internal/space/ui/input_test.go)
+- [x] Focused unit test for system-file discovery filtering and stable ordering if discovery is factored for testability
 
 ### 4.2 Phase 2 - Modal Rendering and Input
 
 Objective: make the selector accessible and usable as a true modal dialog.
 
-- [ ] Add `Cmd+S` handling in [internal/space/app/input.go](../../internal/space/app/input.go)
-- [ ] Keep existing modal ownership rules intact so help, performance, object selection, and system selector cannot overlap
-- [ ] Add selector navigation controls:
+- [x] Add `Cmd+S` handling in [internal/space/app/input.go](../../internal/space/app/input.go)
+- [x] Keep existing modal ownership rules intact so help, performance, object selection, and system selector cannot overlap
+- [x] Add selector navigation controls:
 	- `Up` and `Down` move selection
 	- `Home`, `End`, `PageUp`, `PageDown` accelerate list movement if needed
 	- `Enter` confirms
 	- `Escape` cancels
-- [ ] Draw a dedicated selector dialog in [internal/space/raylib/ui/render/renders.go](../../internal/space/raylib/ui/render/renders.go)
-- [ ] Show the currently loaded system clearly in the dialog
-- [ ] Show a compact note when the highlighted entry is already active so `Enter` behavior is obvious
-- [ ] Ensure main-window controls remain suspended while the selector is open
+- [x] Draw a dedicated selector dialog in [internal/space/raylib/ui/render/renders.go](../../internal/space/raylib/ui/render/renders.go)
+- [x] Show the currently loaded system clearly in the dialog
+- [x] Show a compact note when the highlighted entry is already active so `Enter` behavior is obvious
+- [x] Ensure main-window controls remain suspended while the selector is open
 
 Validation after Phase 2:
 
-- [ ] Re-run focused UI input tests in [internal/space/ui/input_test.go](../../internal/space/ui/input_test.go)
-- [ ] Add or adjust tests for the new selector mode values if enum ordering is intentionally locked
+- [x] Re-run focused UI input tests in [internal/space/ui/input_test.go](../../internal/space/ui/input_test.go)
+- [x] Add or adjust tests for the new selector mode values if enum ordering is intentionally locked
 
 ### 4.3 Phase 3 - Session Reload Flow
 
 Objective: replace the interactive runtime session safely when a new system is confirmed.
 
-- [ ] Add an app-level helper that creates a replacement runtime session from a supplied system path without duplicating startup logic
-- [ ] Update [internal/space/app/session.go](../../internal/space/app/session.go) so session creation can target a supplied system config path cleanly
-- [ ] Introduce a reload seam in [internal/space/app/interactive.go](../../internal/space/app/interactive.go) that:
+- [x] Add an app-level helper that creates a replacement runtime session from a supplied system path without duplicating startup logic
+- [x] Update [internal/space/app/session.go](../../internal/space/app/session.go) so session creation can target a supplied system config path cleanly
+- [x] Introduce a reload seam in [internal/space/app/interactive.go](../../internal/space/app/interactive.go) that:
 	- stops the current simulation
 	- cancels its simulation goroutine context
 	- swaps in a fresh runtime session
 	- starts the new simulation goroutine
 	- resumes the loop without closing the app window
-- [ ] Keep runtime state behavior explicit during reload:
+- [x] Keep runtime state behavior explicit during reload:
 	- carry forward window/render settings owned by `RuntimeContext`
 	- reset camera/input/session-specific state from the new session unless a narrower preservation rule is explicitly approved
-- [ ] When the selected system matches the current one, close the selector with no reload
-- [ ] Surface reload failures inside the selector or HUD in a way that does not leave the app in a half-reloaded state
+- [x] When the selected system matches the current one, close the selector with no reload
+- [x] Surface reload failures inside the selector or HUD in a way that does not leave the app in a half-reloaded state
 
 Validation after Phase 3:
 
-- [ ] Add focused tests for reload decision logic if factored into a small helper
-- [ ] Run targeted package tests for [internal/space/app](../../internal/space/app) and [internal/space/ui](../../internal/space/ui)
+- [x] Add focused tests for reload decision logic if factored into a small helper
+- [x] Run targeted package tests for [internal/space/app](../../internal/space/app) and [internal/space/ui](../../internal/space/ui)
 - [ ] Perform manual runtime verification for:
 	- open selector
 	- cancel selector
@@ -138,8 +138,9 @@ Validation after Phase 3:
 
 Objective: finalize the work after implementation is proven.
 
-- [ ] Update [docs/standards/agent-readme.md](../standards/agent-readme.md) with the implemented selector binding and modal behavior
-- [ ] Update [docs/wip/todo.md](todo.md) or move completed work into [docs/history/changelog.md](../history/changelog.md) once implementation and manual verification are complete
+- [x] Update [docs/standards/agent-readme.md](../standards/agent-readme.md) with the implemented selector binding and modal behavior
+- [x] Update [docs/wip/todo.md](todo.md) to reflect in-progress implementation and manual verification status
+- [ ] Move completed work into [docs/history/changelog.md](../history/changelog.md) once implementation and manual verification are complete
 - [ ] Update help text/HUD hints if the implementation introduces selector-specific user guidance
 - [ ] Confirm there are no stale references to the pre-implementation plan once the work is finished
 

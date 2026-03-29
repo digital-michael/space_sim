@@ -49,14 +49,17 @@ func (a *App) Run(ctx context.Context) error {
 	defer a.closeWindow()
 	a.syncRenderState()
 
-	session := a.newRuntimeSession()
-
-	simCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	defer session.sim.Stop()
-	go session.sim.Start(simCtx)
+	session, err := a.newRuntimeSession(a.cfg.SystemConfig)
+	if err != nil {
+		return err
+	}
 
 	if a.cfg.PerformanceMode {
+		simCtx, cancel := context.WithCancel(ctx)
+		defer cancel()
+		defer session.sim.Stop()
+		go session.sim.Start(simCtx)
+
 		log.Printf("Entering performance test mode (profile=%s, threads=%d, locking=%v)", a.cfg.Profile, a.cfg.Threads, !a.cfg.NoLocking)
 		a.runPerformanceTest(session.sim, session.cameraState, session.inputState, a.cfg.Profile, a.cfg.Threads, a.cfg.NoLocking)
 		log.Println("Performance test returned normally")

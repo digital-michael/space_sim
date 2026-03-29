@@ -28,6 +28,12 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
 	}
 
+	// Cmd+S: Open the runtime system selector.
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyS) && superHeld && !controlHeld && !altHeld {
+		app.openSystemSelector(inputState)
+		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+	}
+
 	// Ctrl+G: Toggle grid
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyG) && controlHeld && !superHeld {
 		gridVisible = !gridVisible
@@ -374,6 +380,58 @@ func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, i
 
 	// Object selection mode
 	if inputState.SelectionActive {
+		if inputState.SelectionMode == ui.SelectionModeSystemSelector {
+			maxIndex := len(inputState.SystemOptions) - 1
+			pageSize := 10
+
+			if rl.IsKeyPressed(rl.KeyUp) {
+				inputState.SelectPrevious()
+				if inputState.SelectedIndex < inputState.ScrollOffset {
+					inputState.ScrollOffset = inputState.SelectedIndex
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyDown) {
+				inputState.SelectNext(maxIndex)
+				if inputState.SelectedIndex >= inputState.ScrollOffset+pageSize {
+					inputState.ScrollOffset = inputState.SelectedIndex - pageSize + 1
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyPageUp) {
+				inputState.SelectedIndex -= pageSize
+				if inputState.SelectedIndex < 0 {
+					inputState.SelectedIndex = 0
+				}
+				inputState.ScrollOffset = inputState.SelectedIndex
+			}
+			if rl.IsKeyPressed(rl.KeyPageDown) {
+				inputState.SelectedIndex += pageSize
+				if inputState.SelectedIndex > maxIndex {
+					inputState.SelectedIndex = maxIndex
+				}
+				if inputState.SelectedIndex >= inputState.ScrollOffset+pageSize {
+					inputState.ScrollOffset = inputState.SelectedIndex - pageSize + 1
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyHome) {
+				if maxIndex >= 0 {
+					inputState.SelectedIndex = 0
+				}
+				inputState.ScrollOffset = 0
+			}
+			if rl.IsKeyPressed(rl.KeyEnd) {
+				inputState.SelectedIndex = maxIndex
+				inputState.ScrollOffset = maxIndex - pageSize + 1
+				if inputState.ScrollOffset < 0 {
+					inputState.ScrollOffset = 0
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyEnter) {
+				inputState.ConfirmSystemSelection()
+			}
+
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+		}
+
 		// Performance options mode
 		if inputState.SelectionMode == ui.SelectionModePerformance {
 			// Left/Right to switch tabs (except when adjusting Importance Threshold)

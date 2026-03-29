@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/digital-michael/space_sim/internal/space"
@@ -16,7 +17,17 @@ type runtimeSession struct {
 	navigationOrder []engine.ObjectCategory
 }
 
-func (a *App) newRuntimeSession() *runtimeSession {
+func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSession, err error) {
+	if systemConfigPath == "" {
+		systemConfigPath = a.cfg.SystemConfig
+	}
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			err = fmt.Errorf("failed to create runtime session for %s: %v", systemConfigPath, recovered)
+			session = nil
+		}
+	}()
+
 	cameraState := ui.NewCameraState()
 	cameraState.Position = engine.Vector3{X: 0, Y: 50, Z: -100}
 	cameraState.UpdateForwardFromAngles()
@@ -26,7 +37,8 @@ func (a *App) newRuntimeSession() *runtimeSession {
 		debugTracker = NewDebugTracker()
 	}
 
-	sim := space.NewSimulation(defaultSimHz, a.cfg.SystemConfig)
+	normalizedPath := normalizeSystemConfigPath(systemConfigPath)
+	sim := space.NewSimulation(defaultSimHz, normalizedPath)
 
 	initialState := sim.GetState().LockFront()
 	solIndex := -1
@@ -44,6 +56,7 @@ func (a *App) newRuntimeSession() *runtimeSession {
 		firstCategory = navigationOrder[0]
 	}
 	inputState := ui.NewInputState(firstCategory)
+	inputState.ActiveSystemPath = normalizedPath
 
 	if solIndex >= 0 {
 		cameraState.StartTracking(solIndex)
@@ -67,5 +80,5 @@ func (a *App) newRuntimeSession() *runtimeSession {
 		inputState:      inputState,
 		debugTracker:    debugTracker,
 		navigationOrder: navigationOrder,
-	}
+	}, nil
 }

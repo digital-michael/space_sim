@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"math"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -1151,6 +1152,11 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 
 // drawSelectionUI draws the object selection menu with category tabs
 func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
+	if inputState.SelectionMode == ui.SelectionModeSystemSelector {
+		drawSystemSelectorUI(inputState)
+		return
+	}
+
 	// Check if we're in performance mode
 	if inputState.SelectionMode == ui.SelectionModePerformance {
 		drawPerformanceUI(inputState)
@@ -1348,6 +1354,116 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		thumbY := scrollBarY + int32(float32(inputState.ScrollOffset)/float32(maxScroll)*float32(scrollBarHeight-thumbHeight))
 		rl.DrawRectangle(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.Color{R: 100, G: 150, B: 200, A: 255})
 		rl.DrawRectangleLines(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.White)
+	}
+}
+
+func drawSystemSelectorUI(inputState *ui.InputState) {
+	sw := int32(currentScreenWidth())
+	sh := int32(currentScreenHeight())
+	titleFont := scaledInt32(20)
+	hintFont := scaledInt32(12)
+	itemFont := scaledInt32(18)
+	statusFont := scaledInt32(14)
+	arrowFont := scaledInt32(20)
+
+	bgWidth := sw * 40 / 100
+	if bgWidth < scaledInt32(420) {
+		bgWidth = scaledInt32(420)
+	}
+	if bgWidth > scaledInt32(760) {
+		bgWidth = scaledInt32(760)
+	}
+	bgHeight := bgWidth
+	bgX := (sw - bgWidth) / 2
+	bgY := (sh - bgHeight) / 2
+
+	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 210})
+	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
+
+	titleText := "SELECT RUNTIME SYSTEM"
+	rl.DrawText(titleText, bgX+scaledInt32(18), bgY+scaledInt32(12), titleFont, rl.White)
+	rl.DrawText("UP/DOWN: select, ENTER: load, ESC: cancel", bgX+scaledInt32(18), bgY+scaledInt32(42), hintFont, rl.LightGray)
+	rl.DrawText("Cmd+S opens this selector", bgX+scaledInt32(18), bgY+scaledInt32(58), hintFont, rl.Gray)
+
+	activeLabel := filepath.Base(inputState.ActiveSystemPath)
+	if activeLabel == "." || activeLabel == string(filepath.Separator) || activeLabel == "" {
+		activeLabel = inputState.ActiveSystemPath
+	}
+	rl.DrawText("Current: "+activeLabel, bgX+scaledInt32(18), bgY+scaledInt32(86), statusFont, rl.Color{R: 140, G: 210, B: 255, A: 255})
+
+	listStartY := bgY + scaledInt32(116)
+	lineHeight := scaledInt32(32)
+	listHeight := bgHeight - scaledInt32(176)
+	visibleItems := int(listHeight / lineHeight)
+	if visibleItems < 1 {
+		visibleItems = 1
+	}
+
+	totalItems := len(inputState.SystemOptions)
+	maxScroll := totalItems - visibleItems
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if inputState.ScrollOffset > maxScroll {
+		inputState.ScrollOffset = maxScroll
+	}
+	if inputState.ScrollOffset < 0 {
+		inputState.ScrollOffset = 0
+	}
+
+	if totalItems == 0 {
+		rl.DrawText("No runtime systems available.", bgX+scaledInt32(18), listStartY, itemFont, rl.LightGray)
+	} else {
+		for idx := inputState.ScrollOffset; idx < inputState.ScrollOffset+visibleItems && idx < totalItems; idx++ {
+			option := inputState.SystemOptions[idx]
+			y := listStartY + int32(idx-inputState.ScrollOffset)*lineHeight
+
+			if idx == inputState.SelectedIndex {
+				rl.DrawRectangle(bgX+scaledInt32(10), y-scaledInt32(2), bgWidth-scaledInt32(20), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
+				rl.DrawText(">", bgX+scaledInt32(18), y+scaledInt32(4), arrowFont, rl.Yellow)
+			}
+
+			labelColor := rl.White
+			suffix := ""
+			if option.Path == inputState.ActiveSystemPath {
+				labelColor = rl.Color{R: 140, G: 210, B: 255, A: 255}
+				suffix = " [current]"
+			}
+
+			rl.DrawText(option.Label+suffix, bgX+scaledInt32(44), y+scaledInt32(4), itemFont, labelColor)
+		}
+	}
+
+	if totalItems > visibleItems {
+		scrollBarX := bgX + bgWidth - scaledInt32(15)
+		scrollBarY := listStartY
+		scrollBarWidth := scaledInt32(10)
+		scrollBarHeight := listHeight
+		rl.DrawRectangle(scrollBarX, scrollBarY, scrollBarWidth, scrollBarHeight, rl.Color{R: 30, G: 30, B: 30, A: 200})
+
+		thumbHeight := int32(float32(visibleItems) / float32(totalItems) * float32(scrollBarHeight))
+		if thumbHeight < scaledInt32(20) {
+			thumbHeight = scaledInt32(20)
+		}
+		thumbY := scrollBarY
+		if maxScroll > 0 {
+			thumbY += int32(float32(inputState.ScrollOffset) / float32(maxScroll) * float32(scrollBarHeight-thumbHeight))
+		}
+		rl.DrawRectangle(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.Color{R: 100, G: 150, B: 200, A: 255})
+		rl.DrawRectangleLines(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.White)
+	}
+
+	statusText := inputState.SystemStatusMessage
+	if statusText == "" && inputState.SelectedIndex >= 0 && inputState.SelectedIndex < len(inputState.SystemOptions) {
+		selected := inputState.SystemOptions[inputState.SelectedIndex]
+		if selected.Path == inputState.ActiveSystemPath {
+			statusText = "Press ENTER to close without reloading the current system."
+		} else {
+			statusText = "Press ENTER to load the highlighted system."
+		}
+	}
+	if statusText != "" {
+		rl.DrawText(statusText, bgX+scaledInt32(18), bgY+bgHeight-scaledInt32(34), statusFont, rl.LightGray)
 	}
 }
 

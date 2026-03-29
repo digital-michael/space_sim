@@ -235,6 +235,7 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 - `Ctrl+L`: toggle labels.
 - `Ctrl+/`: toggle help screen.
 - `Ctrl+M`: toggle mouse-look mode and cursor capture.
+- `Cmd+S`: open the runtime system selector in interactive mode.
 - `Ctrl+F`: toggle fullscreen.
 - `Ctrl+Q`: quit.
 
@@ -249,11 +250,12 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 - `J`: open jump-to-object selection when in free camera mode.
 - `T`: open the tracking selection dialog from free or tracking mode; confirmed selections start equatorial tracking.
 - `Ctrl+P`: open performance options UI.
-- Dialog invocation rule: unmodified letter keys open navigation-target dialogs, while `Ctrl+...` is reserved for system/configuration actions and dialogs.
+- Dialog invocation rule: unmodified letter keys open navigation-target dialogs, `Ctrl+...` is reserved for system/configuration actions and dialogs, and `Cmd+S` is the dedicated runtime system selector shortcut.
 - `Ctrl`, `Alt`/`Option`, and `Cmd` modified variants of navigation keys are ignored so modified shortcuts do not fall through to navigation actions.
 - While help, selection, or performance dialogs are open, main-window keyboard and mouse controls are suspended until the dialog closes.
 - `Escape`: closes help first, then active selection/performance dialogs, then exits tracking, then exits mouse-look mode.
-- In selection UIs: `Left/Right` changes category, `Up/Down` navigates the current list, `PageUp/PageDown/Home/End` accelerate navigation, text input filters results, `Enter` confirms, and `Escape` cancels.
+- In object selection UIs: `Left/Right` changes category, `Up/Down` navigates the current list, `PageUp/PageDown/Home/End` accelerate navigation, text input filters results, `Enter` confirms, and `Escape` cancels.
+- In the runtime system selector UI: `Up/Down` navigates systems, `PageUp/PageDown/Home/End` accelerate navigation, `Enter` confirms, and `Escape` cancels.
 
 ### Camera and Navigation Controls
 
@@ -282,9 +284,11 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 - [internal/space/engine/objectcategory_test.go](../../internal/space/engine/objectcategory_test.go)
 	- locks enum values and enum count.
 - [internal/space/ui/input_test.go](../../internal/space/ui/input_test.go)
-	- validates selection-state defaults, transitions, and dialog input suspension state.
+	- validates selection-state defaults, transitions, dialog input suspension state, and runtime system selector state behavior.
 - [internal/space/ui/cycle_test.go](../../internal/space/ui/cycle_test.go)
 	- validates category cycling behavior.
+- [internal/space/app/system_selector_test.go](../../internal/space/app/system_selector_test.go)
+	- validates runtime system discovery ordering/filtering and safe session-creation failure handling.
 
 ### Command-Level Validation
 
@@ -320,8 +324,7 @@ Documentation convention already established in this repo:
 
 ## 9. Current Gaps and Cautions
 
-- High-priority next work is the runtime system selector tracked in [docs/wip/todo.md](../wip/todo.md).
-- The planned runtime system selector is currently assigned to `Cmd+S` in backlog docs so it does not conflict with the live `Ctrl+L` labels toggle.
+- The runtime system selector is implemented behind `Cmd+S` for interactive mode, but manual runtime verification is still required before it should be treated as complete work.
 - `ring_system` features are now part of the supported loader path; keep rings defined through the feature pipeline rather than reintroducing duplicate body-based ring data.
 - Clone-mode swapping now uses the engine object pool when in-place swap is disabled; preserve the double-buffer ownership rules documented in the lessons-learned docs when extending this path.
 - Legacy scripts have been isolated under [scripts/legacy/](../../scripts/legacy) and should be treated as historical reference only.

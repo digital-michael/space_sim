@@ -11,7 +11,14 @@ const (
 	SelectionModeTrack
 	SelectionModeTrackEquatorial
 	SelectionModePerformance
+	SelectionModeSystemSelector
 )
+
+// SystemOption describes one runtime-loadable system entry for the selector UI.
+type SystemOption struct {
+	Label string
+	Path  string
+}
 
 // PerformanceOptions holds runtime rendering/physics optimisation settings.
 type PerformanceOptions struct {
@@ -50,6 +57,10 @@ type InputState struct {
 	ScrollOffset       int
 	DistanceCache      map[int]string
 	LastDistanceUpdate float64
+	SystemOptions      []SystemOption
+	ActiveSystemPath   string
+	PendingSystemPath  string
+	SystemStatusMessage string
 }
 
 // NewInputState creates an InputState with firstCategory as the active tab.
@@ -65,6 +76,7 @@ func NewInputState(firstCategory engine.ObjectCategory) *InputState {
 		FilterText:       "",
 		ScrollOffset:     0,
 		DistanceCache:    make(map[int]string),
+		SystemOptions:    make([]SystemOption, 0),
 	}
 }
 
@@ -82,6 +94,7 @@ func (i *InputState) MainWindowInputSuspended() bool {
 
 // CancelSelection cancels the current selection.
 func (i *InputState) CancelSelection() {
+	i.resetSelectorState()
 	i.SelectionActive = false
 	i.SelectedIndex = -1
 	i.SelectionMode = SelectionModeNone
@@ -105,10 +118,84 @@ func (i *InputState) SelectPrevious() {
 func (i *InputState) ConfirmSelection() (int, SelectionMode) {
 	selected := i.SelectedIndex
 	mode := i.SelectionMode
+	i.resetSelectorState()
 	i.SelectionActive = false
 	i.SelectedIndex = -1
 	i.SelectionMode = SelectionModeNone
 	return selected, mode
+}
+
+// OpenSystemSelector activates the runtime system selector dialog.
+func (i *InputState) OpenSystemSelector(options []SystemOption, activeSystemPath string) {
+	i.SelectionActive = true
+	i.SelectionMode = SelectionModeSystemSelector
+	i.SystemOptions = append(i.SystemOptions[:0], options...)
+	i.ActiveSystemPath = activeSystemPath
+	i.PendingSystemPath = ""
+	i.SystemStatusMessage = ""
+	i.ScrollOffset = 0
+	i.FilterText = ""
+
+	selectedIndex := 0
+	for idx, option := range i.SystemOptions {
+		if option.Path == activeSystemPath {
+			selectedIndex = idx
+			break
+		}
+	}
+
+	if len(i.SystemOptions) == 0 {
+		selectedIndex = -1
+	}
+	i.SelectedIndex = selectedIndex
+}
+
+// ConfirmSystemSelection queues a reload if the selected system differs from the active one.
+func (i *InputState) ConfirmSystemSelection() (string, bool) {
+	if i == nil || i.SelectionMode != SelectionModeSystemSelector {
+		return "", false
+	}
+	if i.SelectedIndex < 0 || i.SelectedIndex >= len(i.SystemOptions) {
+		return "", false
+	}
+
+	selectedPath := i.SystemOptions[i.SelectedIndex].Path
+	if selectedPath == "" {
+		return "", false
+	}
+	if selectedPath == i.ActiveSystemPath {
+		i.CancelSelection()
+		return selectedPath, false
+	}
+
+	i.PendingSystemPath = selectedPath
+	i.SystemStatusMessage = "Loading selected system..."
+	return selectedPath, true
+}
+
+// ConsumePendingSystemPath returns and clears the queued runtime system reload request.
+func (i *InputState) ConsumePendingSystemPath() string {
+	if i == nil {
+		return ""
+	}
+	pending := i.PendingSystemPath
+	i.PendingSystemPath = ""
+	return pending
+}
+
+// SetSystemSelectorStatus updates the runtime selector status text.
+func (i *InputState) SetSystemSelectorStatus(message string) {
+	if i == nil {
+		return
+	}
+	i.SystemStatusMessage = message
+}
+
+func (i *InputState) resetSelectorState() {
+	i.SystemOptions = i.SystemOptions[:0]
+	i.ActiveSystemPath = ""
+	i.PendingSystemPath = ""
+	i.SystemStatusMessage = ""
 }
 
 // CycleCategory advances to the next category in the provided order slice.
