@@ -2,12 +2,12 @@
   "window": {
     "width": 1280,
     "height": 720,
-    "fullscreen": false,
+    "fullscreen": true,
     "resizable": true
   },
   "render": {
     "mode": "native",
-    "width": 1280,
-    "height": 720
+    "width": 1440,
+    "height": 751
   }
 }

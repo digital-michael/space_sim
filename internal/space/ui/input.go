@@ -46,20 +46,20 @@ func NewPerformanceOptions() *PerformanceOptions {
 
 // InputState holds current user input state for object selection and navigation.
 type InputState struct {
-	SelectionActive    bool
-	SelectedIndex      int
-	SelectionMode      SelectionMode
-	SelectedCategory   engine.ObjectCategory
-	FilteredIndices    []int
-	PerfOptions        *PerformanceOptions
-	PerformanceTab     int
-	FilterText         string
-	ScrollOffset       int
-	DistanceCache      map[int]string
-	LastDistanceUpdate float64
-	SystemOptions      []SystemOption
-	ActiveSystemPath   string
-	PendingSystemPath  string
+	SelectionActive     bool
+	SelectedIndex       int
+	SelectionMode       SelectionMode
+	SelectedCategory    engine.ObjectCategory
+	FilteredIndices     []int
+	PerfOptions         *PerformanceOptions
+	PerformanceTab      int
+	FilterText          string
+	ScrollOffset        int
+	DistanceCache       map[int]string
+	LastDistanceUpdate  float64
+	SystemOptions       []SystemOption
+	ActiveSystemPath    string
+	PendingSystemPath   string
 	SystemStatusMessage string
 }
 
