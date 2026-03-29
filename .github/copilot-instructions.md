@@ -18,7 +18,41 @@ Read all of these before producing any plan or code.
 
 ## Acknowledgment
 
-After reading and understanding all required documents above, respond with **"I'm Locked-In now."** before anything else. This signals to the user that the workspace rules are in effect.
+After reading and understanding all required documents above, respond with **"I'm Locked-In now"** before anything else. This signals to the user that the workspace rules are in effect.
+
+The acknowledgment must always communicate three things:
+
+1. Why this context is loading.
+2. Whether the context is new for this request or was already available at the time of the request.
+3. Whether the context was loaded directly by user action or in support of another context.
+
+Use this message shape:
+
+**"I'm Locked-In now" + reason clause + lock-state clause**
+
+Required variants:
+
+- New user chat:
+	- `I'm Locked-In now by user action and this locked-in context was not already loaded.`
+- Delegated or supporting context:
+	- `I'm Locked-In now as a delegate and this locked-in context was not already loaded.`
+- Same chat, reloaded or re-read for a specific reason:
+	- `I'm Locked-In now for <reason> and I already have access to the locked-in information and context.`
+- Same chat, first lock-in for a specific reason:
+	- `I'm Locked-In now for <reason> and this locked-in context was not already loaded.`
+
+Reason guidance:
+
+- Use `by user action` only for a new user-created chat context.
+- Use `as a delegate` only when this context exists to support another context.
+- Otherwise use `for <reason>` with a short concrete phrase such as:
+	- `for the selector planning review`
+	- `for the acknowledgment rewrite`
+	- `for the runtime reload design pass`
+
+Do not omit the lock-state clause. The user should be able to tell from the first line whether the repository context was already locked in before the current request.
+
+Do not reload the locked-in context unnecessarily. If the required lock-in documents have already been read in the current chat and no new reason requires re-reading them, do not load them again. Instead, acknowledge that the context is already available and continue using it.
 
 ---
 

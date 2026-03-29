@@ -44,6 +44,7 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 **Status**: 📋 Not started
 **Start Date**: Not started
 **Ref**: [data/systems/](../../data/systems)
+**Plan**: [docs/wip/runtime-system-selector-plan.md](runtime-system-selector-plan.md)
 
 #### Work Items
 
