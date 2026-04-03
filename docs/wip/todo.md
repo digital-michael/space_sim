@@ -101,29 +101,22 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 ### 4.3 Phase 5 - Persistence
 
 **Value**: Enables save, restore, crash recovery, and deterministic replay.
-**Status**: 📋 Not started
-**Start Date**: Not started
+**Status**: ✅ Complete — 2026-04-03
+**Start Date**: 2026-04-03
 **Depends on**: Phase 1, Phase 2
 
 #### Work Items
 
-- [ ] Implement JSON definition save and load with atomic writes
-- [ ] Implement JSON snapshot save and load
-- [ ] Implement append and replay for the event log
-- [ ] Add non-blocking autosave subscriber
-- [ ] Add round-trip, replay, and corrupt-file tests
+- [x] Implement JSON definition save and load with atomic writes
+- [x] Implement JSON snapshot save and load
+- [x] Implement append and replay for the event log
+- [x] Add non-blocking autosave subscriber
+- [x] Add round-trip, replay, and corrupt-file tests
 
 #### Decisions
 
 - Event log format: **JSON lines** (one event per line)
 - Persistence backend: **file-only** with atomic rename (no SQLite)
-
-#### Acceptance Criteria
-
-- Definitions and snapshots round-trip correctly
-- Event replay reproduces the same runtime state
-- Auto-save does not stall the event loop
-- Corrupt files fail with errors, not panics
 
 ### 4.4 Pre-Phase-6 Gate - Client/App Package Split
 
