@@ -108,15 +108,15 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 #### Work Items
 
 - [ ] Implement JSON definition save and load with atomic writes
-- [ ] Implement protobuf snapshot save and load
+- [ ] Implement JSON snapshot save and load
 - [ ] Implement append and replay for the event log
-- [ ] Add non-blocking autosave
+- [ ] Add non-blocking autosave subscriber
 - [ ] Add round-trip, replay, and corrupt-file tests
 
-#### Open Questions
+#### Decisions
 
-- Event log format: JSON or protobuf
-- Persistence backend: file-only or optional SQLite
+- Event log format: **JSON lines** (one event per line)
+- Persistence backend: **file-only** with atomic rename (no SQLite)
 
 #### Acceptance Criteria
 
