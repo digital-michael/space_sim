@@ -4,14 +4,25 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"sort"
 
 	"github.com/digital-michael/space_sim/internal/sim/engine"
 )
 
 // CreateBelt generates a debris belt based on configuration.
+// ObjectTypes are iterated in sorted key order so that two calls with the same
+// seed and config always produce an identical object sequence — required for
+// front/back double-buffer parity.
 func CreateBelt(state *engine.SimulationState, config BeltConfig, dataset engine.AsteroidDataset, rng *rand.Rand) {
+	typeNames := make([]string, 0, len(config.ObjectTypes))
+	for typeName := range config.ObjectTypes {
+		typeNames = append(typeNames, typeName)
+	}
+	sort.Strings(typeNames)
+
 	objectIndex := 0
-	for typeName, typeConfig := range config.ObjectTypes {
+	for _, typeName := range typeNames {
+		typeConfig := config.ObjectTypes[typeName]
 		if typeConfig.Count == 0 {
 			continue
 		}

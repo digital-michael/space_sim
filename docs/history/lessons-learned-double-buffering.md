@@ -325,3 +325,50 @@ The fixes required:
 - Visibility sync after every swap
 
 **Core takeaway**: Double buffering is simple in theory but requires strict architectural discipline. Go's type system and CSP model (channels) can enforce correct patterns when used properly.
+
+---
+
+## 9. Map Iteration Order Breaks Double-Buffer Parity (2026-04-03)
+
+### Problem
+After switching to a higher asteroid dataset, some belt objects flickered between two different visual sizes every other frame.
+
+### Root Cause
+`CreateBelt` iterated `config.ObjectTypes` (a `map[string]BeltObjectTypeConfig`) with `for typeName, typeConfig := range config.ObjectTypes`. Go randomises map iteration order per map and per iteration. Because dataset allocation calls `CreateBelt` **once for the back buffer and once for the front buffer** with separately seeded-but-equal RNGs:
+
+- Call 1 (back): iterates types `["carbonaceous", "rocky"]` → consumes RNG → object at index K = large, dark
+- Call 2 (front): iterates types `["rocky", "carbonaceous"]` → same RNG, different consumption sequence → object at index K = small, bright
+
+`SwapInPlace` then assumed index correspondence and copied `front.Objects[K].Anim` onto `back.Objects[K].Meta` — cross-contaminating mismatched physical properties. The renderer alternated between two completely different objects at the same screen position every tick.
+
+**The invariant violated**: `SwapInPlace` is only correct when `back.Objects[i]` and `front.Objects[i]` represent the same logical object across both buffers.
+
+### Solution
+Sort the type name keys before iterating in `CreateBelt`:
+
+```go
+// WRONG — non-deterministic between calls:
+for typeName, typeConfig := range config.ObjectTypes { ... }
+
+// CORRECT — identical order in every call for the same config:
+typeNames := make([]string, 0, len(config.ObjectTypes))
+for typeName := range config.ObjectTypes {
+    typeNames = append(typeNames, typeName)
+}
+sort.Strings(typeNames)
+for _, typeName := range typeNames {
+    typeConfig := config.ObjectTypes[typeName]
+    ...
+}
+```
+
+### Key Lessons
+
+1. **Any function that must produce identical output for two independent calls must never use map range as its iteration driver.** Collect keys, sort, then iterate.
+
+2. **`SwapInPlace` is a structural contract**: it demands that `front.Objects[i]` and `back.Objects[i]` always represent the same object. Any code path that populates both buffers via separate RNG-driven calls must guarantee this invariant through sorted, deterministic ordering.
+
+3. **Non-deterministic generation bugs are timing-sensitive** — they may not appear in tests that only call `CreateBelt` once or with single-type configs. Always write parity tests that call the generator twice with the same seed and assert matching output.
+
+### Test Added
+`TestCreateBelt_Deterministic` in `internal/sim/belts_test.go` — calls `CreateBelt` twice with the same seed and a two-type config, then asserts name, radius, and position match at every index.
