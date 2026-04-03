@@ -4,10 +4,8 @@ import (
 	"fmt"
 	"math"
 	"sort"
-	"time"
 
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
-	sim "github.com/digital-michael/space_sim/internal/sim/world"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -471,126 +469,6 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 	}
 
 	return result
-}
-
-// drawHUD draws the on-screen display
-func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, s *sim.World) {
-	fps := rl.GetFPS()
-	rl.DrawText(fmt.Sprintf("FPS: %3d / %d threads", fps, state.NumWorkers), 10, 10, 20, rl.Green)
-
-	// Display object counts: total / visible / rendered
-	totalObjects := len(state.Objects)
-	visibleObjects := 0
-	for _, obj := range state.Objects {
-		if obj.Visible {
-			visibleObjects++
-		}
-	}
-	datasetName := sim.GetDatasetName(asteroidDataset)
-	rl.DrawText(fmt.Sprintf("Objects: %d total / %d visible (Dataset: %s)", totalObjects, visibleObjects, datasetName), 10, 35, 20, rl.White)
-
-	// Simulation time display - show date since J2000.0 epoch (Jan 1, 2000, 12:00 TT)
-	simSeconds := state.Time
-
-	// J2000.0 epoch: January 1, 2000, 12:00:00 TT (approximately 12:00 UTC)
-	// Using 12:00 UTC as base to match the astronomical J2000.0 standard
-	j2000 := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
-	currentTime := j2000.Add(time.Duration(simSeconds * float64(time.Second)))
-
-	// Convert to local timezone
-	localTime := currentTime.Local()
-
-	year := localTime.Year()
-	month := int(localTime.Month())
-	day := localTime.Day()
-
-	timeText := fmt.Sprintf("Date: %04d/%02d/%02d", year, month, day)
-	if state.SecondsPerSecond < 86400.0 {
-		hour := localTime.Hour()
-		minute := localTime.Minute()
-		second := localTime.Second()
-		millisecond := localTime.Nanosecond() / 1000000
-		timeText = fmt.Sprintf("Date: %04d/%02d/%02d %02d:%02d:%02d.%03d",
-			year, month, day, hour, minute, second, millisecond)
-	}
-	rl.DrawText(timeText, 10, 60, 20, rl.White)
-
-	// Time rate indicator (simulation seconds per real second)
-	var timeRateText string
-	timeRateColor := rl.Gray
-
-	sps := state.SecondsPerSecond
-	if sps == 0.0 {
-		timeRateText = "Time Rate: PAUSED"
-		timeRateColor = rl.Red
-	} else if sps == 1.0 {
-		timeRateText = "Time Rate: real-time"
-		timeRateColor = rl.White
-	} else if sps == 3600.0 {
-		timeRateText = "Time Rate: 1 hour/sec"
-		timeRateColor = rl.Green
-	} else if sps == 86400.0 {
-		timeRateText = "Time Rate: 1 day/sec"
-		timeRateColor = rl.Green
-	} else if sps == 604800.0 {
-		timeRateText = "Time Rate: 1 week/sec"
-		timeRateColor = rl.Green
-	} else if sps == 2628000.0 {
-		timeRateText = "Time Rate: 1 month/sec"
-		timeRateColor = rl.Yellow
-	} else if sps == 31557600.0 {
-		timeRateText = "Time Rate: 1 year/sec"
-		timeRateColor = rl.Yellow
-	} else {
-		timeRateText = fmt.Sprintf("Time Rate: %.0f sec/sec", sps)
-		timeRateColor = rl.Gray
-	}
-	rl.DrawText(timeRateText, 10, 85, 18, timeRateColor)
-
-	// Anim speed indicator (physics tick rate as % of full 60Hz)
-	animSpeed := s.GetSpeed()
-	var animSpeedText string
-	var animSpeedColor rl.Color
-	if animSpeed == 0.0 {
-		animSpeedText = "Anim Speed: PAUSED"
-		animSpeedColor = rl.Red
-	} else if animSpeed >= 1.0 {
-		animSpeedText = "Anim Speed: 100%"
-		animSpeedColor = rl.White
-	} else {
-		animSpeedText = fmt.Sprintf("Anim Speed: %d%%", int(animSpeed*100))
-		animSpeedColor = rl.Color{R: 255, G: 165, B: 0, A: 255} // orange — below full speed
-	}
-	rl.DrawText(animSpeedText, 10, 108, 18, animSpeedColor)
-
-	// Camera mode indicator
-	var modeText string
-	switch cameraState.Mode {
-	case ui.CameraModeFree:
-		modeText = "FREE-FLY"
-	case ui.CameraModeJumping:
-		modeText = "JUMPING"
-	case ui.CameraModeTracking:
-		modeText = fmt.Sprintf("TRACKING: %s", state.Objects[cameraState.TrackTargetIndex].Meta.Name)
-	}
-	rl.DrawText(fmt.Sprintf("Mode: %s", modeText), 10, 133, 20, rl.Yellow)
-
-	// Camera position
-	posText := fmt.Sprintf("Camera Position: X:%.1f Y:%.1f Z:%.1f", cameraState.Position.X, cameraState.Position.Y, cameraState.Position.Z)
-	rl.DrawText(posText, 10, 158, 18, rl.Color{R: 0, G: 255, B: 255, A: 255})
-
-	// Help hint (only shows when HUD is visible)
-	rl.DrawText("Ctrl+/ for help | Ctrl+Q to quit", 10, int32(currentScreenHeight())-30, 20, rl.Gray)
-
-	// Object selection UI
-	if inputState.SelectionActive {
-		drawSelectionUI(state, inputState)
-	}
-
-	// Tracking info HUD (lower right)
-	if cameraState.Mode == ui.CameraModeTracking {
-		drawTrackingInfo(state, cameraState)
-	}
 }
 
 // drawZoomIndicator draws a visual indicator when zooming

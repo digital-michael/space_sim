@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"strings"
 
+	"github.com/digital-michael/space_sim/internal/protocol"
 	"github.com/digital-michael/space_sim/internal/sim"
 	"github.com/digital-michael/space_sim/internal/sim/engine"
 )
@@ -158,9 +159,17 @@ func (s *World) GetAsteroidCount(dataset engine.AsteroidDataset) int {
 	return total
 }
 
-// GetDatasetName returns a human-readable label for a dataset tier.
-func GetDatasetName(dataset engine.AsteroidDataset) string {
-	return datasetName(dataset)
+// Snapshot returns a lock-free point-in-time copy of the simulation state.
+// Safe to read after this call returns without holding any lock.
+func (w *World) Snapshot() protocol.WorldSnapshot {
+	db := w.GetState()
+	state := db.LockFront()
+	cloned := state.Clone()
+	db.UnlockFront()
+	return protocol.WorldSnapshot{
+		State: cloned,
+		Speed: w.GetSpeed(),
+	}
 }
 
 // applyBeltConfig translates a FeatureConfig into a BeltConfig and populates
@@ -255,19 +264,4 @@ func beltDatasetRNG(config *engine.FeatureConfig, dataset engine.AsteroidDataset
 		baseSeed = config.Procedural.Seed
 	}
 	return rand.New(rand.NewSource(baseSeed + int64(dataset)*1000003))
-}
-
-func datasetName(dataset engine.AsteroidDataset) string {
-	switch dataset {
-	case engine.AsteroidDatasetSmall:
-		return "Small"
-	case engine.AsteroidDatasetMedium:
-		return "Medium"
-	case engine.AsteroidDatasetLarge:
-		return "Large"
-	case engine.AsteroidDatasetHuge:
-		return "Huge"
-	default:
-		return "Unknown"
-	}
 }

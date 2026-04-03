@@ -278,16 +278,16 @@ func (a *App) runPerformanceTest(sim *simlib.World, cameraState *ui.CameraState,
 	for i, config := range testConfigs {
 		objectCount := sim.GetAsteroidCount(config.Dataset) + 314
 		testDuration := 20 // 8 sec warmup + 12 sec measurement
-		log.Printf("[TEST %d/%d] Starting: %s - %s (%d objects)", i+1, len(testConfigs), simlib.GetDatasetName(config.Dataset), config.Description, objectCount)
+		log.Printf("[TEST %d/%d] Starting: %s - %s (%d objects)", i+1, len(testConfigs), config.Dataset.Name(), config.Description, objectCount)
 		fmt.Printf("[%d/%d] Testing %s - %s (%d objects, ~%d seconds)...\n",
-			i+1, len(testConfigs), simlib.GetDatasetName(config.Dataset), config.Description, objectCount, testDuration)
+			i+1, len(testConfigs), config.Dataset.Name(), config.Description, objectCount, testDuration)
 
 		logMemoryStats(fmt.Sprintf("Before Test %d", i+1))
 
 		// Reload simulation if dataset changed
 		if config.Dataset != currentDataset {
-			log.Printf("Dataset change requested: %s -> %s", simlib.GetDatasetName(currentDataset), simlib.GetDatasetName(config.Dataset))
-			fmt.Printf("  Loading dataset: %s (%d objects)\n", simlib.GetDatasetName(config.Dataset), sim.GetAsteroidCount(config.Dataset)+314)
+			log.Printf("Dataset change requested: %s -> %s", currentDataset.Name(), config.Dataset.Name())
+			fmt.Printf("  Loading dataset: %s (%d objects)\n", config.Dataset.Name(), sim.GetAsteroidCount(config.Dataset)+314)
 
 			// Switch to the new dataset using lazy allocation
 			sim.SetAsteroidDataset(config.Dataset)
@@ -534,7 +534,7 @@ func printPerformanceResults(sim *simlib.World, results []PerformanceResult) {
 		if result.Config.Dataset != currentDataset {
 			currentDataset = result.Config.Dataset
 			totalObjects := sim.GetAsteroidCount(currentDataset) + 314
-			fmt.Printf("\n--- %s (%d objects) ---\n", simlib.GetDatasetName(currentDataset), totalObjects)
+			fmt.Printf("\n--- %s (%d objects) ---\n", currentDataset.Name(), totalObjects)
 			fmt.Printf("%-20s %10s %12s %12s\n", "Configuration", "FPS", "Draw (ms)", "Cull (ms)")
 			fmt.Println(strings.Repeat("-", 60))
 		}
@@ -573,7 +573,7 @@ func savePerformanceResults(sim *simlib.World, results []PerformanceResult, prof
 		if result.Config.Dataset != currentDataset {
 			currentDataset = result.Config.Dataset
 			totalObjects := sim.GetAsteroidCount(currentDataset) + 314
-			fmt.Fprintf(f, "\n%s (%d objects)\n", simlib.GetDatasetName(currentDataset), totalObjects)
+			fmt.Fprintf(f, "\n%s (%d objects)\n", currentDataset.Name(), totalObjects)
 			fmt.Fprintf(f, "%-20s %10s %12s %12s\n", "Configuration", "FPS", "Draw (ms)", "Cull (ms)")
 			fmt.Fprintln(f, strings.Repeat("-", 60))
 		}

@@ -34,6 +34,22 @@ const (
 	AsteroidDatasetHuge   AsteroidDataset = 3 // 24,000 objects
 )
 
+// Name returns a human-readable label for the dataset tier.
+func (d AsteroidDataset) Name() string {
+	switch d {
+	case AsteroidDatasetSmall:
+		return "Small"
+	case AsteroidDatasetMedium:
+		return "Medium"
+	case AsteroidDatasetLarge:
+		return "Large"
+	case AsteroidDatasetHuge:
+		return "Huge"
+	default:
+		return "Unknown"
+	}
+}
+
 // ObjectMetadata contains immutable physical and rendering properties.
 type ObjectMetadata struct {
 	Name           string         // Display name

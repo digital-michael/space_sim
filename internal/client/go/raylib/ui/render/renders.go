@@ -9,7 +9,6 @@ import (
 	"time"
 
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
-	simlib "github.com/digital-michael/space_sim/internal/sim/world"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -198,8 +197,8 @@ func (r *Renderer) DrawObjectLabels(state *engine.SimulationState, cameraState *
 	drawObjectLabels(state, cameraState, camera, objectsToRender)
 }
 
-func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.World, inViewCount int, eligibleInViewCount int, renderedCount int) {
-	drawHUD(state, cameraState, inputState, asteroidDataset, mouseModeEnabled, sim, inViewCount, eligibleInViewCount, renderedCount)
+func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int) {
+	drawHUD(state, cameraState, inputState, asteroidDataset, mouseModeEnabled, speed, inViewCount, eligibleInViewCount, renderedCount)
 }
 
 func (r *Renderer) DrawZoomIndicator(zoomValue float32) {
@@ -670,7 +669,7 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 }
 
 // drawHUD draws the on-screen display
-func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.World, inViewCount int, eligibleInViewCount int, renderedCount int) {
+func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int) {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	fontMedium := scaledInt32(18)
@@ -694,7 +693,7 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 			visibleObjects++
 		}
 	}
-	datasetName := simlib.GetDatasetName(asteroidDataset)
+	datasetName := asteroidDataset.Name()
 	rl.DrawText(fmt.Sprintf("Objects: %d total / %d visible (Dataset: %s)", totalObjects, visibleObjects, datasetName), leftPad, line2Y, fontLarge, rl.White)
 
 	dateText := formatSimulationDateText(state.Time, state.SecondsPerSecond)
@@ -733,7 +732,7 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	rl.DrawText(timeRateText, leftPad, line4Y, fontMedium, timeRateColor)
 
 	// Anim speed indicator (physics tick rate as % of full 60Hz)
-	animSpeed := sim.GetSpeed()
+	animSpeed := speed
 	var animSpeedText string
 	var animSpeedColor rl.Color
 	if animSpeed == 0.0 {

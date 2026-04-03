@@ -34,10 +34,11 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		a.syncWindowState()
 		a.syncRenderState()
 		dt := rl.GetFrameTime()
-		state := session.sim.GetState().LockFront()
+		snap := session.sim.Snapshot()
+		state := snap.State
 
 		if session.debugTracker != nil {
-			session.debugTracker.CheckVisibility(state.Objects, "after LockFront()")
+			session.debugTracker.CheckVisibility(state.Objects, "after Snapshot()")
 		}
 
 		shouldQuit, a.runtime.GridVisible, a.runtime.AsteroidDataset, a.runtime.HUDVisible, a.runtime.HelpVisible, a.runtime.MouseModeEnabled, a.runtime.LabelsVisible = handleInput(
@@ -151,7 +152,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		rl.SetMatrixModelview(rl.MatrixIdentity())
 
 		if a.runtime.HUDVisible {
-			a.renderer.DrawHUD(state, session.cameraState, session.inputState, a.runtime.AsteroidDataset, a.runtime.MouseModeEnabled, session.sim, inViewCount, eligibleInViewCount, renderedCount)
+			a.renderer.DrawHUD(state, session.cameraState, session.inputState, a.runtime.AsteroidDataset, a.runtime.MouseModeEnabled, snap.Speed, inViewCount, eligibleInViewCount, renderedCount)
 		}
 		if a.runtime.LabelsVisible {
 			a.renderer.DrawObjectLabels(state, session.cameraState, camera, objectsToRender)
@@ -164,7 +165,6 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		}
 
 		a.renderer.EndFrame(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
-		session.sim.GetState().UnlockFront()
 
 		if pendingSystemPath := session.inputState.ConsumePendingSystemPath(); pendingSystemPath != "" {
 			newSession, err := a.newRuntimeSession(pendingSystemPath)
