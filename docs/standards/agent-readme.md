@@ -75,6 +75,12 @@ Default agent assumptions:
 
 - [internal/api/](../../internal/api): transport-agnostic Go interfaces defining the client and server ports. `CameraController` and `PlayerView` are the client-side ports; `SimulationControl` and `AnimationControl` are the server-side ports. gRPC and Raylib adapters will implement these interfaces.
 
+### Wire Protocol
+
+- [api/proto/spacesim/v1/](../../api/proto/spacesim/v1): Protobuf source for `SimulationService` and `WorldService`. Public; importable by third-party clients.
+- [api/gen/spacesim/v1/](../../api/gen/spacesim/v1): Generated Go message types (protobuf) and ConnectRPC handler interfaces + client stubs. Committed, never edited by hand. Regenerate with `make proto`.
+- [internal/transport/grpc/](../../internal/transport/grpc): ConnectRPC HTTP server (`grpcserver` package). Implements `SimulationService` and `WorldService` handlers, `connLimitHandler` middleware, and graceful shutdown. Speaks Connect + gRPC + gRPC-Web on a single port.
+
 ### Server Infrastructure
 
 - [internal/server/pool/](../../internal/server/pool): object pool interface and base pool type.
@@ -119,6 +125,7 @@ Use these package docs as the fastest package-level orientation pass before dril
 - [internal/sim/engine/doc.go](../../internal/sim/engine/doc.go): renderer-agnostic simulation kernel, object model, double buffer, and physics loop.
 - [internal/client/go/raylib/spatial/doc.go](../../internal/client/go/raylib/spatial/doc.go): Raylib-backed frustum culling and spatial partitioning helpers.
 - [internal/client/go/raylib/ui/render/doc.go](../../internal/client/go/raylib/ui/render/doc.go): Raylib rendering implementation for scene and overlay drawing.
+- [internal/transport/grpc/doc.go](../../internal/transport/grpc/doc.go): ConnectRPC server package — handler registration, lifecycle, and middleware.
 
 ## 3. High-Level Component Architecture
 
@@ -130,6 +137,8 @@ Use these package docs as the fastest package-level orientation pass before dril
 	 - `internal/client/go/raylib/app` owns window lifecycle, runtime session creation, input dispatch, interactive loop, and performance mode execution.
 3. API contract layer.
 	 - `internal/api` defines transport-agnostic Go interfaces (`CameraController`, `PlayerView`, `SimulationControl`, `AnimationControl`) that decouple client from server.
+	 - `api/proto/spacesim/v1` is the public wire contract; `api/gen/spacesim/v1` contains generated Go types. Never edited by hand.
+	 - `internal/transport/grpc` implements the ConnectRPC HTTP server, handler wiring, `connLimitHandler` middleware, and graceful shutdown.
 4. Domain/runtime layer (server).
 	 - `internal/sim` loads JSON, translates system definitions into engine objects, and manages SOL-specific asteroid and Kuiper belt dataset behavior.
 5. Engine layer.

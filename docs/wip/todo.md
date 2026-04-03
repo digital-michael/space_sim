@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-03-30
+2026-04-03
 
 ## Table of Contents
 1. How to Use This File
@@ -138,8 +138,8 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 ### 4.5 Phase 6 - gRPC Integration
 
 **Value**: Connects live server components to client-facing transport via ConnectRPC (Apache 2.0, v1.19.1).
-**Status**: 📋 Not started
-**Start Date**: Not started
+**Status**: ✅ Complete — 2026-04-03
+**Start Date**: 2026-04-03
 **Depends on**: Phase 1 through Phase 5
 
 #### Binary Model
@@ -165,15 +165,15 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 
 #### Work Items
 
-- [ ] 6a: Add ConnectRPC + protobuf deps to go.mod
-- [ ] 6a: Write simulation.proto (SimulationService, WorldService); all messages carry version field
-- [ ] 6a: Add buf.yaml + buf.gen.yaml; generate Go stubs
-- [ ] 6b: Create internal/transport/grpc/ scaffold with Start/Stop
-- [ ] 6b: Wire internal/api/ interfaces into Raylib app constructor (direct adapter)
-- [ ] 6c: Implement SimulationService handler (SetSpeed, GetSpeed, SetDataset, GetDataset, GetSimulationTime)
-- [ ] 6c: Implement WorldService handler (StreamSnapshot from protocol.Broadcaster)
-- [ ] 6d: Connection limit + idle timeout interceptors
-- [ ] 6e: bufconn integration tests
+- [x] 6a: Add ConnectRPC + protobuf deps to go.mod
+- [x] 6a: Write simulation.proto (SimulationService, WorldService); all messages carry version field
+- [x] 6a: Add buf.yaml + buf.gen.yaml; generate Go stubs
+- [x] 6b: Create internal/transport/grpc/ scaffold with Start/Stop
+- [x] 6b: Wire internal/api/ interfaces into Raylib app constructor (direct adapter)
+- [x] 6c: Implement SimulationService handler (SetSpeed, GetSpeed, SetDataset, GetDataset, GetSimulationTime)
+- [x] 6c: Implement WorldService handler (StreamSnapshot from protocol.Broadcaster)
+- [x] 6d: Connection limit + idle timeout interceptors
+- [x] 6e: Integration tests (transport routing, connection limit, WorldHandler fan-out)
 
 #### Acceptance Criteria
 
