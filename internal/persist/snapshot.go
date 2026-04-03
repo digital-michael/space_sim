@@ -12,17 +12,17 @@ import (
 
 // snapshotFile is the on-disk JSON representation of a WorldSnapshot.
 type snapshotFile struct {
-	Speed              float64                `json:"speed"`
-	SimTime            float64                `json:"sim_time"`
-	DeltaTime          float64                `json:"delta_time"`
-	SecondsPerSecond   float32                `json:"seconds_per_second"`
-	NumWorkers         int                    `json:"num_workers"`
-	CurrentDataset     engine.AsteroidDataset `json:"current_dataset"`
-	AllocatedDatasets  map[string]bool        `json:"allocated_datasets"`
-	AsteroidBeltConfig *engine.FeatureConfig  `json:"asteroid_belt_config,omitempty"`
-	KuiperBeltConfig   *engine.FeatureConfig  `json:"kuiper_belt_config,omitempty"`
+	Speed              float64                 `json:"speed"`
+	SimTime            float64                 `json:"sim_time"`
+	DeltaTime          float64                 `json:"delta_time"`
+	SecondsPerSecond   float32                 `json:"seconds_per_second"`
+	NumWorkers         int                     `json:"num_workers"`
+	CurrentDataset     engine.AsteroidDataset  `json:"current_dataset"`
+	AllocatedDatasets  map[string]bool         `json:"allocated_datasets"`
+	AsteroidBeltConfig *engine.FeatureConfig   `json:"asteroid_belt_config,omitempty"`
+	KuiperBeltConfig   *engine.FeatureConfig   `json:"kuiper_belt_config,omitempty"`
 	NavigationOrder    []engine.ObjectCategory `json:"navigation_order"`
-	Objects            []snapshotObject       `json:"objects"`
+	Objects            []snapshotObject        `json:"objects"`
 }
 
 type snapshotObject struct {
