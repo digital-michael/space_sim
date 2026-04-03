@@ -8,9 +8,9 @@ import (
 	"strings"
 	"time"
 
-	engine "github.com/digital-michael/space_sim/internal/space/engine"
-	simlib "github.com/digital-michael/space_sim/internal/space/sim"
-	"github.com/digital-michael/space_sim/internal/space/ui"
+	engine "github.com/digital-michael/space_sim/internal/sim/engine"
+	simlib "github.com/digital-michael/space_sim/internal/sim/world"
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -198,7 +198,7 @@ func (r *Renderer) DrawObjectLabels(state *engine.SimulationState, cameraState *
 	drawObjectLabels(state, cameraState, camera, objectsToRender)
 }
 
-func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.Simulation, inViewCount int, eligibleInViewCount int, renderedCount int) {
+func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.World, inViewCount int, eligibleInViewCount int, renderedCount int) {
 	drawHUD(state, cameraState, inputState, asteroidDataset, mouseModeEnabled, sim, inViewCount, eligibleInViewCount, renderedCount)
 }
 
@@ -670,7 +670,7 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 }
 
 // drawHUD draws the on-screen display
-func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.Simulation, inViewCount int, eligibleInViewCount int, renderedCount int) {
+func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.World, inViewCount int, eligibleInViewCount int, renderedCount int) {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	fontMedium := scaledInt32(18)

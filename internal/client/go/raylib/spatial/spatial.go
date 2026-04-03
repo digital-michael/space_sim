@@ -3,8 +3,8 @@ package spatial
 import (
 	"math"
 
-	engine "github.com/digital-michael/space_sim/internal/space/engine"
-	"github.com/digital-michael/space_sim/internal/space/ui"
+	engine "github.com/digital-michael/space_sim/internal/sim/engine"
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
