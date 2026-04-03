@@ -53,7 +53,10 @@ func main() {
 	worldHandler := grpcserver.NewWorldHandler()
 	application.RegisterSubscriber(worldHandler)
 
-	simHandler := grpcserver.NewSimulationHandler(nil)
+	// application.World is called on every RPC — it resolves to nil until
+	// Run() has loaded a session, at which point all SimulationService RPCs
+	// become fully functional.
+	simHandler := grpcserver.NewSimulationHandler(application.World)
 	srv := grpcserver.New(grpcserver.DefaultServerConfig(), simHandler, worldHandler)
 
 	srvDone := make(chan error, 1)

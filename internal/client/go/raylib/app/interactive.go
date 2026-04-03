@@ -180,6 +180,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 
 			a.cfg.SystemConfig = pendingSystemPath
 			session = newSession
+			a.worldPtr.Store(newSession.sim)
 			a.runtime.HelpVisible = false
 			sessionCancel = startSession(session)
 			log.Printf("Reloaded runtime session using %s", pendingSystemPath)

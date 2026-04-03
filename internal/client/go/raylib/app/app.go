@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"sync/atomic"
 
 	render "github.com/digital-michael/space_sim/internal/client/go/raylib/ui/render"
 	"github.com/digital-michael/space_sim/internal/protocol"
+	worldpkg "github.com/digital-michael/space_sim/internal/sim/world"
 )
 
 // App owns the Space Sim application's runtime orchestration.
@@ -16,6 +18,7 @@ type App struct {
 	runtime     *RuntimeContext
 	renderer    *render.Renderer
 	broadcaster *protocol.Broadcaster
+	worldPtr    atomic.Pointer[worldpkg.World]
 }
 
 // New constructs the application from validated configuration.
@@ -37,6 +40,13 @@ func New(cfg Config) (*App, error) {
 // produced by the interactive loop will be delivered to s.Receive.
 func (a *App) RegisterSubscriber(s protocol.Subscriber) {
 	a.broadcaster.Register(s)
+}
+
+// World returns the active simulation world, or nil if the session has not
+// yet been initialised (i.e. Run has not yet loaded a system). Safe to call
+// from any goroutine; backed by an atomic pointer so no lock is needed.
+func (a *App) World() *worldpkg.World {
+	return a.worldPtr.Load()
 }
 
 // Run executes the application on the current thread.
@@ -62,6 +72,7 @@ func (a *App) Run(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	a.worldPtr.Store(session.sim)
 
 	if a.cfg.PerformanceMode {
 		simCtx, cancel := context.WithCancel(ctx)

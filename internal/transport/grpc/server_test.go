@@ -14,10 +14,12 @@ import (
 	"github.com/digital-michael/space_sim/api/gen/spacesim/v1/spacesimv1connect"
 	"github.com/digital-michael/space_sim/internal/protocol"
 	"github.com/digital-michael/space_sim/internal/sim/engine"
+	"github.com/digital-michael/space_sim/internal/sim/world"
 )
 
-// newTestMux registers sim and world on a fresh mux and returns it.
-// Mirrors the registration logic in New() so transport tests exercise the
+// nilWorld is a worldFn that always returns nil, used to test the
+// CodeUnimplemented guard path without a real simulation session.
+func nilWorld() *world.World { return nil }
 // real routing path without starting a net.Listener.
 func newTestMux(sim spacesimv1connect.SimulationServiceHandler, world spacesimv1connect.WorldServiceHandler) http.Handler {
 	mux := http.NewServeMux()
@@ -34,7 +36,7 @@ func newTestMux(sim spacesimv1connect.SimulationServiceHandler, world spacesimv1
 // round-trip works: request serialised, routed to SimulationHandler, nil-world
 // guard fires, error deserialised back to CodeUnimplemented.
 func TestSetSpeed_NilWorld_Unimplemented(t *testing.T) {
-	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nil), NewWorldHandler()))
+	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nilWorld), NewWorldHandler()))
 	t.Cleanup(srv.Close)
 
 	client := spacesimv1connect.NewSimulationServiceClient(srv.Client(), srv.URL)
@@ -56,7 +58,7 @@ func TestSetSpeed_NilWorld_Unimplemented(t *testing.T) {
 // TestGetSpeed_NilWorld_Unimplemented exercises a different RPC path to confirm
 // all handler methods correctly guard against a nil world.
 func TestGetSpeed_NilWorld_Unimplemented(t *testing.T) {
-	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nil), NewWorldHandler()))
+	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nilWorld), NewWorldHandler()))
 	t.Cleanup(srv.Close)
 
 	client := spacesimv1connect.NewSimulationServiceClient(srv.Client(), srv.URL)
