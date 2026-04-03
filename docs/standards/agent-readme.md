@@ -64,7 +64,8 @@ Default agent assumptions:
 
 ### Runtime and Application
 
-- [cmd/space-sim/](../../cmd/space-sim): app entrypoint and CLI flag parsing.
+- [cmd/space-sim-direct/](../../cmd/space-sim-direct): direct (in-process) entrypoint — CLI flag parsing, no network transport.
+- [cmd/space-sim-grpc/](../../cmd/space-sim-grpc): gRPC-coupled entrypoint — Raylib client + embedded ConnectRPC server. Option B target: split into separate server and client binaries.
 - [internal/client/go/raylib/app/](../../internal/client/go/raylib/app): runtime orchestration, windowing, session setup, input handling, performance mode, fullscreen, debug support.
 - [internal/client/go/raylib/ui/render/](../../internal/client/go/raylib/ui/render): Raylib-backed rendering and help screen drawing.
 - [internal/client/go/raylib/ui/](../../internal/client/go/raylib/ui): generic camera and selection state (Raylib client layer).
@@ -111,7 +112,8 @@ Default agent assumptions:
 
 Use these package docs as the fastest package-level orientation pass before drilling into source files.
 
-- [cmd/space-sim/doc.go](../../cmd/space-sim/doc.go): interactive application entrypoint and CLI bootstrap.
+- [cmd/space-sim-direct/doc.go](../../cmd/space-sim-direct/doc.go): direct (in-process) entrypoint and CLI bootstrap.
+- [cmd/space-sim-grpc/main.go](../../cmd/space-sim-grpc/main.go): gRPC-coupled entrypoint stub (Phase 6b).
 - [internal/sim/doc.go](../../internal/sim/doc.go): server-side JSON loading, object construction, belt generation, and simulation wrapper.
 - [internal/client/go/raylib/app/doc.go](../../internal/client/go/raylib/app/doc.go): Raylib app runtime orchestration, window/session lifecycle, and execution modes.
 - [internal/sim/engine/doc.go](../../internal/sim/engine/doc.go): renderer-agnostic simulation kernel, object model, double buffer, and physics loop.
@@ -123,7 +125,7 @@ Use these package docs as the fastest package-level orientation pass before dril
 ### Layered View
 
 1. CLI/bootstrap layer.
-	 - [cmd/space-sim/main.go](../../cmd/space-sim/main.go) parses flags, loads app config, builds `app.Config`, and starts the application with signal-aware shutdown.
+	 - [cmd/space-sim-direct/main.go](../../cmd/space-sim-direct/main.go) parses flags, loads app config, builds `app.Config`, and starts the application with signal-aware shutdown. [cmd/space-sim-grpc/main.go](../../cmd/space-sim-grpc/main.go) will do the same but wire the ConnectRPC server and client adapters.
 2. Application orchestration layer (client).
 	 - `internal/client/go/raylib/app` owns window lifecycle, runtime session creation, input dispatch, interactive loop, and performance mode execution.
 3. API contract layer.
@@ -150,7 +152,7 @@ Use these package docs as the fastest package-level orientation pass before dril
 
 The current layout preserves the useful intent of the completed `main.go` refactor work without treating the old plan as an active source of truth:
 
-- Keep [cmd/space-sim/main.go](../../cmd/space-sim/main.go) as a thin bootstrap that parses flags, loads config, constructs the app, and runs it.
+- Keep [cmd/space-sim-direct/main.go](../../cmd/space-sim-direct/main.go) as a thin bootstrap that parses flags, loads config, constructs the app, and runs it. [cmd/space-sim-grpc/main.go](../../cmd/space-sim-grpc/main.go) follows the same pattern with transport wiring added.
 - Keep application orchestration and application modes in [internal/client/go/raylib/app/](../../internal/client/go/raylib/app), including interactive and performance flows.
 - Keep mutable runtime and window/UI state centralized in [internal/client/go/raylib/app/runtime_context.go](../../internal/client/go/raylib/app/runtime_context.go) rather than spreading pass-through state across long parameter lists.
 - Keep Raylib-specific drawing isolated under [internal/client/go/raylib/ui/render/](../../internal/client/go/raylib/ui/render) so rendering concerns stay separate from bootstrap and engine logic.
