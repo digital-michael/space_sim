@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	render "github.com/digital-michael/space_sim/internal/space/raylib/ui/render"
+	render "github.com/digital-michael/space_sim/internal/client/go/raylib/ui/render"
 )
 
 // App owns the Space Sim application's runtime orchestration.

@@ -4,19 +4,19 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-03-28
+2026-03-30
 
 ## Table of Contents
 1. How to Use This File
 2. Status Key
 3. Active Work
-	3.1 Runtime System Selector
 4. Planned Phases
 	4.1 Phase 3 - Event Queue System
 	4.2 Phase 4 - Event Loop and Worker Pool
 	4.3 Phase 5 - Persistence
-	4.4 Phase 6 - gRPC Integration
-	4.5 Phase 7 - Additional Pool Types
+	4.4 Pre-Phase-6 Gate - Client/App Package Split
+	4.5 Phase 6 - gRPC Integration
+	4.6 Phase 7 - Additional Pool Types
 5. Related Docs
 
 ## 1. How to Use This File
@@ -38,30 +38,7 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 
 ## 3. Active Work
 
-### 3.1 Runtime System Selector
-
-**Value**: Enable fast manual testing by allowing the running app to switch between JSON systems from `data/systems/` without a restart.
-**Status**: 🔄 In progress
-**Start Date**: 2026-03-28
-**Ref**: [data/systems/](../../data/systems)
-**Plan**: [docs/wip/runtime-system-selector-plan.md](runtime-system-selector-plan.md)
-
-**Current State**: Implementation and focused regression coverage are in place. Work remains active pending manual runtime verification and final documentation closure.
-
-#### Work Items
-
-- [x] Add a fixed modal selector listing JSON files from `data/systems/`
-- [x] Bind the selector to `Cmd+S`
-- [x] Close the selector without action when the selected system is already loaded
-- [x] Reload the session cleanly when a different system is selected
-- [x] Add focused tests for selector behavior where practical and stop for manual runtime testing
-
-#### Acceptance Criteria
-
-- `Cmd+S` opens a system selector from the running app
-- Selecting the already-loaded system behaves like cancel and closes the selector
-- Selecting a different system reloads the active session cleanly
-- Work stops after implementation for manual runtime verification
+No active work items at this time.
 
 ## 4. Planned Phases
 
@@ -137,7 +114,37 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 - Auto-save does not stall the event loop
 - Corrupt files fail with errors, not panics
 
-### 4.4 Phase 6 - gRPC Integration
+### 4.4 Pre-Phase-6 Gate - Client/App Package Split
+
+**Value**: Establishes a clean `internal/client/` vs `internal/server/` import graph before gRPC handlers are wired, avoiding a forced mid-Phase-6 restructure.
+**Status**: 📋 Not started
+**Start Date**: Not started
+**Depends on**: Phase 5 complete or in final stabilization
+
+#### Context
+
+The Raylib rendering packages have already moved to `internal/client/go/raylib/` (done 2026-03-30). The remaining work is moving the application orchestration layer. See [docs/technical.md](../technical.md) section 2.6 for the full rationale.
+
+Two open design questions to evaluate before starting:
+- Whether `internal/space/` stays as shared domain logic or splits into server-domain and client-domain sub-packages.
+- Whether `internal/space/app/` moves wholesale to `internal/client/` or refactors into a thinner client-side adapter over a shared domain layer.
+
+#### Work Items
+
+- [ ] Evaluate `internal/space/` split vs. keeping as shared domain (based on Phase 6 gRPC ownership needs)
+- [ ] Move `internal/space/app/` to `internal/client/` and update all import sites
+- [ ] Update `cmd/space-sim/main.go` imports accordingly
+- [ ] Verify build, all tests, and runtime smoke test
+- [ ] Update agent-readme.md package map and doc.go files
+
+#### Acceptance Criteria
+
+- `internal/client/` imports from `internal/space/` or shared domain only — never from `internal/server/`
+- `internal/server/` has no imports from `internal/client/`
+- All tests pass with race detector enabled
+- `cmd/space-sim` builds and runs the interactive session correctly
+
+### 4.5 Phase 6 - gRPC Integration
 
 **Value**: Connects live server components to client-facing transport.
 **Status**: 📋 Not started
@@ -163,7 +170,7 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 - Idle clients are disconnected as configured
 - Query RPCs return current runtime state directly
 
-### 4.5 Phase 7 - Additional Pool Types
+### 4.6 Phase 7 - Additional Pool Types
 
 **Value**: Adds specialized pool strategies after the main server path is stable.
 **Status**: ⏸ Deferred until Phase 6 is stable

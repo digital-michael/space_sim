@@ -6,8 +6,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/digital-michael/space_sim/internal/space"
 	engine "github.com/digital-michael/space_sim/internal/space/engine"
+	sim "github.com/digital-michael/space_sim/internal/space/sim"
 	"github.com/digital-michael/space_sim/internal/space/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -474,7 +474,7 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 }
 
 // drawHUD draws the on-screen display
-func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *space.Simulation) {
+func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, s *sim.Simulation) {
 	fps := rl.GetFPS()
 	rl.DrawText(fmt.Sprintf("FPS: %3d / %d threads", fps, state.NumWorkers), 10, 10, 20, rl.Green)
 
@@ -486,7 +486,7 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 			visibleObjects++
 		}
 	}
-	datasetName := space.GetDatasetName(asteroidDataset)
+	datasetName := sim.GetDatasetName(asteroidDataset)
 	rl.DrawText(fmt.Sprintf("Objects: %d total / %d visible (Dataset: %s)", totalObjects, visibleObjects, datasetName), 10, 35, 20, rl.White)
 
 	// Simulation time display - show date since J2000.0 epoch (Jan 1, 2000, 12:00 TT)
@@ -548,7 +548,7 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	rl.DrawText(timeRateText, 10, 85, 18, timeRateColor)
 
 	// Anim speed indicator (physics tick rate as % of full 60Hz)
-	animSpeed := sim.GetSpeed()
+	animSpeed := s.GetSpeed()
 	var animSpeedText string
 	var animSpeedColor rl.Color
 	if animSpeed == 0.0 {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
+	spatial "github.com/digital-michael/space_sim/internal/client/go/raylib/spatial"
 	engine "github.com/digital-michael/space_sim/internal/space/engine"
-	spatial "github.com/digital-michael/space_sim/internal/space/raylib/spatial"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 

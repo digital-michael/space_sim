@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/digital-michael/space_sim/internal/space"
 	engine "github.com/digital-michael/space_sim/internal/space/engine"
+	simlib "github.com/digital-michael/space_sim/internal/space/sim"
 	"github.com/digital-michael/space_sim/internal/space/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -198,7 +198,7 @@ func (r *Renderer) DrawObjectLabels(state *engine.SimulationState, cameraState *
 	drawObjectLabels(state, cameraState, camera, objectsToRender)
 }
 
-func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *space.Simulation, inViewCount int, eligibleInViewCount int, renderedCount int) {
+func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.Simulation, inViewCount int, eligibleInViewCount int, renderedCount int) {
 	drawHUD(state, cameraState, inputState, asteroidDataset, mouseModeEnabled, sim, inViewCount, eligibleInViewCount, renderedCount)
 }
 
@@ -670,7 +670,7 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 }
 
 // drawHUD draws the on-screen display
-func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *space.Simulation, inViewCount int, eligibleInViewCount int, renderedCount int) {
+func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, sim *simlib.Simulation, inViewCount int, eligibleInViewCount int, renderedCount int) {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	fontMedium := scaledInt32(18)
@@ -694,7 +694,7 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 			visibleObjects++
 		}
 	}
-	datasetName := space.GetDatasetName(asteroidDataset)
+	datasetName := simlib.GetDatasetName(asteroidDataset)
 	rl.DrawText(fmt.Sprintf("Objects: %d total / %d visible (Dataset: %s)", totalObjects, visibleObjects, datasetName), leftPad, line2Y, fontLarge, rl.White)
 
 	dateText := formatSimulationDateText(state.Time, state.SecondsPerSecond)

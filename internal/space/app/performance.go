@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/digital-michael/space_sim/internal/space"
+	spatial "github.com/digital-michael/space_sim/internal/client/go/raylib/spatial"
 	engine "github.com/digital-michael/space_sim/internal/space/engine"
-	spatial "github.com/digital-michael/space_sim/internal/space/raylib/spatial"
+	simlib "github.com/digital-michael/space_sim/internal/space/sim"
 	"github.com/digital-michael/space_sim/internal/space/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -65,7 +65,7 @@ func logMemoryStats(label string) {
 }
 
 // runPerformanceTest executes automated performance testing
-func (a *App) runPerformanceTest(sim *space.Simulation, cameraState *ui.CameraState, inputState *ui.InputState, profile string, threads int, noLocking bool) {
+func (a *App) runPerformanceTest(sim *simlib.Simulation, cameraState *ui.CameraState, inputState *ui.InputState, profile string, threads int, noLocking bool) {
 	log.Printf("=== Starting Performance Test (profile=%s, threads=%d) ===", profile, threads)
 	fmt.Printf("\n=== AUTOMATED PERFORMANCE TESTING MODE ===\n")
 	fmt.Printf("Profile: %s\n", profile)
@@ -276,18 +276,18 @@ func (a *App) runPerformanceTest(sim *space.Simulation, cameraState *ui.CameraSt
 
 	// Run each test
 	for i, config := range testConfigs {
-		objectCount := space.GetAsteroidCount(config.Dataset) + 314
+		objectCount := sim.GetAsteroidCount(config.Dataset) + 314
 		testDuration := 20 // 8 sec warmup + 12 sec measurement
-		log.Printf("[TEST %d/%d] Starting: %s - %s (%d objects)", i+1, len(testConfigs), space.GetDatasetName(config.Dataset), config.Description, objectCount)
+		log.Printf("[TEST %d/%d] Starting: %s - %s (%d objects)", i+1, len(testConfigs), simlib.GetDatasetName(config.Dataset), config.Description, objectCount)
 		fmt.Printf("[%d/%d] Testing %s - %s (%d objects, ~%d seconds)...\n",
-			i+1, len(testConfigs), space.GetDatasetName(config.Dataset), config.Description, objectCount, testDuration)
+			i+1, len(testConfigs), simlib.GetDatasetName(config.Dataset), config.Description, objectCount, testDuration)
 
 		logMemoryStats(fmt.Sprintf("Before Test %d", i+1))
 
 		// Reload simulation if dataset changed
 		if config.Dataset != currentDataset {
-			log.Printf("Dataset change requested: %s -> %s", space.GetDatasetName(currentDataset), space.GetDatasetName(config.Dataset))
-			fmt.Printf("  Loading dataset: %s (%d objects)\n", space.GetDatasetName(config.Dataset), space.GetAsteroidCount(config.Dataset)+314)
+			log.Printf("Dataset change requested: %s -> %s", simlib.GetDatasetName(currentDataset), simlib.GetDatasetName(config.Dataset))
+			fmt.Printf("  Loading dataset: %s (%d objects)\n", simlib.GetDatasetName(config.Dataset), sim.GetAsteroidCount(config.Dataset)+314)
 
 			// Switch to the new dataset using lazy allocation
 			sim.SetAsteroidDataset(config.Dataset)
@@ -313,8 +313,8 @@ func (a *App) runPerformanceTest(sim *space.Simulation, cameraState *ui.CameraSt
 
 	// Output results
 	log.Printf("All %d tests completed successfully", len(results))
-	printPerformanceResults(results)
-	savePerformanceResults(results, profile, threads, noLocking)
+	printPerformanceResults(sim, results)
+	savePerformanceResults(sim, results, profile, threads, noLocking)
 
 	fmt.Println("\n=== PERFORMANCE TESTING COMPLETE ===")
 	fmt.Println("Results saved to performance_results.txt")
@@ -323,7 +323,7 @@ func (a *App) runPerformanceTest(sim *space.Simulation, cameraState *ui.CameraSt
 }
 
 // runSingleTest executes a single performance test configuration
-func (a *App) runSingleTest(sim *space.Simulation, cameraState *ui.CameraState, inputState *ui.InputState, config PerformanceTestConfig) PerformanceResult {
+func (a *App) runSingleTest(sim *simlib.Simulation, cameraState *ui.CameraState, inputState *ui.InputState, config PerformanceTestConfig) PerformanceResult {
 	log.Printf("runSingleTest started for: %s", config.Description)
 
 	// Set performance options according to config
@@ -523,7 +523,7 @@ func (a *App) performanceRenderSize() (int32, int32) {
 }
 
 // printPerformanceResults displays results in console
-func printPerformanceResults(results []PerformanceResult) {
+func printPerformanceResults(sim *simlib.Simulation, results []PerformanceResult) {
 	fmt.Println("\n" + strings.Repeat("=", 100))
 	fmt.Println("PERFORMANCE TEST RESULTS")
 	fmt.Println(strings.Repeat("=", 100) + "\n")
@@ -533,8 +533,8 @@ func printPerformanceResults(results []PerformanceResult) {
 	for _, result := range results {
 		if result.Config.Dataset != currentDataset {
 			currentDataset = result.Config.Dataset
-			totalObjects := space.GetAsteroidCount(currentDataset) + 314
-			fmt.Printf("\n--- %s (%d objects) ---\n", space.GetDatasetName(currentDataset), totalObjects)
+			totalObjects := sim.GetAsteroidCount(currentDataset) + 314
+			fmt.Printf("\n--- %s (%d objects) ---\n", simlib.GetDatasetName(currentDataset), totalObjects)
 			fmt.Printf("%-20s %10s %12s %12s\n", "Configuration", "FPS", "Draw (ms)", "Cull (ms)")
 			fmt.Println(strings.Repeat("-", 60))
 		}
@@ -550,7 +550,7 @@ func printPerformanceResults(results []PerformanceResult) {
 }
 
 // savePerformanceResults saves results to a file
-func savePerformanceResults(results []PerformanceResult, profile string, threads int, noLocking bool) {
+func savePerformanceResults(sim *simlib.Simulation, results []PerformanceResult, profile string, threads int, noLocking bool) {
 	f, err := os.Create("performance_results.txt")
 	if err != nil {
 		fmt.Printf("Error creating results file: %v\n", err)
@@ -572,8 +572,8 @@ func savePerformanceResults(results []PerformanceResult, profile string, threads
 	for _, result := range results {
 		if result.Config.Dataset != currentDataset {
 			currentDataset = result.Config.Dataset
-			totalObjects := space.GetAsteroidCount(currentDataset) + 314
-			fmt.Fprintf(f, "\n%s (%d objects)\n", space.GetDatasetName(currentDataset), totalObjects)
+			totalObjects := sim.GetAsteroidCount(currentDataset) + 314
+			fmt.Fprintf(f, "\n%s (%d objects)\n", simlib.GetDatasetName(currentDataset), totalObjects)
 			fmt.Fprintf(f, "%-20s %10s %12s %12s\n", "Configuration", "FPS", "Draw (ms)", "Cull (ms)")
 			fmt.Fprintln(f, strings.Repeat("-", 60))
 		}

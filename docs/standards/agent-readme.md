@@ -4,7 +4,7 @@
 Provide a high-signal, agent-oriented map of this repository so an LLM Agent can understand the architecture, runtime behavior, data model, validation surface, and operational constraints before making changes.
 
 ## Last Updated
-2026-03-28
+2026-03-30
 
 ## Table of Contents
 1. Mission and Defaults
@@ -66,7 +66,22 @@ Default agent assumptions:
 
 - [cmd/space-sim/](../../cmd/space-sim): app entrypoint and CLI flag parsing.
 - [internal/space/app/](../../internal/space/app): runtime orchestration, windowing, session setup, input handling, performance mode, fullscreen, debug support.
-- [internal/space/raylib/ui/render/](../../internal/space/raylib/ui/render): Raylib-backed rendering and help screen drawing.
+- [internal/client/go/raylib/ui/render/](../../internal/client/go/raylib/ui/render): Raylib-backed rendering and help screen drawing.
+- [internal/client/go/raylib/spatial/](../../internal/client/go/raylib/spatial): Raylib-backed frustum culling and spatial partitioning helpers.
+
+### Server Infrastructure
+
+- [internal/server/pool/](../../internal/server/pool): object pool interface and base pool type.
+- [internal/server/pool/group/](../../internal/server/pool/group): group pool with DAG validation, locking, and membership lookup.
+- [internal/server/runtime/](../../internal/server/runtime): runtime environment, object and group state, position strategies, and query APIs.
+- [internal/server/routines/](../../internal/server/routines): routine registration and lifecycle.
+- [internal/server/eventqueue/](../../internal/server/eventqueue): per-GUID FIFO event queues, queue manager, and transaction modes.
+- [internal/server/eventloop/](../../internal/server/eventloop): multi-threaded worker pool, event-driven frame loop, FPS control, and frame metrics.
+
+### Client Stubs (Phase 6)
+
+- [internal/client/commands/](../../internal/client/commands): reserved for REPL command types (empty).
+- [internal/client/repl/](../../internal/client/repl): reserved for REPL implementation (empty).
 
 ### Core Domain and Simulation
 
@@ -96,8 +111,8 @@ Use these package docs as the fastest package-level orientation pass before dril
 - [internal/space/app/doc.go](../../internal/space/app/doc.go): app runtime orchestration, window/session lifecycle, and execution modes.
 - [internal/space/engine/doc.go](../../internal/space/engine/doc.go): renderer-agnostic simulation kernel, object model, double buffer, and physics loop.
 - [internal/space/ui/doc.go](../../internal/space/ui/doc.go): generic camera, selection, and performance option state.
-- [internal/space/raylib/spatial/doc.go](../../internal/space/raylib/spatial/doc.go): Raylib-backed frustum culling and spatial partitioning helpers.
-- [internal/space/raylib/ui/render/doc.go](../../internal/space/raylib/ui/render/doc.go): Raylib rendering implementation for scene and overlay drawing.
+- [internal/client/go/raylib/spatial/doc.go](../../internal/client/go/raylib/spatial/doc.go): Raylib-backed frustum culling and spatial partitioning helpers.
+- [internal/client/go/raylib/ui/render/doc.go](../../internal/client/go/raylib/ui/render/doc.go): Raylib rendering implementation for scene and overlay drawing.
 
 ## 3. High-Level Component Architecture
 
@@ -130,7 +145,7 @@ The current layout preserves the useful intent of the completed `main.go` refact
 - Keep [cmd/space-sim/main.go](../../cmd/space-sim/main.go) as a thin bootstrap that parses flags, loads config, constructs the app, and runs it.
 - Keep application orchestration and application modes in [internal/space/app/](../../internal/space/app), including interactive and performance flows.
 - Keep mutable runtime and window/UI state centralized in [internal/space/app/runtime_context.go](../../internal/space/app/runtime_context.go) rather than spreading pass-through state across long parameter lists.
-- Keep Raylib-specific drawing isolated under [internal/space/raylib/ui/render/](../../internal/space/raylib/ui/render) so rendering concerns stay separate from bootstrap and engine logic.
+- Keep Raylib-specific drawing isolated under [internal/client/go/raylib/ui/render/](../../internal/client/go/raylib/ui/render) so rendering concerns stay separate from bootstrap and engine logic.
 - Preserve the responsibility split as historical rationale for the current architecture, not as a requirement to recreate every file named in the original refactor plan.
 
 ## 4. Core Process Flows
@@ -324,7 +339,6 @@ Documentation convention already established in this repo:
 
 ## 9. Current Gaps and Cautions
 
-- The runtime system selector is implemented behind `Cmd+S` for interactive mode, but manual runtime verification is still required before it should be treated as complete work.
 - `ring_system` features are now part of the supported loader path; keep rings defined through the feature pipeline rather than reintroducing duplicate body-based ring data.
 - Clone-mode swapping now uses the engine object pool when in-place swap is disabled; preserve the double-buffer ownership rules documented in the lessons-learned docs when extending this path.
 - Legacy scripts have been isolated under [scripts/legacy/](../../scripts/legacy) and should be treated as historical reference only.

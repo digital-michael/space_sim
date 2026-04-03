@@ -4,16 +4,18 @@
 Capture completed work after it leaves the active backlog. This is a concise delivery history, not a full commit log.
 
 ## Last Updated
-2026-03-28
+2026-03-30
 
 ## Table of Contents
 1. How to Use This File
 2. 2026-03 Delivered Work
 	2.1 Quick Wins
 	2.2 Runtime Loader and Engine Cleanup
-	2.3 Phase 0 - Data-Driven Sol Outer Belt
-	2.4 Phase 1 - Core GroupPool
-	2.5 Phase 2 - Runtime Environment
+	2.3 Runtime System Selector
+	2.4 Phase 0 - Data-Driven Sol Outer Belt
+	2.5 Phase 1 - Core GroupPool
+	2.6 Phase 2 - Runtime Environment
+	2.7 Phase 1+2 Integration into space_sim
 
 ## 1. How to Use This File
 
@@ -58,7 +60,24 @@ Validation snapshot:
 - Targeted and broader package tests passed for ring loading, object-pool clone mode, loader behavior, and existing UI/engine invariants
 - The runtime queue no longer needs open backlog items for ring-system support or object-pool disposition
 
-### 2.3 Phase 0 - Data-Driven Sol Outer Belt
+### 2.3 Runtime System Selector
+
+**End Date**: 2026-03-29
+
+Delivered outcomes:
+
+- Added a modal runtime system selector that lists JSON system files from [data/systems/](../../data/systems)
+- Bound the selector to `Cmd+S` in interactive mode without conflicting with the existing `Ctrl+...` system controls
+- Implemented no-op close behavior when the currently loaded system is selected
+- Added interactive-session replacement so a different selected system reloads cleanly without restarting the app window
+- Added focused UI and app tests for selector state behavior, system discovery ordering/filtering, and safe session-creation failure handling
+
+Validation snapshot:
+
+- Manual runtime verification completed for open, cancel, no-op current-system confirmation, and switching between Solar and Alpha Centauri
+- `go test ./internal/space/app ./internal/space/ui` passed after implementation
+
+### 2.4 Phase 0 - Data-Driven Sol Outer Belt
 
 **Status**: Complete
 **End Date**: 2026-03-26
@@ -76,7 +95,7 @@ Validation snapshot:
 - Kuiper belt object counts and orbital parameters are now JSON-driven
 - Dataset switching affects both asteroid and Kuiper belt objects through the shared path
 
-### 2.4 Phase 1 - Core GroupPool
+### 2.5 Phase 1 - Core GroupPool
 
 **Status**: Complete
 **End Date**: 2026-03-26
@@ -95,7 +114,7 @@ Validation snapshot:
 - Reverse membership lookup is O(1) through `GroupsForMember`
 - Group depth limit settled at 20
 
-### 2.5 Phase 2 - Runtime Environment
+### 2.6 Phase 2 - Runtime Environment
 
 **Status**: Complete
 **End Date**: 2026-03-26
@@ -114,3 +133,35 @@ Validation snapshot:
 - Cache miss measured at 2.57 us
 - Cache invalidation measured at 620 ns for a 5-level hierarchy
 - Reported test coverage was 87.2%
+
+### 2.8 Raylib Package Relocation
+
+**End Date**: 2026-03-30
+
+Delivered outcomes:
+
+- Moved `internal/space/raylib/spatial/` → `internal/client/go/raylib/spatial/`
+- Moved `internal/space/raylib/ui/render/` → `internal/client/go/raylib/ui/render/`
+- Updated the 3 import sites in `internal/space/app/` (app.go, interactive.go, performance.go)
+- Deleted the now-empty `internal/space/raylib/` tree
+- Established `internal/client/go/raylib/` as the canonical path for Raylib-specific rendering and spatial packages; future graphics backends can sit alongside it under `internal/client/go/`
+
+Validation snapshot:
+
+- `go build ./...` clean
+- `go test ./internal/...` — all packages passed, including the relocated `client/go/raylib/ui/render` test
+
+**End Date**: 2026-03-30
+
+Delivered outcomes:
+
+- Copied `internal/server/` (pool, pool/group, runtime, eventqueue, eventloop, routines) from the `raylibsim` workspace into this repository
+- Copied `internal/client/` stub directories (commands, repl) — empty, reserved for Phase 6
+- Rewrote all import paths from `github.com/digital-michael/raylibsim` to `github.com/digital-michael/space_sim`
+- Added `github.com/google/uuid v1.6.0` to `go.mod` and `go.sum`
+
+Validation snapshot:
+
+- `go build ./internal/server/...` clean
+- `go test -race ./internal/server/...` — all 6 packages passed: eventloop, eventqueue, pool, pool/group, routines, runtime
+- `go test ./internal/space/...` — all existing space packages unaffected

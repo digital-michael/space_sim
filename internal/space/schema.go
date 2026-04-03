@@ -101,3 +101,33 @@ type TemplateLibrary struct {
 	Asteroids    map[string]BodyConfig           `json:"asteroids,omitempty"`
 	Features     map[string]engine.FeatureConfig `json:"features,omitempty"`
 }
+
+// BeltConfig encapsulates all parameters for belt generation.
+type BeltConfig struct {
+	Name                     string
+	NamePrefix               string
+	InnerRadius              float32
+	OuterRadius              float32
+	Thickness                float32
+	ClassicalBeltMin         float32
+	ClassicalBeltMax         float32
+	ClassicalBeltProbability float32
+	DistanceToAURatio        float32
+	UseKeplerLaw             bool
+	EccentricityMin          float32
+	EccentricityMax          float32
+	InclinationMin           float32
+	InclinationMax           float32
+	ObjectTypes              map[string]BeltObjectTypeConfig
+	ColorPalette             [][4]uint8
+	ColorVariation           float32
+	Seed                     int64
+}
+
+// BeltObjectTypeConfig defines a specific object type within a belt.
+type BeltObjectTypeConfig struct {
+	Count      int
+	SizeMin    float32
+	SizeMax    float32
+	Importance int
+}

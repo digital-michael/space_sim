@@ -10,25 +10,25 @@ import (
 
 // Simulation runs the physics simulation in a background goroutine.
 type Simulation struct {
-	state           *DoubleBuffer
-	hz              float64
-	stopCh          chan struct{}
-	datasetChangeCh chan AsteroidDataset
-	speedChangeCh   chan float64
-	speedMu         sync.RWMutex
-	speed           float64
-	updateCounter   int
+	state         *DoubleBuffer
+	hz            float64
+	stopCh        chan struct{}
+	cmdCh         chan SimCommand
+	speedChangeCh chan float64
+	speedMu       sync.RWMutex
+	speed         float64
+	updateCounter int
 
-	// applyDatasetChange is called by the simulation loop when a dataset change
-	// is requested. It is injected by the caller (e.g. space.NewSimulation) so
-	// that the engine remains decoupled from belt/asteroid allocation logic.
-	applyDatasetChange func(dataset AsteroidDataset)
+	// applyCommand is called by the simulation loop when a SimCommand is
+	// dequeued. Injected by the caller so the engine stays decoupled from
+	// domain logic (belt allocation, physics model switching, etc.).
+	applyCommand func(SimCommand)
 }
 
 // NewSimulation creates a simulation from an already-loaded state.
-// The applyDatasetFn callback is invoked inside the simulation loop whenever
-// SetAsteroidDataset is called; pass nil if dataset switching is not needed.
-func NewSimulation(state *SimulationState, hz float64, applyDatasetFn func(AsteroidDataset)) *Simulation {
+// applyCommandFn is called inside the simulation loop whenever a SimCommand
+// is dequeued; pass nil if no command handling is needed.
+func NewSimulation(state *SimulationState, hz float64, applyCommandFn func(SimCommand)) *Simulation {
 	// Prime mean anomalies to the current epoch so orbits start at today's
 	// positions rather than at the J2000 reference.
 	for _, obj := range state.Objects {
@@ -48,17 +48,17 @@ func NewSimulation(state *SimulationState, hz float64, applyDatasetFn func(Aster
 	fmt.Printf("✓ Enabled in-place swap optimization (zero-allocation mode)\n")
 
 	sim := &Simulation{
-		state:           db,
-		hz:              hz,
-		stopCh:          make(chan struct{}),
-		datasetChangeCh: make(chan AsteroidDataset, 1),
-		speedChangeCh:   make(chan float64, 1),
-		speed:           1.0,
+		state:         db,
+		hz:            hz,
+		stopCh:        make(chan struct{}),
+		cmdCh:         make(chan SimCommand, 1),
+		speedChangeCh: make(chan float64, 1),
+		speed:         1.0,
 	}
-	if applyDatasetFn != nil {
-		sim.applyDatasetChange = applyDatasetFn
+	if applyCommandFn != nil {
+		sim.applyCommand = applyCommandFn
 	} else {
-		sim.applyDatasetChange = func(AsteroidDataset) {}
+		sim.applyCommand = func(SimCommand) {}
 	}
 	return sim
 }
@@ -104,8 +104,8 @@ func (s *Simulation) Start(ctx context.Context) {
 				accumulatedTime -= dt
 
 				select {
-				case dataset := <-s.datasetChangeCh:
-					s.applyDatasetChange(dataset)
+				case cmd := <-s.cmdCh:
+					s.applyCommand(cmd)
 				default:
 				}
 
@@ -151,7 +151,7 @@ func (s *Simulation) DisableLocking() {
 // SetAsteroidDataset queues an async dataset change request.
 func (s *Simulation) SetAsteroidDataset(dataset AsteroidDataset) {
 	select {
-	case s.datasetChangeCh <- dataset:
+	case s.cmdCh <- DatasetChangeCommand{Dataset: dataset}:
 	default:
 	}
 }
@@ -190,16 +190,11 @@ func (s *Simulation) update(dt float64) {
 	}
 	wg.Wait()
 
-	parentMap := make(map[string]*Object, len(parents))
-	for _, obj := range parents {
-		parentMap[obj.Meta.Name] = obj
-	}
-
 	for _, obj := range children {
 		if !obj.Visible && obj.Dataset >= 0 {
 			continue
 		}
-		if parent := parentMap[obj.Meta.ParentName]; parent != nil {
+		if parent := back.ObjectMap[obj.Meta.ParentName]; parent != nil {
 			obj.Anim.OrbitCenter = parent.Anim.Position
 		}
 	}

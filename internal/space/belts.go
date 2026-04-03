@@ -8,36 +8,6 @@ import (
 	"github.com/digital-michael/space_sim/internal/space/engine"
 )
 
-// BeltConfig encapsulates all parameters for belt generation.
-type BeltConfig struct {
-	Name                     string
-	NamePrefix               string
-	InnerRadius              float32
-	OuterRadius              float32
-	Thickness                float32
-	ClassicalBeltMin         float32
-	ClassicalBeltMax         float32
-	ClassicalBeltProbability float32
-	DistanceToAURatio        float32
-	UseKeplerLaw             bool
-	EccentricityMin          float32
-	EccentricityMax          float32
-	InclinationMin           float32
-	InclinationMax           float32
-	ObjectTypes              map[string]BeltObjectTypeConfig
-	ColorPalette             [][4]uint8
-	ColorVariation           float32
-	Seed                     int64
-}
-
-// BeltObjectTypeConfig defines a specific object type within a belt.
-type BeltObjectTypeConfig struct {
-	Count      int
-	SizeMin    float32
-	SizeMax    float32
-	Importance int
-}
-
 // CreateBelt generates a debris belt based on configuration.
 func CreateBelt(state *engine.SimulationState, config BeltConfig, dataset engine.AsteroidDataset, rng *rand.Rand) {
 	objectIndex := 0

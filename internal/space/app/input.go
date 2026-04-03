@@ -6,14 +6,14 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/digital-michael/space_sim/internal/space"
 	engine "github.com/digital-michael/space_sim/internal/space/engine"
+	sim "github.com/digital-michael/space_sim/internal/space/sim"
 	"github.com/digital-michael/space_sim/internal/space/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 // handleInput processes keyboard input for camera modes and object selection
-func handleInput(app *App, sim *space.Simulation, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, gridVisible bool, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, mouseModeEnabled bool, labelsVisible bool, debugEnabled bool) (bool, bool, engine.AsteroidDataset, bool, bool, bool, bool) {
+func handleInput(app *App, sim *sim.Simulation, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, gridVisible bool, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, mouseModeEnabled bool, labelsVisible bool, debugEnabled bool) (bool, bool, engine.AsteroidDataset, bool, bool, bool, bool) {
 	selectionDialogOpen := inputState.MainWindowInputSuspended()
 	mainWindowInputSuspended := selectionDialogOpen || helpVisible
 	controlHeld := rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl)

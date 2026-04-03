@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/digital-michael/space_sim/internal/space"
 	engine "github.com/digital-michael/space_sim/internal/space/engine"
+	sim "github.com/digital-michael/space_sim/internal/space/sim"
 	"github.com/digital-michael/space_sim/internal/space/ui"
 )
 
 type runtimeSession struct {
-	sim             *space.Simulation
+	sim             *sim.Simulation
 	cameraState     *ui.CameraState
 	inputState      *ui.InputState
 	debugTracker    *DebugTracker
@@ -38,7 +38,10 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 	}
 
 	normalizedPath := normalizeSystemConfigPath(systemConfigPath)
-	sim := space.NewSimulation(defaultSimHz, normalizedPath)
+	sim, err := sim.NewSimulation(defaultSimHz, normalizedPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load system %s: %w", normalizedPath, err)
+	}
 
 	initialState := sim.GetState().LockFront()
 	solIndex := -1

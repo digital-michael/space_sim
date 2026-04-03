@@ -1,43 +1,67 @@
-package space
+// Package sim provides the simulation process layer: it takes an environment
+// built by the space package and drives it at runtime, including asteroid belt
+// dataset management and double-buffer lifecycle.
+package sim
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"strings"
 
+	"github.com/digital-michael/space_sim/internal/space"
 	"github.com/digital-michael/space_sim/internal/space/engine"
 )
 
-// Simulation wraps engine.Simulation with SOL-specific dataset management.
+// Simulation wraps engine.Simulation with dataset management driven by the
+// loaded system configuration.
 type Simulation struct {
 	*engine.Simulation
+	beltConfigs []*engine.FeatureConfig // belt feature configs for count queries
 }
 
-// NewSimulation creates a new simulation by loading from a JSON configuration.
-// If configPath is empty, defaults to "data/systems/solar_system.json".
-func NewSimulation(hz float64, configPath string) *Simulation {
+// NewSimulation loads an environment from configPath and starts the simulation
+// process. If configPath is empty, defaults to "data/systems/solar_system.json".
+func NewSimulation(hz float64, configPath string) (*Simulation, error) {
 	if configPath == "" {
 		configPath = "data/systems/solar_system.json"
 	}
 
-	state, err := LoadSystemFromFile(configPath)
+	state, err := space.LoadSystemFromFile(configPath)
 	if err != nil {
-		panic(fmt.Sprintf(
-			"Failed to load system from %s: %v\nPlease ensure the JSON configuration file exists.",
-			configPath, err,
-		))
+		return nil, fmt.Errorf("load system %s: %w", configPath, err)
 	}
 
 	fmt.Printf("\u2713 Loaded system from %s\n", configPath)
 
+	// Derive belt prefixes and configs from the loaded system.
+	// These are stable after construction and safe to capture in the closure.
+	var beltConfigs []*engine.FeatureConfig
+	var beltPrefixes []string
+	asteroidPrefix, kuiperPrefix := "", ""
+	if state.AsteroidBeltConfig != nil {
+		asteroidPrefix = beltNamePrefix(state.AsteroidBeltConfig.Type)
+		beltPrefixes = append(beltPrefixes, asteroidPrefix)
+		beltConfigs = append(beltConfigs, state.AsteroidBeltConfig)
+	}
+	if state.KuiperBeltConfig != nil {
+		kuiperPrefix = beltNamePrefix(state.KuiperBeltConfig.Type)
+		beltPrefixes = append(beltPrefixes, kuiperPrefix)
+		beltConfigs = append(beltConfigs, state.KuiperBeltConfig)
+	}
+
 	// We need a reference to the DoubleBuffer that engine.NewSimulation will
-	// create internally.  Use a pointer-to-pointer: the apply closure reads
+	// create internally. Use a pointer-to-pointer: the apply closure reads
 	// *dbPtr, which we fill in after engine.NewSimulation returns (before
 	// Start is ever called).
 	var dbPtr *engine.DoubleBuffer
 
-	applyFn := func(dataset engine.AsteroidDataset) {
+	applyFn := func(cmd engine.SimCommand) {
+		dc, ok := cmd.(engine.DatasetChangeCommand)
+		if !ok {
+			return
+		}
+		dataset := dc.Dataset
+
 		db := dbPtr // safe: Start() has not been called yet when we set dbPtr
 		if db == nil {
 			return
@@ -48,8 +72,8 @@ func NewSimulation(hz float64, configPath string) *Simulation {
 			return
 		}
 
-		asteroidAllocated := hasBeltDataset(back, "Asteroid-", dataset)
-		kuiperAllocated := hasBeltDataset(back, "KBO-", dataset)
+		asteroidAllocated := asteroidPrefix != "" && hasBeltDataset(back, asteroidPrefix, dataset)
+		kuiperAllocated := kuiperPrefix != "" && hasBeltDataset(back, kuiperPrefix, dataset)
 
 		needsAsteroid := back.AsteroidBeltConfig != nil && !asteroidAllocated
 		needsKuiper := back.KuiperBeltConfig != nil && !kuiperAllocated
@@ -95,7 +119,7 @@ func NewSimulation(hz float64, configPath string) *Simulation {
 		// Update visibility in back buffer.
 		back.CurrentDataset = dataset
 		for _, obj := range back.Objects {
-			if isBeltRuntimeObject(obj) {
+			if isBeltObject(obj, beltPrefixes) {
 				obj.Visible = obj.Dataset <= dataset
 			}
 		}
@@ -104,7 +128,7 @@ func NewSimulation(hz float64, configPath string) *Simulation {
 		front := db.LockFrontWrite()
 		front.CurrentDataset = dataset
 		for _, obj := range front.Objects {
-			if isBeltRuntimeObject(obj) {
+			if isBeltObject(obj, beltPrefixes) {
 				obj.Visible = obj.Dataset <= dataset
 			}
 		}
@@ -114,18 +138,27 @@ func NewSimulation(hz float64, configPath string) *Simulation {
 	inner := engine.NewSimulation(state, hz, applyFn)
 
 	// Inject the DoubleBuffer reference now that engine.NewSimulation has
-	// created it.  This happens before Start() so there is no data race.
+	// created it. This happens before Start() so there is no data race.
 	dbPtr = inner.GetState()
 
-	return &Simulation{Simulation: inner}
+	return &Simulation{Simulation: inner, beltConfigs: beltConfigs}, nil
 }
 
-// GetAsteroidCount returns the total number of asteroids for a given dataset.
-func GetAsteroidCount(dataset engine.AsteroidDataset) int {
-	return asteroidCount(dataset)
+// GetAsteroidCount returns the total number of belt objects for the given
+// dataset level, summed across all belt feature configs in the loaded system.
+func (s *Simulation) GetAsteroidCount(dataset engine.AsteroidDataset) int {
+	total := 0
+	for _, cfg := range s.beltConfigs {
+		for _, spec := range cfg.ObjectTypes {
+			if int(dataset) < len(spec.CountByLevel) {
+				total += spec.CountByLevel[int(dataset)]
+			}
+		}
+	}
+	return total
 }
 
-// GetDatasetName returns a human-readable name for a dataset level.
+// GetDatasetName returns a human-readable label for a dataset tier.
 func GetDatasetName(dataset engine.AsteroidDataset) string {
 	return datasetName(dataset)
 }
@@ -138,7 +171,7 @@ func applyBeltConfig(state *engine.SimulationState, config *engine.FeatureConfig
 		return
 	}
 
-	objectTypes := make(map[string]BeltObjectTypeConfig)
+	objectTypes := make(map[string]space.BeltObjectTypeConfig)
 	for typeName, typeSpec := range config.ObjectTypes {
 		if int(dataset) < len(typeSpec.CountByLevel) {
 			count := typeSpec.CountByLevel[int(dataset)]
@@ -146,7 +179,7 @@ func applyBeltConfig(state *engine.SimulationState, config *engine.FeatureConfig
 			if int(dataset) < len(typeSpec.ImportanceByLevel) {
 				importance = typeSpec.ImportanceByLevel[int(dataset)]
 			}
-			objectTypes[typeName] = BeltObjectTypeConfig{
+			objectTypes[typeName] = space.BeltObjectTypeConfig{
 				Count:      count,
 				SizeMin:    typeSpec.SizeRange[0],
 				SizeMax:    typeSpec.SizeRange[1],
@@ -160,7 +193,7 @@ func applyBeltConfig(state *engine.SimulationState, config *engine.FeatureConfig
 		distanceToAU = config.OrbitalMechanics.DistanceToAURatio
 	}
 
-	beltConfig := BeltConfig{
+	beltConfig := space.BeltConfig{
 		Name:                     config.Name,
 		NamePrefix:               beltNamePrefix(config.Type),
 		InnerRadius:              config.Distribution.InnerRadius,
@@ -181,7 +214,7 @@ func applyBeltConfig(state *engine.SimulationState, config *engine.FeatureConfig
 		Seed:                     config.Procedural.Seed,
 	}
 
-	CreateBelt(state, beltConfig, dataset, rng)
+	space.CreateBelt(state, beltConfig, dataset, rng)
 }
 
 func beltNamePrefix(featureType string) string {
@@ -204,11 +237,16 @@ func hasBeltDataset(state *engine.SimulationState, prefix string, dataset engine
 	return false
 }
 
-func isBeltRuntimeObject(obj *engine.Object) bool {
+func isBeltObject(obj *engine.Object, prefixes []string) bool {
 	if obj.Dataset < 0 {
 		return false
 	}
-	return strings.HasPrefix(obj.Meta.Name, "Asteroid-") || strings.HasPrefix(obj.Meta.Name, "KBO-")
+	for _, p := range prefixes {
+		if strings.HasPrefix(obj.Meta.Name, p) {
+			return true
+		}
+	}
+	return false
 }
 
 func beltDatasetRNG(config *engine.FeatureConfig, dataset engine.AsteroidDataset) *rand.Rand {
@@ -219,44 +257,17 @@ func beltDatasetRNG(config *engine.FeatureConfig, dataset engine.AsteroidDataset
 	return rand.New(rand.NewSource(baseSeed + int64(dataset)*1000003))
 }
 
-// asteroidCount returns the total number of asteroids for a dataset.
-func asteroidCount(dataset engine.AsteroidDataset) int {
-	switch dataset {
-	case engine.AsteroidDatasetSmall:
-		return 200
-	case engine.AsteroidDatasetMedium:
-		return 1200
-	case engine.AsteroidDatasetLarge:
-		return 2400
-	case engine.AsteroidDatasetHuge:
-		return 24000
-	default:
-		return 200
-	}
-}
-
-// datasetName returns a human-readable name for the dataset.
 func datasetName(dataset engine.AsteroidDataset) string {
 	switch dataset {
 	case engine.AsteroidDatasetSmall:
-		return "Small (200)"
+		return "Small"
 	case engine.AsteroidDatasetMedium:
-		return "Medium (1.2K)"
+		return "Medium"
 	case engine.AsteroidDatasetLarge:
-		return "Large (2.4K)"
+		return "Large"
 	case engine.AsteroidDatasetHuge:
-		return "Huge (24K)"
+		return "Huge"
 	default:
 		return "Unknown"
 	}
-}
-
-// anomalyNormalize keeps mean anomaly in [0, 2pi).
-func anomalyNormalize(v float32) float32 {
-	twoPi := float32(2.0 * math.Pi)
-	v = float32(math.Mod(float64(v), float64(twoPi)))
-	if v < 0 {
-		v += twoPi
-	}
-	return v
 }
