@@ -25,23 +25,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	// ── gRPC server ───────────────────────────────────────────────────────
-	// Handlers are stubs until Phase 6c wires them to the event queue and
-	// runtime environment.
-	simHandler := grpcserver.NewSimulationHandler()
-	worldHandler := grpcserver.NewWorldHandler()
-	srv := grpcserver.New(grpcserver.DefaultServerConfig(), simHandler, worldHandler)
-
-	srvDone := make(chan error, 1)
-	go func() {
-		log.Printf("gRPC server listening on %s", srv.Addr())
-		srvDone <- srv.Start(ctx)
-	}()
-
-	// ── Raylib application ────────────────────────────────────────────────
-	// The Raylib client accesses simulation state directly (in-process).
-	// TODO (Phase 6c): register a broadcaster subscriber that forwards
-	// WorldSnapshot frames to the WorldHandler for streaming clients.
+	// ── Load app config ───────────────────────────────────────────────────
 	appConfigPath := rayapp.DefaultAppConfigPath
 	appConfig, err := rayapp.LoadAppConfig(appConfigPath)
 	if err != nil {
@@ -54,12 +38,31 @@ func main() {
 		AppConfig:     appConfig,
 	}
 
+	// ── Build application (creates world internally) ───────────────────────
 	application, err := rayapp.New(cfg)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error creating app: %v\n", err)
 		os.Exit(1)
 	}
 
+	// ── gRPC server ───────────────────────────────────────────────────────
+	// WorldHandler implements protocol.Subscriber — register it directly so
+	// the interactive loop delivers WorldSnapshot frames to all streaming clients.
+	// SimulationHandler takes nil world until app.App exposes a World() accessor
+	// (tracked as a follow-up; command RPCs return Unimplemented until then).
+	worldHandler := grpcserver.NewWorldHandler()
+	application.RegisterSubscriber(worldHandler)
+
+	simHandler := grpcserver.NewSimulationHandler(nil)
+	srv := grpcserver.New(grpcserver.DefaultServerConfig(), simHandler, worldHandler)
+
+	srvDone := make(chan error, 1)
+	go func() {
+		log.Printf("gRPC server listening on %s", srv.Addr())
+		srvDone <- srv.Start(ctx)
+	}()
+
+	// ── Run Raylib app (blocks until window closed or ctx cancelled) ───────
 	appErr := application.Run(ctx)
 
 	// Cancel context so the gRPC server shuts down, then wait for it.
@@ -73,4 +76,3 @@ func main() {
 		os.Exit(1)
 	}
 }
-
