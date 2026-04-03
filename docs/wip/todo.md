@@ -196,6 +196,24 @@ Two open design questions to evaluate before starting:
 - [ ] Benchmark alternative pool strategies
 - [ ] Update docs after implementation
 
+### 4.7 Belt Generation Quality - Overlap and Speed Uniqueness
+
+**Value**: Prevents near-coincident belt objects from strobing or appearing to flicker at high dataset counts due to two objects occupying the same orbital position and speed.
+**Status**: ⏸ Deferred — low priority, cosmetic only
+**Start Date**: Not started
+**Depends on**: None (self-contained change to `internal/sim/belts.go`)
+
+#### Context
+
+`CreateBelt` draws `orbitAngle` and `distanceAU` uniformly at random with no exclusion zone around already-placed objects. At large datasets (1,200–24,000 objects) near-coincident pairs are statistically likely. Two objects at the same `(distance, orbitAngle)` have identical Keplerian periods so they track together forever, appearing as a single strobing object when rendered on top of each other.
+
+#### Work Items
+
+- [ ] Enforce a minimum angular separation per orbital shell in `CreateBelt` (retry or stratified placement)
+- [ ] Ensure no two objects in the same shell share both distance and angle within a configurable tolerance
+- [ ] Add a test asserting minimum separation across a large generated dataset
+- [ ] Consider whether `MeanAnomalyAtEpoch` jitter alone is sufficient or structural placement is needed
+
 ## 5. Related Docs
 
 - [docs/history/changelog.md](../history/changelog.md): completed work moved out of the live queue
