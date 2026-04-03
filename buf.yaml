@@ -1,0 +1,13 @@
+version: v2
+
+modules:
+  - path: api/proto
+    name: buf.build/digital-michael/space_sim
+
+lint:
+  use:
+    - STANDARD
+
+breaking:
+  use:
+    - FILE

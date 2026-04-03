@@ -1,0 +1,180 @@
+syntax = "proto3";
+
+// Package spacesim.v1 is the public contract for the Space Sim server.
+// Clients (Go, JavaScript/browser) interact with the server exclusively
+// through this interface. The Go module path for generated code is set
+// by the go_package option below.
+package spacesim.v1;
+
+option go_package = "github.com/digital-michael/space_sim/api/gen/spacesim/v1;spacesimv1";
+
+// ─── SimulationService ────────────────────────────────────────────────────────
+//
+// Commands and queries for the running simulation: speed, dataset, and
+// simulation time. All mutating RPCs return a CommandAck immediately and
+// process the change asynchronously via the event queue (CQRS pattern).
+
+service SimulationService {
+  // SetSpeed sets the simulation time multiplier.
+  // Returns a CommandAck; the change is applied asynchronously.
+  rpc SetSpeed(SetSpeedRequest) returns (SetSpeedResponse);
+
+  // GetSpeed returns the current time multiplier.
+  rpc GetSpeed(GetSpeedRequest) returns (GetSpeedResponse);
+
+  // SetDataset selects the asteroid population LOD tier.
+  // Returns a CommandAck; the change is applied asynchronously.
+  rpc SetDataset(SetDatasetRequest) returns (SetDatasetResponse);
+
+  // GetDataset returns the currently active LOD tier.
+  rpc GetDataset(GetDatasetRequest) returns (GetDatasetResponse);
+
+  // GetSimulationTime returns the current simulation time in seconds
+  // since J2000.0 (2000-01-01T12:00:00 UTC).
+  rpc GetSimulationTime(GetSimulationTimeRequest) returns (GetSimulationTimeResponse);
+}
+
+// ─── WorldService ─────────────────────────────────────────────────────────────
+//
+// Read-only access to live simulation state via server-streaming snapshots.
+
+service WorldService {
+  // StreamSnapshot opens a server-streaming channel. The server pushes a
+  // StreamSnapshotResponse for each WorldSnapshot published by the Broadcaster.
+  // The stream runs until the client cancels or the server shuts down.
+  rpc StreamSnapshot(StreamSnapshotRequest) returns (stream StreamSnapshotResponse);
+}
+
+// ─── Shared ack sub-type ─────────────────────────────────────────────────────
+
+// CommandAck carries the queueing result embedded in per-RPC response messages.
+message CommandAck {
+  // event_id is a UUID string identifying the queued event.
+  string event_id = 1;
+
+  // status indicates whether the command was queued or immediately rejected.
+  AckStatus status = 2;
+}
+
+// AckStatus is the outcome of a mutating command.
+enum AckStatus {
+  ACK_STATUS_UNSPECIFIED = 0;
+  ACK_STATUS_QUEUED      = 1; // Command accepted and queued for processing.
+  ACK_STATUS_REJECTED    = 2; // Command rejected (e.g. invalid value, rate limit).
+}
+
+// ─── SimulationService messages ───────────────────────────────────────────────
+
+// SetSpeedResponse wraps the ack for the SetSpeed RPC.
+message SetSpeedResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+// SetDatasetResponse wraps the ack for the SetDataset RPC.
+message SetDatasetResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message SetSpeedRequest {
+  uint32 version = 1;
+
+  // seconds_per_second is the simulation time multiplier.
+  // 1.0 = real-time; 3600.0 = one sim-hour per wall-clock second.
+  // Must be > 0.
+  float seconds_per_second = 2;
+}
+
+message GetSpeedRequest {
+  uint32 version = 1;
+}
+
+message GetSpeedResponse {
+  uint32 version = 1;
+  float  seconds_per_second = 2;
+}
+
+// DatasetLevel maps to engine.AsteroidDataset.
+// 0=Small(200), 1=Medium(1 200), 2=Large(2 400), 3=Huge(24 000).
+enum DatasetLevel {
+  DATASET_LEVEL_UNSPECIFIED = 0;
+  DATASET_LEVEL_SMALL       = 1;
+  DATASET_LEVEL_MEDIUM      = 2;
+  DATASET_LEVEL_LARGE       = 3;
+  DATASET_LEVEL_HUGE        = 4;
+}
+
+message SetDatasetRequest {
+  uint32       version = 1;
+  DatasetLevel level   = 2;
+}
+
+message GetDatasetRequest {
+  uint32 version = 1;
+}
+
+message GetDatasetResponse {
+  uint32       version = 1;
+  DatasetLevel level   = 2;
+}
+
+message GetSimulationTimeRequest {
+  uint32 version = 1;
+}
+
+message GetSimulationTimeResponse {
+  uint32 version = 1;
+
+  // seconds_since_j2000 is the simulation clock in seconds since
+  // J2000.0 (2000-01-01T12:00:00 UTC).
+  double seconds_since_j2000 = 2;
+}
+
+// ─── WorldService messages ────────────────────────────────────────────────────
+
+message StreamSnapshotRequest {
+  uint32 version = 1;
+}
+
+// StreamSnapshotResponse carries a point-in-time snapshot of all simulated
+// bodies and the current simulation speed.
+message StreamSnapshotResponse {
+  uint32 version = 1;
+
+  // simulation_time is the clock value at snapshot time (seconds since J2000.0).
+  double simulation_time = 2;
+
+  // speed is the time multiplier at snapshot time.
+  float speed = 3;
+
+  // bodies contains the state of every visible simulated body.
+  repeated BodyState bodies = 4;
+}
+
+// BodyState is the per-frame wire representation of engine.Object.
+message BodyState {
+  uint32 version = 1;
+
+  // name matches engine.ObjectMetadata.Name.
+  string name = 2;
+
+  // category matches engine.ObjectCategory as a string label
+  // (e.g. "planet", "moon", "asteroid") for forward compatibility.
+  string category = 3;
+
+  // parent_name is empty for top-level bodies; set to the parent's name
+  // for moons and rings.
+  string parent_name = 4;
+
+  // Position in simulation-space units (AU-scale).
+  double pos_x = 5;
+  double pos_y = 6;
+  double pos_z = 7;
+
+  // physical_radius is the body's rendered radius in simulation units.
+  float physical_radius = 8;
+
+  // visible indicates whether the body should be rendered this frame.
+  bool visible = 9;
+}
