@@ -6,6 +6,7 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 ## Last Updated
 2026-04-03
 
+
 ## Table of Contents
 1. How to Use This File
 2. Status Key
@@ -187,17 +188,17 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 ### 4.6 Phase 7 - Additional Pool Types
 
 **Value**: Adds specialized pool strategies after the main server path is stable.
-**Status**: ⏸ Deferred until Phase 6 is stable
-**Start Date**: Not started
+**Status**: ✅ Complete — 2026-04-03
+**Start Date**: 2026-04-03
 **Depends on**: Phase 1 through Phase 6
 
 #### Work Items
 
-- [ ] Add `SimplePool`
-- [ ] Add `DistributedPool` stub
-- [ ] Add pool factory wiring
-- [ ] Benchmark alternative pool strategies
-- [ ] Update docs after implementation
+- [x] Add `SimplePool` (`internal/server/pool/simple/`)
+- [x] Add `DistributedPool` stub (`internal/server/pool/distributed/`)
+- [x] Add pool factory (`internal/server/pool/factory/`)
+- [x] Benchmark alternative pool strategies (SimplePool 388 ns/op, GroupPool 397 ns/op — equivalent)
+- [x] Update docs after implementation
 
 ### 4.7 Belt Generation Quality - Overlap and Speed Uniqueness
 

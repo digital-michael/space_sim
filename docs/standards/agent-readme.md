@@ -83,8 +83,11 @@ Default agent assumptions:
 
 ### Server Infrastructure
 
-- [internal/server/pool/](../../internal/server/pool): object pool interface and base pool type.
-- [internal/server/pool/group/](../../internal/server/pool/group): group pool with DAG validation, locking, and membership lookup.
+- [internal/server/pool/](../../internal/server/pool): `ObjectPool` interface, `PoolType` enum, and legacy string-keyed runtime pool.
+- [internal/server/pool/simple/](../../internal/server/pool/simple): flat, map-backed `ObjectPool` implementation. No grouping or hierarchy.
+- [internal/server/pool/group/](../../internal/server/pool/group): group pool with DAG cycle detection, hierarchy locking, and membership index.
+- [internal/server/pool/distributed/](../../internal/server/pool/distributed): stub `ObjectPool` reserved for a future sharded implementation; all methods return `ErrNotImplemented`.
+- [internal/server/pool/factory/](../../internal/server/pool/factory): constructs the correct `ObjectPool` by `PoolType`; the single place that imports all concrete pool packages.
 - [internal/server/runtime/](../../internal/server/runtime): runtime environment, object and group state, position strategies, and query APIs.
 - [internal/server/routines/](../../internal/server/routines): routine registration and lifecycle.
 - [internal/server/eventqueue/](../../internal/server/eventqueue): per-GUID FIFO event queues, queue manager, and transaction modes.
