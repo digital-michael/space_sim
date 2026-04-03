@@ -220,6 +220,11 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 
 ## 5. Related Docs
 
+- [docs/standards/agent-readme.md](../standards/agent-readme.md): architecture, package map, boundaries.
+- [docs/standards/coding-standards.md](../standards/coding-standards.md): implementation standards and Definition of Done.
+- [docs/history/lessons-learned.md](../history/lessons-learned.md): anti-patterns and root-cause notes.
+- [docs/history/changelog.md](../history/changelog.md): completed work archive.
+
 - [docs/history/changelog.md](../history/changelog.md): completed work moved out of the live queue
 - [docs/standards/guidance.md](../standards/guidance.md): workflow and work-tracking rules
 - [internal/space/package.md](../../internal/space/package.md): current package and architecture context

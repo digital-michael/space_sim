@@ -20,6 +20,7 @@ import (
 // nilWorld is a worldFn that always returns nil, used to test the
 // CodeUnimplemented guard path without a real simulation session.
 func nilWorld() *world.World { return nil }
+
 // real routing path without starting a net.Listener.
 func newTestMux(sim spacesimv1connect.SimulationServiceHandler, world spacesimv1connect.WorldServiceHandler) http.Handler {
 	mux := http.NewServeMux()

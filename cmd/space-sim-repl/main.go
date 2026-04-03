@@ -1,0 +1,35 @@
+// Command space-sim-repl is an interactive command-line client for a running
+// space-sim-grpc server. It dials the server over the Connect protocol and
+// exposes SimulationService and WorldService operations as text commands.
+//
+// Usage:
+//
+//	space-sim-repl [--addr http://localhost:9090]
+//
+// Run 'help' inside the REPL for the full command reference.
+package main
+
+import (
+	"context"
+	"flag"
+	"fmt"
+	"os"
+	"os/signal"
+	"syscall"
+
+	"github.com/digital-michael/space_sim/internal/client/repl"
+)
+
+func main() {
+	addr := flag.String("addr", "http://localhost:9090", "space-sim-grpc server address")
+	flag.Parse()
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	r := repl.New(*addr)
+	if err := r.Run(ctx, os.Stdin); err != nil {
+		fmt.Fprintf(os.Stderr, "repl error: %v\n", err)
+		os.Exit(1)
+	}
+}

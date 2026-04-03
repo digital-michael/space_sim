@@ -93,10 +93,11 @@ Default agent assumptions:
 - [internal/server/eventqueue/](../../internal/server/eventqueue): per-GUID FIFO event queues, queue manager, and transaction modes.
 - [internal/server/eventloop/](../../internal/server/eventloop): multi-threaded worker pool, event-driven frame loop, FPS control, and frame metrics.
 
-### Client Stubs (Phase 6)
+### Client Stubs (now Client REPL)
 
-- [internal/client/commands/](../../internal/client/commands): reserved for REPL command types (empty).
-- [internal/client/repl/](../../internal/client/repl): reserved for REPL implementation (empty).
+- [internal/client/commands/](../../internal/client/commands): typed command set for the REPL. `Parse(line)` returns a `Cmd` variant; errors are `ErrUnknownCommand` or `ErrUsage`.
+- [internal/client/repl/](../../internal/client/repl): interactive REPL that connects to a running `space-sim-grpc` server and dispatches `Cmd` values to `SimulationServiceClient` and `WorldServiceClient`.
+- [cmd/space-sim-repl/](../../cmd/space-sim-repl): thin main for the REPL binary (flag: `--addr`). Run with `make run-repl`.
 
 ### Core Domain and Simulation (server-owned)
 
