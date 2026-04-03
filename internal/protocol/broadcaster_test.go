@@ -9,8 +9,6 @@ import (
 
 type countSubscriber struct{ n atomic.Int64 }
 
-
-
 func (c *countSubscriber) Receive(_ protocol.WorldSnapshot) { c.n.Add(1) }
 
 func TestBroadcasterPushReachesAllSubscribers(t *testing.T) {
