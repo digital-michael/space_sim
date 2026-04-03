@@ -7,13 +7,15 @@ import (
 	"os"
 
 	render "github.com/digital-michael/space_sim/internal/client/go/raylib/ui/render"
+	"github.com/digital-michael/space_sim/internal/protocol"
 )
 
 // App owns the Space Sim application's runtime orchestration.
 type App struct {
-	cfg      Config
-	runtime  *RuntimeContext
-	renderer *render.Renderer
+	cfg         Config
+	runtime     *RuntimeContext
+	renderer    *render.Renderer
+	broadcaster *protocol.Broadcaster
 }
 
 // New constructs the application from validated configuration.
@@ -24,10 +26,17 @@ func New(cfg Config) (*App, error) {
 	}
 
 	return &App{
-		cfg:      cfg,
-		runtime:  NewRuntimeContext(cfg.AppConfig),
-		renderer: render.New(),
+		cfg:         cfg,
+		runtime:     NewRuntimeContext(cfg.AppConfig),
+		renderer:    render.New(),
+		broadcaster: &protocol.Broadcaster{},
 	}, nil
+}
+
+// RegisterSubscriber adds s to the broadcast list. Every WorldSnapshot
+// produced by the interactive loop will be delivered to s.Receive.
+func (a *App) RegisterSubscriber(s protocol.Subscriber) {
+	a.broadcaster.Register(s)
 }
 
 // Run executes the application on the current thread.

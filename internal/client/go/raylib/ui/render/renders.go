@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
+	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 

@@ -35,6 +35,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		a.syncRenderState()
 		dt := rl.GetFrameTime()
 		snap := session.sim.Snapshot()
+		a.broadcaster.Push(snap)
 		state := snap.State
 
 		if session.debugTracker != nil {

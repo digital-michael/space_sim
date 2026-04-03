@@ -38,54 +38,65 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 
 ## 3. Active Work
 
-No active work items at this time.
+### Phase 3 (session) - SnapshotBroadcaster
+
+**Value**: Wires the physics loop to the server broadcast layer. After each engine tick the snapshot flows from `World.Snapshot()` through `protocol.Broadcaster` to all registered subscribers, enabling future gRPC and multi-client fan-out without coupling the renderer to `*World`.
+**Status**: ✅ Complete — 2026-04-02
+**Depends on**: Phase 1, Phase 2
+
+#### Work Items
+
+- [x] Add `protocol.Broadcaster` and `protocol.Subscriber` types with thread-safe register/unregister/push
+- [x] Add broadcaster tests (concurrent push, unregister, no-op unregister)
+- [x] Add `broadcaster *protocol.Broadcaster` field to `App`; initialize in `New()`; expose `RegisterSubscriber`
+- [x] Push each `WorldSnapshot` to `app.broadcaster` in the interactive render loop
 
 ## 4. Planned Phases
 
 ### 4.1 Phase 3 - Event Queue System
 
 **Value**: Enables per-GUID FIFO ordering with cross-GUID parallelism.
-**Status**: 📋 Not started
-**Start Date**: Not started
+**Status**: ✅ Complete
+**Start Date**: Pre-existing
 **Depends on**: Phase 1, Phase 2
 
 #### Work Items
 
-- [ ] Add event and transaction types plus the core event envelope
-- [ ] Implement per-GUID FIFO queues with graceful queue-full handling
-- [ ] Implement queue manager fan-out, dequeue, and metrics
-- [ ] Add rollback, best-effort, and no-transaction execution modes
-- [ ] Add concurrency and rollback tests
+- [x] Add event and transaction types plus the core event envelope
+- [x] Implement per-GUID FIFO queues with graceful queue-full handling
+- [x] Implement queue manager fan-out, dequeue, and metrics
+- [x] Add rollback, best-effort, and no-transaction execution modes
+- [x] Add concurrency and rollback tests
 
 #### Acceptance Criteria
 
-- Per-GUID ordering holds under concurrent load
-- Cross-GUID work can execute in parallel
-- Queue-full returns an error instead of panicking
-- Rollback restores state on failure
-- Race-enabled tests pass
+- Per-GUID ordering holds under concurrent load ✓
+- Cross-GUID work can execute in parallel ✓
+- Queue-full returns an error instead of panicking ✓
+- Rollback restores state on failure ✓
+- Race-enabled tests pass ✓
 
 ### 4.2 Phase 4 - Event Loop and Worker Pool
 
 **Value**: Turns the queue and runtime layers into a running server-side simulation loop.
-**Status**: 📋 Not started
-**Start Date**: Not started
+**Status**: ✅ Complete
+**Start Date**: Pre-existing
 **Depends on**: Phase 1, Phase 2, Phase 3
 
 #### Work Items
 
-- [ ] Add a multi-threaded worker pool with drain and shutdown support
-- [ ] Implement an event loop with runtime FPS control
-- [ ] Execute queued events before routine execution each frame
-- [ ] Add routine registration and removal APIs
-- [ ] Capture frame timing metrics and integration tests
+- [x] Add a multi-threaded worker pool with drain and shutdown support
+- [x] Implement an event loop with runtime FPS control
+- [x] Execute queued events before routine execution each frame
+- [x] Add routine registration and removal APIs
+- [x] Capture frame timing metrics and integration tests
 
 #### Acceptance Criteria
 
-- Target FPS stays within tolerance under normal load
-- `SetFPS` takes effect without restart
-- Frame timing metrics are queryable
-- Race-enabled tests pass
+- Target FPS stays within tolerance under normal load ✓
+- `SetFPS` takes effect without restart ✓
+- Frame timing metrics are queryable ✓
+- Race-enabled tests pass ✓
 
 ### 4.3 Phase 5 - Persistence
 
