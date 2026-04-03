@@ -14,12 +14,13 @@ type ServerConfig struct {
 	// Addr is the TCP address to listen on (e.g. ":9090").
 	Addr string
 
-	// MaxConns is the maximum number of concurrent connections allowed.
-	// 0 means no limit. Enforced in Phase 6d.
+	// MaxConns is the maximum number of concurrent in-flight requests allowed.
+	// Excess requests receive a ResourceExhausted error immediately.
+	// 0 means no limit.
 	MaxConns int
 
 	// IdleTimeout is how long an idle connection is kept open before being
-	// closed. 0 uses net/http's default. Enforced in Phase 6d.
+	// closed by net/http. 0 uses net/http's default (no idle timeout).
 	IdleTimeout time.Duration
 }
 
@@ -35,15 +36,23 @@ func DefaultServerConfig() ServerConfig {
 // Server wraps an HTTP server that speaks gRPC, gRPC-Web, and the Connect
 // protocol simultaneously (ConnectRPC's default).
 type Server struct {
-	cfg   ServerConfig
-	http  *http.Server
+	cfg     ServerConfig
+	http    *http.Server
+	limiter *connLimitHandler // nil when MaxConns == 0
 }
 
 // New creates a Server. sim and world are the handler implementations; they
 // are registered on the HTTP mux before the server starts.
 //
+// Connection limiting (MaxConns) is enforced via a middleware wrapper.
+// Idle timeout (IdleTimeout) is enforced by net/http natively.
+//
 // The server speaks all three ConnectRPC protocols (Connect, gRPC, gRPC-Web)
-// on the same port. No proxy or separate gRPC-Web gateway is required.
+// on the same port. No proxy or gRPC-Web gateway is required.
+//
+// NOTE (production): for non-local deployments wrap the mux with h2c
+// (golang.org/x/net/http2/h2c) for HTTP/2 cleartext, or configure
+// httpSrv.TLSConfig for TLS.
 func New(cfg ServerConfig, sim spacesimv1connect.SimulationServiceHandler, world spacesimv1connect.WorldServiceHandler) *Server {
 	mux := http.NewServeMux()
 
@@ -53,24 +62,31 @@ func New(cfg ServerConfig, sim spacesimv1connect.SimulationServiceHandler, world
 	worldPath, worldHandler := spacesimv1connect.NewWorldServiceHandler(world)
 	mux.Handle(worldPath, worldHandler)
 
+	var handler http.Handler = mux
+	var limiter *connLimitHandler
+
+	if cfg.MaxConns > 0 {
+		l := newConnLimitHandler(cfg.MaxConns, mux).(*connLimitHandler)
+		limiter = l
+		handler = l
+	}
+
 	httpSrv := &http.Server{
 		Addr:        cfg.Addr,
-		Handler:     mux,
+		Handler:     handler,
 		IdleTimeout: cfg.IdleTimeout,
-		// TODO (Phase 6d): wrap Handler with a connection-limit interceptor.
-		// TODO (production): configure TLS via httpSrv.TLSConfig for non-local deployments.
-		// For h2c (HTTP/2 cleartext) in production, wrap with golang.org/x/net/http2/h2c.
 	}
 
 	return &Server{
-		cfg:  cfg,
-		http: httpSrv,
+		cfg:     cfg,
+		http:    httpSrv,
+		limiter: limiter,
 	}
 }
 
 // Start begins listening and serving. It blocks until the context is cancelled
 // or a fatal accept error occurs. Graceful shutdown is attempted on context
-// cancellation.
+// cancellation with a 5-second deadline.
 func (s *Server) Start(ctx context.Context) error {
 	shutdownDone := make(chan error, 1)
 
@@ -91,4 +107,13 @@ func (s *Server) Start(ctx context.Context) error {
 // Addr returns the configured listen address.
 func (s *Server) Addr() string {
 	return s.cfg.Addr
+}
+
+// ActiveConns returns the number of currently in-flight requests.
+// Returns 0 when MaxConns is 0 (no limiting configured).
+func (s *Server) ActiveConns() int64 {
+	if s.limiter == nil {
+		return 0
+	}
+	return s.limiter.ActiveConns()
 }
