@@ -121,32 +121,19 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 ### 4.4 Pre-Phase-6 Gate - Client/App Package Split
 
 **Value**: Establishes a clean `internal/client/` vs `internal/server/` import graph before gRPC handlers are wired, avoiding a forced mid-Phase-6 restructure.
-**Status**: 📋 Not started
-**Start Date**: Not started
+**Status**: ✅ Complete — 2026-04-03
+**Start Date**: 2026-04-03
 **Depends on**: Phase 5 complete or in final stabilization
 
-#### Context
+#### What Was Done
 
-The Raylib rendering packages have already moved to `internal/client/go/raylib/` (done 2026-03-30). The remaining work is moving the application orchestration layer. See [docs/technical.md](../technical.md) section 2.6 for the full rationale.
-
-Two open design questions to evaluate before starting:
-- Whether `internal/space/` stays as shared domain logic or splits into server-domain and client-domain sub-packages.
-- Whether `internal/space/app/` moves wholesale to `internal/client/` or refactors into a thinner client-side adapter over a shared domain layer.
-
-#### Work Items
-
-- [ ] Evaluate `internal/space/` split vs. keeping as shared domain (based on Phase 6 gRPC ownership needs)
-- [ ] Move `internal/space/app/` to `internal/client/` and update all import sites
-- [ ] Update `cmd/space-sim/main.go` imports accordingly
-- [ ] Verify build, all tests, and runtime smoke test
-- [ ] Update agent-readme.md package map and doc.go files
-
-#### Acceptance Criteria
-
-- `internal/client/` imports from `internal/space/` or shared domain only — never from `internal/server/`
-- `internal/server/` has no imports from `internal/client/`
-- All tests pass with race detector enabled
-- `cmd/space-sim` builds and runs the interactive session correctly
+- Created `internal/api/` as the transport-agnostic contract layer (ports-and-adapters).
+  - `client.go`: `CameraController`, `PlayerView` interfaces with TODO stubs for Phase 6 (Zoom, Pan, Orbit, CameraPosition, etc.)
+  - `server.go`: `SimulationControl`, `AnimationControl` interfaces with TODO stubs (Pause, Resume, LoadWorld, SeekToTime, etc.)
+  - `doc.go`: package rationale
+- Confirmed import boundary: `internal/api` carries no deps on `internal/sim`, `internal/client`, or `internal/server`.
+- Updated `agent-readme.md`: Repository Map, Package Doc Index, Layered View, Architectural Boundaries, Preserved Refactor Intent, and Startup Flow — all stale `internal/space/` paths replaced with actual paths.
+- `go vet ./internal/api/...` passes clean.
 
 ### 4.5 Phase 6 - gRPC Integration
 

@@ -65,9 +65,14 @@ Default agent assumptions:
 ### Runtime and Application
 
 - [cmd/space-sim/](../../cmd/space-sim): app entrypoint and CLI flag parsing.
-- [internal/space/app/](../../internal/space/app): runtime orchestration, windowing, session setup, input handling, performance mode, fullscreen, debug support.
+- [internal/client/go/raylib/app/](../../internal/client/go/raylib/app): runtime orchestration, windowing, session setup, input handling, performance mode, fullscreen, debug support.
 - [internal/client/go/raylib/ui/render/](../../internal/client/go/raylib/ui/render): Raylib-backed rendering and help screen drawing.
+- [internal/client/go/raylib/ui/](../../internal/client/go/raylib/ui): generic camera and selection state (Raylib client layer).
 - [internal/client/go/raylib/spatial/](../../internal/client/go/raylib/spatial): Raylib-backed frustum culling and spatial partitioning helpers.
+
+### API Contract Layer
+
+- [internal/api/](../../internal/api): transport-agnostic Go interfaces defining the client and server ports. `CameraController` and `PlayerView` are the client-side ports; `SimulationControl` and `AnimationControl` are the server-side ports. gRPC and Raylib adapters will implement these interfaces.
 
 ### Server Infrastructure
 
@@ -83,11 +88,11 @@ Default agent assumptions:
 - [internal/client/commands/](../../internal/client/commands): reserved for REPL command types (empty).
 - [internal/client/repl/](../../internal/client/repl): reserved for REPL implementation (empty).
 
-### Core Domain and Simulation
+### Core Domain and Simulation (server-owned)
 
-- [internal/space/engine/](../../internal/space/engine): pure simulation kernel, math, object model, double buffer, physics update loop, feature configs, constants.
-- [internal/space/ui/](../../internal/space/ui): generic camera and selection state with no Raylib dependency.
-- [internal/space/](../../internal/space): SOL-specific loading, belt generation, JSON schema structs, object constructors, and simulation wrapper.
+- [internal/sim/engine/](../../internal/sim/engine): pure simulation kernel, math, object model, double buffer, physics update loop, feature configs, constants.
+- [internal/sim/world/](../../internal/sim/world): simulation process layer; drives the engine at runtime, manages asteroid dataset lifecycle.
+- [internal/sim/](../../internal/sim): SOL-specific loading, belt generation, JSON schema structs, and object constructors. Server owns world loading.
 
 ### Configuration and Data
 
@@ -107,10 +112,9 @@ Default agent assumptions:
 Use these package docs as the fastest package-level orientation pass before drilling into source files.
 
 - [cmd/space-sim/doc.go](../../cmd/space-sim/doc.go): interactive application entrypoint and CLI bootstrap.
-- [internal/space/doc.go](../../internal/space/doc.go): application-layer JSON loading, object construction, belt generation, and simulation wrapper.
-- [internal/space/app/doc.go](../../internal/space/app/doc.go): app runtime orchestration, window/session lifecycle, and execution modes.
-- [internal/space/engine/doc.go](../../internal/space/engine/doc.go): renderer-agnostic simulation kernel, object model, double buffer, and physics loop.
-- [internal/space/ui/doc.go](../../internal/space/ui/doc.go): generic camera, selection, and performance option state.
+- [internal/sim/doc.go](../../internal/sim/doc.go): server-side JSON loading, object construction, belt generation, and simulation wrapper.
+- [internal/client/go/raylib/app/doc.go](../../internal/client/go/raylib/app/doc.go): Raylib app runtime orchestration, window/session lifecycle, and execution modes.
+- [internal/sim/engine/doc.go](../../internal/sim/engine/doc.go): renderer-agnostic simulation kernel, object model, double buffer, and physics loop.
 - [internal/client/go/raylib/spatial/doc.go](../../internal/client/go/raylib/spatial/doc.go): Raylib-backed frustum culling and spatial partitioning helpers.
 - [internal/client/go/raylib/ui/render/doc.go](../../internal/client/go/raylib/ui/render/doc.go): Raylib rendering implementation for scene and overlay drawing.
 
@@ -120,31 +124,35 @@ Use these package docs as the fastest package-level orientation pass before dril
 
 1. CLI/bootstrap layer.
 	 - [cmd/space-sim/main.go](../../cmd/space-sim/main.go) parses flags, loads app config, builds `app.Config`, and starts the application with signal-aware shutdown.
-2. Application orchestration layer.
-	 - `internal/space/app` owns window lifecycle, runtime session creation, input dispatch, interactive loop, and performance mode execution.
-3. Domain/runtime layer.
-	 - `internal/space` loads JSON, translates system definitions into engine objects, and manages SOL-specific asteroid and Kuiper belt dataset behavior.
-4. Engine layer.
-	 - `internal/space/engine` owns immutable object metadata, mutable animation state, double-buffer synchronization, and physics updates.
-5. UI state layer.
-	 - `internal/space/ui` models camera state, selection state, and performance option state without renderer coupling.
-6. Renderer layer.
+2. Application orchestration layer (client).
+	 - `internal/client/go/raylib/app` owns window lifecycle, runtime session creation, input dispatch, interactive loop, and performance mode execution.
+3. API contract layer.
+	 - `internal/api` defines transport-agnostic Go interfaces (`CameraController`, `PlayerView`, `SimulationControl`, `AnimationControl`) that decouple client from server.
+4. Domain/runtime layer (server).
+	 - `internal/sim` loads JSON, translates system definitions into engine objects, and manages SOL-specific asteroid and Kuiper belt dataset behavior.
+5. Engine layer.
+	 - `internal/sim/engine` owns immutable object metadata, mutable animation state, double-buffer synchronization, and physics updates.
+6. UI state layer.
+	 - `internal/client/go/raylib/ui` models camera state and selection state for the Raylib client.
+7. Renderer layer.
 	 - Raylib integration consumes the front buffer and UI state to draw the scene and overlays.
 
 ### Important Architectural Boundaries
 
-- `internal/space/engine` should remain stdlib-only and renderer-agnostic.
-- `internal/space/ui` should remain generic UI state, not a place for Raylib calls.
-- `internal/space` is where JSON loading and SOL-specific translation logic belong.
-- `internal/space/app` is allowed to orchestrate, but should not absorb engine or schema responsibilities.
+- `internal/sim/engine` must remain stdlib-only and renderer-agnostic.
+- `internal/api` must have no imports from `internal/sim`, `internal/client`, or `internal/server` — it is the contract layer, not an implementation.
+- `internal/sim` (loading, belts, world) is server-owned. Clients must not import it directly; they receive state via `protocol.WorldSnapshot`.
+- `internal/client/*` must never import `internal/server/*`.
+- `internal/server/*` must never import `internal/client/*`.
+- Raylib-specific code stays under `internal/client/go/raylib/`.
 
 ### Preserved Refactor Intent
 
 The current layout preserves the useful intent of the completed `main.go` refactor work without treating the old plan as an active source of truth:
 
 - Keep [cmd/space-sim/main.go](../../cmd/space-sim/main.go) as a thin bootstrap that parses flags, loads config, constructs the app, and runs it.
-- Keep application orchestration and application modes in [internal/space/app/](../../internal/space/app), including interactive and performance flows.
-- Keep mutable runtime and window/UI state centralized in [internal/space/app/runtime_context.go](../../internal/space/app/runtime_context.go) rather than spreading pass-through state across long parameter lists.
+- Keep application orchestration and application modes in [internal/client/go/raylib/app/](../../internal/client/go/raylib/app), including interactive and performance flows.
+- Keep mutable runtime and window/UI state centralized in [internal/client/go/raylib/app/runtime_context.go](../../internal/client/go/raylib/app/runtime_context.go) rather than spreading pass-through state across long parameter lists.
 - Keep Raylib-specific drawing isolated under [internal/client/go/raylib/ui/render/](../../internal/client/go/raylib/ui/render) so rendering concerns stay separate from bootstrap and engine logic.
 - Preserve the responsibility split as historical rationale for the current architecture, not as a requirement to recreate every file named in the original refactor plan.
 
@@ -157,7 +165,7 @@ The current layout preserves the useful intent of the completed `main.go` refact
 3. Construct `app.Config` and validate it.
 4. Create the app runtime context and renderer.
 5. Initialize the window and runtime session.
-6. Load the selected JSON system via `internal/space.LoadSystemFromFile`.
+6. Load the selected JSON system via `internal/sim.LoadSystemFromFile`.
 7. Start the simulation goroutine with signal-aware cancellation.
 8. Enter either interactive mode or performance mode.
 
