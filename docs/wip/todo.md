@@ -137,29 +137,52 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 
 ### 4.5 Phase 6 - gRPC Integration
 
-**Value**: Connects live server components to client-facing transport.
+**Value**: Connects live server components to client-facing transport via ConnectRPC (Apache 2.0, v1.19.1).
 **Status**: 📋 Not started
 **Start Date**: Not started
 **Depends on**: Phase 1 through Phase 5
 
+#### Binary Model
+
+- `space-sim-direct` — Raylib client + in-process server. No network transport. Current working binary.
+- `space-sim-grpc` (Phase 6 target, Option A) — Raylib client + embedded ConnectRPC server in one process. Client dials `localhost`. Full wire path without two processes.
+- Option B (future) — Split into `space-sim-server` and `space-sim-client`. Player identification and registration handled on gRPC connection. JS/browser client connects to the same server binary.
+
+#### Decisions
+
+- **Command RPCs acknowledge queueing immediately** and return an `event_id`. Events are async; clients query state separately (CQRS pattern).
+- **Transport**: ConnectRPC. Server natively speaks gRPC + gRPC-Web + Connect protocols. No proxy needed for browser clients.
+- **Proto/generated code location**: `api/proto/spacesim/v1/` (public, importable by 3rd parties); generated Go at `api/gen/spacesim/v1/`.
+- **`internal/api/`** remains internal-only; it defines Go interface ports, not the wire contract.
+
+#### Sub-phases
+
+- **6a**: Toolchain + proto. Add `connectrpc.com/connect` and `google.golang.org/protobuf` to `go.mod`. Write `api/proto/spacesim/v1/simulation.proto`. Add `buf.yaml` + `buf.gen.yaml`. Generate Go stubs into `api/gen/`.
+- **6b**: Server scaffold. `internal/transport/grpc/` package. Start/Stop lifecycle. DI wiring: inject `internal/api/` interfaces into Raylib app constructor; provide direct adapter (in-process) and ConnectRPC adapter.
+- **6c**: Handler implementations. `SimulationService` and `WorldService` handlers delegating to `eventqueue` and `runtime`.
+- **6d**: Connection limit + idle timeout interceptors.
+- **6e**: Integration tests (bufconn). Command round-trip, over-limit rejection, snapshot stream.
+
 #### Work Items
 
-- [ ] Add `version` fields to all proto messages
-- [ ] Wire RPC handlers to queue and runtime APIs
-- [ ] Add connection limit enforcement
-- [ ] Add idle timeout handling
-- [ ] Add end-to-end integration tests
-
-#### Open Questions
-
-- Should command RPCs acknowledge queueing immediately or wait for applied results
+- [ ] 6a: Add ConnectRPC + protobuf deps to go.mod
+- [ ] 6a: Write simulation.proto (SimulationService, WorldService); all messages carry version field
+- [ ] 6a: Add buf.yaml + buf.gen.yaml; generate Go stubs
+- [ ] 6b: Create internal/transport/grpc/ scaffold with Start/Stop
+- [ ] 6b: Wire internal/api/ interfaces into Raylib app constructor (direct adapter)
+- [ ] 6c: Implement SimulationService handler (SetSpeed, GetSpeed, SetDataset, GetDataset, GetSimulationTime)
+- [ ] 6c: Implement WorldService handler (StreamSnapshot from protocol.Broadcaster)
+- [ ] 6d: Connection limit + idle timeout interceptors
+- [ ] 6e: bufconn integration tests
 
 #### Acceptance Criteria
 
 - All intended REPL commands map cleanly to transport handlers
-- Over-limit connections are rejected gracefully
+- Command RPCs return queued ack with event_id immediately
+- Over-limit connections are rejected with ResourceExhausted
 - Idle clients are disconnected as configured
-- Query RPCs return current runtime state directly
+- Snapshot stream delivers WorldSnapshot to connected clients
+- `space-sim-grpc` builds and runs end-to-end against the embedded server
 
 ### 4.6 Phase 7 - Additional Pool Types
 
