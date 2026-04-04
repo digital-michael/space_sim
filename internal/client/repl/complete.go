@@ -17,7 +17,7 @@ var topVerbs = []string{
 // subCmds maps a multi-word verb to its valid sub-commands.
 var subCmds = map[string][]string{
 	"system": {"list", "get", "load"},
-	"window": {"get", "size", "maximize", "restore"},
+	"window": {"get", "size", "maximize", "restore", "full"},
 	"camera": {"get", "center", "orient", "position", "track"},
 	"nav":    {"stop", "velocity", "forward", "back", "left", "right", "up", "down", "jump"},
 	"perf":   {"get", "set"},

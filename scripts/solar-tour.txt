@@ -1,51 +1,22 @@
 hud off
 
-window maximize
+window full on
 
 sleep 2
 
-nav jump sol 2 
-orbit sol 15 1
+for stars as X:
+nav jump X 2
+orbit X 15 2
 sleep 2
 
-nav jump mercury 2 
-orbit mercury 15 2
+for planets as X:
+nav jump X 2
+orbit X 15 2
 sleep 2
 
-nav jump venus 2 
-orbit venus 15 2
-sleep 2
-
-nav jump earth 2 
-orbit earth 15 2
-sleep 2
-
-nav jump mars 2 
-orbit mars 15 2
-sleep 2
-
-nav jump jupiter 2 
-orbit jupiter 15 2
-sleep 2
-
-nav jump saturn 2 
-orbit saturn 15 2
-sleep 2
-
-nav jump uranus 2 
-orbit uranus 15 2
-sleep 2
-
-nav jump neptune 2 
-orbit neptune 15 2
-sleep 2
-
-nav jump pluto 2
-orbit pluto 15 2
-sleep 2
-
-nav jump sol 2
-orbit sol 15 2
+for moons as X:
+nav jump X 2
+orbit X 15 2
 sleep 2
 
 window restore

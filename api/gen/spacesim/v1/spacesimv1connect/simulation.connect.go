@@ -89,6 +89,9 @@ const (
 	// WindowServiceSetWindowRestoreProcedure is the fully-qualified name of the WindowService's
 	// SetWindowRestore RPC.
 	WindowServiceSetWindowRestoreProcedure = "/spacesim.v1.WindowService/SetWindowRestore"
+	// WindowServiceSetWindowFullscreenProcedure is the fully-qualified name of the WindowService's
+	// SetWindowFullscreen RPC.
+	WindowServiceSetWindowFullscreenProcedure = "/spacesim.v1.WindowService/SetWindowFullscreen"
 	// CameraServiceGetCameraProcedure is the fully-qualified name of the CameraService's GetCamera RPC.
 	CameraServiceGetCameraProcedure = "/spacesim.v1.CameraService/GetCamera"
 	// CameraServiceSetCameraOrientProcedure is the fully-qualified name of the CameraService's
@@ -525,6 +528,7 @@ type WindowServiceClient interface {
 	SetWindowSize(context.Context, *connect.Request[v1.SetWindowSizeRequest]) (*connect.Response[v1.SetWindowSizeResponse], error)
 	SetWindowMaximize(context.Context, *connect.Request[v1.SetWindowMaximizeRequest]) (*connect.Response[v1.SetWindowMaximizeResponse], error)
 	SetWindowRestore(context.Context, *connect.Request[v1.SetWindowRestoreRequest]) (*connect.Response[v1.SetWindowRestoreResponse], error)
+	SetWindowFullscreen(context.Context, *connect.Request[v1.SetWindowFullscreenRequest]) (*connect.Response[v1.SetWindowFullscreenResponse], error)
 }
 
 // NewWindowServiceClient constructs a client for the spacesim.v1.WindowService service. By default,
@@ -562,15 +566,22 @@ func NewWindowServiceClient(httpClient connect.HTTPClient, baseURL string, opts 
 			connect.WithSchema(windowServiceMethods.ByName("SetWindowRestore")),
 			connect.WithClientOptions(opts...),
 		),
+		setWindowFullscreen: connect.NewClient[v1.SetWindowFullscreenRequest, v1.SetWindowFullscreenResponse](
+			httpClient,
+			baseURL+WindowServiceSetWindowFullscreenProcedure,
+			connect.WithSchema(windowServiceMethods.ByName("SetWindowFullscreen")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // windowServiceClient implements WindowServiceClient.
 type windowServiceClient struct {
-	getWindow         *connect.Client[v1.GetWindowRequest, v1.GetWindowResponse]
-	setWindowSize     *connect.Client[v1.SetWindowSizeRequest, v1.SetWindowSizeResponse]
-	setWindowMaximize *connect.Client[v1.SetWindowMaximizeRequest, v1.SetWindowMaximizeResponse]
-	setWindowRestore  *connect.Client[v1.SetWindowRestoreRequest, v1.SetWindowRestoreResponse]
+	getWindow           *connect.Client[v1.GetWindowRequest, v1.GetWindowResponse]
+	setWindowSize       *connect.Client[v1.SetWindowSizeRequest, v1.SetWindowSizeResponse]
+	setWindowMaximize   *connect.Client[v1.SetWindowMaximizeRequest, v1.SetWindowMaximizeResponse]
+	setWindowRestore    *connect.Client[v1.SetWindowRestoreRequest, v1.SetWindowRestoreResponse]
+	setWindowFullscreen *connect.Client[v1.SetWindowFullscreenRequest, v1.SetWindowFullscreenResponse]
 }
 
 // GetWindow calls spacesim.v1.WindowService.GetWindow.
@@ -593,12 +604,18 @@ func (c *windowServiceClient) SetWindowRestore(ctx context.Context, req *connect
 	return c.setWindowRestore.CallUnary(ctx, req)
 }
 
+// SetWindowFullscreen calls spacesim.v1.WindowService.SetWindowFullscreen.
+func (c *windowServiceClient) SetWindowFullscreen(ctx context.Context, req *connect.Request[v1.SetWindowFullscreenRequest]) (*connect.Response[v1.SetWindowFullscreenResponse], error) {
+	return c.setWindowFullscreen.CallUnary(ctx, req)
+}
+
 // WindowServiceHandler is an implementation of the spacesim.v1.WindowService service.
 type WindowServiceHandler interface {
 	GetWindow(context.Context, *connect.Request[v1.GetWindowRequest]) (*connect.Response[v1.GetWindowResponse], error)
 	SetWindowSize(context.Context, *connect.Request[v1.SetWindowSizeRequest]) (*connect.Response[v1.SetWindowSizeResponse], error)
 	SetWindowMaximize(context.Context, *connect.Request[v1.SetWindowMaximizeRequest]) (*connect.Response[v1.SetWindowMaximizeResponse], error)
 	SetWindowRestore(context.Context, *connect.Request[v1.SetWindowRestoreRequest]) (*connect.Response[v1.SetWindowRestoreResponse], error)
+	SetWindowFullscreen(context.Context, *connect.Request[v1.SetWindowFullscreenRequest]) (*connect.Response[v1.SetWindowFullscreenResponse], error)
 }
 
 // NewWindowServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -632,6 +649,12 @@ func NewWindowServiceHandler(svc WindowServiceHandler, opts ...connect.HandlerOp
 		connect.WithSchema(windowServiceMethods.ByName("SetWindowRestore")),
 		connect.WithHandlerOptions(opts...),
 	)
+	windowServiceSetWindowFullscreenHandler := connect.NewUnaryHandler(
+		WindowServiceSetWindowFullscreenProcedure,
+		svc.SetWindowFullscreen,
+		connect.WithSchema(windowServiceMethods.ByName("SetWindowFullscreen")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/spacesim.v1.WindowService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case WindowServiceGetWindowProcedure:
@@ -642,6 +665,8 @@ func NewWindowServiceHandler(svc WindowServiceHandler, opts ...connect.HandlerOp
 			windowServiceSetWindowMaximizeHandler.ServeHTTP(w, r)
 		case WindowServiceSetWindowRestoreProcedure:
 			windowServiceSetWindowRestoreHandler.ServeHTTP(w, r)
+		case WindowServiceSetWindowFullscreenProcedure:
+			windowServiceSetWindowFullscreenHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -665,6 +690,10 @@ func (UnimplementedWindowServiceHandler) SetWindowMaximize(context.Context, *con
 
 func (UnimplementedWindowServiceHandler) SetWindowRestore(context.Context, *connect.Request[v1.SetWindowRestoreRequest]) (*connect.Response[v1.SetWindowRestoreResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.WindowService.SetWindowRestore is not implemented"))
+}
+
+func (UnimplementedWindowServiceHandler) SetWindowFullscreen(context.Context, *connect.Request[v1.SetWindowFullscreenRequest]) (*connect.Response[v1.SetWindowFullscreenResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.WindowService.SetWindowFullscreen is not implemented"))
 }
 
 // CameraServiceClient is a client for the spacesim.v1.CameraService service.

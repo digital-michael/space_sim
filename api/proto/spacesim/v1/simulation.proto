@@ -239,6 +239,7 @@ service WindowService {
   rpc SetWindowSize(SetWindowSizeRequest) returns (SetWindowSizeResponse);
   rpc SetWindowMaximize(SetWindowMaximizeRequest) returns (SetWindowMaximizeResponse);
   rpc SetWindowRestore(SetWindowRestoreRequest) returns (SetWindowRestoreResponse);
+  rpc SetWindowFullscreen(SetWindowFullscreenRequest) returns (SetWindowFullscreenResponse);
 }
 
 // WindowState is a snapshot of the current window geometry.
@@ -273,6 +274,15 @@ message SetWindowMaximizeResponse {
 
 message SetWindowRestoreRequest  { uint32 version = 1; }
 message SetWindowRestoreResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message SetWindowFullscreenRequest {
+  uint32 version    = 1;
+  bool   fullscreen = 2;
+}
+message SetWindowFullscreenResponse {
   uint32     version = 1;
   CommandAck ack     = 2;
 }

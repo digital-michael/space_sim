@@ -30,6 +30,11 @@ type WindowMaximizeCmd struct{}
 // If no prior windowed size is recorded, defaults are used.
 type WindowRestoreCmd struct{}
 
+// WindowFullscreenCmd toggles true fullscreen on (On=true) or reverts to windowed (On=false).
+type WindowFullscreenCmd struct {
+	On bool
+}
+
 // GetWindowCmd requests a snapshot of the current window state.
 // The caller must pre-create the buffered channel and wait on it.
 type GetWindowCmd struct {
@@ -164,10 +169,11 @@ type OrbitCmd struct {
 
 // ── marker interface implementations ─────────────────────────────────────────
 
-func (WindowSizeCmd) isAppCmd()      {}
-func (WindowMaximizeCmd) isAppCmd()  {}
-func (WindowRestoreCmd) isAppCmd()   {}
-func (GetWindowCmd) isAppCmd()       {}
+func (WindowSizeCmd) isAppCmd()        {}
+func (WindowMaximizeCmd) isAppCmd()    {}
+func (WindowRestoreCmd) isAppCmd()     {}
+func (WindowFullscreenCmd) isAppCmd()  {}
+func (GetWindowCmd) isAppCmd()         {}
 func (CameraOrientCmd) isAppCmd()    {}
 func (CameraPositionCmd) isAppCmd()  {}
 func (CameraTrackCmd) isAppCmd()     {}

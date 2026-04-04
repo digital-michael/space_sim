@@ -152,6 +152,12 @@ type WindowMaximize struct{}
 //	window restore
 type WindowRestore struct{}
 
+// WindowFullscreen enters (On=true) or exits (On=false) true fullscreen mode.
+//
+//	window full on
+//	window full off
+type WindowFullscreen struct{ On bool }
+
 // ─── Camera commands ──────────────────────────────────────────────────────────
 
 // CameraGet prints current camera state.
@@ -278,10 +284,11 @@ type HUD struct {
 func (SystemList) isCmd()     {}
 func (SystemGet) isCmd()      {}
 func (SystemLoad) isCmd()     {}
-func (WindowGet) isCmd()      {}
-func (WindowSize) isCmd()     {}
-func (WindowMaximize) isCmd() {}
-func (WindowRestore) isCmd()  {}
+func (WindowGet) isCmd()        {}
+func (WindowSize) isCmd()       {}
+func (WindowMaximize) isCmd()   {}
+func (WindowRestore) isCmd()    {}
+func (WindowFullscreen) isCmd() {}
 func (CameraGet) isCmd()      {}
 func (CameraCenter) isCmd()   {}
 func (CameraOrient) isCmd()   {}
@@ -433,7 +440,7 @@ func Parse(line string) (Cmd, error) {
 	// ── Window ────────────────────────────────────────────────────────────────
 	case "window":
 		if len(args) == 0 {
-			return nil, fmt.Errorf("window: subcommand required (get|size|maximize|restore)")
+			return nil, fmt.Errorf("window: subcommand required (get|size|maximize|restore|full)")
 		}
 		switch args[0] {
 		case "get":
@@ -459,6 +466,18 @@ func Parse(line string) (Cmd, error) {
 			return WindowMaximize{}, nil
 		case "restore":
 			return WindowRestore{}, nil
+		case "full":
+			if len(args) < 2 {
+				return nil, fmt.Errorf("window full: on|off required")
+			}
+			switch strings.ToLower(args[1]) {
+			case "on":
+				return WindowFullscreen{On: true}, nil
+			case "off":
+				return WindowFullscreen{On: false}, nil
+			default:
+				return nil, fmt.Errorf("window full: expected on|off, got %q", args[1])
+			}
 		default:
 			return nil, fmt.Errorf("window: unknown subcommand %q", args[0])
 		}

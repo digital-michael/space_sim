@@ -245,6 +245,11 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		rl.SetWindowSize(int(ww), int(wh))
 		a.syncWindowState()
 
+	case WindowFullscreenCmd:
+		if c.On != rl.IsWindowFullscreen() {
+			a.toggleFullscreen()
+		}
+
 	case GetWindowCmd:
 		c.RespCh <- WindowSnapshot{
 			Width:      a.runtime.ScreenWidth,

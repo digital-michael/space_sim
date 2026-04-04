@@ -395,6 +395,15 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 		}
 		r.printf("ok  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
 
+	case commands.WindowFullscreen:
+		resp, err := r.winClient.SetWindowFullscreen(ctx, connect.NewRequest(&v1.SetWindowFullscreenRequest{
+			Fullscreen: c.On,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("ok  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
 	// ── Camera ────────────────────────────────────────────────────────────────
 
 	case commands.CameraCenter:
@@ -797,6 +806,7 @@ Window
   window size <W>x<H>       resize the window  e.g. 1920x1080
   window maximize           maximise the window
   window restore            restore from maximised state
+  window full on|off        enter / exit true fullscreen
 
 Camera
   camera get                show position, orientation, tracking target

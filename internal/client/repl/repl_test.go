@@ -289,6 +289,13 @@ func (s *stubWindow) SetWindowRestore(_ context.Context, _ *connect.Request[v1.S
 	}), nil
 }
 
+func (s *stubWindow) SetWindowFullscreen(_ context.Context, _ *connect.Request[v1.SetWindowFullscreenRequest]) (*connect.Response[v1.SetWindowFullscreenResponse], error) {
+	return connect.NewResponse(&v1.SetWindowFullscreenResponse{
+		Version: 1,
+		Ack:     &v1.CommandAck{EventId: uuid.NewString(), Status: v1.AckStatus_ACK_STATUS_QUEUED},
+	}), nil
+}
+
 type stubCamera struct{}
 
 func (s *stubCamera) GetCamera(_ context.Context, _ *connect.Request[v1.GetCameraRequest]) (*connect.Response[v1.GetCameraResponse], error) {
@@ -455,6 +462,30 @@ func TestREPL_WindowRestore(t *testing.T) {
 	r.Run(context.Background(), strings.NewReader("window restore\nquit\n")) //nolint:errcheck
 	if !strings.Contains(out.String(), "ok") {
 		t.Errorf("expected ack 'ok', got:\n%s", out.String())
+	}
+}
+
+func TestREPL_WindowFullOn(t *testing.T) {
+	_, out, r := newTestServer(t)
+	r.Run(context.Background(), strings.NewReader("window full on\nquit\n")) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected ack 'ok', got:\n%s", out.String())
+	}
+}
+
+func TestREPL_WindowFullOff(t *testing.T) {
+	_, out, r := newTestServer(t)
+	r.Run(context.Background(), strings.NewReader("window full off\nquit\n")) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected ack 'ok', got:\n%s", out.String())
+	}
+}
+
+func TestREPL_WindowFullMissingArg_PrintsError(t *testing.T) {
+	_, out, r := newTestServer(t)
+	r.Run(context.Background(), strings.NewReader("window full\nquit\n")) //nolint:errcheck
+	if !strings.Contains(out.String(), "on|off") {
+		t.Errorf("expected on|off error, got:\n%s", out.String())
 	}
 }
 
@@ -629,16 +660,16 @@ func TestParseForHeader(t *testing.T) {
 		ok      bool
 	}{
 		{"for planets as X:", "planets", "X", true},
-		{"for planets as X", "planets", "X", true},    // no trailing colon
-		{"for PLANETS AS X:", "planets", "X", true},   // case-insensitive keywords
+		{"for planets as X", "planets", "X", true},  // no trailing colon
+		{"for PLANETS AS X:", "planets", "X", true}, // case-insensitive keywords
 		{"for dwarf_planets as P:", "dwarf_planets", "P", true},
 		{"for moons as M:", "moons", "M", true},
 		{"for stars as S:", "stars", "S", true},
 		{"for asteroids as A:", "asteroids", "A", true},
-		{"nav jump X", "", "", false},   // not a for header
-		{"for planets X:", "", "", false}, // missing "as"
-		{"for planets:", "", "", false},   // missing var and "as"
-		{"for:", "", "", false},            // bare for
+		{"nav jump X", "", "", false},            // not a for header
+		{"for planets X:", "", "", false},        // missing "as"
+		{"for planets:", "", "", false},          // missing var and "as"
+		{"for:", "", "", false},                  // bare for
 		{"foreach planets as X:", "", "", false}, // wrong keyword
 	}
 	for _, c := range cases {

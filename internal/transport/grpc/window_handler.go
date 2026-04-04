@@ -74,3 +74,13 @@ func (h *WindowHandler) SetWindowRestore(_ context.Context, _ *connect.Request[v
 		Ack:     &v1.CommandAck{EventId: uuid.NewString(), Status: v1.AckStatus_ACK_STATUS_QUEUED},
 	}), nil
 }
+
+func (h *WindowHandler) SetWindowFullscreen(_ context.Context, req *connect.Request[v1.SetWindowFullscreenRequest]) (*connect.Response[v1.SetWindowFullscreenResponse], error) {
+	if !h.sendCmd(rayapp.WindowFullscreenCmd{On: req.Msg.Fullscreen}) {
+		return nil, connect.NewError(connect.CodeUnavailable, errCmdFull)
+	}
+	return connect.NewResponse(&v1.SetWindowFullscreenResponse{
+		Version: 1,
+		Ack:     &v1.CommandAck{EventId: uuid.NewString(), Status: v1.AckStatus_ACK_STATUS_QUEUED},
+	}), nil
+}
