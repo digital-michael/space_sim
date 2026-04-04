@@ -1,6 +1,6 @@
 module github.com/digital-michael/space_sim
 
-go 1.24.3
+go 1.25.0
 
 require (
 	connectrpc.com/connect v1.19.1
@@ -12,5 +12,6 @@ require (
 require (
 	github.com/ebitengine/purego v0.7.1 // indirect
 	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842 // indirect
-	golang.org/x/sys v0.20.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/term v0.41.0 // indirect
 )

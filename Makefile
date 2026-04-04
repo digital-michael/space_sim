@@ -64,6 +64,13 @@ run-grpc: build-grpc ## Run the gRPC-coupled binary
 run-repl: build-repl ## Run the REPL client (set ADDR= to override server address)
 	./$(REPL_BIN) --addr $${ADDR:-http://localhost:9090}
 
+DEMO_SCRIPT := scripts/solar-tour.txt
+
+.PHONY: demo
+demo: build-repl ## Run the solar system tour demo (requires space-sim-grpc running; set ADDR= to override)
+	@echo "# Running solar tour — make sure space-sim-grpc is running first"
+	./$(REPL_BIN) --addr $${ADDR:-http://localhost:9090} --script $(DEMO_SCRIPT)
+
 # ── Proto ─────────────────────────────────────────────────────────────────────
 
 .PHONY: proto

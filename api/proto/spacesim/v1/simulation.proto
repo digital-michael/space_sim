@@ -178,3 +178,294 @@ message BodyState {
   // visible indicates whether the body should be rendered this frame.
   bool visible = 9;
 }
+
+// ─── SystemService ────────────────────────────────────────────────────────────
+//
+// Live list of available solar-system files and runtime system switching.
+
+service SystemService {
+  // ListSystems returns all discoverable system JSON files.
+  rpc ListSystems(ListSystemsRequest) returns (ListSystemsResponse);
+
+  // GetActiveSystem returns the currently loaded system.
+  rpc GetActiveSystem(GetActiveSystemRequest) returns (GetActiveSystemResponse);
+
+  // LoadSystem triggers an in-place session reload to the given system path.
+  // Returns a CommandAck; the reload happens on the main thread asynchronously.
+  rpc LoadSystem(LoadSystemRequest) returns (LoadSystemResponse);
+}
+
+// SystemInfo describes a single discoverable system file.
+message SystemInfo {
+  // label is the human-readable display name (e.g. "solar_system").
+  string label = 1;
+
+  // path is the relative file path from the repo root (e.g.
+  // "data/systems/solar_system.json").
+  string path = 2;
+}
+
+message ListSystemsRequest  { uint32 version = 1; }
+message ListSystemsResponse {
+  uint32 version = 1;
+  repeated SystemInfo systems = 2;
+}
+
+message GetActiveSystemRequest  { uint32 version = 1; }
+message GetActiveSystemResponse {
+  uint32 version = 1;
+  SystemInfo active = 2;
+}
+
+message LoadSystemRequest {
+  uint32 version = 1;
+  // path must refer to a file under data/systems/. Traversal outside that
+  // directory is rejected with CodeInvalidArgument.
+  string path = 2;
+}
+message LoadSystemResponse {
+  uint32 version = 1;
+  CommandAck ack  = 2;
+}
+
+// ─── WindowService ────────────────────────────────────────────────────────────
+//
+// Query and mutate the Raylib window state (size, maximise, restore).
+// Mutating RPCs push an AppCmd that is executed on the OS main thread; they
+// return a CommandAck immediately.
+
+service WindowService {
+  rpc GetWindow(GetWindowRequest) returns (GetWindowResponse);
+  rpc SetWindowSize(SetWindowSizeRequest) returns (SetWindowSizeResponse);
+  rpc SetWindowMaximize(SetWindowMaximizeRequest) returns (SetWindowMaximizeResponse);
+  rpc SetWindowRestore(SetWindowRestoreRequest) returns (SetWindowRestoreResponse);
+}
+
+// WindowState is a snapshot of the current window geometry.
+message WindowState {
+  int32 width      = 1;
+  int32 height     = 2;
+  bool  fullscreen = 3;
+  bool  maximized  = 4;
+}
+
+message GetWindowRequest  { uint32 version = 1; }
+message GetWindowResponse {
+  uint32      version = 1;
+  WindowState window  = 2;
+}
+
+message SetWindowSizeRequest {
+  uint32 version = 1;
+  int32  width   = 2;
+  int32  height  = 3;
+}
+message SetWindowSizeResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message SetWindowMaximizeRequest  { uint32 version = 1; }
+message SetWindowMaximizeResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message SetWindowRestoreRequest  { uint32 version = 1; }
+message SetWindowRestoreResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+// ─── CameraService ────────────────────────────────────────────────────────────
+//
+// Read and set camera orientation, position, and tracking target.
+// All mutating RPCs push AppCmds executed on the OS main thread.
+
+service CameraService {
+  rpc GetCamera(GetCameraRequest) returns (GetCameraResponse);
+  rpc SetCameraOrient(SetCameraOrientRequest) returns (SetCameraOrientResponse);
+  rpc SetCameraPosition(SetCameraPositionRequest) returns (SetCameraPositionResponse);
+  rpc SetCameraTrack(SetCameraTrackRequest) returns (SetCameraTrackResponse);
+  rpc StartOrbit(StartOrbitRequest) returns (StartOrbitResponse);
+}
+
+// WireCameraState is the wire representation of current camera state.
+message WireCameraState {
+  // yaw_deg is the horizontal angle in degrees (0–360, 0 = +Z).
+  float yaw_deg = 1;
+
+  // pitch_deg is the vertical angle in degrees (−85 to +85).
+  float pitch_deg = 2;
+
+  // pos_x/y/z is the camera world position in AU.
+  double pos_x = 3;
+  double pos_y = 4;
+  double pos_z = 5;
+
+  // mode is "free" or "tracking".
+  string mode = 6;
+
+  // track_target is the name of the tracked body, or "" when in free mode.
+  string track_target = 7;
+}
+
+message GetCameraRequest  { uint32 version = 1; }
+message GetCameraResponse {
+  uint32          version = 1;
+  WireCameraState camera  = 2;
+}
+
+message SetCameraOrientRequest {
+  uint32 version   = 1;
+  float  yaw_deg   = 2;
+  float  pitch_deg = 3;
+}
+message SetCameraOrientResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message SetCameraPositionRequest {
+  uint32 version = 1;
+  double pos_x   = 2;
+  double pos_y   = 3;
+  double pos_z   = 4;
+}
+message SetCameraPositionResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message SetCameraTrackRequest {
+  uint32 version = 1;
+  // name is the body name to track; "" returns to free-fly mode.
+  string name = 2;
+}
+message SetCameraTrackResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message StartOrbitRequest {
+  uint32 version = 1;
+  // name is the body to orbit.
+  string name             = 2;
+  // speed_deg_per_sec is the angular speed in degrees per second.
+  // Positive = counter-clockwise when viewed from above.
+  float  speed_deg_per_sec = 3;
+  // orbits is the number of full 360° circuits to complete.
+  float  orbits           = 4;
+}
+message StartOrbitResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+// ─── NavigationService ────────────────────────────────────────────────────────
+//
+// Continuous-velocity camera movement and animated jump sequences.
+// SetVelocity stores a persistent per-frame drift applied each frame until
+// zeroed. JumpTo queues a multi-hop animated sequence.
+
+service NavigationService {
+  rpc GetVelocity(GetVelocityRequest) returns (GetVelocityResponse);
+  rpc SetVelocity(SetVelocityRequest) returns (SetVelocityResponse);
+  rpc JumpTo(JumpToRequest) returns (JumpToResponse);
+}
+
+// Velocity3 is a 3-axis velocity in AU/s.
+message Velocity3 {
+  float x = 1;
+  float y = 2;
+  float z = 3;
+}
+
+message GetVelocityRequest  { uint32 version = 1; }
+message GetVelocityResponse {
+  uint32    version  = 1;
+  Velocity3 velocity = 2;
+}
+
+message SetVelocityRequest {
+  uint32    version  = 1;
+  Velocity3 velocity = 2;
+}
+message SetVelocityResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message JumpToRequest {
+  uint32 version = 1;
+  // names is the ordered sequence of body names to jump to.
+  // Each jump triggers after the previous animation completes.
+  repeated string names = 2;
+}
+message JumpToResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+// ─── PerformanceService ───────────────────────────────────────────────────────
+//
+// Read and partially update the nine rendering/physics performance knobs.
+
+service PerformanceService {
+  rpc GetPerformance(GetPerformanceRequest) returns (GetPerformanceResponse);
+  rpc SetPerformance(SetPerformanceRequest) returns (SetPerformanceResponse);
+}
+
+// PerformanceState carries all tunable knobs.
+message PerformanceState {
+  bool  frustum_culling       = 1;
+  bool  lod_enabled           = 2;
+  bool  instanced_rendering   = 3;
+  bool  spatial_partition     = 4;
+  bool  point_rendering       = 5;
+  int32 importance_threshold  = 6;
+  bool  use_in_place_swap     = 7;
+  float camera_speed          = 8;
+  int32 num_workers           = 9;
+  bool  hud_visible           = 10;
+}
+
+message GetPerformanceRequest  { uint32 version = 1; }
+message GetPerformanceResponse {
+  uint32           version = 1;
+  PerformanceState state   = 2;
+}
+
+// SetPerformanceRequest carries the desired state plus field-level set_* masks.
+// Only fields whose corresponding set_* bool is true are applied.
+message SetPerformanceRequest {
+  uint32           version = 1;
+  PerformanceState state   = 2;
+
+  bool set_frustum_culling      = 3;
+  bool set_lod_enabled          = 4;
+  bool set_instanced_rendering  = 5;
+  bool set_spatial_partition    = 6;
+  bool set_point_rendering      = 7;
+  bool set_importance_threshold = 8;
+  bool set_use_in_place_swap    = 9;
+  bool set_camera_speed         = 10;
+  bool set_num_workers          = 11;
+  bool set_hud_visible          = 12;
+}
+message SetPerformanceResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+// ─── ShutdownService ──────────────────────────────────────────────────────────
+//
+// Graceful server shutdown initiated from the REPL.
+
+service ShutdownService {
+  // Shutdown cancels the server context and exits cleanly.
+  rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
+}
+
+message ShutdownRequest  { uint32 version = 1; }
+message ShutdownResponse { uint32 version = 1; }

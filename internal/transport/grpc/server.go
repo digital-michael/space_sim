@@ -41,8 +41,20 @@ type Server struct {
 	limiter *connLimitHandler // nil when MaxConns == 0
 }
 
-// New creates a Server. sim and world are the handler implementations; they
-// are registered on the HTTP mux before the server starts.
+// Handlers groups all ConnectRPC service handler implementations for registration.
+type Handlers struct {
+	Simulation  spacesimv1connect.SimulationServiceHandler
+	World       spacesimv1connect.WorldServiceHandler
+	System      spacesimv1connect.SystemServiceHandler
+	Window      spacesimv1connect.WindowServiceHandler
+	Camera      spacesimv1connect.CameraServiceHandler
+	Navigation  spacesimv1connect.NavigationServiceHandler
+	Performance spacesimv1connect.PerformanceServiceHandler
+	Shutdown    spacesimv1connect.ShutdownServiceHandler
+}
+
+// New creates a Server. All service handlers are registered on the HTTP mux
+// before the server starts.
 //
 // Connection limiting (MaxConns) is enforced via a middleware wrapper.
 // Idle timeout (IdleTimeout) is enforced by net/http natively.
@@ -53,14 +65,32 @@ type Server struct {
 // NOTE (production): for non-local deployments wrap the mux with h2c
 // (golang.org/x/net/http2/h2c) for HTTP/2 cleartext, or configure
 // httpSrv.TLSConfig for TLS.
-func New(cfg ServerConfig, sim spacesimv1connect.SimulationServiceHandler, world spacesimv1connect.WorldServiceHandler) *Server {
+func New(cfg ServerConfig, h Handlers) *Server {
 	mux := http.NewServeMux()
 
-	simPath, simHandler := spacesimv1connect.NewSimulationServiceHandler(sim)
+	simPath, simHandler := spacesimv1connect.NewSimulationServiceHandler(h.Simulation)
 	mux.Handle(simPath, simHandler)
 
-	worldPath, worldHandler := spacesimv1connect.NewWorldServiceHandler(world)
+	worldPath, worldHandler := spacesimv1connect.NewWorldServiceHandler(h.World)
 	mux.Handle(worldPath, worldHandler)
+
+	sysPath, sysHandler := spacesimv1connect.NewSystemServiceHandler(h.System)
+	mux.Handle(sysPath, sysHandler)
+
+	winPath, winHandler := spacesimv1connect.NewWindowServiceHandler(h.Window)
+	mux.Handle(winPath, winHandler)
+
+	camPath, camHandler := spacesimv1connect.NewCameraServiceHandler(h.Camera)
+	mux.Handle(camPath, camHandler)
+
+	navPath, navHandler := spacesimv1connect.NewNavigationServiceHandler(h.Navigation)
+	mux.Handle(navPath, navHandler)
+
+	perfPath, perfHandler := spacesimv1connect.NewPerformanceServiceHandler(h.Performance)
+	mux.Handle(perfPath, perfHandler)
+
+	shutPath, shutHandler := spacesimv1connect.NewShutdownServiceHandler(h.Shutdown)
+	mux.Handle(shutPath, shutHandler)
 
 	var handler http.Handler = mux
 	var limiter *connLimitHandler

@@ -100,7 +100,7 @@ func (s *Simulation) Start(ctx context.Context) {
 			}
 
 			accumulatedTime += dt * currentSpeed
-			if accumulatedTime >= dt {
+			for accumulatedTime >= dt {
 				accumulatedTime -= dt
 
 				select {

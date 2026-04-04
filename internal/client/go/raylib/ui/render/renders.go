@@ -703,7 +703,8 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	var timeRateText string
 	timeRateColor := rl.Gray
 
-	sps := state.SecondsPerSecond
+	// Effective rate = physics-speed multiplier × per-tick time scale.
+	sps := float32(speed) * state.SecondsPerSecond
 	if sps == 0.0 {
 		timeRateText = "Time Rate: PAUSED"
 		timeRateColor = rl.Red
@@ -726,7 +727,7 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 		timeRateText = "Time Rate: 1 year/sec"
 		timeRateColor = rl.Yellow
 	} else {
-		timeRateText = fmt.Sprintf("Time Rate: %.0f sec/sec", sps)
+		timeRateText = fmt.Sprintf("Time Rate: %.4g sec/sec", sps)
 		timeRateColor = rl.Gray
 	}
 	rl.DrawText(timeRateText, leftPad, line4Y, fontMedium, timeRateColor)
@@ -738,7 +739,10 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	if animSpeed == 0.0 {
 		animSpeedText = "Anim Speed: PAUSED"
 		animSpeedColor = rl.Red
-	} else if animSpeed >= 1.0 {
+	} else if animSpeed > 1.0 {
+		animSpeedText = fmt.Sprintf("Anim Speed: %.4g×", animSpeed)
+		animSpeedColor = rl.White
+	} else if animSpeed == 1.0 {
 		animSpeedText = "Anim Speed: 100%"
 		animSpeedColor = rl.White
 	} else {

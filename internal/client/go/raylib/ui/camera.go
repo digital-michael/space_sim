@@ -18,6 +18,14 @@ const (
 	CameraModeTracking
 )
 
+// JumpTarget is a pre-resolved jump destination used in multi-hop sequences.
+type JumpTarget struct {
+	TargetIndex  int
+	TargetPos    engine.Vector3
+	ViewDist     float64
+	DwellSeconds float64 // seconds to pause at this stop before jumping onward (0 = no pause)
+}
+
 // CameraState holds camera position, orientation, and animation state.
 type CameraState struct {
 	Position engine.Vector3
@@ -34,6 +42,26 @@ type CameraState struct {
 	JumpDuration    float64
 	JumpTargetIndex int
 
+	// JumpQueue holds pending jump targets for multi-hop animated sequences.
+	// After each jump completes the next entry is started automatically.
+	JumpQueue []JumpTarget
+
+	// JumpCurrentDwell is the dwell time (seconds) for the currently-executing hop.
+	// Stored here so input.go can read it after UpdateJump marks the hop complete.
+	JumpCurrentDwell float64
+
+	// JumpDwellRemaining counts down after arrival before the next hop starts.
+	// The camera stays in tracking mode during the dwell.
+	JumpDwellRemaining float64
+
+	// JumpTargetViewDist is the view-distance used for the active jump, carried
+	// forward so the post-arrival tracking distance is set correctly.
+	JumpTargetViewDist float64
+
+	// Velocity is a persistent drift applied to the camera position every
+	// frame (AU/s, free-fly mode only). Set to zero to stop.
+	Velocity engine.Vector3
+
 	// Tracking
 	TrackTargetIndex int
 	TrackDistance    float64
@@ -42,6 +70,10 @@ type CameraState struct {
 	TrackYaw         float64
 	TrackPitch       float64
 	TrackLookOutward bool
+
+	// Orbit animation
+	OrbitSpeed            float64 // rad/sec; positive = counter-clockwise; 0 = not orbiting
+	OrbitRadiansRemaining float64 // decrements each frame; orbit ends when ≤ 0
 }
 
 // NewCameraState creates a camera with sensible defaults.
@@ -104,6 +136,7 @@ func (c *CameraState) StartJumpTo(targetIndex int, targetPos engine.Vector3, vie
 	c.JumpTargetPos.Y = c.JumpTargetPos.Y + float32(viewDistance*0.3)
 	c.JumpProgress = 0.0
 	c.JumpDuration = 1.5
+	c.JumpTargetViewDist = viewDistance
 }
 
 // UpdateJump advances the jump animation by dt seconds.

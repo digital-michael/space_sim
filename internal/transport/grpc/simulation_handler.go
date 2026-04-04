@@ -50,7 +50,7 @@ func (h *SimulationHandler) SetSpeed(ctx context.Context, req *connect.Request[v
 	if w == nil {
 		return nil, connect.NewError(connect.CodeUnimplemented, nil)
 	}
-	if req.Msg.SecondsPerSecond <= 0 {
+	if req.Msg.SecondsPerSecond < 0 {
 		return nil, connect.NewError(connect.CodeInvalidArgument, nil)
 	}
 	w.SetSpeed(float64(req.Msg.SecondsPerSecond))

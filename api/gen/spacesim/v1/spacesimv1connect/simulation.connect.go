@@ -29,6 +29,18 @@ const (
 	SimulationServiceName = "spacesim.v1.SimulationService"
 	// WorldServiceName is the fully-qualified name of the WorldService service.
 	WorldServiceName = "spacesim.v1.WorldService"
+	// SystemServiceName is the fully-qualified name of the SystemService service.
+	SystemServiceName = "spacesim.v1.SystemService"
+	// WindowServiceName is the fully-qualified name of the WindowService service.
+	WindowServiceName = "spacesim.v1.WindowService"
+	// CameraServiceName is the fully-qualified name of the CameraService service.
+	CameraServiceName = "spacesim.v1.CameraService"
+	// NavigationServiceName is the fully-qualified name of the NavigationService service.
+	NavigationServiceName = "spacesim.v1.NavigationService"
+	// PerformanceServiceName is the fully-qualified name of the PerformanceService service.
+	PerformanceServiceName = "spacesim.v1.PerformanceService"
+	// ShutdownServiceName is the fully-qualified name of the ShutdownService service.
+	ShutdownServiceName = "spacesim.v1.ShutdownService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -57,6 +69,58 @@ const (
 	// WorldServiceStreamSnapshotProcedure is the fully-qualified name of the WorldService's
 	// StreamSnapshot RPC.
 	WorldServiceStreamSnapshotProcedure = "/spacesim.v1.WorldService/StreamSnapshot"
+	// SystemServiceListSystemsProcedure is the fully-qualified name of the SystemService's ListSystems
+	// RPC.
+	SystemServiceListSystemsProcedure = "/spacesim.v1.SystemService/ListSystems"
+	// SystemServiceGetActiveSystemProcedure is the fully-qualified name of the SystemService's
+	// GetActiveSystem RPC.
+	SystemServiceGetActiveSystemProcedure = "/spacesim.v1.SystemService/GetActiveSystem"
+	// SystemServiceLoadSystemProcedure is the fully-qualified name of the SystemService's LoadSystem
+	// RPC.
+	SystemServiceLoadSystemProcedure = "/spacesim.v1.SystemService/LoadSystem"
+	// WindowServiceGetWindowProcedure is the fully-qualified name of the WindowService's GetWindow RPC.
+	WindowServiceGetWindowProcedure = "/spacesim.v1.WindowService/GetWindow"
+	// WindowServiceSetWindowSizeProcedure is the fully-qualified name of the WindowService's
+	// SetWindowSize RPC.
+	WindowServiceSetWindowSizeProcedure = "/spacesim.v1.WindowService/SetWindowSize"
+	// WindowServiceSetWindowMaximizeProcedure is the fully-qualified name of the WindowService's
+	// SetWindowMaximize RPC.
+	WindowServiceSetWindowMaximizeProcedure = "/spacesim.v1.WindowService/SetWindowMaximize"
+	// WindowServiceSetWindowRestoreProcedure is the fully-qualified name of the WindowService's
+	// SetWindowRestore RPC.
+	WindowServiceSetWindowRestoreProcedure = "/spacesim.v1.WindowService/SetWindowRestore"
+	// CameraServiceGetCameraProcedure is the fully-qualified name of the CameraService's GetCamera RPC.
+	CameraServiceGetCameraProcedure = "/spacesim.v1.CameraService/GetCamera"
+	// CameraServiceSetCameraOrientProcedure is the fully-qualified name of the CameraService's
+	// SetCameraOrient RPC.
+	CameraServiceSetCameraOrientProcedure = "/spacesim.v1.CameraService/SetCameraOrient"
+	// CameraServiceSetCameraPositionProcedure is the fully-qualified name of the CameraService's
+	// SetCameraPosition RPC.
+	CameraServiceSetCameraPositionProcedure = "/spacesim.v1.CameraService/SetCameraPosition"
+	// CameraServiceSetCameraTrackProcedure is the fully-qualified name of the CameraService's
+	// SetCameraTrack RPC.
+	CameraServiceSetCameraTrackProcedure = "/spacesim.v1.CameraService/SetCameraTrack"
+	// CameraServiceStartOrbitProcedure is the fully-qualified name of the CameraService's StartOrbit
+	// RPC.
+	CameraServiceStartOrbitProcedure = "/spacesim.v1.CameraService/StartOrbit"
+	// NavigationServiceGetVelocityProcedure is the fully-qualified name of the NavigationService's
+	// GetVelocity RPC.
+	NavigationServiceGetVelocityProcedure = "/spacesim.v1.NavigationService/GetVelocity"
+	// NavigationServiceSetVelocityProcedure is the fully-qualified name of the NavigationService's
+	// SetVelocity RPC.
+	NavigationServiceSetVelocityProcedure = "/spacesim.v1.NavigationService/SetVelocity"
+	// NavigationServiceJumpToProcedure is the fully-qualified name of the NavigationService's JumpTo
+	// RPC.
+	NavigationServiceJumpToProcedure = "/spacesim.v1.NavigationService/JumpTo"
+	// PerformanceServiceGetPerformanceProcedure is the fully-qualified name of the PerformanceService's
+	// GetPerformance RPC.
+	PerformanceServiceGetPerformanceProcedure = "/spacesim.v1.PerformanceService/GetPerformance"
+	// PerformanceServiceSetPerformanceProcedure is the fully-qualified name of the PerformanceService's
+	// SetPerformance RPC.
+	PerformanceServiceSetPerformanceProcedure = "/spacesim.v1.PerformanceService/SetPerformance"
+	// ShutdownServiceShutdownProcedure is the fully-qualified name of the ShutdownService's Shutdown
+	// RPC.
+	ShutdownServiceShutdownProcedure = "/spacesim.v1.ShutdownService/Shutdown"
 )
 
 // SimulationServiceClient is a client for the spacesim.v1.SimulationService service.
@@ -323,4 +387,746 @@ type UnimplementedWorldServiceHandler struct{}
 
 func (UnimplementedWorldServiceHandler) StreamSnapshot(context.Context, *connect.Request[v1.StreamSnapshotRequest], *connect.ServerStream[v1.StreamSnapshotResponse]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.WorldService.StreamSnapshot is not implemented"))
+}
+
+// SystemServiceClient is a client for the spacesim.v1.SystemService service.
+type SystemServiceClient interface {
+	// ListSystems returns all discoverable system JSON files.
+	ListSystems(context.Context, *connect.Request[v1.ListSystemsRequest]) (*connect.Response[v1.ListSystemsResponse], error)
+	// GetActiveSystem returns the currently loaded system.
+	GetActiveSystem(context.Context, *connect.Request[v1.GetActiveSystemRequest]) (*connect.Response[v1.GetActiveSystemResponse], error)
+	// LoadSystem triggers an in-place session reload to the given system path.
+	// Returns a CommandAck; the reload happens on the main thread asynchronously.
+	LoadSystem(context.Context, *connect.Request[v1.LoadSystemRequest]) (*connect.Response[v1.LoadSystemResponse], error)
+}
+
+// NewSystemServiceClient constructs a client for the spacesim.v1.SystemService service. By default,
+// it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and
+// sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC()
+// or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewSystemServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) SystemServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	systemServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("SystemService").Methods()
+	return &systemServiceClient{
+		listSystems: connect.NewClient[v1.ListSystemsRequest, v1.ListSystemsResponse](
+			httpClient,
+			baseURL+SystemServiceListSystemsProcedure,
+			connect.WithSchema(systemServiceMethods.ByName("ListSystems")),
+			connect.WithClientOptions(opts...),
+		),
+		getActiveSystem: connect.NewClient[v1.GetActiveSystemRequest, v1.GetActiveSystemResponse](
+			httpClient,
+			baseURL+SystemServiceGetActiveSystemProcedure,
+			connect.WithSchema(systemServiceMethods.ByName("GetActiveSystem")),
+			connect.WithClientOptions(opts...),
+		),
+		loadSystem: connect.NewClient[v1.LoadSystemRequest, v1.LoadSystemResponse](
+			httpClient,
+			baseURL+SystemServiceLoadSystemProcedure,
+			connect.WithSchema(systemServiceMethods.ByName("LoadSystem")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// systemServiceClient implements SystemServiceClient.
+type systemServiceClient struct {
+	listSystems     *connect.Client[v1.ListSystemsRequest, v1.ListSystemsResponse]
+	getActiveSystem *connect.Client[v1.GetActiveSystemRequest, v1.GetActiveSystemResponse]
+	loadSystem      *connect.Client[v1.LoadSystemRequest, v1.LoadSystemResponse]
+}
+
+// ListSystems calls spacesim.v1.SystemService.ListSystems.
+func (c *systemServiceClient) ListSystems(ctx context.Context, req *connect.Request[v1.ListSystemsRequest]) (*connect.Response[v1.ListSystemsResponse], error) {
+	return c.listSystems.CallUnary(ctx, req)
+}
+
+// GetActiveSystem calls spacesim.v1.SystemService.GetActiveSystem.
+func (c *systemServiceClient) GetActiveSystem(ctx context.Context, req *connect.Request[v1.GetActiveSystemRequest]) (*connect.Response[v1.GetActiveSystemResponse], error) {
+	return c.getActiveSystem.CallUnary(ctx, req)
+}
+
+// LoadSystem calls spacesim.v1.SystemService.LoadSystem.
+func (c *systemServiceClient) LoadSystem(ctx context.Context, req *connect.Request[v1.LoadSystemRequest]) (*connect.Response[v1.LoadSystemResponse], error) {
+	return c.loadSystem.CallUnary(ctx, req)
+}
+
+// SystemServiceHandler is an implementation of the spacesim.v1.SystemService service.
+type SystemServiceHandler interface {
+	// ListSystems returns all discoverable system JSON files.
+	ListSystems(context.Context, *connect.Request[v1.ListSystemsRequest]) (*connect.Response[v1.ListSystemsResponse], error)
+	// GetActiveSystem returns the currently loaded system.
+	GetActiveSystem(context.Context, *connect.Request[v1.GetActiveSystemRequest]) (*connect.Response[v1.GetActiveSystemResponse], error)
+	// LoadSystem triggers an in-place session reload to the given system path.
+	// Returns a CommandAck; the reload happens on the main thread asynchronously.
+	LoadSystem(context.Context, *connect.Request[v1.LoadSystemRequest]) (*connect.Response[v1.LoadSystemResponse], error)
+}
+
+// NewSystemServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewSystemServiceHandler(svc SystemServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	systemServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("SystemService").Methods()
+	systemServiceListSystemsHandler := connect.NewUnaryHandler(
+		SystemServiceListSystemsProcedure,
+		svc.ListSystems,
+		connect.WithSchema(systemServiceMethods.ByName("ListSystems")),
+		connect.WithHandlerOptions(opts...),
+	)
+	systemServiceGetActiveSystemHandler := connect.NewUnaryHandler(
+		SystemServiceGetActiveSystemProcedure,
+		svc.GetActiveSystem,
+		connect.WithSchema(systemServiceMethods.ByName("GetActiveSystem")),
+		connect.WithHandlerOptions(opts...),
+	)
+	systemServiceLoadSystemHandler := connect.NewUnaryHandler(
+		SystemServiceLoadSystemProcedure,
+		svc.LoadSystem,
+		connect.WithSchema(systemServiceMethods.ByName("LoadSystem")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.SystemService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case SystemServiceListSystemsProcedure:
+			systemServiceListSystemsHandler.ServeHTTP(w, r)
+		case SystemServiceGetActiveSystemProcedure:
+			systemServiceGetActiveSystemHandler.ServeHTTP(w, r)
+		case SystemServiceLoadSystemProcedure:
+			systemServiceLoadSystemHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedSystemServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedSystemServiceHandler struct{}
+
+func (UnimplementedSystemServiceHandler) ListSystems(context.Context, *connect.Request[v1.ListSystemsRequest]) (*connect.Response[v1.ListSystemsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SystemService.ListSystems is not implemented"))
+}
+
+func (UnimplementedSystemServiceHandler) GetActiveSystem(context.Context, *connect.Request[v1.GetActiveSystemRequest]) (*connect.Response[v1.GetActiveSystemResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SystemService.GetActiveSystem is not implemented"))
+}
+
+func (UnimplementedSystemServiceHandler) LoadSystem(context.Context, *connect.Request[v1.LoadSystemRequest]) (*connect.Response[v1.LoadSystemResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SystemService.LoadSystem is not implemented"))
+}
+
+// WindowServiceClient is a client for the spacesim.v1.WindowService service.
+type WindowServiceClient interface {
+	GetWindow(context.Context, *connect.Request[v1.GetWindowRequest]) (*connect.Response[v1.GetWindowResponse], error)
+	SetWindowSize(context.Context, *connect.Request[v1.SetWindowSizeRequest]) (*connect.Response[v1.SetWindowSizeResponse], error)
+	SetWindowMaximize(context.Context, *connect.Request[v1.SetWindowMaximizeRequest]) (*connect.Response[v1.SetWindowMaximizeResponse], error)
+	SetWindowRestore(context.Context, *connect.Request[v1.SetWindowRestoreRequest]) (*connect.Response[v1.SetWindowRestoreResponse], error)
+}
+
+// NewWindowServiceClient constructs a client for the spacesim.v1.WindowService service. By default,
+// it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and
+// sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC()
+// or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewWindowServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) WindowServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	windowServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("WindowService").Methods()
+	return &windowServiceClient{
+		getWindow: connect.NewClient[v1.GetWindowRequest, v1.GetWindowResponse](
+			httpClient,
+			baseURL+WindowServiceGetWindowProcedure,
+			connect.WithSchema(windowServiceMethods.ByName("GetWindow")),
+			connect.WithClientOptions(opts...),
+		),
+		setWindowSize: connect.NewClient[v1.SetWindowSizeRequest, v1.SetWindowSizeResponse](
+			httpClient,
+			baseURL+WindowServiceSetWindowSizeProcedure,
+			connect.WithSchema(windowServiceMethods.ByName("SetWindowSize")),
+			connect.WithClientOptions(opts...),
+		),
+		setWindowMaximize: connect.NewClient[v1.SetWindowMaximizeRequest, v1.SetWindowMaximizeResponse](
+			httpClient,
+			baseURL+WindowServiceSetWindowMaximizeProcedure,
+			connect.WithSchema(windowServiceMethods.ByName("SetWindowMaximize")),
+			connect.WithClientOptions(opts...),
+		),
+		setWindowRestore: connect.NewClient[v1.SetWindowRestoreRequest, v1.SetWindowRestoreResponse](
+			httpClient,
+			baseURL+WindowServiceSetWindowRestoreProcedure,
+			connect.WithSchema(windowServiceMethods.ByName("SetWindowRestore")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// windowServiceClient implements WindowServiceClient.
+type windowServiceClient struct {
+	getWindow         *connect.Client[v1.GetWindowRequest, v1.GetWindowResponse]
+	setWindowSize     *connect.Client[v1.SetWindowSizeRequest, v1.SetWindowSizeResponse]
+	setWindowMaximize *connect.Client[v1.SetWindowMaximizeRequest, v1.SetWindowMaximizeResponse]
+	setWindowRestore  *connect.Client[v1.SetWindowRestoreRequest, v1.SetWindowRestoreResponse]
+}
+
+// GetWindow calls spacesim.v1.WindowService.GetWindow.
+func (c *windowServiceClient) GetWindow(ctx context.Context, req *connect.Request[v1.GetWindowRequest]) (*connect.Response[v1.GetWindowResponse], error) {
+	return c.getWindow.CallUnary(ctx, req)
+}
+
+// SetWindowSize calls spacesim.v1.WindowService.SetWindowSize.
+func (c *windowServiceClient) SetWindowSize(ctx context.Context, req *connect.Request[v1.SetWindowSizeRequest]) (*connect.Response[v1.SetWindowSizeResponse], error) {
+	return c.setWindowSize.CallUnary(ctx, req)
+}
+
+// SetWindowMaximize calls spacesim.v1.WindowService.SetWindowMaximize.
+func (c *windowServiceClient) SetWindowMaximize(ctx context.Context, req *connect.Request[v1.SetWindowMaximizeRequest]) (*connect.Response[v1.SetWindowMaximizeResponse], error) {
+	return c.setWindowMaximize.CallUnary(ctx, req)
+}
+
+// SetWindowRestore calls spacesim.v1.WindowService.SetWindowRestore.
+func (c *windowServiceClient) SetWindowRestore(ctx context.Context, req *connect.Request[v1.SetWindowRestoreRequest]) (*connect.Response[v1.SetWindowRestoreResponse], error) {
+	return c.setWindowRestore.CallUnary(ctx, req)
+}
+
+// WindowServiceHandler is an implementation of the spacesim.v1.WindowService service.
+type WindowServiceHandler interface {
+	GetWindow(context.Context, *connect.Request[v1.GetWindowRequest]) (*connect.Response[v1.GetWindowResponse], error)
+	SetWindowSize(context.Context, *connect.Request[v1.SetWindowSizeRequest]) (*connect.Response[v1.SetWindowSizeResponse], error)
+	SetWindowMaximize(context.Context, *connect.Request[v1.SetWindowMaximizeRequest]) (*connect.Response[v1.SetWindowMaximizeResponse], error)
+	SetWindowRestore(context.Context, *connect.Request[v1.SetWindowRestoreRequest]) (*connect.Response[v1.SetWindowRestoreResponse], error)
+}
+
+// NewWindowServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewWindowServiceHandler(svc WindowServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	windowServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("WindowService").Methods()
+	windowServiceGetWindowHandler := connect.NewUnaryHandler(
+		WindowServiceGetWindowProcedure,
+		svc.GetWindow,
+		connect.WithSchema(windowServiceMethods.ByName("GetWindow")),
+		connect.WithHandlerOptions(opts...),
+	)
+	windowServiceSetWindowSizeHandler := connect.NewUnaryHandler(
+		WindowServiceSetWindowSizeProcedure,
+		svc.SetWindowSize,
+		connect.WithSchema(windowServiceMethods.ByName("SetWindowSize")),
+		connect.WithHandlerOptions(opts...),
+	)
+	windowServiceSetWindowMaximizeHandler := connect.NewUnaryHandler(
+		WindowServiceSetWindowMaximizeProcedure,
+		svc.SetWindowMaximize,
+		connect.WithSchema(windowServiceMethods.ByName("SetWindowMaximize")),
+		connect.WithHandlerOptions(opts...),
+	)
+	windowServiceSetWindowRestoreHandler := connect.NewUnaryHandler(
+		WindowServiceSetWindowRestoreProcedure,
+		svc.SetWindowRestore,
+		connect.WithSchema(windowServiceMethods.ByName("SetWindowRestore")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.WindowService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case WindowServiceGetWindowProcedure:
+			windowServiceGetWindowHandler.ServeHTTP(w, r)
+		case WindowServiceSetWindowSizeProcedure:
+			windowServiceSetWindowSizeHandler.ServeHTTP(w, r)
+		case WindowServiceSetWindowMaximizeProcedure:
+			windowServiceSetWindowMaximizeHandler.ServeHTTP(w, r)
+		case WindowServiceSetWindowRestoreProcedure:
+			windowServiceSetWindowRestoreHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedWindowServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedWindowServiceHandler struct{}
+
+func (UnimplementedWindowServiceHandler) GetWindow(context.Context, *connect.Request[v1.GetWindowRequest]) (*connect.Response[v1.GetWindowResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.WindowService.GetWindow is not implemented"))
+}
+
+func (UnimplementedWindowServiceHandler) SetWindowSize(context.Context, *connect.Request[v1.SetWindowSizeRequest]) (*connect.Response[v1.SetWindowSizeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.WindowService.SetWindowSize is not implemented"))
+}
+
+func (UnimplementedWindowServiceHandler) SetWindowMaximize(context.Context, *connect.Request[v1.SetWindowMaximizeRequest]) (*connect.Response[v1.SetWindowMaximizeResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.WindowService.SetWindowMaximize is not implemented"))
+}
+
+func (UnimplementedWindowServiceHandler) SetWindowRestore(context.Context, *connect.Request[v1.SetWindowRestoreRequest]) (*connect.Response[v1.SetWindowRestoreResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.WindowService.SetWindowRestore is not implemented"))
+}
+
+// CameraServiceClient is a client for the spacesim.v1.CameraService service.
+type CameraServiceClient interface {
+	GetCamera(context.Context, *connect.Request[v1.GetCameraRequest]) (*connect.Response[v1.GetCameraResponse], error)
+	SetCameraOrient(context.Context, *connect.Request[v1.SetCameraOrientRequest]) (*connect.Response[v1.SetCameraOrientResponse], error)
+	SetCameraPosition(context.Context, *connect.Request[v1.SetCameraPositionRequest]) (*connect.Response[v1.SetCameraPositionResponse], error)
+	SetCameraTrack(context.Context, *connect.Request[v1.SetCameraTrackRequest]) (*connect.Response[v1.SetCameraTrackResponse], error)
+	StartOrbit(context.Context, *connect.Request[v1.StartOrbitRequest]) (*connect.Response[v1.StartOrbitResponse], error)
+}
+
+// NewCameraServiceClient constructs a client for the spacesim.v1.CameraService service. By default,
+// it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and
+// sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC()
+// or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewCameraServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) CameraServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	cameraServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("CameraService").Methods()
+	return &cameraServiceClient{
+		getCamera: connect.NewClient[v1.GetCameraRequest, v1.GetCameraResponse](
+			httpClient,
+			baseURL+CameraServiceGetCameraProcedure,
+			connect.WithSchema(cameraServiceMethods.ByName("GetCamera")),
+			connect.WithClientOptions(opts...),
+		),
+		setCameraOrient: connect.NewClient[v1.SetCameraOrientRequest, v1.SetCameraOrientResponse](
+			httpClient,
+			baseURL+CameraServiceSetCameraOrientProcedure,
+			connect.WithSchema(cameraServiceMethods.ByName("SetCameraOrient")),
+			connect.WithClientOptions(opts...),
+		),
+		setCameraPosition: connect.NewClient[v1.SetCameraPositionRequest, v1.SetCameraPositionResponse](
+			httpClient,
+			baseURL+CameraServiceSetCameraPositionProcedure,
+			connect.WithSchema(cameraServiceMethods.ByName("SetCameraPosition")),
+			connect.WithClientOptions(opts...),
+		),
+		setCameraTrack: connect.NewClient[v1.SetCameraTrackRequest, v1.SetCameraTrackResponse](
+			httpClient,
+			baseURL+CameraServiceSetCameraTrackProcedure,
+			connect.WithSchema(cameraServiceMethods.ByName("SetCameraTrack")),
+			connect.WithClientOptions(opts...),
+		),
+		startOrbit: connect.NewClient[v1.StartOrbitRequest, v1.StartOrbitResponse](
+			httpClient,
+			baseURL+CameraServiceStartOrbitProcedure,
+			connect.WithSchema(cameraServiceMethods.ByName("StartOrbit")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// cameraServiceClient implements CameraServiceClient.
+type cameraServiceClient struct {
+	getCamera         *connect.Client[v1.GetCameraRequest, v1.GetCameraResponse]
+	setCameraOrient   *connect.Client[v1.SetCameraOrientRequest, v1.SetCameraOrientResponse]
+	setCameraPosition *connect.Client[v1.SetCameraPositionRequest, v1.SetCameraPositionResponse]
+	setCameraTrack    *connect.Client[v1.SetCameraTrackRequest, v1.SetCameraTrackResponse]
+	startOrbit        *connect.Client[v1.StartOrbitRequest, v1.StartOrbitResponse]
+}
+
+// GetCamera calls spacesim.v1.CameraService.GetCamera.
+func (c *cameraServiceClient) GetCamera(ctx context.Context, req *connect.Request[v1.GetCameraRequest]) (*connect.Response[v1.GetCameraResponse], error) {
+	return c.getCamera.CallUnary(ctx, req)
+}
+
+// SetCameraOrient calls spacesim.v1.CameraService.SetCameraOrient.
+func (c *cameraServiceClient) SetCameraOrient(ctx context.Context, req *connect.Request[v1.SetCameraOrientRequest]) (*connect.Response[v1.SetCameraOrientResponse], error) {
+	return c.setCameraOrient.CallUnary(ctx, req)
+}
+
+// SetCameraPosition calls spacesim.v1.CameraService.SetCameraPosition.
+func (c *cameraServiceClient) SetCameraPosition(ctx context.Context, req *connect.Request[v1.SetCameraPositionRequest]) (*connect.Response[v1.SetCameraPositionResponse], error) {
+	return c.setCameraPosition.CallUnary(ctx, req)
+}
+
+// SetCameraTrack calls spacesim.v1.CameraService.SetCameraTrack.
+func (c *cameraServiceClient) SetCameraTrack(ctx context.Context, req *connect.Request[v1.SetCameraTrackRequest]) (*connect.Response[v1.SetCameraTrackResponse], error) {
+	return c.setCameraTrack.CallUnary(ctx, req)
+}
+
+// StartOrbit calls spacesim.v1.CameraService.StartOrbit.
+func (c *cameraServiceClient) StartOrbit(ctx context.Context, req *connect.Request[v1.StartOrbitRequest]) (*connect.Response[v1.StartOrbitResponse], error) {
+	return c.startOrbit.CallUnary(ctx, req)
+}
+
+// CameraServiceHandler is an implementation of the spacesim.v1.CameraService service.
+type CameraServiceHandler interface {
+	GetCamera(context.Context, *connect.Request[v1.GetCameraRequest]) (*connect.Response[v1.GetCameraResponse], error)
+	SetCameraOrient(context.Context, *connect.Request[v1.SetCameraOrientRequest]) (*connect.Response[v1.SetCameraOrientResponse], error)
+	SetCameraPosition(context.Context, *connect.Request[v1.SetCameraPositionRequest]) (*connect.Response[v1.SetCameraPositionResponse], error)
+	SetCameraTrack(context.Context, *connect.Request[v1.SetCameraTrackRequest]) (*connect.Response[v1.SetCameraTrackResponse], error)
+	StartOrbit(context.Context, *connect.Request[v1.StartOrbitRequest]) (*connect.Response[v1.StartOrbitResponse], error)
+}
+
+// NewCameraServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewCameraServiceHandler(svc CameraServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	cameraServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("CameraService").Methods()
+	cameraServiceGetCameraHandler := connect.NewUnaryHandler(
+		CameraServiceGetCameraProcedure,
+		svc.GetCamera,
+		connect.WithSchema(cameraServiceMethods.ByName("GetCamera")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cameraServiceSetCameraOrientHandler := connect.NewUnaryHandler(
+		CameraServiceSetCameraOrientProcedure,
+		svc.SetCameraOrient,
+		connect.WithSchema(cameraServiceMethods.ByName("SetCameraOrient")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cameraServiceSetCameraPositionHandler := connect.NewUnaryHandler(
+		CameraServiceSetCameraPositionProcedure,
+		svc.SetCameraPosition,
+		connect.WithSchema(cameraServiceMethods.ByName("SetCameraPosition")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cameraServiceSetCameraTrackHandler := connect.NewUnaryHandler(
+		CameraServiceSetCameraTrackProcedure,
+		svc.SetCameraTrack,
+		connect.WithSchema(cameraServiceMethods.ByName("SetCameraTrack")),
+		connect.WithHandlerOptions(opts...),
+	)
+	cameraServiceStartOrbitHandler := connect.NewUnaryHandler(
+		CameraServiceStartOrbitProcedure,
+		svc.StartOrbit,
+		connect.WithSchema(cameraServiceMethods.ByName("StartOrbit")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.CameraService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case CameraServiceGetCameraProcedure:
+			cameraServiceGetCameraHandler.ServeHTTP(w, r)
+		case CameraServiceSetCameraOrientProcedure:
+			cameraServiceSetCameraOrientHandler.ServeHTTP(w, r)
+		case CameraServiceSetCameraPositionProcedure:
+			cameraServiceSetCameraPositionHandler.ServeHTTP(w, r)
+		case CameraServiceSetCameraTrackProcedure:
+			cameraServiceSetCameraTrackHandler.ServeHTTP(w, r)
+		case CameraServiceStartOrbitProcedure:
+			cameraServiceStartOrbitHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedCameraServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedCameraServiceHandler struct{}
+
+func (UnimplementedCameraServiceHandler) GetCamera(context.Context, *connect.Request[v1.GetCameraRequest]) (*connect.Response[v1.GetCameraResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.CameraService.GetCamera is not implemented"))
+}
+
+func (UnimplementedCameraServiceHandler) SetCameraOrient(context.Context, *connect.Request[v1.SetCameraOrientRequest]) (*connect.Response[v1.SetCameraOrientResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.CameraService.SetCameraOrient is not implemented"))
+}
+
+func (UnimplementedCameraServiceHandler) SetCameraPosition(context.Context, *connect.Request[v1.SetCameraPositionRequest]) (*connect.Response[v1.SetCameraPositionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.CameraService.SetCameraPosition is not implemented"))
+}
+
+func (UnimplementedCameraServiceHandler) SetCameraTrack(context.Context, *connect.Request[v1.SetCameraTrackRequest]) (*connect.Response[v1.SetCameraTrackResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.CameraService.SetCameraTrack is not implemented"))
+}
+
+func (UnimplementedCameraServiceHandler) StartOrbit(context.Context, *connect.Request[v1.StartOrbitRequest]) (*connect.Response[v1.StartOrbitResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.CameraService.StartOrbit is not implemented"))
+}
+
+// NavigationServiceClient is a client for the spacesim.v1.NavigationService service.
+type NavigationServiceClient interface {
+	GetVelocity(context.Context, *connect.Request[v1.GetVelocityRequest]) (*connect.Response[v1.GetVelocityResponse], error)
+	SetVelocity(context.Context, *connect.Request[v1.SetVelocityRequest]) (*connect.Response[v1.SetVelocityResponse], error)
+	JumpTo(context.Context, *connect.Request[v1.JumpToRequest]) (*connect.Response[v1.JumpToResponse], error)
+}
+
+// NewNavigationServiceClient constructs a client for the spacesim.v1.NavigationService service. By
+// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
+// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewNavigationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) NavigationServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	navigationServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("NavigationService").Methods()
+	return &navigationServiceClient{
+		getVelocity: connect.NewClient[v1.GetVelocityRequest, v1.GetVelocityResponse](
+			httpClient,
+			baseURL+NavigationServiceGetVelocityProcedure,
+			connect.WithSchema(navigationServiceMethods.ByName("GetVelocity")),
+			connect.WithClientOptions(opts...),
+		),
+		setVelocity: connect.NewClient[v1.SetVelocityRequest, v1.SetVelocityResponse](
+			httpClient,
+			baseURL+NavigationServiceSetVelocityProcedure,
+			connect.WithSchema(navigationServiceMethods.ByName("SetVelocity")),
+			connect.WithClientOptions(opts...),
+		),
+		jumpTo: connect.NewClient[v1.JumpToRequest, v1.JumpToResponse](
+			httpClient,
+			baseURL+NavigationServiceJumpToProcedure,
+			connect.WithSchema(navigationServiceMethods.ByName("JumpTo")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// navigationServiceClient implements NavigationServiceClient.
+type navigationServiceClient struct {
+	getVelocity *connect.Client[v1.GetVelocityRequest, v1.GetVelocityResponse]
+	setVelocity *connect.Client[v1.SetVelocityRequest, v1.SetVelocityResponse]
+	jumpTo      *connect.Client[v1.JumpToRequest, v1.JumpToResponse]
+}
+
+// GetVelocity calls spacesim.v1.NavigationService.GetVelocity.
+func (c *navigationServiceClient) GetVelocity(ctx context.Context, req *connect.Request[v1.GetVelocityRequest]) (*connect.Response[v1.GetVelocityResponse], error) {
+	return c.getVelocity.CallUnary(ctx, req)
+}
+
+// SetVelocity calls spacesim.v1.NavigationService.SetVelocity.
+func (c *navigationServiceClient) SetVelocity(ctx context.Context, req *connect.Request[v1.SetVelocityRequest]) (*connect.Response[v1.SetVelocityResponse], error) {
+	return c.setVelocity.CallUnary(ctx, req)
+}
+
+// JumpTo calls spacesim.v1.NavigationService.JumpTo.
+func (c *navigationServiceClient) JumpTo(ctx context.Context, req *connect.Request[v1.JumpToRequest]) (*connect.Response[v1.JumpToResponse], error) {
+	return c.jumpTo.CallUnary(ctx, req)
+}
+
+// NavigationServiceHandler is an implementation of the spacesim.v1.NavigationService service.
+type NavigationServiceHandler interface {
+	GetVelocity(context.Context, *connect.Request[v1.GetVelocityRequest]) (*connect.Response[v1.GetVelocityResponse], error)
+	SetVelocity(context.Context, *connect.Request[v1.SetVelocityRequest]) (*connect.Response[v1.SetVelocityResponse], error)
+	JumpTo(context.Context, *connect.Request[v1.JumpToRequest]) (*connect.Response[v1.JumpToResponse], error)
+}
+
+// NewNavigationServiceHandler builds an HTTP handler from the service implementation. It returns
+// the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewNavigationServiceHandler(svc NavigationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	navigationServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("NavigationService").Methods()
+	navigationServiceGetVelocityHandler := connect.NewUnaryHandler(
+		NavigationServiceGetVelocityProcedure,
+		svc.GetVelocity,
+		connect.WithSchema(navigationServiceMethods.ByName("GetVelocity")),
+		connect.WithHandlerOptions(opts...),
+	)
+	navigationServiceSetVelocityHandler := connect.NewUnaryHandler(
+		NavigationServiceSetVelocityProcedure,
+		svc.SetVelocity,
+		connect.WithSchema(navigationServiceMethods.ByName("SetVelocity")),
+		connect.WithHandlerOptions(opts...),
+	)
+	navigationServiceJumpToHandler := connect.NewUnaryHandler(
+		NavigationServiceJumpToProcedure,
+		svc.JumpTo,
+		connect.WithSchema(navigationServiceMethods.ByName("JumpTo")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.NavigationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case NavigationServiceGetVelocityProcedure:
+			navigationServiceGetVelocityHandler.ServeHTTP(w, r)
+		case NavigationServiceSetVelocityProcedure:
+			navigationServiceSetVelocityHandler.ServeHTTP(w, r)
+		case NavigationServiceJumpToProcedure:
+			navigationServiceJumpToHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedNavigationServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedNavigationServiceHandler struct{}
+
+func (UnimplementedNavigationServiceHandler) GetVelocity(context.Context, *connect.Request[v1.GetVelocityRequest]) (*connect.Response[v1.GetVelocityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.NavigationService.GetVelocity is not implemented"))
+}
+
+func (UnimplementedNavigationServiceHandler) SetVelocity(context.Context, *connect.Request[v1.SetVelocityRequest]) (*connect.Response[v1.SetVelocityResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.NavigationService.SetVelocity is not implemented"))
+}
+
+func (UnimplementedNavigationServiceHandler) JumpTo(context.Context, *connect.Request[v1.JumpToRequest]) (*connect.Response[v1.JumpToResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.NavigationService.JumpTo is not implemented"))
+}
+
+// PerformanceServiceClient is a client for the spacesim.v1.PerformanceService service.
+type PerformanceServiceClient interface {
+	GetPerformance(context.Context, *connect.Request[v1.GetPerformanceRequest]) (*connect.Response[v1.GetPerformanceResponse], error)
+	SetPerformance(context.Context, *connect.Request[v1.SetPerformanceRequest]) (*connect.Response[v1.SetPerformanceResponse], error)
+}
+
+// NewPerformanceServiceClient constructs a client for the spacesim.v1.PerformanceService service.
+// By default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped
+// responses, and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewPerformanceServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) PerformanceServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	performanceServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("PerformanceService").Methods()
+	return &performanceServiceClient{
+		getPerformance: connect.NewClient[v1.GetPerformanceRequest, v1.GetPerformanceResponse](
+			httpClient,
+			baseURL+PerformanceServiceGetPerformanceProcedure,
+			connect.WithSchema(performanceServiceMethods.ByName("GetPerformance")),
+			connect.WithClientOptions(opts...),
+		),
+		setPerformance: connect.NewClient[v1.SetPerformanceRequest, v1.SetPerformanceResponse](
+			httpClient,
+			baseURL+PerformanceServiceSetPerformanceProcedure,
+			connect.WithSchema(performanceServiceMethods.ByName("SetPerformance")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// performanceServiceClient implements PerformanceServiceClient.
+type performanceServiceClient struct {
+	getPerformance *connect.Client[v1.GetPerformanceRequest, v1.GetPerformanceResponse]
+	setPerformance *connect.Client[v1.SetPerformanceRequest, v1.SetPerformanceResponse]
+}
+
+// GetPerformance calls spacesim.v1.PerformanceService.GetPerformance.
+func (c *performanceServiceClient) GetPerformance(ctx context.Context, req *connect.Request[v1.GetPerformanceRequest]) (*connect.Response[v1.GetPerformanceResponse], error) {
+	return c.getPerformance.CallUnary(ctx, req)
+}
+
+// SetPerformance calls spacesim.v1.PerformanceService.SetPerformance.
+func (c *performanceServiceClient) SetPerformance(ctx context.Context, req *connect.Request[v1.SetPerformanceRequest]) (*connect.Response[v1.SetPerformanceResponse], error) {
+	return c.setPerformance.CallUnary(ctx, req)
+}
+
+// PerformanceServiceHandler is an implementation of the spacesim.v1.PerformanceService service.
+type PerformanceServiceHandler interface {
+	GetPerformance(context.Context, *connect.Request[v1.GetPerformanceRequest]) (*connect.Response[v1.GetPerformanceResponse], error)
+	SetPerformance(context.Context, *connect.Request[v1.SetPerformanceRequest]) (*connect.Response[v1.SetPerformanceResponse], error)
+}
+
+// NewPerformanceServiceHandler builds an HTTP handler from the service implementation. It returns
+// the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewPerformanceServiceHandler(svc PerformanceServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	performanceServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("PerformanceService").Methods()
+	performanceServiceGetPerformanceHandler := connect.NewUnaryHandler(
+		PerformanceServiceGetPerformanceProcedure,
+		svc.GetPerformance,
+		connect.WithSchema(performanceServiceMethods.ByName("GetPerformance")),
+		connect.WithHandlerOptions(opts...),
+	)
+	performanceServiceSetPerformanceHandler := connect.NewUnaryHandler(
+		PerformanceServiceSetPerformanceProcedure,
+		svc.SetPerformance,
+		connect.WithSchema(performanceServiceMethods.ByName("SetPerformance")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.PerformanceService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case PerformanceServiceGetPerformanceProcedure:
+			performanceServiceGetPerformanceHandler.ServeHTTP(w, r)
+		case PerformanceServiceSetPerformanceProcedure:
+			performanceServiceSetPerformanceHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedPerformanceServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedPerformanceServiceHandler struct{}
+
+func (UnimplementedPerformanceServiceHandler) GetPerformance(context.Context, *connect.Request[v1.GetPerformanceRequest]) (*connect.Response[v1.GetPerformanceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.PerformanceService.GetPerformance is not implemented"))
+}
+
+func (UnimplementedPerformanceServiceHandler) SetPerformance(context.Context, *connect.Request[v1.SetPerformanceRequest]) (*connect.Response[v1.SetPerformanceResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.PerformanceService.SetPerformance is not implemented"))
+}
+
+// ShutdownServiceClient is a client for the spacesim.v1.ShutdownService service.
+type ShutdownServiceClient interface {
+	// Shutdown cancels the server context and exits cleanly.
+	Shutdown(context.Context, *connect.Request[v1.ShutdownRequest]) (*connect.Response[v1.ShutdownResponse], error)
+}
+
+// NewShutdownServiceClient constructs a client for the spacesim.v1.ShutdownService service. By
+// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
+// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewShutdownServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ShutdownServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	shutdownServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("ShutdownService").Methods()
+	return &shutdownServiceClient{
+		shutdown: connect.NewClient[v1.ShutdownRequest, v1.ShutdownResponse](
+			httpClient,
+			baseURL+ShutdownServiceShutdownProcedure,
+			connect.WithSchema(shutdownServiceMethods.ByName("Shutdown")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// shutdownServiceClient implements ShutdownServiceClient.
+type shutdownServiceClient struct {
+	shutdown *connect.Client[v1.ShutdownRequest, v1.ShutdownResponse]
+}
+
+// Shutdown calls spacesim.v1.ShutdownService.Shutdown.
+func (c *shutdownServiceClient) Shutdown(ctx context.Context, req *connect.Request[v1.ShutdownRequest]) (*connect.Response[v1.ShutdownResponse], error) {
+	return c.shutdown.CallUnary(ctx, req)
+}
+
+// ShutdownServiceHandler is an implementation of the spacesim.v1.ShutdownService service.
+type ShutdownServiceHandler interface {
+	// Shutdown cancels the server context and exits cleanly.
+	Shutdown(context.Context, *connect.Request[v1.ShutdownRequest]) (*connect.Response[v1.ShutdownResponse], error)
+}
+
+// NewShutdownServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewShutdownServiceHandler(svc ShutdownServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	shutdownServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("ShutdownService").Methods()
+	shutdownServiceShutdownHandler := connect.NewUnaryHandler(
+		ShutdownServiceShutdownProcedure,
+		svc.Shutdown,
+		connect.WithSchema(shutdownServiceMethods.ByName("Shutdown")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.ShutdownService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ShutdownServiceShutdownProcedure:
+			shutdownServiceShutdownHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedShutdownServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedShutdownServiceHandler struct{}
+
+func (UnimplementedShutdownServiceHandler) Shutdown(context.Context, *connect.Request[v1.ShutdownRequest]) (*connect.Response[v1.ShutdownResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.ShutdownService.Shutdown is not implemented"))
 }

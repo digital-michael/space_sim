@@ -48,8 +48,6 @@ func main() {
 	// ── gRPC server ───────────────────────────────────────────────────────
 	// WorldHandler implements protocol.Subscriber — register it directly so
 	// the interactive loop delivers WorldSnapshot frames to all streaming clients.
-	// SimulationHandler takes nil world until app.App exposes a World() accessor
-	// (tracked as a follow-up; command RPCs return Unimplemented until then).
 	worldHandler := grpcserver.NewWorldHandler()
 	application.RegisterSubscriber(worldHandler)
 
@@ -57,7 +55,25 @@ func main() {
 	// Run() has loaded a session, at which point all SimulationService RPCs
 	// become fully functional.
 	simHandler := grpcserver.NewSimulationHandler(application.World)
-	srv := grpcserver.New(grpcserver.DefaultServerConfig(), simHandler, worldHandler)
+
+	// All new service handlers use application.SendCmd as the main-thread gate.
+	systemHandler := grpcserver.NewSystemHandler(application.SendCmd)
+	windowHandler := grpcserver.NewWindowHandler(application.SendCmd)
+	cameraHandler := grpcserver.NewCameraHandler(application.SendCmd)
+	navHandler := grpcserver.NewNavigationHandler(application.SendCmd)
+	perfHandler := grpcserver.NewPerformanceHandler(application.SendCmd)
+	shutdownHandler := grpcserver.NewShutdownHandler(stop)
+
+	srv := grpcserver.New(grpcserver.DefaultServerConfig(), grpcserver.Handlers{
+		Simulation:  simHandler,
+		World:       worldHandler,
+		System:      systemHandler,
+		Window:      windowHandler,
+		Camera:      cameraHandler,
+		Navigation:  navHandler,
+		Performance: perfHandler,
+		Shutdown:    shutdownHandler,
+	})
 
 	srvDone := make(chan error, 1)
 	go func() {

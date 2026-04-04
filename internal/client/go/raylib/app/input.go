@@ -6,9 +6,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	sim "github.com/digital-michael/space_sim/internal/sim/world"
-	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -785,6 +785,24 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 	case ui.CameraModeJumping:
 		cameraState.UpdateJump(float64(dt))
 
+		// Jump just arrived — center on the target body (track it) so it
+		// is immediately visible on screen at the correct zoom distance.
+		// Running UpdateTracking in the same frame avoids a one-frame snap.
+		if cameraState.Mode == ui.CameraModeFree {
+			cameraState.StartTracking(cameraState.JumpTargetIndex)
+			cameraState.TrackDistance = cameraState.JumpTargetViewDist
+			cameraState.TrackOffset = engine.Vector3{}
+			cameraState.UpdateTracking(state) // center now, not next frame
+			cameraState.JumpDwellRemaining = cameraState.JumpCurrentDwell
+			// No dwell: immediately pop the next hop if queued.
+			if cameraState.JumpDwellRemaining <= 0 && len(cameraState.JumpQueue) > 0 {
+				next := cameraState.JumpQueue[0]
+				cameraState.JumpQueue = cameraState.JumpQueue[1:]
+				cameraState.JumpCurrentDwell = next.DwellSeconds
+				cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
+			}
+		}
+
 		if !mainWindowInputSuspended {
 			// Mouse changes camera facing in jumping mode
 			cameraState.Yaw -= float64(mouseDelta.X * sensitivity)
@@ -818,6 +836,27 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 		}
 
 	case ui.CameraModeTracking:
+		// Tick dwell countdown for multi-hop jump sequences.
+		if cameraState.JumpDwellRemaining > 0 {
+			cameraState.JumpDwellRemaining -= float64(dt)
+			if cameraState.JumpDwellRemaining <= 0 && len(cameraState.JumpQueue) > 0 {
+				next := cameraState.JumpQueue[0]
+				cameraState.JumpQueue = cameraState.JumpQueue[1:]
+				cameraState.JumpCurrentDwell = next.DwellSeconds
+				cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
+			}
+		}
+
+		// Tick orbit animation.
+		if cameraState.OrbitSpeed != 0 && cameraState.OrbitRadiansRemaining > 0 {
+			delta := cameraState.OrbitSpeed * float64(dt)
+			cameraState.TrackYaw += delta
+			cameraState.OrbitRadiansRemaining -= math.Abs(delta)
+			if cameraState.OrbitRadiansRemaining <= 0 {
+				cameraState.OrbitSpeed = 0
+			}
+		}
+
 		// Keep automatic tracking updates active, but suspend user input while a dialog is open.
 		if !mainWindowInputSuspended && (mouseDelta.X != 0 || mouseDelta.Y != 0) {
 			cameraState.AdjustTrackAngles(
@@ -940,6 +979,11 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 			if rl.IsKeyDown(rl.KeyRight) {
 				cameraState.Position.X += arrowSpeed
 			}
+		}
+		// Apply persistent velocity drift (set via gRPC NavigationService).
+		// Zero velocity has no effect; this is per-frame AU/s integration.
+		if cameraState.Velocity.X != 0 || cameraState.Velocity.Y != 0 || cameraState.Velocity.Z != 0 {
+			cameraState.Position = cameraState.Position.Add(cameraState.Velocity.Scale(dt))
 		}
 	}
 

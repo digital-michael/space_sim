@@ -12,6 +12,9 @@ import (
 	worldpkg "github.com/digital-michael/space_sim/internal/sim/world"
 )
 
+// appCmdBufSize is the number of AppCmds that can be queued without blocking.
+const appCmdBufSize = 32
+
 // App owns the Space Sim application's runtime orchestration.
 type App struct {
 	cfg         Config
@@ -19,6 +22,10 @@ type App struct {
 	renderer    *render.Renderer
 	broadcaster *protocol.Broadcaster
 	worldPtr    atomic.Pointer[worldpkg.World]
+
+	// cmdCh is the main-thread command gate. gRPC handler goroutines send
+	// AppCmds here; the interactive loop drains it each frame (non-blocking).
+	cmdCh chan AppCmd
 }
 
 // New constructs the application from validated configuration.
@@ -33,7 +40,22 @@ func New(cfg Config) (*App, error) {
 		runtime:     NewRuntimeContext(cfg.AppConfig),
 		renderer:    render.New(),
 		broadcaster: &protocol.Broadcaster{},
+		cmdCh:       make(chan AppCmd, appCmdBufSize),
 	}, nil
+}
+
+// SendCmd enqueues an AppCmd for execution on the OS main thread.
+// Returns true if the command was accepted, false if the channel was full.
+// The caller must not block on full; it should treat a false return as a
+// transient back-pressure signal and retry or surface an error.
+func (a *App) SendCmd(cmd AppCmd) bool {
+	select {
+	case a.cmdCh <- cmd:
+		return true
+	default:
+		log.Printf("AppCmd channel full — dropping %T", cmd)
+		return false
+	}
 }
 
 // RegisterSubscriber adds s to the broadcast list. Every WorldSnapshot

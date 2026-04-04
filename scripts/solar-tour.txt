@@ -1,0 +1,50 @@
+
+
+sleep 2
+
+nav jump sol 2 
+orbit sol 5 1
+sleep 2
+
+nav jump mercury 2 
+orbit mercury 5 2
+sleep 2
+
+nav jump venus 2 
+orbit venus 5 2
+sleep 2
+
+nav jump earth 2 
+orbit earth 5 2
+sleep 2
+
+nav jump mars 2 
+orbit mars 5 2
+sleep 2
+
+nav jump jupiter 2 
+orbit jupiter 5 2
+sleep 2
+
+nav jump saturn 2 
+orbit saturn 5 2
+sleep 2
+
+nav jump uranus 2 
+orbit uranus 5 2
+sleep 2
+
+nav jump neptune 2 
+orbit neptune 5 2
+sleep 2
+
+nav jump pluto 2
+orbit pluto 5 2
+sleep 2
+
+nav jump sol 2
+orbit sol 5 2
+sleep 2
+
+window restore
+exit

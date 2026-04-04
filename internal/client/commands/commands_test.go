@@ -55,8 +55,22 @@ func TestParse_SetSpeed_CaseInsensitive(t *testing.T) {
 	}
 }
 
-func TestParse_SetSpeed_NonPositive_ReturnsErrUsage(t *testing.T) {
-	for _, input := range []string{"setspeed 0", "setspeed -1", "setspeed abc"} {
+func TestParse_SetSpeed_Zero_Valid(t *testing.T) {
+	cmd, err := Parse("setspeed 0")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	ss, ok := cmd.(SetSpeed)
+	if !ok {
+		t.Fatalf("want SetSpeed, got %T", cmd)
+	}
+	if ss.SecondsPerSecond != 0 {
+		t.Errorf("want 0, got %v", ss.SecondsPerSecond)
+	}
+}
+
+func TestParse_SetSpeed_Negative_ReturnsErrUsage(t *testing.T) {
+	for _, input := range []string{"setspeed -1", "setspeed abc"} {
 		_, err := Parse(input)
 		var e ErrUsage
 		if !errors.As(err, &e) {
@@ -157,6 +171,108 @@ func TestParse_Quit(t *testing.T) {
 		if _, ok := cmd.(Quit); !ok {
 			t.Errorf("%q: want Quit, got %T", input, cmd)
 		}
+	}
+}
+
+func TestParse_Pause(t *testing.T) {
+	cmd, err := Parse("pause")
+	if err != nil || cmd == nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := cmd.(Pause); !ok {
+		t.Errorf("want Pause, got %T", cmd)
+	}
+}
+
+func TestParse_Resume(t *testing.T) {
+	cmd, err := Parse("resume")
+	if err != nil || cmd == nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := cmd.(Resume); !ok {
+		t.Errorf("want Resume, got %T", cmd)
+	}
+}
+
+func TestParse_Bodies_NoFilter(t *testing.T) {
+	cmd, err := Parse("bodies")
+	if err != nil || cmd == nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	b, ok := cmd.(Bodies)
+	if !ok {
+		t.Fatalf("want Bodies, got %T", cmd)
+	}
+	if b.Category != "" {
+		t.Errorf("want empty category, got %q", b.Category)
+	}
+}
+
+func TestParse_Bodies_WithFilter(t *testing.T) {
+	cmd, err := Parse("bodies Planet")
+	if err != nil || cmd == nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	b, ok := cmd.(Bodies)
+	if !ok {
+		t.Fatalf("want Bodies, got %T", cmd)
+	}
+	if b.Category != "planet" {
+		t.Errorf("want \"planet\", got %q", b.Category)
+	}
+}
+
+func TestParse_Bodies_TooManyArgs_ReturnsErrUsage(t *testing.T) {
+	_, err := Parse("bodies planet moon")
+	var e ErrUsage
+	if !errors.As(err, &e) {
+		t.Errorf("want ErrUsage, got %T: %v", err, err)
+	}
+}
+
+func TestParse_Inspect_Valid(t *testing.T) {
+	cmd, err := Parse("inspect Earth")
+	if err != nil || cmd == nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	ins, ok := cmd.(Inspect)
+	if !ok {
+		t.Fatalf("want Inspect, got %T", cmd)
+	}
+	if ins.Name != "Earth" {
+		t.Errorf("want \"Earth\", got %q", ins.Name)
+	}
+}
+
+func TestParse_Inspect_MultiWord(t *testing.T) {
+	cmd, err := Parse("inspect Alpha Centauri A")
+	if err != nil || cmd == nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	ins, ok := cmd.(Inspect)
+	if !ok {
+		t.Fatalf("want Inspect, got %T", cmd)
+	}
+	if ins.Name != "Alpha Centauri A" {
+		t.Errorf("want \"Alpha Centauri A\", got %q", ins.Name)
+	}
+}
+
+func TestParse_Inspect_NoArg_ReturnsErrUsage(t *testing.T) {
+	_, err := Parse("inspect")
+	var e ErrUsage
+	if !errors.As(err, &e) {
+		t.Errorf("want ErrUsage, got %T: %v", err, err)
+	}
+}
+
+func TestParse_Status(t *testing.T) {
+	cmd, err := Parse("status")
+	if err != nil || cmd == nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if _, ok := cmd.(Status); !ok {
+		t.Errorf("want Status, got %T", cmd)
 	}
 }
 

@@ -66,3 +66,9 @@ func (a *App) openSystemSelector(inputState *ui.InputState) {
 		inputState.SetSystemSelectorStatus("No system JSON files found in data/systems.")
 	}
 }
+
+// DiscoverSystems returns all discoverable system JSON files from data/systems/.
+// Safe to call from any goroutine; performs only filesystem I/O.
+func DiscoverSystems() ([]ui.SystemOption, error) {
+	return discoverRuntimeSystemOptions()
+}
