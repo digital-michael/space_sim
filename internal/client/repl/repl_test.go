@@ -654,26 +654,31 @@ func newTestServerWithWorld(t *testing.T, world spacesimv1connect.WorldServiceHa
 
 func TestParseForHeader(t *testing.T) {
 	cases := []struct {
-		input   string
-		group   string
-		varName string
-		ok      bool
+		input     string
+		group     string
+		varName   string
+		sliceSpec string
+		ok        bool
 	}{
-		{"for planets as X:", "planets", "X", true},
-		{"for planets as X", "planets", "X", true},  // no trailing colon
-		{"for PLANETS AS X:", "planets", "X", true}, // case-insensitive keywords
-		{"for dwarf_planets as P:", "dwarf_planets", "P", true},
-		{"for moons as M:", "moons", "M", true},
-		{"for stars as S:", "stars", "S", true},
-		{"for asteroids as A:", "asteroids", "A", true},
-		{"nav jump X", "", "", false},            // not a for header
-		{"for planets X:", "", "", false},        // missing "as"
-		{"for planets:", "", "", false},          // missing var and "as"
-		{"for:", "", "", false},                  // bare for
-		{"foreach planets as X:", "", "", false}, // wrong keyword
+		{"for planets as X:", "planets", "X", "", true},
+		{"for planets as X", "planets", "X", "", true},  // no trailing colon
+		{"for PLANETS AS X:", "planets", "X", "", true}, // case-insensitive keywords
+		{"for dwarf_planets as P:", "dwarf_planets", "P", "", true},
+		{"for moons as M:", "moons", "M", "", true},
+		{"for stars as S:", "stars", "S", "", true},
+		{"for asteroids as A:", "asteroids", "A", "", true},
+		{"for planets[3:] as X:", "planets", "X", "[3:]", true},
+		{"for planets[:10] as X:", "planets", "X", "[:10]", true},
+		{"for planets[3:10] as X:", "planets", "X", "[3:10]", true},
+		{"for planets[-5:] as X:", "planets", "X", "[-5:]", true},
+		{"nav jump X", "", "", "", false},            // not a for header
+		{"for planets X:", "", "", "", false},        // missing "as"
+		{"for planets:", "", "", "", false},          // missing var and "as"
+		{"for:", "", "", "", false},                  // bare for
+		{"foreach planets as X:", "", "", "", false}, // wrong keyword
 	}
 	for _, c := range cases {
-		group, varName, ok := parseForHeader(c.input)
+		group, varName, sliceSpec, ok := parseForHeader(c.input)
 		if ok != c.ok {
 			t.Errorf("parseForHeader(%q): ok=%v want %v", c.input, ok, c.ok)
 			continue
@@ -683,6 +688,9 @@ func TestParseForHeader(t *testing.T) {
 		}
 		if ok && varName != c.varName {
 			t.Errorf("parseForHeader(%q): varName=%q want %q", c.input, varName, c.varName)
+		}
+		if ok && sliceSpec != c.sliceSpec {
+			t.Errorf("parseForHeader(%q): sliceSpec=%q want %q", c.input, sliceSpec, c.sliceSpec)
 		}
 	}
 }
@@ -749,5 +757,306 @@ func TestREPL_ForLoop_NoBodiesInGroup(t *testing.T) {
 	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
 	if !strings.Contains(out.String(), "no bodies found") {
 		t.Errorf("expected 'no bodies found' warning, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_ForLoop_IndentedBody_Spaces(t *testing.T) {
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{
+			{Name: "Earth", Category: "planet"},
+		},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+	// Body lines indented with spaces — should be accepted as body lines, not ignored.
+	input := "for planets as X:\n    nav jump X\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected 'ok' ack with space-indented body, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_ForLoop_IndentedBody_Tabs(t *testing.T) {
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{
+			{Name: "Earth", Category: "planet"},
+		},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+	// Body lines indented with a tab — should be accepted as body lines, not ignored.
+	input := "for planets as X:\n\tnav jump X\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected 'ok' ack with tab-indented body, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_Labels_On(t *testing.T) {
+	_, out, r := newTestServer(t)
+	r.Run(context.Background(), strings.NewReader("labels on\nquit\n")) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected 'ok' ack for 'labels on', got:\n%s", out.String())
+	}
+}
+
+func TestREPL_Labels_Off(t *testing.T) {
+	_, out, r := newTestServer(t)
+	r.Run(context.Background(), strings.NewReader("labels off\nquit\n")) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected 'ok' ack for 'labels off', got:\n%s", out.String())
+	}
+}
+
+func TestREPL_Labels_Nearest(t *testing.T) {
+	_, out, r := newTestServer(t)
+	r.Run(context.Background(), strings.NewReader("labels nearest\nquit\n")) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected 'ok' ack for 'labels nearest', got:\n%s", out.String())
+	}
+}
+
+// ─── comment tests ────────────────────────────────────────────────────────────
+
+func TestStripLineComment_RemovesTrailingComment(t *testing.T) {
+	cases := []struct{ in, want string }{
+		{"setspeed 5 // comment", "setspeed 5"},
+		{"// whole line", ""},
+		{"setspeed 5", "setspeed 5"},
+		{`orbit "X//Y" 10 1`, `orbit "X//Y" 10 1`}, // inside quotes — preserved
+		{"setspeed 5 // a // b", "setspeed 5"},     // only first // matters
+	}
+	for _, c := range cases {
+		got := stripLineComment(c.in)
+		if got != c.want {
+			t.Errorf("stripLineComment(%q) = %q, want %q", c.in, got, c.want)
+		}
+	}
+}
+
+func TestREPL_LineComment_WholeLineIgnored(t *testing.T) {
+	_, out, r := newTestServer(t)
+	input := "// this whole line is a comment\ngetspeed\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "speed =") {
+		t.Errorf("expected getspeed to run after comment line, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_LineComment_InlineOnSet(t *testing.T) {
+	_, out, r := newTestServer(t)
+	// RHS should be "20", not "20 // comment"
+	input := "set $x 20 // inline comment\nsetspeed $x\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected setspeed ack after inline comment on set, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_BlockComment_InlineSameLine(t *testing.T) {
+	_, out, r := newTestServer(t)
+	input := "/* ignore this */ getspeed\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "speed =") {
+		t.Errorf("expected getspeed to run after inline block comment, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_BlockComment_MultiLine(t *testing.T) {
+	_, out, r := newTestServer(t)
+	input := "/*\nignore line 1\nignore line 2\n*/\ngetspeed\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "speed =") {
+		t.Errorf("expected getspeed to run after multi-line block comment, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_BlockComment_MultiplOnOneLine(t *testing.T) {
+	_, out, r := newTestServer(t)
+	// Two block comments on one line; command in the middle should execute.
+	input := "/* a */ getspeed /* b */\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "speed =") {
+		t.Errorf("expected getspeed to run with comments on both sides, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_ForLoop_BodyWithLineComment(t *testing.T) {
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{{Name: "Earth", Category: "planet"}},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+	input := "for planets as X:\n    nav jump X // jump to it\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "ok") {
+		t.Errorf("expected nav jump ack with inline comment in body, got:\n%s", out.String())
+	}
+}
+
+func TestApplyForSlice(t *testing.T) {
+	names := []string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"} // 10 items
+	cases := []struct {
+		spec    string
+		want    []string
+		wantErr bool
+	}{
+		{"", names, false},     // no slice
+		{"[0:]", names, false}, // all
+		{"[3:]", []string{"d", "e", "f", "g", "h", "i", "j"}, false}, // skip first 3
+		{"[:4]", []string{"a", "b", "c", "d"}, false},                // first 4
+		{"[3:7]", []string{"d", "e", "f", "g"}, false},               // middle slice
+		{"[-3:]", []string{"h", "i", "j"}, false},                    // last 3
+		{"[0:10]", names, false},                                     // full range explicit
+		{"[5:5]", []string{}, false},                                 // empty result
+		{"[100:]", []string{}, false},                                // start beyond end
+		{"[-100:]", names, false},                                    // large negative clamped to 0
+		{"[:-3]", nil, true},                                         // negative end → error
+		{"[bad:]", nil, true},                                        // non-numeric start
+		{"[:bad]", nil, true},                                        // non-numeric end
+		{"nope", nil, true},                                          // missing brackets
+		{"[1]", nil, true},                                           // missing colon
+	}
+	for _, c := range cases {
+		got, err := applyForSlice(names, c.spec)
+		if c.wantErr {
+			if err == nil {
+				t.Errorf("applyForSlice(%q): expected error, got %v", c.spec, got)
+			}
+			continue
+		}
+		if err != nil {
+			t.Errorf("applyForSlice(%q): unexpected error: %v", c.spec, err)
+			continue
+		}
+		if len(got) != len(c.want) {
+			t.Errorf("applyForSlice(%q): len=%d want %d  got=%v", c.spec, len(got), len(c.want), got)
+			continue
+		}
+		for i := range got {
+			if got[i] != c.want[i] {
+				t.Errorf("applyForSlice(%q)[%d]: %q want %q", c.spec, i, got[i], c.want[i])
+			}
+		}
+	}
+}
+
+func TestREPL_ForLoop_Slice_SkipFirst(t *testing.T) {
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{
+			{Name: "Mercury", Category: "planet"},
+			{Name: "Venus", Category: "planet"},
+			{Name: "Earth", Category: "planet"},
+			{Name: "Mars", Category: "planet"},
+		},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+	// [2:] should visit only Earth and Mars.
+	input := "for planets[2:] as X:\nnav jump X\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	output := out.String()
+	if strings.Count(output, "ok") != 2 {
+		t.Errorf("expected 2 'ok' acks (Earth + Mars), got:\n%s", output)
+	}
+}
+
+func TestREPL_ForLoop_Slice_LastN(t *testing.T) {
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{
+			{Name: "Mercury", Category: "planet"},
+			{Name: "Venus", Category: "planet"},
+			{Name: "Earth", Category: "planet"},
+			{Name: "Mars", Category: "planet"},
+		},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+	// [-2:] should visit only Earth and Mars.
+	input := "for planets[-2:] as X:\nnav jump X\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	output := out.String()
+	if strings.Count(output, "ok") != 2 {
+		t.Errorf("expected 2 'ok' acks (Earth + Mars), got:\n%s", output)
+	}
+}
+
+// ─── set $var tests ───────────────────────────────────────────────────────────
+
+func TestParseSetVar_SpaceSeparated(t *testing.T) {
+	name, val, ok := parseSetVar("set $speed 15")
+	if !ok || name != "$speed" || val != "15" {
+		t.Errorf("got (%q, %q, %v), want ($speed, 15, true)", name, val, ok)
+	}
+}
+
+func TestParseSetVar_EqualsSeparated(t *testing.T) {
+	name, val, ok := parseSetVar("set $orbit_count=1")
+	if !ok || name != "$orbit_count" || val != "1" {
+		t.Errorf("got (%q, %q, %v), want ($orbit_count, 1, true)", name, val, ok)
+	}
+}
+
+func TestParseSetVar_ColonEqualsSeparated(t *testing.T) {
+	name, val, ok := parseSetVar("set $target:=Earth")
+	if !ok || name != "$target" || val != "Earth" {
+		t.Errorf("got (%q, %q, %v), want ($target, Earth, true)", name, val, ok)
+	}
+}
+
+func TestParseSetVar_QuotedValue(t *testing.T) {
+	name, val, ok := parseSetVar(`set $target "Alpha Centauri A"`)
+	if !ok || name != "$target" || val != "Alpha Centauri A" {
+		t.Errorf("got (%q, %q, %v), want ($target, Alpha Centauri A, true)", name, val, ok)
+	}
+}
+
+func TestParseSetVar_NoSigil_NotMatched(t *testing.T) {
+	_, _, ok := parseSetVar("set speed 15")
+	if ok {
+		t.Error("expected no match for set without sigil")
+	}
+}
+
+func TestParseSetVar_NotSetLine(t *testing.T) {
+	_, _, ok := parseSetVar("setspeed 15")
+	if ok {
+		t.Error("expected no match for 'setspeed'")
+	}
+}
+
+func TestExpandVars_Basic(t *testing.T) {
+	r := &REPL{vars: map[string]string{"$speed": "15", "$target": "Earth"}}
+	got := r.expandVars("orbit $target $speed 1")
+	want := "orbit Earth 15 1"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestExpandVars_LongestFirst(t *testing.T) {
+	// $speed_max must not accidentally match before $speed is tried.
+	r := &REPL{vars: map[string]string{"$speed": "10", "$speed_max": "30"}}
+	got := r.expandVars("orbit Earth $speed_max 1")
+	want := "orbit Earth 30 1"
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func TestExpandVars_NoVars_Passthrough(t *testing.T) {
+	r := &REPL{vars: make(map[string]string)}
+	line := "orbit Earth 15 1"
+	if got := r.expandVars(line); got != line {
+		t.Errorf("expected passthrough, got %q", got)
+	}
+}
+
+func TestREPL_Set_StoresAndSubstitutes(t *testing.T) {
+	_, out, r := newTestServer(t)
+	// set $speed, then use it in setspeed; stub accepts any value.
+	input := "set $speed 20\nsetspeed $speed\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	output := out.String()
+	if !strings.Contains(output, `set $speed = "20"`) {
+		t.Errorf("expected set confirmation, got:\n%s", output)
+	}
+	if !strings.Contains(output, "ok") {
+		t.Errorf("expected setspeed ack after var substitution, got:\n%s", output)
 	}
 }

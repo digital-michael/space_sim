@@ -288,8 +288,8 @@ func TestParse_LeadingTrailingWhitespace(t *testing.T) {
 
 func TestTokenize(t *testing.T) {
 	cases := []struct {
-		input  string
-		want   []string
+		input string
+		want  []string
 	}{
 		{"orbit Earth 15 2", []string{"orbit", "Earth", "15", "2"}},
 		{`orbit "S/2019 S 1" 15 2`, []string{"orbit", "S/2019 S 1", "15", "2"}},
@@ -332,5 +332,68 @@ func TestParse_Orbit_QuotedName(t *testing.T) {
 	}
 	if o.Orbits != 2 {
 		t.Errorf("want orbits 2, got %v", o.Orbits)
+	}
+}
+
+func TestParse_Labels_On(t *testing.T) {
+	cmd, err := Parse("labels on")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	l, ok := cmd.(Labels)
+	if !ok {
+		t.Fatalf("want Labels, got %T", cmd)
+	}
+	if l.Mode != "on" {
+		t.Errorf("want mode %q, got %q", "on", l.Mode)
+	}
+}
+
+func TestParse_Labels_Off(t *testing.T) {
+	cmd, err := Parse("labels off")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	l, ok := cmd.(Labels)
+	if !ok {
+		t.Fatalf("want Labels, got %T", cmd)
+	}
+	if l.Mode != "off" {
+		t.Errorf("want mode %q, got %q", "off", l.Mode)
+	}
+}
+
+func TestParse_Labels_Nearest(t *testing.T) {
+	cmd, err := Parse("labels nearest")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	l, ok := cmd.(Labels)
+	if !ok {
+		t.Fatalf("want Labels, got %T", cmd)
+	}
+	if l.Mode != "nearest" {
+		t.Errorf("want mode %q, got %q", "nearest", l.Mode)
+	}
+}
+
+func TestParse_Labels_AliasLabel(t *testing.T) {
+	cmd, err := Parse("label nearest")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	l, ok := cmd.(Labels)
+	if !ok {
+		t.Fatalf("want Labels, got %T", cmd)
+	}
+	if l.Mode != "nearest" {
+		t.Errorf("want mode %q, got %q", "nearest", l.Mode)
+	}
+}
+
+func TestParse_Labels_UnknownMode_ReturnsErrUsage(t *testing.T) {
+	_, err := Parse("labels blinking")
+	if err == nil {
+		t.Fatal("expected error for unknown mode, got nil")
 	}
 }

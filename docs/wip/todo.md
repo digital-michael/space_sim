@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-04-03
+2026-04-04
 
 
 ## Table of Contents
@@ -217,6 +217,33 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 - [ ] Ensure no two objects in the same shell share both distance and angle within a configurable tolerance
 - [ ] Add a test asserting minimum separation across a large generated dataset
 - [ ] Consider whether `MeanAnomalyAtEpoch` jitter alone is sufficient or structural placement is needed
+
+## Tech Debt
+
+### TD-001 — Collapse `handleInput` / `updateCameraState` Param Lists
+
+**Value**: `handleInput` currently takes 14 individual params and returns a 6-tuple. `updateCameraState` takes 8. Both functions have access to `*App`, `*runtimeSession`, and `*engine.SimulationState` at their call site in `interactive.go`, but receive their fields piecemeal instead.
+**Status**: 📋 Not started
+**Constraint**: Do not implement until all active phases are stable and a clean test baseline exists.
+
+#### Design (agreed 2026-04-04)
+
+Three targeted changes, each independently safe:
+
+1. **Pass `*runtimeSession` to both functions** — eliminates `cameraState`, `inputState`, `navigationOrder`, and `sim` as separate params; they're already fields on the session.
+2. **Pass `*RuntimeContext` (already exists) to both functions** — eliminates `gridVisible`, `hudVisible`, `helpVisible`, `hudDialogVisible`, `labelMode`, `mouseModeEnabled`, `debugEnabled`, `cameraSpeed`, `mouseSensitivity` as separate params; they live on `a.runtime` already.
+3. **Collapse the return tuple** — `handleInput` currently returns `(bool, bool, engine.AsteroidDataset, bool, bool, bool)`. With `*RuntimeContext` passed in, only `shouldQuit bool` needs to be returned; all other values are written through the pointer.
+
+#### Result shape
+```go
+func handleInput(app *App, session *runtimeSession, state *engine.SimulationState) bool
+func updateCameraState(session *runtimeSession, runtime *RuntimeContext, dt float32) float32
+```
+
+#### Constraints
+- `render` package functions (`DrawHUD`, `DrawObjectLabels`) stay as explicit params — the render package cannot import `app`, so no cross-package context struct.
+- Do not merge `runtimeSession` and `RuntimeContext` — they have different lifetimes (session is discarded on system reload; RuntimeContext persists).
+- Do not add a "god context" that combines engine state, camera, input, and settings — violates SRP and Information Expert (GRASP).
 
 ## 5. Related Docs
 

@@ -5,6 +5,7 @@ package ui
 
 import (
 	"math"
+	"strings"
 
 	"github.com/digital-michael/space_sim/internal/sim/engine"
 )
@@ -228,6 +229,59 @@ func (c *CameraState) UpdateTracking(state *engine.SimulationState) {
 // StopTracking returns to free-fly mode.
 func (c *CameraState) StopTracking() {
 	c.Mode = CameraModeFree
+}
+
+// HUDState holds per-category visibility for the heads-up display.
+// All categories default to true; setting a category false hides only that section.
+type HUDState struct {
+	Debug  bool // upper-left stats block + lower-left screen/render lines
+	Info   bool // lower-right tracking info + selection UI
+	Help   bool // bottom-left hint bar ("Ctrl+/ for help …")
+	Player bool // reserved — not yet rendered
+}
+
+// AllOnHUD returns a HUDState with all implemented categories enabled.
+func AllOnHUD() HUDState {
+	return HUDState{Debug: true, Info: true, Help: true, Player: false}
+}
+
+// AllOffHUD returns a HUDState with all categories disabled.
+func AllOffHUD() HUDState {
+	return HUDState{Debug: false, Info: false, Help: false, Player: false}
+}
+
+// LabelMode controls how object labels are displayed.
+type LabelMode int
+
+const (
+	LabelModeOff     LabelMode = iota // no labels
+	LabelModeOn                       // all eligible objects (up to 20 highest-priority)
+	LabelModeNearest                  // only nearby objects + tracked/jump target
+)
+
+// LabelModeFromString parses a label mode string ("on", "off", "nearest").
+// Unknown strings return LabelModeOff.
+func LabelModeFromString(s string) LabelMode {
+	switch strings.ToLower(s) {
+	case "on":
+		return LabelModeOn
+	case "nearest":
+		return LabelModeNearest
+	default:
+		return LabelModeOff
+	}
+}
+
+// String returns the canonical string representation of the mode.
+func (m LabelMode) String() string {
+	switch m {
+	case LabelModeOn:
+		return "on"
+	case LabelModeNearest:
+		return "nearest"
+	default:
+		return "off"
+	}
 }
 
 // AdjustTrackAngles adjusts the camera orbit angles (mouse/scroll input).

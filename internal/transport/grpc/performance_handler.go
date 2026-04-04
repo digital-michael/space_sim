@@ -41,6 +41,11 @@ func (h *PerformanceHandler) GetPerformance(ctx context.Context, _ *connect.Requ
 				CameraSpeed:         snap.CameraSpeed,
 				NumWorkers:          int32(snap.NumWorkers),
 				HudVisible:          snap.HUDVisible,
+				HudDebug:            snap.HUD.Debug,
+				HudInfo:             snap.HUD.Info,
+				HudHelp:             snap.HUD.Help,
+				HudPlayer:           snap.HUD.Player,
+				LabelsMode:          snap.LabelMode.String(),
 			},
 		}), nil
 	case <-ctx.Done():
@@ -68,6 +73,12 @@ func (h *PerformanceHandler) SetPerformance(_ context.Context, req *connect.Requ
 		CameraSpeed: s.CameraSpeed,
 		NumWorkers:  int(s.NumWorkers),
 		HUDVisible:  s.HudVisible,
+		HUDCategory: ui.HUDState{
+			Debug:  s.HudDebug,
+			Info:   s.HudInfo,
+			Help:   s.HudHelp,
+			Player: s.HudPlayer,
+		},
 
 		SetFrustumCulling:      msg.SetFrustumCulling,
 		SetLODEnabled:          msg.SetLodEnabled,
@@ -79,6 +90,12 @@ func (h *PerformanceHandler) SetPerformance(_ context.Context, req *connect.Requ
 		SetCameraSpeed:         msg.SetCameraSpeed,
 		SetNumWorkers:          msg.SetNumWorkers,
 		SetHUDVisible:          msg.SetHudVisible,
+		SetHUDDebug:            msg.SetHudDebug,
+		SetHUDInfo:             msg.SetHudInfo,
+		SetHUDHelp:             msg.SetHudHelp,
+		SetHUDPlayer:           msg.SetHudPlayer,
+		LabelMode:              ui.LabelModeFromString(s.LabelsMode),
+		SetLabelMode:           msg.SetLabelsMode,
 	}
 
 	if !h.sendCmd(cmd) {

@@ -36,8 +36,9 @@ type REPL struct {
 	perfClient  spacesimv1connect.PerformanceServiceClient
 	sdClient    spacesimv1connect.ShutdownServiceClient
 	out         io.Writer
-	lastSpeed   float32  // restored by resume; updated by setspeed / pause
-	bodyNames   []string // cached body names for TAB completion; nil = not yet fetched
+	lastSpeed   float32           // restored by resume; updated by setspeed / pause
+	bodyNames   []string          // cached body names for TAB completion; nil = not yet fetched
+	vars        map[string]string // persistent $name variables set by 'set $name value'
 }
 
 // New creates a REPL connected to addr (e.g. "http://localhost:9090").
@@ -56,6 +57,7 @@ func New(addr string, opts ...connect.ClientOption) *REPL {
 		sdClient:    spacesimv1connect.NewShutdownServiceClient(http.DefaultClient, addr, opts...),
 		out:         os.Stdout,
 		lastSpeed:   1.0,
+		vars:        make(map[string]string),
 	}
 }
 
@@ -94,9 +96,28 @@ func (r *REPL) Run(ctx context.Context, in io.Reader) error {
 
 		line = strings.TrimSpace(line)
 
-		// For-loop block: "for <group> as <var>:"
-		if group, varName, ok := parseForHeader(line); ok {
-			done, err := r.runForLoop(ctx, lr, group, varName)
+		// Strip // and /* */ comments before any other processing.
+		line, err = stripComments(line, lr)
+		if err != nil {
+			return err
+		}
+		if line == "" {
+			continue
+		}
+
+		// set $name value — store before any substitution so the RHS is literal.
+		if name, val, ok := parseSetVar(line); ok {
+			r.vars[name] = val
+			r.printf("set %s = %q\n", name, val)
+			continue
+		}
+
+		// Expand $vars before any further processing.
+		line = r.expandVars(line)
+
+		// For-loop block: "for <group>[slice] as <var>:"
+		if group, varName, sliceSpec, ok := parseForHeader(line); ok {
+			done, err := r.runForLoop(ctx, lr, group, varName, sliceSpec)
 			if err != nil {
 				r.printf("error: %v\n", err)
 			}
@@ -140,29 +161,91 @@ var groupToCategory = map[string]string{
 	"asteroid":      "asteroid",
 }
 
-// parseForHeader parses a "for <group> as <var>:" header line.
-// Returns (group, varName, true) on success.
-func parseForHeader(line string) (group, varName string, ok bool) {
+// parseForHeader parses a "for <group>[slice] as <var>:" header line.
+// The optional [start:end] suffix on the group token is returned as sliceSpec.
+// Returns (group, varName, sliceSpec, true) on success.
+func parseForHeader(line string) (group, varName, sliceSpec string, ok bool) {
 	l := strings.ToLower(strings.TrimSpace(line))
 	if !strings.HasPrefix(l, "for ") {
-		return "", "", false
+		return "", "", "", false
 	}
 	// Strip optional trailing colon then split.
 	stripped := strings.TrimSuffix(strings.TrimSpace(line), ":")
 	fields := strings.Fields(stripped)
-	// Expect exactly: for <group> as <var>
+	// Expect exactly: for <group>[slice] as <var>
 	if len(fields) != 4 ||
 		strings.ToLower(fields[0]) != "for" ||
 		strings.ToLower(fields[2]) != "as" {
-		return "", "", false
+		return "", "", "", false
 	}
-	return strings.ToLower(fields[1]), fields[3], true
+	groupToken := strings.ToLower(fields[1])
+	var spec string
+	if idx := strings.IndexByte(groupToken, '['); idx != -1 {
+		spec = groupToken[idx:]
+		groupToken = groupToken[:idx]
+	}
+	return groupToken, fields[3], spec, true
+}
+
+// applyForSlice restricts names to the sub-range described by spec.
+// Supported forms: [start:] [:end] [start:end] [-n:] (negative start = from end).
+// Negative end values are not supported and return an error.
+func applyForSlice(names []string, spec string) ([]string, error) {
+	if spec == "" {
+		return names, nil
+	}
+	n := len(names)
+	if !strings.HasPrefix(spec, "[") || !strings.HasSuffix(spec, "]") {
+		return nil, fmt.Errorf("for: invalid slice spec %q", spec)
+	}
+	inner := spec[1 : len(spec)-1]
+	parts := strings.SplitN(inner, ":", 2)
+	if len(parts) != 2 {
+		return nil, fmt.Errorf("for: slice spec must contain ':' (got %q)", spec)
+	}
+	start := 0
+	end := n
+	if parts[0] != "" {
+		v, err := strconv.Atoi(parts[0])
+		if err != nil {
+			return nil, fmt.Errorf("for: invalid slice start %q", parts[0])
+		}
+		if v < 0 {
+			start = n + v
+		} else {
+			start = v
+		}
+	}
+	if parts[1] != "" {
+		v, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return nil, fmt.Errorf("for: invalid slice end %q", parts[1])
+		}
+		if v < 0 {
+			return nil, fmt.Errorf("for: negative end not supported (use negative start for last-N, e.g. [-5:])")
+		}
+		end = v
+	}
+	// Clamp to valid range.
+	if start < 0 {
+		start = 0
+	}
+	if start > n {
+		start = n
+	}
+	if end > n {
+		end = n
+	}
+	if end < start {
+		end = start
+	}
+	return names[start:end], nil
 }
 
 // runForLoop collects the loop body (lines until blank line or EOF),
-// resolves the group to body names via a live snapshot, then executes
-// the body once per name with varName substituted.
-func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName string) (bool, error) {
+// resolves the group to body names via a live snapshot, applies an optional
+// slice, then executes the body once per name with varName substituted.
+func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName, sliceSpec string) (bool, error) {
 	category, ok := groupToCategory[group]
 	if !ok {
 		validGroups := "stars, planets, dwarf_planets, moons, asteroids"
@@ -181,9 +264,18 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName st
 		}
 		bl = strings.TrimSpace(bl)
 		if bl == "" {
-			break
+			break // blank line terminates for-loop body
 		}
-		body = append(body, bl)
+		bl, err = stripComments(bl, lr)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return false, err
+		}
+		if bl != "" {
+			body = append(body, bl)
+		}
 	}
 
 	if len(body) == 0 {
@@ -213,10 +305,18 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName st
 		return false, nil
 	}
 
+	names, err = applyForSlice(names, sliceSpec)
+	if err != nil {
+		return false, err
+	}
+	if len(names) == 0 {
+		return false, nil
+	}
+
 	// Execute the body once per name.
 	for _, name := range names {
 		for _, rawLine := range body {
-			expanded := strings.ReplaceAll(rawLine, varName, name)
+			expanded := strings.ReplaceAll(r.expandVars(rawLine), varName, name)
 			cmd, parseErr := commands.Parse(expanded)
 			if parseErr != nil {
 				r.printf("error [%s]: %v\n", name, parseErr)
@@ -236,6 +336,109 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName st
 	}
 
 	return false, nil
+}
+
+// parseSetVar parses a "set $name value" line.
+// Accepts: "set $name value", "set $name=value", "set $name:=value".
+// The value has surrounding quotes stripped if present.
+// Returns (name, value, true) on success; ("", "", false) if not a set line.
+func parseSetVar(line string) (name, value string, ok bool) {
+	lower := strings.ToLower(strings.TrimSpace(line))
+	if !strings.HasPrefix(lower, "set ") {
+		return "", "", false
+	}
+	rest := strings.TrimSpace(line[4:])
+	if !strings.HasPrefix(rest, "$") {
+		return "", "", false
+	}
+	// Find the first separator: ":=", "=", or whitespace.
+	var rawName, rawVal string
+	if idx := strings.Index(rest, ":="); idx > 0 {
+		rawName = rest[:idx]
+		rawVal = strings.TrimSpace(rest[idx+2:])
+	} else if idx := strings.IndexAny(rest, "= \t"); idx > 0 {
+		rawName = rest[:idx]
+		rawVal = strings.TrimSpace(strings.TrimLeft(rest[idx:], "= \t"))
+	} else {
+		// "set $name" with no value — store empty string
+		rawName = rest
+		rawVal = ""
+	}
+	// Strip outer quotes from value.
+	if len(rawVal) >= 2 && rawVal[0] == '"' && rawVal[len(rawVal)-1] == '"' {
+		rawVal = rawVal[1 : len(rawVal)-1]
+	}
+	return rawName, rawVal, true
+}
+
+// expandVars replaces every occurrence of a stored $name variable in line
+// with its value. Longer names are substituted first to avoid prefix collisions
+// (e.g. $speed_max before $speed).
+func (r *REPL) expandVars(line string) string {
+	if len(r.vars) == 0 || !strings.Contains(line, "$") {
+		return line
+	}
+	// Sort keys longest-first so $speed_max is replaced before $speed.
+	keys := make([]string, 0, len(r.vars))
+	for k := range r.vars {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool { return len(keys[i]) > len(keys[j]) })
+	for _, k := range keys {
+		line = strings.ReplaceAll(line, k, r.vars[k])
+	}
+	return line
+}
+
+// stripLineComment removes everything from the first unquoted "//" to end of
+// line. "//" that appears inside a double-quoted token is preserved.
+func stripLineComment(line string) string {
+	inQuote := false
+	for i := 0; i < len(line); i++ {
+		if line[i] == '"' {
+			inQuote = !inQuote
+		}
+		if !inQuote && i+1 < len(line) && line[i] == '/' && line[i+1] == '/' {
+			return strings.TrimRight(line[:i], " \t")
+		}
+	}
+	return line
+}
+
+// stripComments removes // line comments and /* … */ block comments from line.
+// When a block comment is not closed on the same line, additional lines are
+// consumed from lr until "*/" is found (or EOF).
+// Returns the processed line trimmed of whitespace.
+func stripComments(line string, lr *lineReader) (string, error) {
+	line = stripLineComment(line)
+	for strings.Contains(line, "/*") {
+		start := strings.Index(line, "/*")
+		pre := strings.TrimRight(line[:start], " \t")
+		rest := line[start+2:]
+		if end := strings.Index(rest, "*/"); end >= 0 {
+			// Block comment closed on the same line.
+			line = strings.TrimSpace(pre + rest[end+2:])
+			continue
+		}
+		// Block comment spans multiple lines — consume until "*/" found.
+		line = pre
+		for {
+			next, err := lr.readLine("/*> ")
+			if err != nil {
+				// EOF or error while inside block comment — close gracefully.
+				return strings.TrimSpace(line), err
+			}
+			if idx := strings.Index(next, "*/"); idx >= 0 {
+				after := strings.TrimSpace(next[idx+2:])
+				if after != "" {
+					line = strings.TrimSpace(line + " " + after)
+				}
+				break
+			}
+			// Line fully inside block comment — discard.
+		}
+	}
+	return strings.TrimSpace(line), nil
 }
 
 // exec dispatches cmd and returns (done=true) when the REPL should exit.
@@ -578,10 +781,19 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 	// ── HUD ───────────────────────────────────────────────────────────────────
 
 	case commands.HUD:
-		resp, err := r.perfClient.SetPerformance(ctx, connect.NewRequest(&v1.SetPerformanceRequest{
+		hudReq := &v1.SetPerformanceRequest{
 			State:         &v1.PerformanceState{HudVisible: c.Visible},
 			SetHudVisible: true,
-		}))
+		}
+		if !c.Visible {
+			// hud off clears all category flags so that turning individual
+			// categories back on via "hud info on" starts from a clean state.
+			hudReq.SetHudDebug = true
+			hudReq.SetHudInfo = true
+			hudReq.SetHudHelp = true
+			hudReq.SetHudPlayer = true
+		}
+		resp, err := r.perfClient.SetPerformance(ctx, connect.NewRequest(hudReq))
 		if err != nil {
 			return false, err
 		}
@@ -590,6 +802,62 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			onOff = "on"
 		}
 		r.printf("ok  hud %s  event_id=%s  status=%s\n", onOff, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
+	case commands.HUDList:
+		perf, err := r.perfClient.GetPerformance(ctx, connect.NewRequest(&v1.GetPerformanceRequest{}))
+		if err != nil {
+			return false, err
+		}
+		s := perf.Msg.State
+		onOff := func(b bool) string {
+			if b {
+				return "on"
+			}
+			return "off"
+		}
+		r.printf("HUD master: %s\n", onOff(s.HudVisible))
+		r.printf("  debug:    %s\n", onOff(s.HudDebug))
+		r.printf("  info:     %s\n", onOff(s.HudInfo))
+		r.printf("  help:     %s\n", onOff(s.HudHelp))
+		r.printf("  player:   %s (reserved)\n", onOff(s.HudPlayer))
+
+	case commands.HUDCategory:
+		var req v1.SetPerformanceRequest
+		switch c.Category {
+		case "debug":
+			req = v1.SetPerformanceRequest{State: &v1.PerformanceState{HudDebug: c.Visible}, SetHudDebug: true}
+		case "info":
+			req = v1.SetPerformanceRequest{State: &v1.PerformanceState{HudInfo: c.Visible}, SetHudInfo: true}
+		case "help":
+			req = v1.SetPerformanceRequest{State: &v1.PerformanceState{HudHelp: c.Visible}, SetHudHelp: true}
+		case "player":
+			req = v1.SetPerformanceRequest{State: &v1.PerformanceState{HudPlayer: c.Visible}, SetHudPlayer: true}
+		}
+		if c.Visible {
+			// Turning a category on implicitly re-enables the master so the
+			// panel actually appears (e.g. after "hud off" + "hud info on").
+			req.State.HudVisible = true
+			req.SetHudVisible = true
+		}
+		resp, err := r.perfClient.SetPerformance(ctx, connect.NewRequest(&req))
+		if err != nil {
+			return false, err
+		}
+		onOff := "off"
+		if c.Visible {
+			onOff = "on"
+		}
+		r.printf("ok  hud %s %s  event_id=%s  status=%s\n", c.Category, onOff, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
+	case commands.Labels:
+		resp, err := r.perfClient.SetPerformance(ctx, connect.NewRequest(&v1.SetPerformanceRequest{
+			State:         &v1.PerformanceState{LabelsMode: c.Mode},
+			SetLabelsMode: true,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("ok  labels %s  event_id=%s  status=%s\n", c.Mode, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
 	}
 	return false, nil
 }
@@ -842,14 +1110,25 @@ Timing
   sleep <seconds>           pause script execution  e.g. sleep 2.5
 
 Display
-  hud on | hud off          show or hide the heads-up display overlay
+  hud on | hud off          show or hide the heads-up display (master toggle)
+  hud list                  show current visibility state for each HUD category
+  hud debug on|off          toggle the stats / screen-info block
+  hud info on|off           toggle tracking info and selection overlay
+  hud help on|off           toggle the bottom hint bar
+  hud player on|off         toggle the player info panel (reserved)
+  labels on|off|nearest     object label mode: on=all, off=none, nearest=close objects only
 
 Scripting
-  for <group> as <var>:     iterate over all bodies in a category group
+  set $name value           assign a persistent variable (sigil required)
+                            value may be quoted: set $target "Alpha Centauri A"
+                            supported separators: set $n v  set $n=v  set $n:=v
+  for <group>[slice] as <var>:  iterate over bodies in a category group
     <commands using var>    use <var> anywhere in a command — it is substituted
                             with each body name in order
                             (blank line ends the loop body)
   Groups: stars | planets | dwarf_planets | moons | asteroids
+  Slice (optional):  [3:]   skip first 3      [:10]  first 10 items
+                     [3:10] items 3–9         [-5:]  last 5 items
   Example:
     for planets as X:
       nav jump X

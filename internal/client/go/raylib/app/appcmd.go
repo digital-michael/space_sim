@@ -111,6 +111,17 @@ type PerfSetCmd struct {
 	NumWorkers  int
 	HUDVisible  bool
 
+	// Per-category HUD overrides (only applied when corresponding Set* bool is true).
+	HUDCategory  ui.HUDState
+	SetHUDDebug  bool
+	SetHUDInfo   bool
+	SetHUDHelp   bool
+	SetHUDPlayer bool
+
+	// Label mode override.
+	LabelMode    ui.LabelMode
+	SetLabelMode bool
+
 	SetFrustumCulling      bool
 	SetLODEnabled          bool
 	SetInstancedRendering  bool
@@ -134,6 +145,8 @@ type PerfSnapshot struct {
 	CameraSpeed float32
 	NumWorkers  int // from engine.SimulationState.NumWorkers (back buffer)
 	HUDVisible  bool
+	HUD         ui.HUDState
+	LabelMode   ui.LabelMode
 }
 
 // ── System commands ───────────────────────────────────────────────────────────
@@ -152,8 +165,11 @@ type GetActiveSystemCmd struct {
 // ── HUD commands ──────────────────────────────────────────────────────────────
 
 // SetHUDCmd shows or hides the heads-up display.
+// When Category is empty, Visible applies to the master HUDVisible switch (all categories).
+// When Category is "debug", "info", "help", or "player", only that slot is changed.
 type SetHUDCmd struct {
-	Visible bool
+	Category string // "" = all, "debug", "info", "help", "player"
+	Visible  bool
 }
 
 // ── Orbit commands ────────────────────────────────────────────────────────────

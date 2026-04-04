@@ -274,11 +274,32 @@ type Sleep struct {
 	Seconds float64
 }
 
-// HUD enables or disables the heads-up display overlay.
+// HUD enables or disables the heads-up display overlay (master switch).
 //
 //	hud on | hud off
 type HUD struct {
 	Visible bool
+}
+
+// HUDList prints the current visibility state for each HUD category.
+//
+//	hud list
+type HUDList struct{}
+
+// HUDCategory enables or disables a single HUD category.
+// Category is one of: debug, info, help, player.
+//
+//	hud debug on | hud info off | hud help on
+type HUDCategory struct {
+	Category string // "debug" | "info" | "help" | "player"
+	Visible  bool
+}
+
+// Labels sets the object label display mode.
+//
+//	labels on | labels off | labels nearest
+type Labels struct {
+	Mode string // "on" | "off" | "nearest"
 }
 
 func (SystemList) isCmd()       {}
@@ -305,6 +326,9 @@ func (Shutdown) isCmd()         {}
 func (Orbit) isCmd()            {}
 func (Sleep) isCmd()            {}
 func (HUD) isCmd()              {}
+func (HUDList) isCmd()          {}
+func (HUDCategory) isCmd()      {}
+func (Labels) isCmd()           {}
 
 // ValidDatasetLevels is the set of accepted level names for SetDataset.
 var ValidDatasetLevels = map[string]struct{}{
@@ -648,16 +672,44 @@ func Parse(line string) (Cmd, error) {
 
 	// ── HUD ───────────────────────────────────────────────────────────────────
 	case "hud":
-		if len(args) != 1 {
-			return nil, ErrUsage{Cmd: "hud", Detail: "expected on or off", Example: "hud on"}
+		if len(args) == 0 {
+			return nil, ErrUsage{Cmd: "hud", Detail: "expected on, off, list, or a category name", Example: "hud on"}
 		}
 		switch strings.ToLower(args[0]) {
 		case "on":
 			return HUD{Visible: true}, nil
 		case "off":
 			return HUD{Visible: false}, nil
+		case "list":
+			return HUDList{}, nil
+		case "debug", "info", "help", "player":
+			cat := strings.ToLower(args[0])
+			if len(args) < 2 {
+				return nil, ErrUsage{Cmd: "hud", Detail: fmt.Sprintf("%s requires on or off", cat), Example: fmt.Sprintf("hud %s on", cat)}
+			}
+			switch strings.ToLower(args[1]) {
+			case "on":
+				return HUDCategory{Category: cat, Visible: true}, nil
+			case "off":
+				return HUDCategory{Category: cat, Visible: false}, nil
+			default:
+				return nil, ErrUsage{Cmd: "hud", Detail: fmt.Sprintf("expected on or off, got %q", args[1]), Example: fmt.Sprintf("hud %s on", cat)}
+			}
 		default:
 			return nil, ErrUsage{Cmd: "hud", Detail: fmt.Sprintf("unknown argument %q", args[0]), Example: "hud on"}
+		}
+
+	// ── Labels ───────────────────────────────────────────────────────────────
+	case "label", "labels":
+		if len(args) != 1 {
+			return nil, ErrUsage{Cmd: "labels", Detail: "expected on, off, or nearest", Example: "labels on"}
+		}
+		mode := strings.ToLower(args[0])
+		switch mode {
+		case "on", "off", "nearest":
+			return Labels{Mode: mode}, nil
+		default:
+			return nil, ErrUsage{Cmd: "labels", Detail: fmt.Sprintf("unknown mode %q", args[0]), Example: "labels on|off|nearest"}
 		}
 
 	default:

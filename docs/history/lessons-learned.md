@@ -1270,3 +1270,36 @@ Many graphics APIs conflate these concepts, but Raylib separates them. You can h
 Both have the same rendering resolution but different display modes.
 
 ---
+
+## Session: LabelMode / For-loop Indentation (April 2026)
+
+### Broken Intermediate State From Multi-File Field Rename
+**What Happened**: `RuntimeContext.LabelsVisible bool` was renamed to `LabelMode ui.LabelMode` in `runtime_context.go` and the type was added to `camera.go`. The session ended (token budget) before `input.go` and `interactive.go` were updated. The codebase did not compile at session boundary.
+
+**Root Cause**: The rename was applied to the *definition* first, leaving all *callsites* unresolved. A session interruption at that midpoint leaves anyone (or any subsequent session) with a broken build they have to diagnose before resuming.
+
+**Rule**: When renaming a field across multiple files, either:
+1. Update all callsites atomically in the same work block, *or*
+2. Introduce the new field alongside the old one (additive), migrate callsites, then remove the old field.
+
+Never end a session with a partial rename. If interruption is unavoidable, leave a `// TODO: remove after input.go updated` comment on the old field so the compiler error is self-explaining.
+
+---
+
+### Verify Existing Behavior Before Implementing
+**What Happened**: The request was "for-loop nested commands should support optional indent of spaces or tabs." Investigation revealed `strings.TrimSpace(bl)` in `runForLoop` already stripped leading whitespace from every body line. No behavior change was needed — only tests to confirm and document it.
+
+**Rule**: Read the implementation before writing a plan. If a feature is requested, check whether it already exists in a non-obvious place. A two-minute read of the relevant function is cheaper than designing and building something that already works.
+
+---
+
+### Pointer-Param Pattern for Runtime Toggles in handleInput
+**What Happened**: Adding `LabelMode` to `handleInput` could have expanded the return tuple from 7 to 8 elements (all same type — error-prone). Instead, `labelMode *ui.LabelMode` was passed as a pointer, matching the existing precedent set by `hudDialogVisible *bool`. The return tuple shrank by one (removed `labelsVisible bool`).
+
+**Established Convention**: Runtime state that `handleInput` modifies but does not "own" should be passed as a pointer, not round-tripped through the return tuple. Return tuple additions require updating every `return` statement in the function (13+ sites). Pointer params require no return-site changes.
+
+**When to Use Each**:
+- Return tuple: values the function *computes* (shouldQuit, gridVisible — they start as params, may change, and are the function's output)
+- Pointer param: values *owned by the caller* that the function may mutate as a side effect (HUD dialog open state, label mode)
+
+---

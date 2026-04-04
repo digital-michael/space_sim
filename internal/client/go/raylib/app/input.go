@@ -13,7 +13,7 @@ import (
 )
 
 // handleInput processes keyboard input for camera modes and object selection
-func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, gridVisible bool, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, mouseModeEnabled bool, labelsVisible bool, debugEnabled bool) (bool, bool, engine.AsteroidDataset, bool, bool, bool, bool) {
+func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, gridVisible bool, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, hudDialogVisible *bool, labelMode *ui.LabelMode, mouseModeEnabled bool, debugEnabled bool) (bool, bool, engine.AsteroidDataset, bool, bool, bool) {
 	selectionDialogOpen := inputState.MainWindowInputSuspended()
 	mainWindowInputSuspended := selectionDialogOpen || helpVisible
 	controlHeld := rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl)
@@ -25,13 +25,13 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 	// Ctrl+/: Toggle help screen. Help behaves like a modal overlay.
 	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeySlash) && controlHeld && !superHeld {
 		helpVisible = !helpVisible
-		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 	}
 
 	// Cmd+S: Open the runtime system selector.
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyS) && superHeld && !controlHeld && !altHeld {
 		app.openSystemSelector(inputState)
-		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 	}
 
 	// Ctrl+G: Toggle grid
@@ -39,14 +39,26 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		gridVisible = !gridVisible
 	}
 
-	// Ctrl+H: Toggle HUD
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyH) && controlHeld && !superHeld {
-		hudVisible = !hudVisible
+	// Ctrl+H: Toggle HUD settings dialog. Opens/closes the per-category overlay.
+	// When opening while in mouse-camera mode, cursor is restored so checkboxes are clickable.
+	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeyH) && controlHeld && !superHeld {
+		*hudDialogVisible = !*hudDialogVisible
+		if *hudDialogVisible && mouseModeEnabled {
+			mouseModeEnabled = false
+			rl.EnableCursor()
+		}
 	}
 
-	// Ctrl+L: Toggle object labels
+	// Ctrl+L: Cycle label mode (off → on → nearest → off)
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyL) && controlHeld && !superHeld {
-		labelsVisible = !labelsVisible
+		switch *labelMode {
+		case ui.LabelModeOff:
+			*labelMode = ui.LabelModeOn
+		case ui.LabelModeOn:
+			*labelMode = ui.LabelModeNearest
+		default:
+			*labelMode = ui.LabelModeOff
+		}
 	}
 
 	// Ctrl+M: Toggle mouse mode (camera control vs UI cursor)
@@ -66,7 +78,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 
 	// Ctrl+Q key: Quit application
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyQ) && controlHeld && !superHeld {
-		return true, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+		return true, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 	}
 
 	// , and . keys: Decrease/increase time scale (simulation seconds per real second)
@@ -363,18 +375,21 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 	if rl.IsKeyPressed(rl.KeyEscape) {
 		if helpVisible {
 			helpVisible = false
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+		} else if *hudDialogVisible {
+			*hudDialogVisible = false
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		} else if inputState.SelectionActive {
 			inputState.CancelSelection()
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		} else if cameraState.Mode == ui.CameraModeTracking {
 			cameraState.StopTracking()
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		} else if mouseModeEnabled {
 			// Exit mouse mode, enable cursor
 			mouseModeEnabled = false
 			rl.EnableCursor()
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		}
 	}
 
@@ -429,7 +444,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 				inputState.ConfirmSystemSelection()
 			}
 
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		}
 
 		// Performance options mode
@@ -529,7 +544,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					}
 				}
 			}
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		}
 
 		// Text input for filtering (for Jump/Track modes only, not Performance)
@@ -680,7 +695,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						actualIndex = asteroidIndices[rl.GetRandomValue(0, int32(len(asteroidIndices)-1))]
 					} else {
 						// No visible asteroids, cancel
-						return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+						return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 					}
 				} else if actualIndex == -2 {
 					// Kuiper Belt - find a random KBO
@@ -694,7 +709,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						actualIndex = kboIndices[rl.GetRandomValue(0, int32(len(kboIndices)-1))]
 					} else {
 						// No visible KBOs, cancel
-						return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+						return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 					}
 				}
 
@@ -713,7 +728,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 				}
 			}
 		}
-		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible // Don't process other keys during selection
+		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled // Don't process other keys during selection
 	}
 
 	// J: Jump to object (free-fly mode only)
@@ -732,7 +747,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
 	}
 
-	return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled, labelsVisible
+	return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 }
 
 // updateCameraState updates camera position and orientation based on mode

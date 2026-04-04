@@ -438,6 +438,12 @@ message PerformanceState {
   float camera_speed          = 8;
   int32 num_workers           = 9;
   bool  hud_visible           = 10;
+  // Per-category HUD visibility (only consulted when hud_visible is true).
+  bool  hud_debug             = 13;
+  bool  hud_info              = 14;
+  bool  hud_help              = 15;
+  bool  hud_player            = 16;
+  string labels_mode          = 17;
 }
 
 message GetPerformanceRequest  { uint32 version = 1; }
@@ -462,6 +468,11 @@ message SetPerformanceRequest {
   bool set_camera_speed         = 10;
   bool set_num_workers          = 11;
   bool set_hud_visible          = 12;
+  bool set_hud_debug            = 13;
+  bool set_hud_info             = 14;
+  bool set_hud_help             = 15;
+  bool set_hud_player           = 16;
+  bool set_labels_mode          = 17;
 }
 message SetPerformanceResponse {
   uint32     version = 1;

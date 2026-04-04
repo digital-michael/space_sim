@@ -47,7 +47,7 @@ func TestReplComplete_VerbWithTrailingSpace_ReturnsSubCmds(t *testing.T) {
 		want    []string
 	}{
 		{"system ", []string{"system list", "system get", "system load"}},
-		{"window ", []string{"window get", "window size", "window maximize", "window restore"}},
+		{"window ", []string{"window get", "window size", "window maximize", "window restore", "window full"}},
 		{"camera ", []string{"camera get", "camera center", "camera orient", "camera position", "camera track"}},
 		{"nav ", []string{"nav stop", "nav velocity", "nav forward", "nav back", "nav left", "nav right", "nav up", "nav down", "nav jump"}},
 		{"perf ", []string{"perf get", "perf set"}},

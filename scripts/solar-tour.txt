@@ -1,23 +1,54 @@
-hud off
+/*
 
+Demo the selected solar system.
+
+For-loop slice syntax (optional, append to group name):
+  for planets[3:]    as X:   skip first 3, visit the rest
+  for planets[:10]   as X:   first 10 items (indices 0–9)
+  for planets[3:10]  as X:   items at indices 3–9
+  for planets[-5:]   as X:   last 5 items
+
+*/
+
+hud off
+hud info on
+label nearest
+
+//window size 640x480
 window full on
 
-sleep 2
+set $orbits 1 // orbits around target
+set $speed 20.0 // how fast to travel
+set $sleep 0.5 // duration per item
+
+sleep $sleep 
 
 for stars as X:
-nav jump "X" 2
-orbit "X" 15 2
-sleep 2
+   nav jump "X" $speed
+   orbit "X" $speed $orbits
+   sleep $sleep
+
+// the blank line after a for loop (above) is 
+// required to show the end of the loop block
 
 for planets as X:
-nav jump "X" 2
-orbit "X" 15 2
-sleep 2
+    nav jump "X" $speed
+    orbit "X" $speed $orbits
+    sleep $sleep
 
-for moons as X:
-nav jump "X" 2
-orbit "X" 15 2
-sleep 2
+for dwarf_planets as X:
+    nav jump "X" $speed
+    orbit "X" $speed $orbits
+    sleep $sleep
+
+
+for moons[:10] as X:
+    nav jump "X" $speed
+    orbit "X" $speed $orbits
+    sleep $sleep
+
+
+nav jump sol $speed
 
 window restore
 exit

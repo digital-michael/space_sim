@@ -193,12 +193,20 @@ func (r *Renderer) DrawGroundPlane() {
 	drawGroundPlane()
 }
 
-func (r *Renderer) DrawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object) {
-	drawObjectLabels(state, cameraState, camera, objectsToRender)
+func (r *Renderer) DrawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object, mode ui.LabelMode) {
+	drawObjectLabels(state, cameraState, camera, objectsToRender, mode)
 }
 
-func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int) {
-	drawHUD(state, cameraState, inputState, asteroidDataset, mouseModeEnabled, speed, inViewCount, eligibleInViewCount, renderedCount)
+func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int, showDebug bool, showInfo bool, showHelp bool) {
+	if showDebug {
+		drawHUDDebug(state, cameraState, asteroidDataset, speed, inViewCount, eligibleInViewCount, renderedCount)
+	}
+	if showInfo {
+		drawHUDInfo(state, cameraState, inputState)
+	}
+	if showHelp {
+		drawHUDHelp()
+	}
 }
 
 func (r *Renderer) DrawZoomIndicator(zoomValue float32) {
@@ -207,6 +215,86 @@ func (r *Renderer) DrawZoomIndicator(zoomValue float32) {
 
 func (r *Renderer) DrawHelpScreen() {
 	drawHelpScreen()
+}
+
+// DrawHUDDialog draws the Ctrl+H HUD category settings overlay and returns
+// the updated HUDState based on any checkbox clicks this frame.
+func (r *Renderer) DrawHUDDialog(current ui.HUDState) ui.HUDState {
+	return drawHUDDialog(current)
+}
+
+// drawHUDDialog draws a small checkbox panel and processes mouse clicks to
+// toggle per-category HUD visibility. Returns the new state.
+func drawHUDDialog(current ui.HUDState) ui.HUDState {
+	sw := int32(currentScreenWidth())
+	sh := int32(currentScreenHeight())
+
+	panelW := scaledInt32(280)
+	panelH := scaledInt32(210)
+	panelX := (sw - panelW) / 2
+	panelY := (sh - panelH) / 2
+
+	// Background panel
+	rl.DrawRectangle(panelX, panelY, panelW, panelH, rl.Color{R: 20, G: 20, B: 30, A: 230})
+	rl.DrawRectangleLines(panelX, panelY, panelW, panelH, rl.Color{R: 100, G: 100, B: 180, A: 255})
+
+	titleFont := scaledInt32(20)
+	rowFont := scaledInt32(17)
+	pad := scaledInt32(16)
+	boxSize := scaledInt32(14)
+	titleY := panelY + pad
+	rl.DrawText("HUD DISPLAYS", panelX+pad, titleY, titleFont, rl.White)
+
+	rowSpacing := scaledInt32(34)
+	rows := []struct {
+		label string
+		val   *bool
+	}{
+		{"Debug  (stats, screen info)", &current.Debug},
+		{"Info   (tracking, selection)", &current.Info},
+		{"Help   (hint bar)", &current.Help},
+		{"Player (reserved)", nil}, // greyed out — not yet implemented
+	}
+
+	mouse := rl.GetMousePosition()
+	clicked := rl.IsMouseButtonPressed(rl.MouseButtonLeft)
+
+	for i, row := range rows {
+		rowY := titleY + scaledInt32(36) + int32(i)*rowSpacing
+		boxX := panelX + pad
+		boxColor := rl.Color{R: 80, G: 80, B: 80, A: 255}
+		labelColor := rl.Color{R: 160, G: 160, B: 160, A: 255}
+
+		if row.val != nil {
+			labelColor = rl.White
+			if *row.val {
+				boxColor = rl.Green
+			} else {
+				boxColor = rl.Color{R: 60, G: 60, B: 60, A: 255}
+			}
+			// Hit test
+			hitX := float32(boxX) - 2
+			hitY := float32(rowY) - 2
+			hitW := float32(boxSize+4) + float32(scaledInt32(180))
+			hitH := float32(boxSize + 4)
+			if clicked &&
+				mouse.X >= hitX && mouse.X < hitX+hitW &&
+				mouse.Y >= hitY && mouse.Y < hitY+hitH {
+				*row.val = !*row.val
+			}
+		}
+
+		rl.DrawRectangle(boxX, rowY, boxSize, boxSize, boxColor)
+		rl.DrawRectangleLines(boxX, rowY, boxSize, boxSize, rl.White)
+		rl.DrawText(row.label, boxX+boxSize+scaledInt32(8), rowY, rowFont, labelColor)
+	}
+
+	// Close hint
+	hintY := panelY + panelH - scaledInt32(30)
+	hintFont := scaledInt32(14)
+	rl.DrawText("Ctrl+H to close", panelX+pad, hintY, hintFont, rl.Gray)
+
+	return current
 }
 
 // InstanceBatch represents a group of objects with the same rendering properties
@@ -532,7 +620,7 @@ func drawGroundPlane() {
 }
 
 // drawObjectLabels draws labels for important/visible objects with connector lines
-func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object) {
+func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object, mode ui.LabelMode) {
 	fontSize := scaledInt32(16)
 	labelOffsetX := float32(scaledInt32(15))
 	labelOffsetY := float32(scaledInt32(10))
@@ -541,7 +629,7 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 	lineWidth := float32(scaledInt32(2))
 
 	// Determine which objects should have labels based on priority
-	labeledObjects := selectObjectsForLabels(state, cameraState, objectsToRender, 20) // Max 20 labels
+	labeledObjects := selectObjectsForLabels(state, cameraState, objectsToRender, mode)
 
 	// Project object positions to screen space and draw labels
 	for _, obj := range labeledObjects {
@@ -597,10 +685,11 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 }
 
 // selectObjectsForLabels determines which objects should have labels based on priority
-func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.CameraState, objectsToRender []*engine.Object, maxLabels int) []*engine.Object {
+func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.CameraState, objectsToRender []*engine.Object, mode ui.LabelMode) []*engine.Object {
 	type labelCandidate struct {
 		obj      *engine.Object
 		priority float32
+		dist     float32
 	}
 
 	candidates := make([]labelCandidate, 0, len(objectsToRender))
@@ -651,13 +740,37 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 			priority += 5000.0 / (distToCam + 1.0)
 		}
 
-		candidates = append(candidates, labelCandidate{obj: obj, priority: priority})
+		candidates = append(candidates, labelCandidate{obj: obj, priority: priority, dist: distToCam})
 	}
 
 	// Sort by priority (highest first)
 	sort.Slice(candidates, func(i, j int) bool {
 		return candidates[i].priority > candidates[j].priority
 	})
+
+	// Determine maxLabels and apply nearest-mode proximity filter
+	maxLabels := 20
+	if mode == ui.LabelModeNearest {
+		maxLabels = 5
+		threshold := float32(10.0)
+		if cameraState.Mode == ui.CameraModeTracking && cameraState.TrackDistance > 0 {
+			threshold = float32(math.Max(10.0, cameraState.TrackDistance*3.0))
+		}
+		targetIdx := -1
+		if cameraState.Mode == ui.CameraModeTracking {
+			targetIdx = cameraState.TrackTargetIndex
+		} else if cameraState.Mode == ui.CameraModeJumping {
+			targetIdx = cameraState.JumpTargetIndex
+		}
+		filtered := candidates[:0]
+		for _, c := range candidates {
+			isTarget := targetIdx >= 0 && targetIdx < len(state.Objects) && state.Objects[targetIdx] == c.obj
+			if isTarget || c.dist <= threshold {
+				filtered = append(filtered, c)
+			}
+		}
+		candidates = filtered
+	}
 
 	// Take top N candidates
 	result := make([]*engine.Object, 0, maxLabels)
@@ -668,8 +781,9 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 	return result
 }
 
-// drawHUD draws the on-screen display
-func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int) {
+// drawHUDDebug draws the upper-left statistics block and the lower-left
+// screen/render diagnostic lines.
+func drawHUDDebug(state *engine.SimulationState, cameraState *ui.CameraState, asteroidDataset engine.AsteroidDataset, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int) {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	fontMedium := scaledInt32(18)
@@ -680,12 +794,10 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	line5Y := scaledInt32(108)
 	line6Y := scaledInt32(133)
 	line7Y := scaledInt32(158)
-	helpY := int32(currentScreenHeight()) - scaledInt32(30)
 
 	fps := rl.GetFPS()
 	rl.DrawText(fmt.Sprintf("FPS: %3d / %d threads", fps, state.NumWorkers), leftPad, line1Y, fontLarge, rl.Green)
 
-	// Display object counts: total / visible / rendered
 	totalObjects := len(state.Objects)
 	visibleObjects := 0
 	for _, obj := range state.Objects {
@@ -699,11 +811,8 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	dateText := formatSimulationDateText(state.Time, state.SecondsPerSecond)
 	rl.DrawText(dateText, leftPad, line3Y, fontLarge, rl.White)
 
-	// Time rate indicator (simulation seconds per real second)
 	var timeRateText string
 	timeRateColor := rl.Gray
-
-	// Effective rate = physics-speed multiplier × per-tick time scale.
 	sps := float32(speed) * state.SecondsPerSecond
 	if sps == 0.0 {
 		timeRateText = "Time Rate: PAUSED"
@@ -732,7 +841,6 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	}
 	rl.DrawText(timeRateText, leftPad, line4Y, fontMedium, timeRateColor)
 
-	// Anim speed indicator (physics tick rate as % of full 60Hz)
 	animSpeed := speed
 	var animSpeedText string
 	var animSpeedColor rl.Color
@@ -747,11 +855,10 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 		animSpeedColor = rl.White
 	} else {
 		animSpeedText = fmt.Sprintf("Anim Speed: %d%%", int(animSpeed*100))
-		animSpeedColor = rl.Color{R: 255, G: 165, B: 0, A: 255} // orange — below full speed
+		animSpeedColor = rl.Color{R: 255, G: 165, B: 0, A: 255}
 	}
 	rl.DrawText(animSpeedText, leftPad, line5Y, fontMedium, animSpeedColor)
 
-	// Camera mode indicator
 	var modeText string
 	switch cameraState.Mode {
 	case ui.CameraModeFree:
@@ -763,11 +870,10 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	}
 	rl.DrawText(fmt.Sprintf("Mode: %s", modeText), leftPad, line6Y, fontLarge, rl.Yellow)
 
-	// Camera position
 	posText := fmt.Sprintf("Camera Position: X:%.1f Y:%.1f Z:%.1f", cameraState.Position.X, cameraState.Position.Y, cameraState.Position.Z)
 	rl.DrawText(posText, leftPad, line7Y, fontMedium, rl.Color{R: 0, G: 255, B: 255, A: 255})
 
-	// Debug info: screen/monitor/render dimensions and processing capacity
+	// Lower-left: screen/monitor/render diagnostics
 	screenW := rl.GetScreenWidth()
 	screenH := rl.GetScreenHeight()
 	monitorW := rl.GetMonitorWidth(0)
@@ -779,25 +885,20 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 	debugFontSize := scaledInt32(14)
 	debugColor := rl.Color{R: 200, G: 200, B: 200, A: 200}
 
-	// Display screen/monitor info
 	fsText := "windowed"
 	if isFullscreen {
 		fsText = "fullscreen"
 	}
-	debugDimensionsText := fmt.Sprintf("Screen: %dx%d | Monitor: %dx%d | %s", screenW, screenH, monitorW, monitorH, fsText)
-	rl.DrawText(debugDimensionsText, leftPad, debugLine1Y, debugFontSize, debugColor)
+	rl.DrawText(fmt.Sprintf("Screen: %dx%d | Monitor: %dx%d | %s", screenW, screenH, monitorW, monitorH, fsText), leftPad, debugLine1Y, debugFontSize, debugColor)
 
-	// Display element processing capacity: show in-view vs visible, and how many we're rendering
-	var visiblePct float32 = 0.0
+	var visiblePct float32
 	if totalObjects > 0 {
 		visiblePct = float32(visibleObjects) / float32(totalObjects) * 100.0
 	}
-
-	var renderPct float32 = 0.0
+	var renderPct float32
 	if eligibleInViewCount > 0 {
 		renderPct = float32(renderedCount) / float32(eligibleInViewCount) * 100.0
 	}
-
 	processingColor := rl.Gray
 	if eligibleInViewCount > 0 {
 		processingColor = rl.Red
@@ -808,21 +909,28 @@ func drawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputSt
 			processingColor = rl.Green
 		}
 	}
-	processingText := fmt.Sprintf("Render: %d/%d eligible (%.1f%%) | In-view: %d/%d visible | Visible: %.1f%% of %d total", renderedCount, eligibleInViewCount, renderPct, inViewCount, visibleObjects, visiblePct, totalObjects)
-	rl.DrawText(processingText, leftPad, debugLine2Y, debugFontSize, processingColor)
+	rl.DrawText(fmt.Sprintf("Render: %d/%d eligible (%.1f%%) | In-view: %d/%d visible | Visible: %.1f%% of %d total",
+		renderedCount, eligibleInViewCount, renderPct, inViewCount, visibleObjects, visiblePct, totalObjects),
+		leftPad, debugLine2Y, debugFontSize, processingColor)
+}
 
-	// Help hint (only shows when HUD is visible)
-	rl.DrawText("Ctrl+/ for help | Ctrl+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
-
-	// Object selection UI
+// drawHUDInfo draws the lower-right tracking info panel and the selection UI
+// overlay when an object is selected.
+func drawHUDInfo(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState) {
 	if inputState.SelectionActive {
 		drawSelectionUI(state, inputState)
 	}
-
-	// Tracking info HUD (lower right)
 	if cameraState.Mode == ui.CameraModeTracking {
 		drawTrackingInfo(state, cameraState)
 	}
+}
+
+// drawHUDHelp draws the bottom-left hint bar ("Ctrl+/ for help …").
+func drawHUDHelp() {
+	leftPad := scaledInt32(10)
+	fontLarge := scaledInt32(20)
+	helpY := int32(currentScreenHeight()) - scaledInt32(30)
+	rl.DrawText("Ctrl+/ for help | Ctrl+H HUD settings | Ctrl+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
 }
 
 // drawZoomIndicator draws a visual indicator when zooming

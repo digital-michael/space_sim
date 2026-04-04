@@ -48,7 +48,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			session.debugTracker.CheckVisibility(state.Objects, "after Snapshot()")
 		}
 
-		shouldQuit, a.runtime.GridVisible, a.runtime.AsteroidDataset, a.runtime.HUDVisible, a.runtime.HelpVisible, a.runtime.MouseModeEnabled, a.runtime.LabelsVisible = handleInput(
+		shouldQuit, a.runtime.GridVisible, a.runtime.AsteroidDataset, a.runtime.HUDVisible, a.runtime.HelpVisible, a.runtime.MouseModeEnabled = handleInput(
 			a,
 			session.sim,
 			session.cameraState,
@@ -59,8 +59,9 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			a.runtime.AsteroidDataset,
 			a.runtime.HUDVisible,
 			a.runtime.HelpVisible,
+			&a.runtime.HUDDialogVisible,
+			&a.runtime.LabelMode,
 			a.runtime.MouseModeEnabled,
-			a.runtime.LabelsVisible,
 			a.cfg.Debug,
 		)
 
@@ -159,16 +160,19 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		rl.SetMatrixModelview(rl.MatrixIdentity())
 
 		if a.runtime.HUDVisible {
-			a.renderer.DrawHUD(state, session.cameraState, session.inputState, a.runtime.AsteroidDataset, a.runtime.MouseModeEnabled, snap.Speed, inViewCount, eligibleInViewCount, renderedCount)
+			a.renderer.DrawHUD(state, session.cameraState, session.inputState, a.runtime.AsteroidDataset, a.runtime.MouseModeEnabled, snap.Speed, inViewCount, eligibleInViewCount, renderedCount, a.runtime.HUD.Debug, a.runtime.HUD.Info, a.runtime.HUD.Help)
 		}
-		if a.runtime.LabelsVisible {
-			a.renderer.DrawObjectLabels(state, session.cameraState, camera, objectsToRender)
+		if a.runtime.LabelMode != ui.LabelModeOff {
+			a.renderer.DrawObjectLabels(state, session.cameraState, camera, objectsToRender, a.runtime.LabelMode)
 		}
 		if zoomIndicator != 0 {
 			a.renderer.DrawZoomIndicator(zoomIndicator)
 		}
 		if a.runtime.HelpVisible {
 			a.renderer.DrawHelpScreen()
+		}
+		if a.runtime.HUDDialogVisible {
+			a.runtime.HUD = a.renderer.DrawHUDDialog(a.runtime.HUD)
 		}
 
 		a.renderer.EndFrame(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
@@ -389,6 +393,21 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		if c.SetHUDVisible {
 			a.runtime.HUDVisible = c.HUDVisible
 		}
+		if c.SetHUDDebug {
+			a.runtime.HUD.Debug = c.HUDCategory.Debug
+		}
+		if c.SetHUDInfo {
+			a.runtime.HUD.Info = c.HUDCategory.Info
+		}
+		if c.SetHUDHelp {
+			a.runtime.HUD.Help = c.HUDCategory.Help
+		}
+		if c.SetHUDPlayer {
+			a.runtime.HUD.Player = c.HUDCategory.Player
+		}
+		if c.SetLabelMode {
+			a.runtime.LabelMode = c.LabelMode
+		}
 
 	case GetPerfCmd:
 		numWorkers := snap.State.NumWorkers
@@ -397,6 +416,8 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			CameraSpeed: a.runtime.CameraSpeed,
 			NumWorkers:  numWorkers,
 			HUDVisible:  a.runtime.HUDVisible,
+			HUD:         a.runtime.HUD,
+			LabelMode:   a.runtime.LabelMode,
 		}
 
 	// ── System ─────────────────────────────────────────────────────────────
@@ -410,7 +431,18 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 	// ── HUD ─────────────────────────────────────────────────────────────────
 
 	case SetHUDCmd:
-		a.runtime.HUDVisible = c.Visible
+		switch c.Category {
+		case "":
+			a.runtime.HUDVisible = c.Visible
+		case "debug":
+			a.runtime.HUD.Debug = c.Visible
+		case "info":
+			a.runtime.HUD.Info = c.Visible
+		case "help":
+			a.runtime.HUD.Help = c.Visible
+		case "player":
+			a.runtime.HUD.Player = c.Visible
+		}
 
 	// ── Orbit ───────────────────────────────────────────────────────────────
 

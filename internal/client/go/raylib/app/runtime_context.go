@@ -1,6 +1,9 @@
 package app
 
-import "github.com/digital-michael/space_sim/internal/sim/engine"
+import (
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
+	"github.com/digital-michael/space_sim/internal/sim/engine"
+)
 
 // RuntimeContext holds mutable runtime UI/window state for the running app.
 type RuntimeContext struct {
@@ -15,10 +18,12 @@ type RuntimeContext struct {
 	Resizable        bool
 	GridVisible      bool
 	AsteroidDataset  engine.AsteroidDataset
-	HUDVisible       bool
+	HUDVisible       bool        // master switch — false hides all HUD categories
+	HUD              ui.HUDState // per-category visibility (only consulted when HUDVisible is true)
+	HUDDialogVisible bool        // Ctrl+H toggle for the HUD settings overlay
 	HelpVisible      bool
 	MouseModeEnabled bool
-	LabelsVisible    bool
+	LabelMode        ui.LabelMode
 	CameraSpeed      float32
 	MouseSensitivity float32
 }
@@ -47,9 +52,11 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 		GridVisible:      false,
 		AsteroidDataset:  engine.AsteroidDatasetSmall,
 		HUDVisible:       true,
+		HUD:              ui.AllOnHUD(),
+		HUDDialogVisible: false,
 		HelpVisible:      false,
 		MouseModeEnabled: true,
-		LabelsVisible:    false,
+		LabelMode:        ui.LabelModeOff,
 		CameraSpeed:      10.0,
 		MouseSensitivity: 0.003,
 	}
