@@ -285,3 +285,52 @@ func TestParse_LeadingTrailingWhitespace(t *testing.T) {
 		t.Errorf("want GetSpeed, got %T", cmd)
 	}
 }
+
+func TestTokenize(t *testing.T) {
+	cases := []struct {
+		input  string
+		want   []string
+	}{
+		{"orbit Earth 15 2", []string{"orbit", "Earth", "15", "2"}},
+		{`orbit "S/2019 S 1" 15 2`, []string{"orbit", "S/2019 S 1", "15", "2"}},
+		{`nav jump "Ariel's Moon" 2`, []string{"nav", "jump", "Ariel's Moon", "2"}},
+		{`camera track "Deep Space Object"`, []string{"camera", "track", "Deep Space Object"}},
+		{"getspeed", []string{"getspeed"}},
+		{"", nil},
+		{`"quoted only"`, []string{"quoted only"}},
+		{`a "b c" d`, []string{"a", "b c", "d"}},
+		{"  leading  spaces  ", []string{"leading", "spaces"}},
+	}
+	for _, c := range cases {
+		got := tokenize(c.input)
+		if len(got) != len(c.want) {
+			t.Errorf("tokenize(%q): len=%d want %d: %v", c.input, len(got), len(c.want), got)
+			continue
+		}
+		for i := range got {
+			if got[i] != c.want[i] {
+				t.Errorf("tokenize(%q)[%d]: got %q want %q", c.input, i, got[i], c.want[i])
+			}
+		}
+	}
+}
+
+func TestParse_Orbit_QuotedName(t *testing.T) {
+	cmd, err := Parse(`orbit "S/2019 S 1" 15 2`)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	o, ok := cmd.(Orbit)
+	if !ok {
+		t.Fatalf("want Orbit, got %T", cmd)
+	}
+	if o.Name != "S/2019 S 1" {
+		t.Errorf("want name %q, got %q", "S/2019 S 1", o.Name)
+	}
+	if o.SpeedDegPerSec != 15 {
+		t.Errorf("want speed 15, got %v", o.SpeedDegPerSec)
+	}
+	if o.Orbits != 2 {
+		t.Errorf("want orbits 2, got %v", o.Orbits)
+	}
+}

@@ -169,21 +169,21 @@ type OrbitCmd struct {
 
 // ── marker interface implementations ─────────────────────────────────────────
 
-func (WindowSizeCmd) isAppCmd()        {}
-func (WindowMaximizeCmd) isAppCmd()    {}
-func (WindowRestoreCmd) isAppCmd()     {}
-func (WindowFullscreenCmd) isAppCmd()  {}
-func (GetWindowCmd) isAppCmd()         {}
-func (CameraOrientCmd) isAppCmd()    {}
-func (CameraPositionCmd) isAppCmd()  {}
-func (CameraTrackCmd) isAppCmd()     {}
-func (GetCameraCmd) isAppCmd()       {}
-func (SetVelocityCmd) isAppCmd()     {}
-func (JumpToCmd) isAppCmd()          {}
-func (GetVelocityCmd) isAppCmd()     {}
-func (PerfSetCmd) isAppCmd()         {}
-func (GetPerfCmd) isAppCmd()         {}
-func (LoadSystemCmd) isAppCmd()      {}
-func (GetActiveSystemCmd) isAppCmd() {}
-func (SetHUDCmd) isAppCmd()          {}
-func (OrbitCmd) isAppCmd()           {}
+func (WindowSizeCmd) isAppCmd()       {}
+func (WindowMaximizeCmd) isAppCmd()   {}
+func (WindowRestoreCmd) isAppCmd()    {}
+func (WindowFullscreenCmd) isAppCmd() {}
+func (GetWindowCmd) isAppCmd()        {}
+func (CameraOrientCmd) isAppCmd()     {}
+func (CameraPositionCmd) isAppCmd()   {}
+func (CameraTrackCmd) isAppCmd()      {}
+func (GetCameraCmd) isAppCmd()        {}
+func (SetVelocityCmd) isAppCmd()      {}
+func (JumpToCmd) isAppCmd()           {}
+func (GetVelocityCmd) isAppCmd()      {}
+func (PerfSetCmd) isAppCmd()          {}
+func (GetPerfCmd) isAppCmd()          {}
+func (LoadSystemCmd) isAppCmd()       {}
+func (GetActiveSystemCmd) isAppCmd()  {}
+func (SetHUDCmd) isAppCmd()           {}
+func (OrbitCmd) isAppCmd()            {}

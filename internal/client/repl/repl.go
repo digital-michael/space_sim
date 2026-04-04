@@ -219,7 +219,7 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName st
 			expanded := strings.ReplaceAll(rawLine, varName, name)
 			cmd, parseErr := commands.Parse(expanded)
 			if parseErr != nil {
-				r.printf("error: %v\n", parseErr)
+				r.printf("error [%s]: %v\n", name, parseErr)
 				continue
 			}
 			if cmd == nil {
@@ -227,7 +227,7 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName st
 			}
 			done, execErr := r.exec(ctx, cmd)
 			if execErr != nil {
-				r.printf("error: %v\n", execErr)
+				r.printf("error [%s]: %v\n", name, execErr)
 			}
 			if done {
 				return true, nil

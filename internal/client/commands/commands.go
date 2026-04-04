@@ -281,30 +281,30 @@ type HUD struct {
 	Visible bool
 }
 
-func (SystemList) isCmd()     {}
-func (SystemGet) isCmd()      {}
-func (SystemLoad) isCmd()     {}
+func (SystemList) isCmd()       {}
+func (SystemGet) isCmd()        {}
+func (SystemLoad) isCmd()       {}
 func (WindowGet) isCmd()        {}
 func (WindowSize) isCmd()       {}
 func (WindowMaximize) isCmd()   {}
 func (WindowRestore) isCmd()    {}
 func (WindowFullscreen) isCmd() {}
-func (CameraGet) isCmd()      {}
-func (CameraCenter) isCmd()   {}
-func (CameraOrient) isCmd()   {}
-func (CameraPosition) isCmd() {}
-func (CameraTrack) isCmd()    {}
-func (NavStop) isCmd()        {}
-func (NavVelocity) isCmd()    {}
-func (NavMove) isCmd()        {}
-func (NavJump) isCmd()        {}
-func (PerfGet) isCmd()        {}
-func (PerfSet) isCmd()        {}
-func (Clear) isCmd()          {}
-func (Shutdown) isCmd()       {}
-func (Orbit) isCmd()          {}
-func (Sleep) isCmd()          {}
-func (HUD) isCmd()            {}
+func (CameraGet) isCmd()        {}
+func (CameraCenter) isCmd()     {}
+func (CameraOrient) isCmd()     {}
+func (CameraPosition) isCmd()   {}
+func (CameraTrack) isCmd()      {}
+func (NavStop) isCmd()          {}
+func (NavVelocity) isCmd()      {}
+func (NavMove) isCmd()          {}
+func (NavJump) isCmd()          {}
+func (PerfGet) isCmd()          {}
+func (PerfSet) isCmd()          {}
+func (Clear) isCmd()            {}
+func (Shutdown) isCmd()         {}
+func (Orbit) isCmd()            {}
+func (Sleep) isCmd()            {}
+func (HUD) isCmd()              {}
 
 // ValidDatasetLevels is the set of accepted level names for SetDataset.
 var ValidDatasetLevels = map[string]struct{}{
@@ -338,6 +338,41 @@ func (e ErrUsage) Error() string {
 	return msg
 }
 
+// tokenize splits a command line into fields, respecting double-quoted strings.
+// Quoted tokens have their surrounding quotes stripped.
+// Example: tokenize(`orbit "S/2019 S 1" 15 2`) → ["orbit", "S/2019 S 1", "15", "2"]
+func tokenize(line string) []string {
+	var fields []string
+	i := 0
+	for i < len(line) {
+		// skip whitespace
+		for i < len(line) && (line[i] == ' ' || line[i] == '\t') {
+			i++
+		}
+		if i >= len(line) {
+			break
+		}
+		if line[i] == '"' {
+			i++ // skip opening quote
+			start := i
+			for i < len(line) && line[i] != '"' {
+				i++
+			}
+			fields = append(fields, line[start:i])
+			if i < len(line) {
+				i++ // skip closing quote
+			}
+		} else {
+			start := i
+			for i < len(line) && line[i] != ' ' && line[i] != '\t' {
+				i++
+			}
+			fields = append(fields, line[start:i])
+		}
+	}
+	return fields
+}
+
 // Parse parses one trimmed input line into a Cmd. It returns
 // ErrUnknownCommand or ErrUsage on parse failure. Empty/comment lines return
 // nil, nil — the caller should skip them.
@@ -347,7 +382,7 @@ func Parse(line string) (Cmd, error) {
 		return nil, nil
 	}
 
-	fields := strings.Fields(line)
+	fields := tokenize(line)
 	verb := strings.ToLower(fields[0])
 	args := fields[1:]
 
