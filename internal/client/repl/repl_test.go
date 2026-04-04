@@ -575,3 +575,148 @@ func TestREPL_Shutdown(t *testing.T) {
 		t.Errorf("expected shutdown message, got:\n%s", out.String())
 	}
 }
+
+// ─── For-loop scripting tests ─────────────────────────────────────────────────
+
+// stubWorldWithBodies sends a single snapshot containing the given bodies.
+type stubWorldWithBodies struct {
+	bodies []*v1.BodyState
+}
+
+func (s *stubWorldWithBodies) StreamSnapshot(_ context.Context, _ *connect.Request[v1.StreamSnapshotRequest], stream *connect.ServerStream[v1.StreamSnapshotResponse]) error {
+	return stream.Send(&v1.StreamSnapshotResponse{
+		Version: 1,
+		Bodies:  s.bodies,
+	})
+}
+
+// newTestServerWithWorld builds a test server using a custom world handler.
+func newTestServerWithWorld(t *testing.T, world spacesimv1connect.WorldServiceHandler) (*httptest.Server, *bytes.Buffer, *REPL) {
+	t.Helper()
+	mux := http.NewServeMux()
+	stub := &stubSim{speed: 1.0}
+	simPath, simH := spacesimv1connect.NewSimulationServiceHandler(stub)
+	mux.Handle(simPath, simH)
+	worldPath, worldH := spacesimv1connect.NewWorldServiceHandler(world)
+	mux.Handle(worldPath, worldH)
+	sysPath, sysH := spacesimv1connect.NewSystemServiceHandler(&stubSystem{})
+	mux.Handle(sysPath, sysH)
+	winPath, winH := spacesimv1connect.NewWindowServiceHandler(&stubWindow{})
+	mux.Handle(winPath, winH)
+	camPath, camH := spacesimv1connect.NewCameraServiceHandler(&stubCamera{})
+	mux.Handle(camPath, camH)
+	navPath, navH := spacesimv1connect.NewNavigationServiceHandler(&stubNavigation{})
+	mux.Handle(navPath, navH)
+	perfPath, perfH := spacesimv1connect.NewPerformanceServiceHandler(&stubPerformance{})
+	mux.Handle(perfPath, perfH)
+	sdPath, sdH := spacesimv1connect.NewShutdownServiceHandler(&stubShutdown{})
+	mux.Handle(sdPath, sdH)
+
+	srv := httptest.NewServer(mux)
+	t.Cleanup(srv.Close)
+
+	var out bytes.Buffer
+	r := New(srv.URL)
+	r.out = &out
+	return srv, &out, r
+}
+
+func TestParseForHeader(t *testing.T) {
+	cases := []struct {
+		input   string
+		group   string
+		varName string
+		ok      bool
+	}{
+		{"for planets as X:", "planets", "X", true},
+		{"for planets as X", "planets", "X", true},    // no trailing colon
+		{"for PLANETS AS X:", "planets", "X", true},   // case-insensitive keywords
+		{"for dwarf_planets as P:", "dwarf_planets", "P", true},
+		{"for moons as M:", "moons", "M", true},
+		{"for stars as S:", "stars", "S", true},
+		{"for asteroids as A:", "asteroids", "A", true},
+		{"nav jump X", "", "", false},   // not a for header
+		{"for planets X:", "", "", false}, // missing "as"
+		{"for planets:", "", "", false},   // missing var and "as"
+		{"for:", "", "", false},            // bare for
+		{"foreach planets as X:", "", "", false}, // wrong keyword
+	}
+	for _, c := range cases {
+		group, varName, ok := parseForHeader(c.input)
+		if ok != c.ok {
+			t.Errorf("parseForHeader(%q): ok=%v want %v", c.input, ok, c.ok)
+			continue
+		}
+		if ok && group != c.group {
+			t.Errorf("parseForHeader(%q): group=%q want %q", c.input, group, c.group)
+		}
+		if ok && varName != c.varName {
+			t.Errorf("parseForHeader(%q): varName=%q want %q", c.input, varName, c.varName)
+		}
+	}
+}
+
+func TestREPL_ForLoop_Planets(t *testing.T) {
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{
+			{Name: "Mercury", Category: "planet"},
+			{Name: "Venus", Category: "planet"},
+			{Name: "Earth", Category: "planet"},
+		},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+
+	// Body: "nav jump X" with blank line terminating the loop, then quit.
+	input := "for planets as X:\nnav jump X\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+
+	output := out.String()
+	// Each planet should produce a queued ack line.
+	for _, name := range []string{"Mercury", "Venus", "Earth"} {
+		if strings.Count(output, "ok") < 3 {
+			t.Errorf("expected 3 'ok' acks (one per planet), got:\n%s", output)
+			break
+		}
+		_ = name // counted above
+	}
+}
+
+func TestREPL_ForLoop_UnknownGroup(t *testing.T) {
+	_, out, r := newTestServer(t)
+	input := "for galaxies as X:\nnav jump X\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "unknown group") {
+		t.Errorf("expected 'unknown group' error, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_ForLoop_EmptyBody(t *testing.T) {
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{
+			{Name: "Earth", Category: "planet"},
+		},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+	// Blank line immediately after header — empty body, no commands run.
+	input := "for planets as X:\n\ngetspeed\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	// getspeed should still run after the empty loop
+	if !strings.Contains(out.String(), "speed =") {
+		t.Errorf("expected getspeed to run after empty for-loop, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_ForLoop_NoBodiesInGroup(t *testing.T) {
+	// World has planets but no moons — loop over moons should print a warning.
+	world := &stubWorldWithBodies{
+		bodies: []*v1.BodyState{
+			{Name: "Earth", Category: "planet"},
+		},
+	}
+	_, out, r := newTestServerWithWorld(t, world)
+	input := "for moons as M:\nnav jump M\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if !strings.Contains(out.String(), "no bodies found") {
+		t.Errorf("expected 'no bodies found' warning, got:\n%s", out.String())
+	}
+}

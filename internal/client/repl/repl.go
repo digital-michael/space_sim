@@ -93,6 +93,19 @@ func (r *REPL) Run(ctx context.Context, in io.Reader) error {
 		}
 
 		line = strings.TrimSpace(line)
+
+		// For-loop block: "for <group> as <var>:"
+		if group, varName, ok := parseForHeader(line); ok {
+			done, err := r.runForLoop(ctx, lr, group, varName)
+			if err != nil {
+				r.printf("error: %v\n", err)
+			}
+			if done {
+				return nil
+			}
+			continue
+		}
+
 		cmd, err := commands.Parse(line)
 		if err != nil {
 			r.printf("error: %v\n", err)
@@ -110,6 +123,119 @@ func (r *REPL) Run(ctx context.Context, in io.Reader) error {
 			return nil
 		}
 	}
+}
+
+// groupToCategory maps human-friendly for-loop group names to the body
+// category strings used in snapshot data.
+var groupToCategory = map[string]string{
+	"stars":         "star",
+	"star":          "star",
+	"planets":       "planet",
+	"planet":        "planet",
+	"dwarf_planets": "dwarf_planet",
+	"dwarf_planet":  "dwarf_planet",
+	"moons":         "moon",
+	"moon":          "moon",
+	"asteroids":     "asteroid",
+	"asteroid":      "asteroid",
+}
+
+// parseForHeader parses a "for <group> as <var>:" header line.
+// Returns (group, varName, true) on success.
+func parseForHeader(line string) (group, varName string, ok bool) {
+	l := strings.ToLower(strings.TrimSpace(line))
+	if !strings.HasPrefix(l, "for ") {
+		return "", "", false
+	}
+	// Strip optional trailing colon then split.
+	stripped := strings.TrimSuffix(strings.TrimSpace(line), ":")
+	fields := strings.Fields(stripped)
+	// Expect exactly: for <group> as <var>
+	if len(fields) != 4 ||
+		strings.ToLower(fields[0]) != "for" ||
+		strings.ToLower(fields[2]) != "as" {
+		return "", "", false
+	}
+	return strings.ToLower(fields[1]), fields[3], true
+}
+
+// runForLoop collects the loop body (lines until blank line or EOF),
+// resolves the group to body names via a live snapshot, then executes
+// the body once per name with varName substituted.
+func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName string) (bool, error) {
+	category, ok := groupToCategory[group]
+	if !ok {
+		validGroups := "stars, planets, dwarf_planets, moons, asteroids"
+		return false, fmt.Errorf("for: unknown group %q — valid groups: %s", group, validGroups)
+	}
+
+	// Collect body lines until the first blank line (or EOF).
+	var body []string
+	for {
+		bl, err := lr.readLine("... ")
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return false, err
+		}
+		bl = strings.TrimSpace(bl)
+		if bl == "" {
+			break
+		}
+		body = append(body, bl)
+	}
+
+	if len(body) == 0 {
+		return false, nil
+	}
+
+	// Fetch a snapshot to resolve body names.
+	snap, err := r.oneSnapshot(ctx)
+	if err != nil {
+		return false, fmt.Errorf("for: could not fetch snapshot: %w", err)
+	}
+
+	// Build ordered, deduplicated name list for the category.
+	var names []string
+	seen := make(map[string]struct{})
+	for _, b := range snap.Bodies {
+		if strings.EqualFold(b.Category, category) && b.Name != "" {
+			if _, dup := seen[b.Name]; !dup {
+				names = append(names, b.Name)
+				seen[b.Name] = struct{}{}
+			}
+		}
+	}
+
+	if len(names) == 0 {
+		r.printf("for: no bodies found for group %q\n", group)
+		return false, nil
+	}
+
+	// Execute the body once per name.
+	for _, name := range names {
+		for _, rawLine := range body {
+			expanded := strings.ReplaceAll(rawLine, varName, name)
+			cmd, parseErr := commands.Parse(expanded)
+			if parseErr != nil {
+				r.printf("error: %v\n", parseErr)
+				continue
+			}
+			if cmd == nil {
+				continue
+			}
+			done, execErr := r.exec(ctx, cmd)
+			if execErr != nil {
+				r.printf("error: %v\n", execErr)
+			}
+			if done {
+				return true, nil
+			}
+		}
+	}
+
+	return false, nil
 }
 
 // exec dispatches cmd and returns (done=true) when the REPL should exit.
@@ -707,6 +833,18 @@ Timing
 
 Display
   hud on | hud off          show or hide the heads-up display overlay
+
+Scripting
+  for <group> as <var>:     iterate over all bodies in a category group
+    <commands using var>    use <var> anywhere in a command — it is substituted
+                            with each body name in order
+                            (blank line ends the loop body)
+  Groups: stars | planets | dwarf_planets | moons | asteroids
+  Example:
+    for planets as X:
+      nav jump X
+      orbit X 10 1
+      sleep 3
 `)
 }
 
