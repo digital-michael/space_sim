@@ -10,7 +10,7 @@ var topVerbs = []string{
 	"setdataset", "getdataset",
 	"gettime", "bodies", "inspect", "status", "stream",
 	"system", "window", "camera", "nav", "perf",
-	"orbit", "sleep", "hud", "labels", "set",
+	"orbit", "sleep", "hud", "labels", "sync", "set",
 	"shutdown", "clear", "help", "quit", "exit",
 }
 
@@ -23,6 +23,7 @@ var subCmds = map[string][]string{
 	"perf":   {"get", "set"},
 	"hud":    {"on", "off", "list", "debug", "info", "help", "player"},
 	"labels": {"on", "off", "nearest"},
+	"sync":   {"on", "off"},
 }
 
 // perfFields is the sorted list of valid perf set field names.

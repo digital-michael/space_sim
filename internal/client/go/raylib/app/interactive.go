@@ -452,25 +452,33 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			log.Printf("OrbitCmd: body %q not found", c.Name)
 			return
 		}
+		orbitSpeed := c.SpeedDegPerSec * (math.Pi / 180.0)
+		orbitRadians := c.Orbits * 2 * math.Pi
+		if cs.Mode == ui.CameraModeJumping {
+			// Jump is in flight — defer orbit to run on arrival.
+			cs.PendingOrbitSpeed = orbitSpeed
+			cs.PendingOrbitRadians = orbitRadians
+			return
+		}
 		obj := state.Objects[idx]
 		cs.StartTracking(idx)
 		cs.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
 		cs.TrackOffset = engine.Vector3{}
 		cs.UpdateTracking(state)
-		cs.OrbitSpeed = c.SpeedDegPerSec * (math.Pi / 180.0)
-		cs.OrbitRadiansRemaining = c.Orbits * 2 * math.Pi
+		cs.OrbitSpeed = orbitSpeed
+		cs.OrbitRadiansRemaining = orbitRadians
 	}
 }
 
 // bodyAliases maps common alternative names to their canonical data-file names
 // (lower-case). Add entries here as new aliases are needed.
 var bodyAliases = map[string]string{
-	"sol": "sun",
+	"sun": "sol",
 }
 
 // findBodyByName returns the index of the first body whose name matches
 // (case-insensitive) in state.Objects, or -1 if not found.
-// Common aliases (e.g. "sol" → "Sun") are also resolved.
+// Common aliases (e.g. "sun" → "Sol") are also resolved.
 func findBodyByName(state *engine.SimulationState, name string) int {
 	for i, obj := range state.Objects {
 		if strings.EqualFold(obj.Meta.Name, name) {

@@ -808,6 +808,13 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 			cameraState.TrackDistance = cameraState.JumpTargetViewDist
 			cameraState.TrackOffset = engine.Vector3{}
 			cameraState.UpdateTracking(state) // center now, not next frame
+			// Apply any orbit that was queued while the jump was in flight.
+			if cameraState.PendingOrbitSpeed != 0 {
+				cameraState.OrbitSpeed = cameraState.PendingOrbitSpeed
+				cameraState.OrbitRadiansRemaining = cameraState.PendingOrbitRadians
+				cameraState.PendingOrbitSpeed = 0
+				cameraState.PendingOrbitRadians = 0
+			}
 			cameraState.JumpDwellRemaining = cameraState.JumpCurrentDwell
 			// No dwell: immediately pop the next hop if queued.
 			if cameraState.JumpDwellRemaining <= 0 && len(cameraState.JumpQueue) > 0 {

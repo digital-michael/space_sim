@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	sim "github.com/digital-michael/space_sim/internal/sim/world"
-	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 )
 
 type runtimeSession struct {
@@ -46,7 +46,7 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 	initialState := sim.GetState().LockFront()
 	solIndex := -1
 	for i, obj := range initialState.Objects {
-		if obj.Meta.Name == "Sol" {
+		if obj.Meta.Category == engine.CategoryStar {
 			solIndex = i
 			break
 		}
@@ -63,9 +63,9 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 
 	if solIndex >= 0 {
 		cameraState.StartTracking(solIndex)
-		log.Printf("Camera started tracking Sol (index %d)", solIndex)
+		log.Printf("Camera started tracking star (index %d)", solIndex)
 	} else {
-		log.Printf("Warning: Sol not found in simulation, starting in free-fly mode")
+		log.Printf("Warning: no star found in simulation, starting in free-fly mode")
 	}
 
 	if a.cfg.PerformanceMode {

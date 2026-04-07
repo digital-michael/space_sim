@@ -302,6 +302,15 @@ type Labels struct {
 	Mode string // "on" | "off" | "nearest"
 }
 
+// Sync enables or disables synchronous mode.
+// When on, animated commands (nav jump, orbit) block until the animation
+// finishes before the REPL reads the next line.
+//
+//	sync on | sync off
+type Sync struct {
+	On bool
+}
+
 func (SystemList) isCmd()       {}
 func (SystemGet) isCmd()        {}
 func (SystemLoad) isCmd()       {}
@@ -329,6 +338,7 @@ func (HUD) isCmd()              {}
 func (HUDList) isCmd()          {}
 func (HUDCategory) isCmd()      {}
 func (Labels) isCmd()           {}
+func (Sync) isCmd()             {}
 
 // ValidDatasetLevels is the set of accepted level names for SetDataset.
 var ValidDatasetLevels = map[string]struct{}{
@@ -710,6 +720,20 @@ func Parse(line string) (Cmd, error) {
 			return Labels{Mode: mode}, nil
 		default:
 			return nil, ErrUsage{Cmd: "labels", Detail: fmt.Sprintf("unknown mode %q", args[0]), Example: "labels on|off|nearest"}
+		}
+
+	// ── Sync ────────────────────────────────────────────────────────────────
+	case "sync":
+		if len(args) != 1 {
+			return nil, ErrUsage{Cmd: "sync", Detail: "expected on or off", Example: "sync on"}
+		}
+		switch strings.ToLower(args[0]) {
+		case "on":
+			return Sync{On: true}, nil
+		case "off":
+			return Sync{On: false}, nil
+		default:
+			return nil, ErrUsage{Cmd: "sync", Detail: fmt.Sprintf("unknown value %q", args[0]), Example: "sync on|off"}
 		}
 
 	default:

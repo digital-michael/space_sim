@@ -537,7 +537,16 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 	cameraDistKm := cameraDistAU * 149597870.7 // 1 AU in km
 
 	// Determine parent and count siblings
-	parentName := "Sol"
+	parentName := ""
+	for _, o := range state.Objects {
+		if o.Meta.Category == engine.CategoryStar {
+			parentName = o.Meta.Name
+			break
+		}
+	}
+	if parentName == "" {
+		parentName = "Star"
+	}
 	siblingCount := 0
 	siblingIndex := 0
 
@@ -553,7 +562,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 			}
 		}
 	} else if obj.Meta.Category == engine.CategoryPlanet {
-		// Count planets (objects orbiting Sol with Category=Planet)
+		// Count planets with no parent (orbit the star)
 		for i, otherObj := range state.Objects {
 			if otherObj.Meta.Category == engine.CategoryPlanet && otherObj.Meta.ParentName == "" {
 				siblingCount++

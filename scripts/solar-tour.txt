@@ -13,13 +13,14 @@ For-loop slice syntax (optional, append to group name):
 hud off
 hud info on
 label nearest
+sync on
 
 //window size 640x480
 window full on
 
 set $orbits 1 // orbits around target
 set $speed 20.0 // how fast to travel
-set $sleep 0.5 // duration per item
+set $sleep 1.5 // duration per item
 
 sleep $sleep 
 
@@ -33,11 +34,13 @@ for stars as X:
 
 for planets as X:
     nav jump "X" $speed
+    //sleep $sleep
     orbit "X" $speed $orbits
     sleep $sleep
 
 for dwarf_planets as X:
     nav jump "X" $speed
+    //sleep $sleep
     orbit "X" $speed $orbits
     sleep $sleep
 
@@ -48,7 +51,11 @@ for moons[:10] as X:
     sleep $sleep
 
 
-nav jump sol $speed
+nav jump Sol $speed
 
-window restore
+sleep 5
+
+//window restore
+//window size 640x480
+sync off
 exit

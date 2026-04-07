@@ -39,6 +39,7 @@ type REPL struct {
 	lastSpeed   float32           // restored by resume; updated by setspeed / pause
 	bodyNames   []string          // cached body names for TAB completion; nil = not yet fetched
 	vars        map[string]string // persistent $name variables set by 'set $name value'
+	syncMode    bool              // when true, animated commands block until the animation ends
 }
 
 // New creates a REPL connected to addr (e.g. "http://localhost:9090").
@@ -441,6 +442,26 @@ func stripComments(line string, lr *lineReader) (string, error) {
 	return strings.TrimSpace(line), nil
 }
 
+// waitForCamera polls GetCamera at 100 ms intervals until the camera is no
+// longer in "jumping" mode, or until ctx is cancelled.
+// Used by sync mode to block after nav jump and orbit commands.
+func (r *REPL) waitForCamera(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(100 * time.Millisecond):
+		}
+		resp, err := r.camClient.GetCamera(ctx, connect.NewRequest(&v1.GetCameraRequest{}))
+		if err != nil {
+			return // server gone; don't block forever
+		}
+		if resp.Msg.GetCamera().GetMode() != "jumping" {
+			return
+		}
+	}
+}
+
 // exec dispatches cmd and returns (done=true) when the REPL should exit.
 func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 	switch c := cmd.(type) {
@@ -719,6 +740,9 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			return false, err
 		}
 		r.printf("ok  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+		if r.syncMode {
+			r.waitForCamera(ctx)
+		}
 
 	// ── Performance ───────────────────────────────────────────────────────────
 
@@ -772,6 +796,9 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 		}
 		r.printf("ok  orbiting %s at %.2f°/s × %.4g orbits  event_id=%s  status=%s\n",
 			c.Name, c.SpeedDegPerSec, c.Orbits, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+		if r.syncMode {
+			r.waitForCamera(ctx)
+		}
 
 	// ── Sleep ─────────────────────────────────────────────────────────────────
 
@@ -858,6 +885,16 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			return false, err
 		}
 		r.printf("ok  labels %s  event_id=%s  status=%s\n", c.Mode, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
+	// ── Sync ────────────────────────────────────────────────────────────────────
+
+	case commands.Sync:
+		r.syncMode = c.On
+		onOff := "off"
+		if c.On {
+			onOff = "on"
+		}
+		r.printf("sync %s\n", onOff)
 	}
 	return false, nil
 }
@@ -1108,6 +1145,9 @@ Camera Animation
 
 Timing
   sleep <seconds>           pause script execution  e.g. sleep 2.5
+  sync on | sync off        block after animated commands (nav jump, orbit)
+                            until the animation finishes before reading the
+                            next line  e.g. sync on
 
 Display
   hud on | hud off          show or hide the heads-up display (master toggle)

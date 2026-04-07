@@ -6,7 +6,7 @@
   "bodies": [
     {
       "type": "star",
-      "name": "Sun",
+      "name": "Sol",
       "orbit": {
         "semi_major_axis": 0,
         "eccentricity": 0,
@@ -8752,7 +8752,7 @@
     {
       "type": "asteroid_belt",
       "name": "Main Asteroid Belt",
-      "parent": "Sun",
+      "parent": "Sol",
       "distribution": {
         "inner_radius": 195,
         "outer_radius": 240,
@@ -8838,7 +8838,7 @@
     {
       "type": "kuiper_belt",
       "name": "Kuiper Belt",
-      "parent": "Sun",
+      "parent": "Sol",
       "distribution": {
         "inner_radius": 3000,
         "outer_radius": 5000,

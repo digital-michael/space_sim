@@ -1,6 +1,6 @@
 {
   "textures": {
-    "Sun": {
+    "Sol": {
       "diffuse": "data/assets/textures/sun_8k.jpg",
       "resolutions": {
         "8k": "data/assets/textures/sun_8k.jpg",

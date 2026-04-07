@@ -10,9 +10,9 @@ import (
 	"time"
 
 	spatial "github.com/digital-michael/space_sim/internal/client/go/raylib/spatial"
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	simlib "github.com/digital-michael/space_sim/internal/sim/world"
-	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
@@ -80,30 +80,44 @@ func (a *App) runPerformanceTest(sim *simlib.World, cameraState *ui.CameraState,
 	rl.EnableCursor()
 	log.Println("Cursor enabled")
 
+	// Look up star name from simulation data
+	starState := sim.GetState().LockFront()
+	starName := ""
+	for _, obj := range starState.Objects {
+		if obj.Meta.Category == engine.CategoryStar {
+			starName = obj.Meta.Name
+			break
+		}
+	}
+	sim.GetState().UnlockFront()
+	if starName == "" {
+		starName = "star"
+	}
+
 	// Setup camera based on profile
 	var targetName string
 	switch profile {
 	case "worst":
 		// Overview position: high above, looking at sun (worst case - sees everything)
 		cameraState.Position = engine.Vector3{X: 0, Y: 800, Z: -400}
-		targetName = "Sun"
-		log.Println("Profile 'worst': Overview position (0, 800, -400) looking at Sun")
+		targetName = starName
+		log.Printf("Profile 'worst': Overview position (0, 800, -400) looking at %s", starName)
 	case "better":
-		// In middle-outer belt (195-240 range, use ~215), tracking Sun at origin
+		// In middle-outer belt (195-240 range, use ~215), tracking star at origin
 		// Position in outer quarter of belt, above orbital plane
 		cameraState.Position = engine.Vector3{X: 215, Y: 60, Z: 0}
-		targetName = "Sun"
-		log.Println("Profile 'better': Outer belt position (215, 60, 0) tracking Sun")
+		targetName = starName
+		log.Printf("Profile 'better': Outer belt position (215, 60, 0) tracking %s", starName)
 	default:
 		// Fallback to worst
 		cameraState.Position = engine.Vector3{X: 0, Y: 800, Z: -400}
-		targetName = "Sun"
+		targetName = starName
 	}
 	log.Printf("Camera position set to: (%.1f, %.1f, %.1f)", cameraState.Position.X, cameraState.Position.Y, cameraState.Position.Z)
 
 	// Calculate forward vector based on target
 	var targetPos engine.Vector3
-	if targetName == "Sun" {
+	if targetName == starName {
 		targetPos = engine.Vector3{X: 0, Y: 0, Z: 0}
 	} else {
 		// Find Jupiter's current position

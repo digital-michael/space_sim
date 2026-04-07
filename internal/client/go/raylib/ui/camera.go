@@ -59,6 +59,13 @@ type CameraState struct {
 	// forward so the post-arrival tracking distance is set correctly.
 	JumpTargetViewDist float64
 
+	// JumpStartYaw/Pitch and JumpTargetYaw/Pitch are the camera angles at the
+	// beginning and end of a jump, used to smoothly interpolate the look direction.
+	JumpStartYaw    float64
+	JumpStartPitch  float64
+	JumpTargetYaw   float64
+	JumpTargetPitch float64
+
 	// Velocity is a persistent drift applied to the camera position every
 	// frame (AU/s, free-fly mode only). Set to zero to stop.
 	Velocity engine.Vector3
@@ -75,6 +82,11 @@ type CameraState struct {
 	// Orbit animation
 	OrbitSpeed            float64 // rad/sec; positive = counter-clockwise; 0 = not orbiting
 	OrbitRadiansRemaining float64 // decrements each frame; orbit ends when ≤ 0
+
+	// PendingOrbit holds orbit parameters to apply when an in-flight jump lands.
+	// Non-zero PendingOrbitSpeed signals a pending orbit.
+	PendingOrbitSpeed   float64
+	PendingOrbitRadians float64
 }
 
 // NewCameraState creates a camera with sensible defaults.
@@ -138,12 +150,26 @@ func (c *CameraState) StartJumpTo(targetIndex int, targetPos engine.Vector3, vie
 	c.JumpProgress = 0.0
 
 	// Scale duration by travel distance so long jumps feel traversed.
-	// Uses sqrt scaling to keep short hops snappy while long ones get more time.
-	// Clamped to [2.0, 6.0] seconds.
+	// World coordinates: Earth = 100 units from Sol; sqrt(travel)*0.1 gives
+	// ~1.5s for nearby hops and ~3s for system-crossing jumps. Clamped [1.5, 3.0].
 	travel := float64(c.Position.Sub(c.JumpTargetPos).Length())
-	c.JumpDuration = math.Max(2.0, math.Min(6.0, 1.0+math.Sqrt(travel)*0.8))
+	c.JumpDuration = math.Max(1.5, math.Min(3.0, math.Sqrt(travel)*0.1))
 
 	c.JumpTargetViewDist = viewDistance
+
+	// Save start angles and compute the target look direction so UpdateJump can
+	// smoothly interpolate the camera's facing over the duration of the jump.
+	c.JumpStartYaw = c.Yaw
+	c.JumpStartPitch = c.Pitch
+	lookDir := targetPos.Sub(c.JumpTargetPos)
+	if lookDir.Length() > 0.01 {
+		lookDir = lookDir.Normalize()
+		c.JumpTargetYaw = math.Atan2(float64(lookDir.X), float64(lookDir.Z))
+		c.JumpTargetPitch = math.Asin(math.Max(-1.0, math.Min(1.0, float64(lookDir.Y))))
+	} else {
+		c.JumpTargetYaw = c.Yaw
+		c.JumpTargetPitch = c.Pitch
+	}
 }
 
 // UpdateJump advances the jump animation by dt seconds.
@@ -154,19 +180,34 @@ func (c *CameraState) UpdateJump(dt float64) {
 	c.JumpProgress += dt / c.JumpDuration
 	if c.JumpProgress >= 1.0 {
 		c.Position = c.JumpTargetPos
+		c.Yaw = c.JumpTargetYaw
+		c.Pitch = c.JumpTargetPitch
+		c.UpdateForwardFromAngles()
 		c.Mode = CameraModeFree
 		return
 	}
 	t := c.JumpProgress
-	// Asymmetric easing: remap t through t^1.5 before applying smoothstep.
-	// The remap shifts the velocity peak from t=0.50 to t≈0.58 so the camera
-	// spends ~35% of total time accelerating and ~65% decelerating — the
-	// arrival transition is fully visible rather than appearing as a pop.
-	tIn := t * math.Sqrt(t) // t^1.5
+	// Asymmetric easing: remap t through t^(2/3) before applying smoothstep.
+	// The remap shifts the velocity peak to t≈0.37 so the camera spends ~37%
+	// of the time accelerating and ~63% decelerating — arrival is a smooth
+	// coast-in rather than a pop.
+	tIn := math.Pow(t, 2.0/3.0) // t^(2/3) — ease-out remap
 	smoothT := float32(tIn * tIn * (3.0 - 2.0*tIn))
 	c.Position.X = c.JumpStartPos.X + smoothT*(c.JumpTargetPos.X-c.JumpStartPos.X)
 	c.Position.Y = c.JumpStartPos.Y + smoothT*(c.JumpTargetPos.Y-c.JumpStartPos.Y)
 	c.Position.Z = c.JumpStartPos.Z + smoothT*(c.JumpTargetPos.Z-c.JumpStartPos.Z)
+	// Interpolate camera facing toward the destination over the same curve.
+	// Wrap yaw delta into (-π, π) so the camera always takes the short arc.
+	dyaw := c.JumpTargetYaw - c.JumpStartYaw
+	for dyaw > math.Pi {
+		dyaw -= 2 * math.Pi
+	}
+	for dyaw < -math.Pi {
+		dyaw += 2 * math.Pi
+	}
+	c.Yaw = c.JumpStartYaw + float64(smoothT)*dyaw
+	c.Pitch = c.JumpStartPitch + float64(smoothT)*(c.JumpTargetPitch-c.JumpStartPitch)
+	c.UpdateForwardFromAngles()
 }
 
 // StartTracking locks the camera to track a specific object (orbital view).

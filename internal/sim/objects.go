@@ -9,7 +9,7 @@ import "github.com/digital-michael/space_sim/internal/sim/engine"
 func NewSun() *engine.Object {
 	return &engine.Object{
 		Meta: engine.ObjectMetadata{
-			Name:           "Sun",
+			Name:           "Sol",
 			Category:       engine.CategoryStar,
 			Mass:           1.989e30,
 			PhysicalRadius: 27.25,
