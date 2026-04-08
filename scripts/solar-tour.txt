@@ -58,4 +58,5 @@ sleep 5
 //window restore
 //window size 640x480
 sync off
+shutdown
 exit

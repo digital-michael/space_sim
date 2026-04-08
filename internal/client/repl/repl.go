@@ -797,7 +797,20 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 		r.printf("ok  orbiting %s at %.2f°/s × %.4g orbits  event_id=%s  status=%s\n",
 			c.Name, c.SpeedDegPerSec, c.Orbits, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
 		if r.syncMode {
-			r.waitForCamera(ctx)
+			// Orbit runs entirely in tracking mode (not "jumping"), so
+			// waitForCamera returns immediately. Compute the exact duration
+			// and sleep instead.
+			speed := c.SpeedDegPerSec
+			if speed < 0 {
+				speed = -speed
+			}
+			if speed > 0 {
+				orbitSecs := (c.Orbits * 360.0) / speed
+				select {
+				case <-ctx.Done():
+				case <-time.After(time.Duration(orbitSecs * float64(time.Second))):
+				}
+			}
 		}
 
 	// ── Sleep ─────────────────────────────────────────────────────────────────
@@ -1148,6 +1161,8 @@ Timing
   sync on | sync off        block after animated commands (nav jump, orbit)
                             until the animation finishes before reading the
                             next line  e.g. sync on
+                            nav jump: polls camera until mode leaves jumping
+                            orbit: sleeps for the exact orbit duration
 
 Display
   hud on | hud off          show or hide the heads-up display (master toggle)
