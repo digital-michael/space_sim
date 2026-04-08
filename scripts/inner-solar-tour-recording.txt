@@ -1,0 +1,69 @@
+/*
+
+Fast inner solar system tour with recording.
+
+Visits: Sun, Mercury, Venus, Earth (+Moon), Mars, then returns to Sol.
+Total run time is roughly 2–3 minutes at the speeds below.
+
+Usage:
+  space-sim-repl < scripts/inner-solar-tour-recording.txt
+
+The recording is saved to ~/Desktop/inner-solar-tour.mp4.
+Use "record delete inner-solar-tour.mp4" to clean up afterwards.
+
+*/
+
+hud off
+hud info on
+labels nearest
+sync on
+
+window full on
+
+record start inner-solar-tour.mp4
+
+set $speed  25.0  // nav jump travel speed (higher = shorter transit time)
+set $orbits 0.5   // half-orbit is enough for a tour shot
+set $dwell  2.0   // pause at each body (seconds)
+
+sleep 1.5
+
+// ── Sun ──────────────────────────────────────────────────────────────────────
+nav jump Sol $speed
+orbit Sol $speed $orbits
+sleep $dwell
+
+// ── Mercury ──────────────────────────────────────────────────────────────────
+nav jump Mercury $speed
+orbit Mercury $speed $orbits
+sleep $dwell
+
+// ── Venus ────────────────────────────────────────────────────────────────────
+nav jump Venus $speed
+orbit Venus $speed $orbits
+sleep $dwell
+
+// ── Earth + Moon ─────────────────────────────────────────────────────────────
+nav jump Earth $speed
+orbit Earth $speed $orbits
+sleep $dwell
+
+nav jump Moon $speed
+orbit Moon $speed $orbits
+sleep $dwell
+
+// ── Mars ─────────────────────────────────────────────────────────────────────
+nav jump Mars $speed
+orbit Mars $speed $orbits
+sleep $dwell
+
+// ── Return to Sol ────────────────────────────────────────────────────────────
+nav jump Sol $speed
+
+sleep 2.0
+
+record stop
+
+window restore
+sync off
+shutdown

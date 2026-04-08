@@ -10,8 +10,8 @@ var topVerbs = []string{
 	"setdataset", "getdataset",
 	"gettime", "bodies", "inspect", "status", "stream",
 	"system", "window", "camera", "nav", "perf",
-	"orbit", "sleep", "hud", "labels", "sync", "set",
-	"shutdown", "clear", "help", "quit", "exit",
+        "orbit", "sleep", "hud", "labels", "sync", "set", "record",
+        "shutdown", "clear", "help", "quit", "exit",
 }
 
 // subCmds maps a multi-word verb to its valid sub-commands.
@@ -24,6 +24,7 @@ var subCmds = map[string][]string{
 	"hud":    {"on", "off", "list", "debug", "info", "help", "player"},
 	"labels": {"on", "off", "nearest"},
 	"sync":   {"on", "off"},
+	"record": {"start", "pause", "stop", "delete"},
 }
 
 // perfFields is the sorted list of valid perf set field names.

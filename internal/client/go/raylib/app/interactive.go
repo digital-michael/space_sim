@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"math"
 	"strconv"
@@ -478,6 +479,28 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		cs.UpdateTracking(state)
 		cs.OrbitSpeed = orbitSpeed
 		cs.OrbitRadiansRemaining = orbitRadians
+
+	// ── Recording ──────────────────────────────────────────────────────────
+
+	case RecordStartCmd:
+		if !a.runtime.RecordingActive {
+			a.startRecording(c.Path)
+		}
+
+	case RecordPauseCmd:
+		if a.runtime.RecordingActive {
+			a.runtime.RecordingPaused = !a.runtime.RecordingPaused
+			if a.runtime.RecordingPaused {
+				fmt.Println("[REC] Paused")
+			} else {
+				fmt.Println("[REC] Resumed")
+			}
+		}
+
+	case RecordStopCmd:
+		if a.runtime.RecordingActive {
+			a.stopRecording()
+		}
 	}
 }
 

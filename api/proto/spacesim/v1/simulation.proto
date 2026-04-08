@@ -490,3 +490,41 @@ service ShutdownService {
 
 message ShutdownRequest  { uint32 version = 1; }
 message ShutdownResponse { uint32 version = 1; }
+
+// ─── RecordingService ─────────────────────────────────────────────────────────
+//
+// Start, pause/resume, and stop the in-process video recorder.
+
+service RecordingService {
+  // StartRecording begins capturing frames to the given output path.
+  // If output_path is empty, the app auto-generates a timestamped file on the Desktop.
+  rpc StartRecording(StartRecordingRequest) returns (StartRecordingResponse);
+
+  // PauseRecording toggles the freeze-frame pause state.
+  // Calling it while paused resumes recording; calling while active pauses it.
+  rpc PauseRecording(PauseRecordingRequest) returns (PauseRecordingResponse);
+
+  // StopRecording finalises and closes the current video file.
+  rpc StopRecording(StopRecordingRequest) returns (StopRecordingResponse);
+}
+
+message StartRecordingRequest {
+  uint32 version     = 1;
+  string output_path = 2; // optional; empty = auto-generate timestamped Desktop path
+}
+message StartRecordingResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message PauseRecordingRequest  { uint32 version = 1; }
+message PauseRecordingResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message StopRecordingRequest  { uint32 version = 1; }
+message StopRecordingResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}

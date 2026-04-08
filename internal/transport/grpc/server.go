@@ -51,6 +51,7 @@ type Handlers struct {
 	Navigation  spacesimv1connect.NavigationServiceHandler
 	Performance spacesimv1connect.PerformanceServiceHandler
 	Shutdown    spacesimv1connect.ShutdownServiceHandler
+	Recording   spacesimv1connect.RecordingServiceHandler
 }
 
 // New creates a Server. All service handlers are registered on the HTTP mux
@@ -91,6 +92,9 @@ func New(cfg ServerConfig, h Handlers) *Server {
 
 	shutPath, shutHandler := spacesimv1connect.NewShutdownServiceHandler(h.Shutdown)
 	mux.Handle(shutPath, shutHandler)
+
+	recPath, recHandler := spacesimv1connect.NewRecordingServiceHandler(h.Recording)
+	mux.Handle(recPath, recHandler)
 
 	var handler http.Handler = mux
 	var limiter *connLimitHandler

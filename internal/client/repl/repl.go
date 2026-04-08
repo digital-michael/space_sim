@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -35,6 +36,7 @@ type REPL struct {
 	navClient   spacesimv1connect.NavigationServiceClient
 	perfClient  spacesimv1connect.PerformanceServiceClient
 	sdClient    spacesimv1connect.ShutdownServiceClient
+	recClient   spacesimv1connect.RecordingServiceClient
 	out         io.Writer
 	lastSpeed   float32           // restored by resume; updated by setspeed / pause
 	bodyNames   []string          // cached body names for TAB completion; nil = not yet fetched
@@ -56,6 +58,7 @@ func New(addr string, opts ...connect.ClientOption) *REPL {
 		navClient:   spacesimv1connect.NewNavigationServiceClient(http.DefaultClient, addr, opts...),
 		perfClient:  spacesimv1connect.NewPerformanceServiceClient(http.DefaultClient, addr, opts...),
 		sdClient:    spacesimv1connect.NewShutdownServiceClient(http.DefaultClient, addr, opts...),
+		recClient:   spacesimv1connect.NewRecordingServiceClient(http.DefaultClient, addr, opts...),
 		out:         os.Stdout,
 		lastSpeed:   1.0,
 		vars:        make(map[string]string),
@@ -908,8 +911,65 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			onOff = "on"
 		}
 		r.printf("sync %s\n", onOff)
+
+	// ── Record ───────────────────────────────────────────────────────────────
+
+	case commands.RecordStart:
+		resolved, err := resolveRecordingPath(c.Filename)
+		if err != nil {
+			return false, err
+		}
+		resp, err := r.recClient.StartRecording(ctx, connect.NewRequest(&v1.StartRecordingRequest{
+			Version:    1,
+			OutputPath: resolved,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("ok  record start %s  event_id=%s  status=%s\n", resolved, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
+	case commands.RecordPause:
+		resp, err := r.recClient.PauseRecording(ctx, connect.NewRequest(&v1.PauseRecordingRequest{Version: 1}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("ok  record pause  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
+	case commands.RecordStop:
+		resp, err := r.recClient.StopRecording(ctx, connect.NewRequest(&v1.StopRecordingRequest{Version: 1}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("ok  record stop  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
+	case commands.RecordDelete:
+		resolved, err := resolveRecordingPath(c.Filename)
+		if err != nil {
+			return false, err
+		}
+		if err := os.Remove(resolved); err != nil {
+			return false, fmt.Errorf("record delete: %w", err)
+		}
+		r.printf("deleted %s\n", resolved)
 	}
 	return false, nil
+}
+
+// resolveRecordingPath converts a bare filename (no path separators) to an
+// absolute path under ~/Desktop/. Absolute paths are used verbatim.
+// An .mp4 extension is appended when the filename has no extension.
+func resolveRecordingPath(filename string) (string, error) {
+	if !strings.Contains(filename, string(filepath.Separator)) && !filepath.IsAbs(filename) {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", fmt.Errorf("record: home dir: %w", err)
+		}
+		filename = filepath.Join(home, "Desktop", filename)
+	}
+	if filepath.Ext(filename) == "" {
+		filename += ".mp4"
+	}
+	return filename, nil
 }
 
 func (r *REPL) runStream(ctx context.Context) error {

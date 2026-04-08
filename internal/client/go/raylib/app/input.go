@@ -203,7 +203,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 			if app.runtime.RecordingActive {
 				app.stopRecording()
 			} else {
-				app.startRecording()
+				app.startRecording("")
 			}
 		} else {
 			// Opt+Shift+R: toggle pause

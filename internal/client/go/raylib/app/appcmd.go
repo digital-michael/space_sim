@@ -172,6 +172,22 @@ type SetHUDCmd struct {
 	Visible  bool
 }
 
+// ── Recording commands ────────────────────────────────────────────────────────
+
+// RecordStartCmd begins a new video recording session.
+// Path is the desired output file; an empty string auto-generates a timestamped
+// Desktop path (same behaviour as the Opt+R key binding).
+type RecordStartCmd struct {
+	Path string
+}
+
+// RecordPauseCmd toggles the freeze-frame pause state.
+// If recording is paused it resumes; if active it pauses.
+type RecordPauseCmd struct{}
+
+// RecordStopCmd finalises and closes the active recording.
+type RecordStopCmd struct{}
+
 // ── Orbit commands ────────────────────────────────────────────────────────────
 
 // OrbitCmd starts an animated orbit around a named body.
@@ -203,3 +219,6 @@ func (LoadSystemCmd) isAppCmd()       {}
 func (GetActiveSystemCmd) isAppCmd()  {}
 func (SetHUDCmd) isAppCmd()           {}
 func (OrbitCmd) isAppCmd()            {}
+func (RecordStartCmd) isAppCmd()      {}
+func (RecordPauseCmd) isAppCmd()      {}
+func (RecordStopCmd) isAppCmd()       {}

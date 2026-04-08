@@ -33,29 +33,32 @@ func newVideoRecorder(pipe io.WriteCloser, width, height int, outputPath string)
 }
 
 // startRecording forks an ffmpeg process and returns a ready recorder.
+// If outputPath is empty a timestamped path on the Desktop is auto-generated.
 // Returns an error if ffmpeg is not found or fails to start.
-func startRecording(width, height int) (*videoRecorder, error) {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return nil, fmt.Errorf("recorder: home dir: %w", err)
+func startRecording(width, height int, outputPath string) (*videoRecorder, error) {
+	if outputPath == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return nil, fmt.Errorf("recorder: home dir: %w", err)
+		}
+		ts := time.Now().Format("2006-01-02_15-04-05")
+		outputPath = filepath.Join(home, "Desktop", fmt.Sprintf("space-sim-%s.mp4", ts))
 	}
-	ts := time.Now().Format("2006-01-02_15-04-05")
-	outPath := filepath.Join(home, "Desktop", fmt.Sprintf("space-sim-%s.mp4", ts))
 
 	size := fmt.Sprintf("%dx%d", width, height)
 	cmd := exec.Command("ffmpeg",
-		"-y",                  // overwrite if exists
+		"-y", // overwrite if exists
 		"-f", "rawvideo",
 		"-pix_fmt", "rgba",
 		"-s", size,
-		"-r", "60",            // input frame rate
-		"-i", "pipe:0",        // read from stdin
-		"-vf", "vflip",        // flip Y — OpenGL render textures are bottom-up
+		"-r", "60", // input frame rate
+		"-i", "pipe:0", // read from stdin
+		"-vf", "vflip", // flip Y — OpenGL render textures are bottom-up
 		"-vcodec", "libx264",
 		"-preset", "ultrafast", // minimise encode CPU overhead
 		"-pix_fmt", "yuv420p", // broadest H.264 compatibility
-		"-crf", "18",          // near-lossless quality; raise to 23 for smaller files
-		outPath,
+		"-crf", "18", // near-lossless quality; raise to 23 for smaller files
+		outputPath,
 	)
 	cmd.Stderr = os.Stderr // surface ffmpeg warnings without spamming stdout
 
@@ -68,8 +71,8 @@ func startRecording(width, height int) (*videoRecorder, error) {
 		return nil, fmt.Errorf("recorder: ffmpeg start (is ffmpeg installed?): %w", err)
 	}
 
-	fmt.Printf("[REC] Started: %s\n", outPath)
-	rec := newVideoRecorder(pipe, width, height, outPath)
+	fmt.Printf("[REC] Started: %s\n", outputPath)
+	rec := newVideoRecorder(pipe, width, height, outputPath)
 	rec.cmd = cmd
 	return rec, nil
 }
@@ -101,14 +104,16 @@ func (rec *videoRecorder) Stop() {
 }
 
 // startRecording starts a new recording session on the app.
-func (a *App) startRecording() {
+// outputPath is passed directly to the package-level startRecording; an empty
+// string auto-generates a timestamped Desktop path.
+func (a *App) startRecording(outputPath string) {
 	w := int(a.runtime.RenderWidth)
 	h := int(a.runtime.RenderHeight)
 	if w <= 0 || h <= 0 {
 		fmt.Println("[REC] No render target dimensions; cannot record.")
 		return
 	}
-	rec, err := startRecording(w, h)
+	rec, err := startRecording(w, h, outputPath)
 	if err != nil {
 		fmt.Printf("[REC] Error: %v\n", err)
 		return

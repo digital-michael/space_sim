@@ -63,16 +63,18 @@ func main() {
 	navHandler := grpcserver.NewNavigationHandler(application.SendCmd)
 	perfHandler := grpcserver.NewPerformanceHandler(application.SendCmd)
 	shutdownHandler := grpcserver.NewShutdownHandler(stop)
+        recordingHandler := grpcserver.NewRecordingHandler(application.SendCmd)
 
-	srv := grpcserver.New(grpcserver.DefaultServerConfig(), grpcserver.Handlers{
-		Simulation:  simHandler,
-		World:       worldHandler,
-		System:      systemHandler,
-		Window:      windowHandler,
-		Camera:      cameraHandler,
-		Navigation:  navHandler,
-		Performance: perfHandler,
-		Shutdown:    shutdownHandler,
+        srv := grpcserver.New(grpcserver.DefaultServerConfig(), grpcserver.Handlers{
+                Simulation:  simHandler,
+                World:       worldHandler,
+                System:      systemHandler,
+                Window:      windowHandler,
+                Camera:      cameraHandler,
+                Navigation:  navHandler,
+                Performance: perfHandler,
+                Shutdown:    shutdownHandler,
+                Recording:   recordingHandler,
 	})
 
 	srvDone := make(chan error, 1)

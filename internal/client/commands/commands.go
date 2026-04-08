@@ -311,6 +311,34 @@ type Sync struct {
 	On bool
 }
 
+// RecordStart begins a new video recording session.
+//
+//	record start <filename>   e.g.  record start inner-tour.mp4
+//
+// If filename is a bare name (no path separators) it is saved to ~/Desktop/.
+// An .mp4 extension is appended automatically when missing.
+type RecordStart struct {
+	Filename string
+}
+
+// RecordPause toggles the freeze-frame pause state of the active recording.
+//
+//	record pause
+type RecordPause struct{}
+
+// RecordStop finalises and closes the active recording.
+//
+//	record stop
+type RecordStop struct{}
+
+// RecordDelete deletes a previously saved recording file.
+// Path resolution follows the same rules as RecordStart.
+//
+//	record delete <filename>
+type RecordDelete struct {
+	Filename string
+}
+
 func (SystemList) isCmd()       {}
 func (SystemGet) isCmd()        {}
 func (SystemLoad) isCmd()       {}
@@ -339,6 +367,10 @@ func (HUDList) isCmd()          {}
 func (HUDCategory) isCmd()      {}
 func (Labels) isCmd()           {}
 func (Sync) isCmd()             {}
+func (RecordStart) isCmd()      {}
+func (RecordPause) isCmd()      {}
+func (RecordStop) isCmd()       {}
+func (RecordDelete) isCmd()     {}
 
 // ValidDatasetLevels is the set of accepted level names for SetDataset.
 var ValidDatasetLevels = map[string]struct{}{
@@ -734,6 +766,30 @@ func Parse(line string) (Cmd, error) {
 			return Sync{On: false}, nil
 		default:
 			return nil, ErrUsage{Cmd: "sync", Detail: fmt.Sprintf("unknown value %q", args[0]), Example: "sync on|off"}
+		}
+
+	// ── Record ───────────────────────────────────────────────────────────────
+	case "record":
+		if len(args) == 0 {
+			return nil, ErrUsage{Cmd: "record", Detail: "expected sub-command", Example: "record start <filename>|pause|stop|delete <filename>"}
+		}
+		switch strings.ToLower(args[0]) {
+		case "start":
+			if len(args) < 2 {
+				return nil, ErrUsage{Cmd: "record start", Detail: "expected filename", Example: "record start inner-tour.mp4"}
+			}
+			return RecordStart{Filename: args[1]}, nil
+		case "pause":
+			return RecordPause{}, nil
+		case "stop":
+			return RecordStop{}, nil
+		case "delete":
+			if len(args) < 2 {
+				return nil, ErrUsage{Cmd: "record delete", Detail: "expected filename", Example: "record delete inner-tour.mp4"}
+			}
+			return RecordDelete{Filename: args[1]}, nil
+		default:
+			return nil, ErrUsage{Cmd: "record", Detail: fmt.Sprintf("unknown sub-command %q", args[0]), Example: "record start|pause|stop|delete"}
 		}
 
 	default:

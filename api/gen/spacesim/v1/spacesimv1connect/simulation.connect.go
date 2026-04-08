@@ -41,6 +41,8 @@ const (
 	PerformanceServiceName = "spacesim.v1.PerformanceService"
 	// ShutdownServiceName is the fully-qualified name of the ShutdownService service.
 	ShutdownServiceName = "spacesim.v1.ShutdownService"
+	// RecordingServiceName is the fully-qualified name of the RecordingService service.
+	RecordingServiceName = "spacesim.v1.RecordingService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -124,6 +126,15 @@ const (
 	// ShutdownServiceShutdownProcedure is the fully-qualified name of the ShutdownService's Shutdown
 	// RPC.
 	ShutdownServiceShutdownProcedure = "/spacesim.v1.ShutdownService/Shutdown"
+	// RecordingServiceStartRecordingProcedure is the fully-qualified name of the RecordingService's
+	// StartRecording RPC.
+	RecordingServiceStartRecordingProcedure = "/spacesim.v1.RecordingService/StartRecording"
+	// RecordingServicePauseRecordingProcedure is the fully-qualified name of the RecordingService's
+	// PauseRecording RPC.
+	RecordingServicePauseRecordingProcedure = "/spacesim.v1.RecordingService/PauseRecording"
+	// RecordingServiceStopRecordingProcedure is the fully-qualified name of the RecordingService's
+	// StopRecording RPC.
+	RecordingServiceStopRecordingProcedure = "/spacesim.v1.RecordingService/StopRecording"
 )
 
 // SimulationServiceClient is a client for the spacesim.v1.SimulationService service.
@@ -1158,4 +1169,136 @@ type UnimplementedShutdownServiceHandler struct{}
 
 func (UnimplementedShutdownServiceHandler) Shutdown(context.Context, *connect.Request[v1.ShutdownRequest]) (*connect.Response[v1.ShutdownResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.ShutdownService.Shutdown is not implemented"))
+}
+
+// RecordingServiceClient is a client for the spacesim.v1.RecordingService service.
+type RecordingServiceClient interface {
+	// StartRecording begins capturing frames to the given output path.
+	// If output_path is empty, the app auto-generates a timestamped file on the Desktop.
+	StartRecording(context.Context, *connect.Request[v1.StartRecordingRequest]) (*connect.Response[v1.StartRecordingResponse], error)
+	// PauseRecording toggles the freeze-frame pause state.
+	// Calling it while paused resumes recording; calling while active pauses it.
+	PauseRecording(context.Context, *connect.Request[v1.PauseRecordingRequest]) (*connect.Response[v1.PauseRecordingResponse], error)
+	// StopRecording finalises and closes the current video file.
+	StopRecording(context.Context, *connect.Request[v1.StopRecordingRequest]) (*connect.Response[v1.StopRecordingResponse], error)
+}
+
+// NewRecordingServiceClient constructs a client for the spacesim.v1.RecordingService service. By
+// default, it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses,
+// and sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the
+// connect.WithGRPC() or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewRecordingServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) RecordingServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	recordingServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("RecordingService").Methods()
+	return &recordingServiceClient{
+		startRecording: connect.NewClient[v1.StartRecordingRequest, v1.StartRecordingResponse](
+			httpClient,
+			baseURL+RecordingServiceStartRecordingProcedure,
+			connect.WithSchema(recordingServiceMethods.ByName("StartRecording")),
+			connect.WithClientOptions(opts...),
+		),
+		pauseRecording: connect.NewClient[v1.PauseRecordingRequest, v1.PauseRecordingResponse](
+			httpClient,
+			baseURL+RecordingServicePauseRecordingProcedure,
+			connect.WithSchema(recordingServiceMethods.ByName("PauseRecording")),
+			connect.WithClientOptions(opts...),
+		),
+		stopRecording: connect.NewClient[v1.StopRecordingRequest, v1.StopRecordingResponse](
+			httpClient,
+			baseURL+RecordingServiceStopRecordingProcedure,
+			connect.WithSchema(recordingServiceMethods.ByName("StopRecording")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// recordingServiceClient implements RecordingServiceClient.
+type recordingServiceClient struct {
+	startRecording *connect.Client[v1.StartRecordingRequest, v1.StartRecordingResponse]
+	pauseRecording *connect.Client[v1.PauseRecordingRequest, v1.PauseRecordingResponse]
+	stopRecording  *connect.Client[v1.StopRecordingRequest, v1.StopRecordingResponse]
+}
+
+// StartRecording calls spacesim.v1.RecordingService.StartRecording.
+func (c *recordingServiceClient) StartRecording(ctx context.Context, req *connect.Request[v1.StartRecordingRequest]) (*connect.Response[v1.StartRecordingResponse], error) {
+	return c.startRecording.CallUnary(ctx, req)
+}
+
+// PauseRecording calls spacesim.v1.RecordingService.PauseRecording.
+func (c *recordingServiceClient) PauseRecording(ctx context.Context, req *connect.Request[v1.PauseRecordingRequest]) (*connect.Response[v1.PauseRecordingResponse], error) {
+	return c.pauseRecording.CallUnary(ctx, req)
+}
+
+// StopRecording calls spacesim.v1.RecordingService.StopRecording.
+func (c *recordingServiceClient) StopRecording(ctx context.Context, req *connect.Request[v1.StopRecordingRequest]) (*connect.Response[v1.StopRecordingResponse], error) {
+	return c.stopRecording.CallUnary(ctx, req)
+}
+
+// RecordingServiceHandler is an implementation of the spacesim.v1.RecordingService service.
+type RecordingServiceHandler interface {
+	// StartRecording begins capturing frames to the given output path.
+	// If output_path is empty, the app auto-generates a timestamped file on the Desktop.
+	StartRecording(context.Context, *connect.Request[v1.StartRecordingRequest]) (*connect.Response[v1.StartRecordingResponse], error)
+	// PauseRecording toggles the freeze-frame pause state.
+	// Calling it while paused resumes recording; calling while active pauses it.
+	PauseRecording(context.Context, *connect.Request[v1.PauseRecordingRequest]) (*connect.Response[v1.PauseRecordingResponse], error)
+	// StopRecording finalises and closes the current video file.
+	StopRecording(context.Context, *connect.Request[v1.StopRecordingRequest]) (*connect.Response[v1.StopRecordingResponse], error)
+}
+
+// NewRecordingServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewRecordingServiceHandler(svc RecordingServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	recordingServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("RecordingService").Methods()
+	recordingServiceStartRecordingHandler := connect.NewUnaryHandler(
+		RecordingServiceStartRecordingProcedure,
+		svc.StartRecording,
+		connect.WithSchema(recordingServiceMethods.ByName("StartRecording")),
+		connect.WithHandlerOptions(opts...),
+	)
+	recordingServicePauseRecordingHandler := connect.NewUnaryHandler(
+		RecordingServicePauseRecordingProcedure,
+		svc.PauseRecording,
+		connect.WithSchema(recordingServiceMethods.ByName("PauseRecording")),
+		connect.WithHandlerOptions(opts...),
+	)
+	recordingServiceStopRecordingHandler := connect.NewUnaryHandler(
+		RecordingServiceStopRecordingProcedure,
+		svc.StopRecording,
+		connect.WithSchema(recordingServiceMethods.ByName("StopRecording")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.RecordingService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case RecordingServiceStartRecordingProcedure:
+			recordingServiceStartRecordingHandler.ServeHTTP(w, r)
+		case RecordingServicePauseRecordingProcedure:
+			recordingServicePauseRecordingHandler.ServeHTTP(w, r)
+		case RecordingServiceStopRecordingProcedure:
+			recordingServiceStopRecordingHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedRecordingServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedRecordingServiceHandler struct{}
+
+func (UnimplementedRecordingServiceHandler) StartRecording(context.Context, *connect.Request[v1.StartRecordingRequest]) (*connect.Response[v1.StartRecordingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.RecordingService.StartRecording is not implemented"))
+}
+
+func (UnimplementedRecordingServiceHandler) PauseRecording(context.Context, *connect.Request[v1.PauseRecordingRequest]) (*connect.Response[v1.PauseRecordingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.RecordingService.PauseRecording is not implemented"))
+}
+
+func (UnimplementedRecordingServiceHandler) StopRecording(context.Context, *connect.Request[v1.StopRecordingRequest]) (*connect.Response[v1.StopRecordingResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.RecordingService.StopRecording is not implemented"))
 }
