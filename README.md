@@ -25,6 +25,7 @@ space_sim/
 
 - Go 1.24+
 - Raylib available for the local build environment
+- ffmpeg (optional — required only for video recording; see [README-extra.md](README-extra.md))
 
 ## Common Commands
 
@@ -57,6 +58,7 @@ make json-check
 - [internal/space/package.md](internal/space/package.md): package architecture and boundaries
 - [docs/schema/solar-system-json-schema.md](docs/schema/solar-system-json-schema.md): solar-system JSON schema
 - [data/README.md](data/README.md): data layout and configuration guidance
+- [README-extra.md](README-extra.md): optional dependencies and platform setup (video recording, etc.)
 
 ## Status
 
