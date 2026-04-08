@@ -1489,6 +1489,14 @@ func drawHelpScreen() {
 	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
+	rl.DrawText("Opt+R", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Start/stop recording", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText("Opt+Shift+R", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Pause/resume recording", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
 	rl.DrawText("?", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Open help dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight + 10

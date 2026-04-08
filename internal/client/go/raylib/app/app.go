@@ -22,6 +22,7 @@ type App struct {
 	renderer    *render.Renderer
 	broadcaster *protocol.Broadcaster
 	worldPtr    atomic.Pointer[worldpkg.World]
+	recorder    *videoRecorder
 
 	// cmdCh is the main-thread command gate. gRPC handler goroutines send
 	// AppCmds here; the interactive loop drains it each frame (non-blocking).

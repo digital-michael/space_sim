@@ -149,7 +149,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			}
 		}
 
-rl.EndMode3D()
+		rl.EndMode3D()
 
 		rl.SetMatrixProjection(rl.MatrixOrtho(0.0, float32(renderWidth), float32(renderHeight), 0.0, 0.0, 1.0))
 		rl.SetMatrixModelview(rl.MatrixIdentity())
@@ -169,8 +169,24 @@ rl.EndMode3D()
 		if a.runtime.HUDDialogVisible {
 			a.runtime.HUD = a.renderer.DrawHUDDialog(a.runtime.HUD, a.runtime.HUDDialogRow)
 		}
+		if a.runtime.RecordingActive {
+			a.renderer.DrawRecordingIndicator(a.runtime.RecordingPaused)
+		}
 
 		a.renderer.EndFrame(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
+
+		// Video recording: capture after EndFrame while the render texture is still valid.
+		if a.runtime.RecordingActive && a.recorder != nil {
+			var frame []byte
+			if !a.runtime.RecordingPaused {
+				frame = a.renderer.CaptureFrame()
+			}
+			// frame==nil means freeze (use last); recorder handles that case.
+			if err := a.recorder.WriteFrame(frame); err != nil {
+				// Pipe broken — ffmpeg died. Abort cleanly.
+				a.stopRecording()
+			}
+		}
 
 		if pendingSystemPath := session.inputState.ConsumePendingSystemPath(); pendingSystemPath != "" {
 			newSession, err := a.newRuntimeSession(pendingSystemPath)

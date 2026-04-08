@@ -197,6 +197,27 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		inputState.StartSelection(ui.SelectionModePerformance)
 	}
 
+	// Opt+R: Start/stop recording. Opt+Shift+R: Pause/resume recording.
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyR) && altHeld && !superHeld {
+		if !shiftHeld {
+			if app.runtime.RecordingActive {
+				app.stopRecording()
+			} else {
+				app.startRecording()
+			}
+		} else {
+			// Opt+Shift+R: toggle pause
+			if app.runtime.RecordingActive {
+				app.runtime.RecordingPaused = !app.runtime.RecordingPaused
+				if app.runtime.RecordingPaused {
+					fmt.Println("[REC] Paused")
+				} else {
+					fmt.Println("[REC] Resumed")
+				}
+			}
+		}
+	}
+
 	// C: Center view - behavior depends on mode
 	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyC) {
 		if cameraState.Mode == ui.CameraModeFree {

@@ -19,9 +19,11 @@ type RuntimeContext struct {
 	AsteroidDataset  engine.AsteroidDataset
 	HUDVisible       bool        // master switch — false hides all HUD categories
 	HUD              ui.HUDState // per-category visibility (only consulted when HUDVisible is true)
-	HUDDialogVisible bool        // Ctrl+H toggle for the HUD settings overlay
+	HUDDialogVisible bool        // Opt+H toggle for the HUD settings overlay
 	HUDDialogRow     int         // keyboard-selected row in HUD dialog (0-2)
 	HelpVisible      bool
+	RecordingActive  bool        // true while recording to video
+	RecordingPaused  bool        // true while recording is paused (freeze-frame)
 	MouseModeEnabled bool
 	LabelMode        ui.LabelMode
 	CameraSpeed      float32

@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unsafe"
 
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
@@ -208,6 +209,26 @@ func (r *Renderer) EndFrame(windowWidth, windowHeight int32) {
 	rl.EndDrawing()
 }
 
+// CaptureFrame reads the current render texture back to CPU and returns a
+// copy of the raw RGBA pixel bytes. The texture is bottom-up (OpenGL origin),
+// so callers feeding ffmpeg should pass -vf vflip. Returns nil when no render
+// target is active. Must be called on the main/GL thread.
+func (r *Renderer) CaptureFrame() []byte {
+	if !r.targetLoaded {
+		return nil
+	}
+	img := rl.LoadImageFromTexture(r.target.Texture)
+	if img == nil || img.Data == nil {
+		return nil
+	}
+	sz := int(img.Width) * int(img.Height) * 4
+	raw := unsafe.Slice((*byte)(img.Data), sz)
+	out := make([]byte, sz)
+	copy(out, raw)
+	rl.UnloadImage(img)
+	return out
+}
+
 func (r *Renderer) DrawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
 	return drawObjectsInstanced(objects, cameraPos, pointRenderingEnabled, lodEnabled, importanceThreshold)
 }
@@ -238,6 +259,31 @@ func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.Camera
 
 func (r *Renderer) DrawZoomIndicator(zoomValue float32) {
 	drawZoomIndicator(zoomValue)
+}
+
+// DrawRecordingIndicator draws a ● REC (active) or ⏸ REC (paused) badge in
+// the top-right corner of the render surface when recording is active.
+func (r *Renderer) DrawRecordingIndicator(paused bool) {
+	fontSize := scaledInt32(20)
+	pad := scaledInt32(8)
+
+	var label string
+	var dotColor rl.Color
+	if paused {
+		label = "|| REC"
+		dotColor = rl.Yellow
+	} else {
+		label = "* REC"
+		dotColor = rl.Red
+	}
+
+	textW := rl.MeasureText(label, fontSize)
+	x := int32(currentScreenWidth()) - textW - pad
+	y := pad
+
+	// Semi-transparent background
+	rl.DrawRectangle(x-pad/2, y-pad/2, textW+pad, fontSize+pad, rl.Color{R: 0, G: 0, B: 0, A: 160})
+	rl.DrawText(label, x, y, fontSize, dotColor)
 }
 
 func (r *Renderer) DrawHelpScreen() {
@@ -2066,6 +2112,14 @@ func drawHelpScreen() {
 
 	rl.DrawText("Opt+P", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText("Opt+R", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Start/stop recording", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText("Opt+Shift+R", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Pause/resume recording", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText("?", rightCol, y, bodySize, rl.White)
