@@ -1,5 +1,7 @@
 # Space Sim
 
+[![Inner Solar Tour](https://img.youtube.com/vi/JB9y0OEQ5go/0.jpg)](https://www.youtube.com/watch?v=JB9y0OEQ5go)
+
 Space Sim is a standalone real-time solar system simulator built with Go and Raylib. It started life as a prototype in another repository, but this repository is now the primary home for the application, its simulation code, its JSON-driven system data, and its application-specific design history.
 
 ## Scope
