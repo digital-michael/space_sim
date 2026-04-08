@@ -60,14 +60,6 @@ make json-check
 - [data/README.md](data/README.md): data layout and configuration guidance
 - [README-extra.md](README-extra.md): optional dependencies and platform setup (video recording, etc.)
 
-## Samples
-
-| Recording | Description |
-|-----------|-------------|
-| [inner-solar-tour.mp4](samples/inner-solar-tour.mp4) | Inner solar system tour — Sun → Mercury → Venus → Earth → Moon → Mars, scripted via REPL |
-
-> Open locally with any video player. GitHub renders MP4 inline when viewed in the browser.
-
 ## Status
 
 This repository is currently being established from the original prototype source. Expect some documentation references and scripts to continue being normalized as the migration is verified.
