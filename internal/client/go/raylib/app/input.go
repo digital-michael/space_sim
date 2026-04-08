@@ -15,15 +15,15 @@ import (
 // handleInput processes keyboard input for camera modes and object selection
 func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, gridVisible bool, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, hudDialogVisible *bool, labelMode *ui.LabelMode, mouseModeEnabled bool, debugEnabled bool) (bool, bool, engine.AsteroidDataset, bool, bool, bool) {
 	selectionDialogOpen := inputState.MainWindowInputSuspended()
-	mainWindowInputSuspended := selectionDialogOpen || helpVisible
+	mainWindowInputSuspended := selectionDialogOpen || helpVisible || *hudDialogVisible
 	controlHeld := rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl)
 	altHeld := rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt)
 	superHeld := rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)
 	reservedModifierHeld := controlHeld || altHeld || superHeld
 	shiftHeld := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
 
-	// Ctrl+/: Toggle help screen. Help behaves like a modal overlay.
-	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeySlash) && controlHeld && !superHeld {
+	// ?: Toggle help screen. Help behaves like a modal overlay.
+	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeySlash) && shiftHeld && !controlHeld && !superHeld {
 		helpVisible = !helpVisible
 		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 	}
@@ -46,6 +46,27 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		if *hudDialogVisible && mouseModeEnabled {
 			mouseModeEnabled = false
 			rl.EnableCursor()
+		}
+	}
+
+	// HUD dialog keyboard navigation (only when dialog is open)
+	const hudDialogMaxRow = 2 // rows 0-2 are interactive; row 3 (Player) is greyed
+	if *hudDialogVisible {
+		if rl.IsKeyPressed(rl.KeyUp) && app.runtime.HUDDialogRow > 0 {
+			app.runtime.HUDDialogRow--
+		}
+		if rl.IsKeyPressed(rl.KeyDown) && app.runtime.HUDDialogRow < hudDialogMaxRow {
+			app.runtime.HUDDialogRow++
+		}
+		if rl.IsKeyPressed(rl.KeySpace) || rl.IsKeyPressed(rl.KeyEnter) {
+			switch app.runtime.HUDDialogRow {
+			case 0:
+				app.runtime.HUD.Debug = !app.runtime.HUD.Debug
+			case 1:
+				app.runtime.HUD.Info = !app.runtime.HUD.Info
+			case 2:
+				app.runtime.HUD.Help = !app.runtime.HUD.Help
+			}
 		}
 	}
 
@@ -751,8 +772,8 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 }
 
 // updateCameraState updates camera position and orientation based on mode
-func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, dt, speed, sensitivity float32, mouseModeEnabled bool, helpVisible bool) float32 {
-	mainWindowInputSuspended := inputState.MainWindowInputSuspended() || helpVisible
+func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, dt, speed, sensitivity float32, mouseModeEnabled bool, helpVisible bool, hudDialogVisible bool) float32 {
+	mainWindowInputSuspended := inputState.MainWindowInputSuspended() || helpVisible || hudDialogVisible
 
 	// Mouse look (only active when mouse mode is enabled)
 	var mouseDelta rl.Vector2

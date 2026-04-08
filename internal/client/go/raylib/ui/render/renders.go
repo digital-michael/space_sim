@@ -51,6 +51,33 @@ func currentScreenHeight() int {
 	return rl.GetScreenHeight()
 }
 
+// renderMousePosition converts the OS/window mouse position into render-texture
+// coordinates. When the render texture is letterboxed or pillarboxed inside the
+// window, rl.GetMousePosition() returns screen coords; this helper maps them
+// back to the fixed layout space used by all UI drawing code.
+func renderMousePosition() rl.Vector2 {
+	m := rl.GetMousePosition()
+	if layoutWidth <= 0 || layoutHeight <= 0 {
+		return m
+	}
+	windowW := float32(rl.GetScreenWidth())
+	windowH := float32(rl.GetScreenHeight())
+	scaleX := windowW / float32(layoutWidth)
+	scaleY := windowH / float32(layoutHeight)
+	scale := scaleX
+	if scaleY < scale {
+		scale = scaleY
+	}
+	destW := float32(layoutWidth) * scale
+	destH := float32(layoutHeight) * scale
+	destX := (windowW - destW) * 0.5
+	destY := (windowH - destH) * 0.5
+	return rl.Vector2{
+		X: (m.X - destX) / scale,
+		Y: (m.Y - destY) / scale,
+	}
+}
+
 func formatSimulationDateText(simSeconds float64, secondsPerSecond float32) string {
 	j2000 := time.Date(2000, 1, 1, 12, 0, 0, 0, time.UTC)
 	currentTime := j2000.Add(time.Duration(simSeconds * float64(time.Second)))
@@ -219,13 +246,13 @@ func (r *Renderer) DrawHelpScreen() {
 
 // DrawHUDDialog draws the Ctrl+H HUD category settings overlay and returns
 // the updated HUDState based on any checkbox clicks this frame.
-func (r *Renderer) DrawHUDDialog(current ui.HUDState) ui.HUDState {
-	return drawHUDDialog(current)
+func (r *Renderer) DrawHUDDialog(current ui.HUDState, selectedRow int) ui.HUDState {
+	return drawHUDDialog(current, selectedRow)
 }
 
 // drawHUDDialog draws a small checkbox panel and processes mouse clicks to
 // toggle per-category HUD visibility. Returns the new state.
-func drawHUDDialog(current ui.HUDState) ui.HUDState {
+func drawHUDDialog(current ui.HUDState, selectedRow int) ui.HUDState {
 	sw := int32(currentScreenWidth())
 	sh := int32(currentScreenHeight())
 
@@ -256,7 +283,7 @@ func drawHUDDialog(current ui.HUDState) ui.HUDState {
 		{"Player (reserved)", nil}, // greyed out — not yet implemented
 	}
 
-	mouse := rl.GetMousePosition()
+	mouse := renderMousePosition()
 	clicked := rl.IsMouseButtonPressed(rl.MouseButtonLeft)
 
 	for i, row := range rows {
@@ -264,6 +291,11 @@ func drawHUDDialog(current ui.HUDState) ui.HUDState {
 		boxX := panelX + pad
 		boxColor := rl.Color{R: 80, G: 80, B: 80, A: 255}
 		labelColor := rl.Color{R: 160, G: 160, B: 160, A: 255}
+
+		// Keyboard selection highlight
+		if i == selectedRow && row.val != nil {
+			rl.DrawRectangle(panelX+2, rowY-2, panelW-4, boxSize+4, rl.Color{R: 60, G: 60, B: 100, A: 120})
+		}
 
 		if row.val != nil {
 			labelColor = rl.White
@@ -930,7 +962,7 @@ func drawHUDHelp() {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	helpY := int32(currentScreenHeight()) - scaledInt32(30)
-	rl.DrawText("Ctrl+/ for help | Ctrl+H HUD settings | Ctrl+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
+	rl.DrawText("? for help | Ctrl+H HUD settings | Ctrl+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
 }
 
 // drawZoomIndicator draws a visual indicator when zooming
@@ -1922,7 +1954,7 @@ func drawHelpScreen() {
 	titleText := "KEYBOARD & MOUSE CONTROLS"
 	titleX := bgX + (bgWidth-rl.MeasureText(titleText, titleSize))/2
 	rl.DrawText(titleText, titleX, bgY+10, titleSize, rl.White)
-	hintText := "Press Ctrl+/ or ESC to close"
+	hintText := "Press ? or ESC to close"
 	hintX := bgX + (bgWidth-rl.MeasureText(hintText, hintSize))/2
 	rl.DrawText(hintText, hintX, bgY+45, hintSize, rl.Gray)
 
@@ -2040,7 +2072,7 @@ func drawHelpScreen() {
 	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Ctrl+/", rightCol, y, bodySize, rl.White)
+	rl.DrawText("?", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Open help dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight + 10
 

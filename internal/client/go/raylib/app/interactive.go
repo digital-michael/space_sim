@@ -65,7 +65,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			a.cfg.Debug,
 		)
 
-		zoomIndicator := updateCameraState(session.cameraState, session.inputState, state, dt, a.runtime.CameraSpeed, a.runtime.MouseSensitivity, a.runtime.MouseModeEnabled, a.runtime.HelpVisible)
+		zoomIndicator := updateCameraState(session.cameraState, session.inputState, state, dt, a.runtime.CameraSpeed, a.runtime.MouseSensitivity, a.runtime.MouseModeEnabled, a.runtime.HelpVisible, a.runtime.HUDDialogVisible)
 
 		renderWidth := a.runtime.RenderWidth
 		renderHeight := a.runtime.RenderHeight
@@ -172,7 +172,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			a.renderer.DrawHelpScreen()
 		}
 		if a.runtime.HUDDialogVisible {
-			a.runtime.HUD = a.renderer.DrawHUDDialog(a.runtime.HUD)
+			a.runtime.HUD = a.renderer.DrawHUDDialog(a.runtime.HUD, a.runtime.HUDDialogRow)
 		}
 
 		a.renderer.EndFrame(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))

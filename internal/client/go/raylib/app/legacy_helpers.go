@@ -1375,7 +1375,7 @@ func drawHelpScreen() {
 	titleText := "KEYBOARD & MOUSE CONTROLS"
 	titleX := bgX + (bgWidth-rl.MeasureText(titleText, titleSize))/2
 	rl.DrawText(titleText, titleX, bgY+10, titleSize, rl.White)
-	hintText := "Press Ctrl+/ or ESC to close"
+	hintText := "Press ? or ESC to close"
 	hintX := bgX + (bgWidth-rl.MeasureText(hintText, hintSize))/2
 	rl.DrawText(hintText, hintX, bgY+45, hintSize, rl.Gray)
 
@@ -1493,7 +1493,7 @@ func drawHelpScreen() {
 	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Ctrl+/", rightCol, y, bodySize, rl.White)
+	rl.DrawText("?", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Open help dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight + 10
 
