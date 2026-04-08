@@ -48,14 +48,13 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			session.debugTracker.CheckVisibility(state.Objects, "after Snapshot()")
 		}
 
-		shouldQuit, a.runtime.GridVisible, a.runtime.AsteroidDataset, a.runtime.HUDVisible, a.runtime.HelpVisible, a.runtime.MouseModeEnabled = handleInput(
+		shouldQuit, a.runtime.AsteroidDataset, a.runtime.HUDVisible, a.runtime.HelpVisible, a.runtime.MouseModeEnabled = handleInput(
 			a,
 			session.sim,
 			session.cameraState,
 			session.inputState,
 			state,
 			session.navigationOrder,
-			a.runtime.GridVisible,
 			a.runtime.AsteroidDataset,
 			a.runtime.HUDVisible,
 			a.runtime.HelpVisible,
@@ -150,11 +149,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			}
 		}
 
-		if a.runtime.GridVisible {
-			a.renderer.DrawGroundPlane()
-		}
-
-		rl.EndMode3D()
+rl.EndMode3D()
 
 		rl.SetMatrixProjection(rl.MatrixOrtho(0.0, float32(renderWidth), float32(renderHeight), 0.0, 0.0, 1.0))
 		rl.SetMatrixModelview(rl.MatrixIdentity())

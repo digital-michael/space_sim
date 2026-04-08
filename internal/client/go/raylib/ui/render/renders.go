@@ -324,7 +324,7 @@ func drawHUDDialog(current ui.HUDState, selectedRow int) ui.HUDState {
 	// Close hint
 	hintY := panelY + panelH - scaledInt32(30)
 	hintFont := scaledInt32(14)
-	rl.DrawText("Ctrl+H to close", panelX+pad, hintY, hintFont, rl.Gray)
+	rl.DrawText("Opt+H to close", panelX+pad, hintY, hintFont, rl.Gray)
 
 	return current
 }
@@ -962,7 +962,7 @@ func drawHUDHelp() {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	helpY := int32(currentScreenHeight()) - scaledInt32(30)
-	rl.DrawText("? for help | Ctrl+H HUD settings | Ctrl+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
+	rl.DrawText("? for help | Opt+H HUD settings | Opt+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
 }
 
 // drawZoomIndicator draws a visual indicator when zooming
@@ -2028,7 +2028,7 @@ func drawHelpScreen() {
 	rl.DrawText("Exit tracking/mouse mode", leftCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Ctrl+Q", leftCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+Q", leftCol, y, bodySize, rl.White)
 	rl.DrawText("Quit application", leftCol+valueGap, y, bodySize, rl.LightGray)
 
 	// Right column - Display & Options
@@ -2036,39 +2036,35 @@ func drawHelpScreen() {
 	rl.DrawText("SYSTEM & DISPLAY", rightCol, y, headerSize, rl.Yellow)
 	y += lineHeight + 5
 
-	rl.DrawText("Ctrl+G", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Toggle grid", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Ctrl+H", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+H", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle HUD", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Ctrl+L", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+L", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle object labels", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Ctrl+M", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+M", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle mouse mode", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Ctrl+F", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+F", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle fullscreen", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("+  /  -", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+-  /  Opt+=", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Asteroids (200->24K)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText(",  /  .", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Cmd+<  /  Cmd+>", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Time scale (PAUSED->1yr/sec)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("<  /  >", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+,  /  Opt+.", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Anim speed (0%->100% of 60Hz)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Ctrl+P", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Opt+P", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 

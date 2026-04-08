@@ -13,35 +13,29 @@ import (
 )
 
 // handleInput processes keyboard input for camera modes and object selection
-func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, gridVisible bool, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, hudDialogVisible *bool, labelMode *ui.LabelMode, mouseModeEnabled bool, debugEnabled bool) (bool, bool, engine.AsteroidDataset, bool, bool, bool) {
+func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, hudDialogVisible *bool, labelMode *ui.LabelMode, mouseModeEnabled bool, debugEnabled bool) (bool, engine.AsteroidDataset, bool, bool, bool) {
 	selectionDialogOpen := inputState.MainWindowInputSuspended()
 	mainWindowInputSuspended := selectionDialogOpen || helpVisible || *hudDialogVisible
-	controlHeld := rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl)
 	altHeld := rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt)
 	superHeld := rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)
-	reservedModifierHeld := controlHeld || altHeld || superHeld
+	reservedModifierHeld := altHeld || superHeld
 	shiftHeld := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
 
 	// ?: Toggle help screen. Help behaves like a modal overlay.
-	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeySlash) && shiftHeld && !controlHeld && !superHeld {
+	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeySlash) && shiftHeld && !altHeld && !superHeld {
 		helpVisible = !helpVisible
-		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+		return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 	}
 
 	// Cmd+S: Open the runtime system selector.
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyS) && superHeld && !controlHeld && !altHeld {
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyS) && superHeld && !altHeld {
 		app.openSystemSelector(inputState)
-		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+		return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 	}
 
-	// Ctrl+G: Toggle grid
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyG) && controlHeld && !superHeld {
-		gridVisible = !gridVisible
-	}
-
-	// Ctrl+H: Toggle HUD settings dialog. Opens/closes the per-category overlay.
+	// Opt+H: Toggle HUD settings dialog. Opens/closes the per-category overlay.
 	// When opening while in mouse-camera mode, cursor is restored so checkboxes are clickable.
-	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeyH) && controlHeld && !superHeld {
+	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeyH) && altHeld && !superHeld {
 		*hudDialogVisible = !*hudDialogVisible
 		if *hudDialogVisible && mouseModeEnabled {
 			mouseModeEnabled = false
@@ -70,8 +64,8 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 	}
 
-	// Ctrl+L: Cycle label mode (off → on → nearest → off)
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyL) && controlHeld && !superHeld {
+	// Opt+L: Cycle label mode (off → on → nearest → off)
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyL) && altHeld && !superHeld {
 		switch *labelMode {
 		case ui.LabelModeOff:
 			*labelMode = ui.LabelModeOn
@@ -82,8 +76,8 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 	}
 
-	// Ctrl+M: Toggle mouse mode (camera control vs UI cursor)
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyM) && controlHeld && !superHeld {
+	// Opt+M: Toggle mouse mode (camera control vs UI cursor)
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyM) && altHeld && !superHeld {
 		mouseModeEnabled = !mouseModeEnabled
 		if mouseModeEnabled {
 			rl.DisableCursor()
@@ -92,19 +86,18 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 	}
 
-	// Ctrl+F key: Toggle fullscreen with proper display resolution handling
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyF) && controlHeld && !superHeld {
+	// Opt+F: Toggle fullscreen with proper display resolution handling
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyF) && altHeld && !superHeld {
 		app.toggleFullscreen()
 	}
 
-	// Ctrl+Q key: Quit application
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyQ) && controlHeld && !superHeld {
-		return true, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+	// Opt+Q: Quit application
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyQ) && altHeld && !superHeld {
+		return true, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 	}
 
-	// , and . keys: Decrease/increase time scale (simulation seconds per real second)
-	// Guard: skip when Shift is held — SHIFT+, is the Anim Speed control (</>)
-	if !mainWindowInputSuspended && !reservedModifierHeld && rl.IsKeyPressed(rl.KeyComma) && !shiftHeld {
+	// Cmd+< and Cmd+>: Decrease/increase time scale (Cmd+Shift+, and Cmd+Shift+.)
+	if !mainWindowInputSuspended && superHeld && shiftHeld && !altHeld && rl.IsKeyPressed(rl.KeyComma) {
 		back := sim.GetState().GetBack()
 		// Time rates: paused, real-time, 1 hour/sec, 1 day/sec, 1 week/sec, 1 month/sec, 1 year/sec
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
@@ -132,7 +125,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 			}
 		}
 	}
-	if !mainWindowInputSuspended && !reservedModifierHeld && rl.IsKeyPressed(rl.KeyPeriod) && !shiftHeld {
+	if !mainWindowInputSuspended && superHeld && shiftHeld && !altHeld && rl.IsKeyPressed(rl.KeyPeriod) {
 		back := sim.GetState().GetBack()
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
 		timeLabels := []string{"PAUSED", "real-time", "1 hr/sec", "1 day/sec", "1 week/sec", "1 month/sec", "1 year/sec"}
@@ -160,24 +153,24 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 	}
 
-	// +/- keys: Increase/decrease asteroid dataset
-	if !mainWindowInputSuspended && !reservedModifierHeld && (rl.IsKeyPressed(rl.KeyEqual) || rl.IsKeyPressed(rl.KeyKpAdd)) { // + key (Shift+= or numpad +)
+	// Opt+= / Opt+-: Increase/decrease asteroid dataset
+	if !mainWindowInputSuspended && altHeld && !superHeld && (rl.IsKeyPressed(rl.KeyEqual) || rl.IsKeyPressed(rl.KeyKpAdd)) {
 		if asteroidDataset < 3 {
 			asteroidDataset++
 			sim.SetAsteroidDataset(asteroidDataset)
 		}
 	}
-	if !mainWindowInputSuspended && !reservedModifierHeld && (rl.IsKeyPressed(rl.KeyMinus) || rl.IsKeyPressed(rl.KeyKpSubtract)) { // - key (or numpad -)
+	if !mainWindowInputSuspended && altHeld && !superHeld && (rl.IsKeyPressed(rl.KeyMinus) || rl.IsKeyPressed(rl.KeyKpSubtract)) {
 		if asteroidDataset > 0 {
 			asteroidDataset--
 			sim.SetAsteroidDataset(asteroidDataset)
 		}
 	}
 
-	// < and > keys: Decrease/increase animation speed (Shift + , and Shift + .)
+	// Opt+, and Opt+.: Decrease/increase animation speed (≤ / ≥ on Mac)
 	// Controls the physics tick rate — how many sim ticks fire per real second (0%–100%)
-	if !mainWindowInputSuspended && !reservedModifierHeld && rl.IsKeyPressed(rl.KeyComma) && shiftHeld {
-		// Decrease anim speed: < key
+	if !mainWindowInputSuspended && altHeld && !superHeld && rl.IsKeyPressed(rl.KeyComma) {
+		// Decrease anim speed
 		currentSpeed := sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
 		for i := len(speedSteps) - 1; i >= 0; i-- {
@@ -187,8 +180,8 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 			}
 		}
 	}
-	if !mainWindowInputSuspended && !reservedModifierHeld && rl.IsKeyPressed(rl.KeyPeriod) && shiftHeld {
-		// Increase anim speed: > key
+	if !mainWindowInputSuspended && altHeld && !superHeld && rl.IsKeyPressed(rl.KeyPeriod) {
+		// Increase anim speed
 		currentSpeed := sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
 		for i := 0; i < len(speedSteps); i++ {
@@ -199,8 +192,8 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 	}
 
-	// Ctrl+P: Performance options dialog
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyP) && controlHeld && !superHeld {
+	// Opt+P: Performance options dialog
+	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyP) && altHeld && !superHeld {
 		inputState.StartSelection(ui.SelectionModePerformance)
 	}
 
@@ -396,21 +389,21 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 	if rl.IsKeyPressed(rl.KeyEscape) {
 		if helpVisible {
 			helpVisible = false
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		} else if *hudDialogVisible {
 			*hudDialogVisible = false
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		} else if inputState.SelectionActive {
 			inputState.CancelSelection()
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		} else if cameraState.Mode == ui.CameraModeTracking {
 			cameraState.StopTracking()
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		} else if mouseModeEnabled {
 			// Exit mouse mode, enable cursor
 			mouseModeEnabled = false
 			rl.EnableCursor()
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		}
 	}
 
@@ -465,7 +458,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 				inputState.ConfirmSystemSelection()
 			}
 
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		}
 
 		// Performance options mode
@@ -565,7 +558,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					}
 				}
 			}
-			return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 		}
 
 		// Text input for filtering (for Jump/Track modes only, not Performance)
@@ -716,7 +709,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						actualIndex = asteroidIndices[rl.GetRandomValue(0, int32(len(asteroidIndices)-1))]
 					} else {
 						// No visible asteroids, cancel
-						return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+						return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 					}
 				} else if actualIndex == -2 {
 					// Kuiper Belt - find a random KBO
@@ -730,7 +723,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						actualIndex = kboIndices[rl.GetRandomValue(0, int32(len(kboIndices)-1))]
 					} else {
 						// No visible KBOs, cancel
-						return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+						return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 					}
 				}
 
@@ -749,7 +742,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 				}
 			}
 		}
-		return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled // Don't process other keys during selection
+		return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled // Don't process other keys during selection
 	}
 
 	// J: Jump to object (free-fly mode only)
@@ -768,7 +761,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
 	}
 
-	return false, gridVisible, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+	return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
 }
 
 // updateCameraState updates camera position and orientation based on mode

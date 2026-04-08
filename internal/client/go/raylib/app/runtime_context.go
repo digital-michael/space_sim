@@ -16,7 +16,6 @@ type RuntimeContext struct {
 	RenderMode       RenderMode
 	Fullscreen       bool
 	Resizable        bool
-	GridVisible      bool
 	AsteroidDataset  engine.AsteroidDataset
 	HUDVisible       bool        // master switch — false hides all HUD categories
 	HUD              ui.HUDState // per-category visibility (only consulted when HUDVisible is true)
@@ -50,7 +49,6 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 		RenderMode:       cfg.Render.Mode,
 		Fullscreen:       cfg.Window.Fullscreen,
 		Resizable:        cfg.Window.Resizable,
-		GridVisible:      false,
 		AsteroidDataset:  engine.AsteroidDatasetSmall,
 		HUDVisible:       true,
 		HUD:              ui.AllOnHUD(),

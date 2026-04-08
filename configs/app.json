@@ -1,13 +1,13 @@
 {
   "window": {
-    "width": 640,
-    "height": 480,
-    "fullscreen": true,
+    "width": 901,
+    "height": 653,
+    "fullscreen": false,
     "resizable": true
   },
   "render": {
     "mode": "native",
-    "width": 1440,
-    "height": 751
+    "width": 901,
+    "height": 653
   }
 }
