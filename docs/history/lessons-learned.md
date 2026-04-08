@@ -1303,3 +1303,76 @@ Never end a session with a partial rename. If interruption is unavoidable, leave
 - Pointer param: values *owned by the caller* that the function may mutate as a side effect (HUD dialog open state, label mode)
 
 ---
+
+## Video Recording Session — April 8, 2026
+
+### Root Cause: Native Render Mode Has No Render Texture
+
+**What Happened**: Recording produced a valid MP4 container (ffmpeg started, pipe opened, `[REC] Started` printed) but wrote 0 frames. Three fixes were attempted before the true root cause was found.
+
+**Root Cause**: `configs/app.json` sets `"render.mode": "native"`. In native mode, `syncRenderState` calls `renderer.DisableRenderTarget()`, which sets `targetLoaded = false`. `CaptureRenderTexture` guards on `!targetLoaded` and returns nil immediately — before any GL code runs. ffmpeg received an open pipe with no bytes.
+
+**Misleading symptoms**: `[REC] Started` prints when ffmpeg forks, not when the first frame arrives. The pipe can stay open and empty the entire run.
+
+**Fix**: On `RecordStartCmd`, if `RenderMode == RenderModeNative`, force switch to `RenderModeFixed` and call `syncRenderState()` to create the render texture immediately. Store a `recordingForcedFixed` flag on `App`; restore native mode when recording stops.
+
+**Rule**: Before debugging pixel readback, verify a render texture actually exists (`renderer.HasRenderTarget()`). If `targetLoaded` is false, no capture technique will work.
+
+---
+
+### Apple Silicon / OpenGL-via-Metal: Pixel Readback
+
+**Context**: The Mac M1 GPU exposes OpenGL 4.1 over a Metal translation layer.
+
+**What Does Not Work**:
+- `rl.LoadImageFromTexture` — uses `glGetTexImage`, which is not supported in the OpenGL ES / core-profile subset exposed on Apple Silicon. Returns garbage or nil silently.
+- `glReadPixels` on Raylib's currently-bound FBO — Metal's GL layer does not reliably expose Raylib's internal render target via the default framebuffer binding. Returns zeroed data without an error.
+
+**What Works**:
+- Create a fresh `GL_FRAMEBUFFER`, attach the `RenderTexture2D`'s `.Texture.ID` as `GL_COLOR_ATTACHMENT0`, verify `GL_FRAMEBUFFER_COMPLETE`, then call `glReadPixels`. This FBO is fully under our control and Metal handles it correctly.
+- Always check `glCheckFramebufferStatus` before reading. If it returns anything other than `GL_FRAMEBUFFER_COMPLETE`, skip the read — return nil rather than sending garbage to ffmpeg.
+- Flush prior GL errors with `while (glGetError() != GL_NO_ERROR) {}` before the sequence to avoid confusing a leftover error with a new one.
+
+**Confirmed working**: `status=0x8CD5` (= `GL_FRAMEBUFFER_COMPLETE`), `glReadPixels err=0x0`, 2654 frames at 57fps into a valid H.264 MP4.
+
+---
+
+### ffmpeg Odd-Dimension Crash
+
+**Error**: `height not divisible by 2 (1440x751)` → ffmpeg exits immediately, pipe closes, 0 frames written.
+
+**Cause**: libx264 requires both width and height to be even. Raylib render texture dimensions come from the screen and are not guaranteed to be even.
+
+**Fix**: `-vf vflip,scale=trunc(iw/2)*2:trunc(ih/2)*2` — the `scale` filter rounds both dimensions down to the nearest even number. The `vflip` was already needed (OpenGL pixel origin is bottom-left; video is top-left).
+
+**Rule**: Always include this scale filter when piping raw pixels from OpenGL to libx264. Do not clamp dimensions at render target creation time — that changes the display layout. Fix it in the ffmpeg filter chain instead.
+
+---
+
+### Render-Target Contract: What Gets Captured
+
+**Rule**: Only pixels drawn inside `Renderer.BeginFrame` / `Renderer.EndFrame` appear in `CaptureRenderTexture` output. `BeginFrame` calls `rl.BeginTextureMode` on the render texture; `EndFrame` calls `rl.EndTextureMode` then blits to screen.
+
+Any draw call made to the default framebuffer outside that window is visible on screen but absent from the render texture and therefore absent from recordings, screenshots, and any future export path.
+
+This applies to all future rendering additions (textures, sprites, shaders, UI panels). As long as they issue draw calls inside `BeginFrame`/`EndFrame`, they are captured automatically with no changes to the recording path.
+
+---
+
+### Debugging Technique: Add fprintf to CGo Before Assuming the Logic Is Wrong
+
+**What Happened**: `CaptureRenderTexture` returned nil on every frame. Three GL-level fixes were made (LoadImageFromTexture → glReadPixels on Raylib FBO → dedicated FBO) before adding `fprintf(stderr, ...)` to the C function revealed the function was never called at all. The bug was a Go-level nil guard (`!targetLoaded`), not a GL issue.
+
+**Rule**: Before iterating on a C/CGo function, add a `fprintf(stderr, ...)` at the top of the C function to confirm it is being reached. A nil return from the Go wrapper is ambiguous — it can mean the C code ran and returned nil, or the Go guard fired before the C code was ever invoked.
+
+---
+
+### REPL Script Commands and the RecordingService gRPC Path
+
+**Architecture**: `record start/pause/stop` REPL commands send RPCs to a `RecordingService` gRPC handler → `App.SendCmd(RecordStartCmd{})` → queued in `cmdCh` → dispatched on the GL main thread in `drainCmds`. The GL-thread dispatch is mandatory because `syncRenderState` and `ConfigureRenderTarget` call Raylib, which is not thread-safe.
+
+**`record delete`** is a local `os.Remove` in the REPL — no RPC needed, no server involvement.
+
+**`sync on`** in scripts is important before `record start`: it makes the REPL block until each command is acknowledged, preventing the recorder from being started before the prior nav command finishes setting up camera state.
+
+---

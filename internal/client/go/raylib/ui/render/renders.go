@@ -213,6 +213,11 @@ func (r *Renderer) EndFrame(windowWidth, windowHeight int32) {
 // reliably on Apple Silicon (OpenGL via Metal) regardless of FBO binding state.
 // The result is bottom-up (OpenGL origin); feed ffmpeg with -vf vflip.
 // Can be called before or after EndTextureMode. Must be called on the GL thread.
+//
+// Only pixels drawn inside BeginFrame/EndFrame are captured. Anything drawn
+// directly to the default framebuffer (outside that window) is not present in
+// the render texture and will be absent from the returned bytes.
+// Returns nil when no render texture is active (native mode or not yet loaded).
 func (r *Renderer) CaptureRenderTexture() []byte {
 	if !r.targetLoaded {
 		return nil
