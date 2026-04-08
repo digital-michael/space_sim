@@ -208,14 +208,16 @@ func (r *Renderer) EndFrame(windowWidth, windowHeight int32) {
 	rl.EndDrawing()
 }
 
-// CaptureFromFBO reads the render texture pixels via glReadPixels while the
-// render texture FBO is still bound. Must be called BEFORE EndFrame.
-// Returns nil when no render target is active. Must be called on the GL thread.
-func (r *Renderer) CaptureFromFBO() []byte {
+// CaptureRenderTexture reads pixels from the render texture by creating a
+// temporary read-only OpenGL framebuffer attached to the texture. This works
+// reliably on Apple Silicon (OpenGL via Metal) regardless of FBO binding state.
+// The result is bottom-up (OpenGL origin); feed ffmpeg with -vf vflip.
+// Can be called before or after EndTextureMode. Must be called on the GL thread.
+func (r *Renderer) CaptureRenderTexture() []byte {
 	if !r.targetLoaded {
 		return nil
 	}
-	return readCurrentFBOPixels(int(r.renderWidth), int(r.renderHeight))
+	return readTexturePixels(r.target.Texture.ID, int(r.renderWidth), int(r.renderHeight))
 }
 
 func (r *Renderer) DrawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {

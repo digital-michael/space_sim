@@ -1,13 +1,14 @@
 package render
 
-// readCurrentFBOPixels reads RGBA pixels from the currently-bound OpenGL
-// framebuffer using glReadPixels. This is reliable on all platforms including
-// Apple Silicon where glGetTexImage (used by rl.LoadImageFromTexture) silently
-// returns empty data for render textures.
+// captureTextureViaFBO reads RGBA pixels from a Raylib render texture by
+// creating a temporary read-only OpenGL framebuffer and attaching the texture.
 //
-// The result is bottom-up (OpenGL origin). Pass to ffmpeg with -vf vflip.
-// Must be called on the GL/main thread while the FBO is still bound
-// (i.e. before EndTextureMode / EndFrame).
+// This is the only reliable technique on Apple Silicon (OpenGL via Metal) where
+// glReadPixels from a currently-bound Raylib FBO silently returns empty data,
+// and glGetTexImage (used by rl.LoadImageFromTexture) is broken entirely.
+//
+// Result is bottom-up (OpenGL origin) — feed to ffmpeg with -vf vflip.
+// No Raylib FBO-binding state required; can be called any time on the GL thread.
 
 /*
 #include <stdlib.h>
@@ -24,10 +25,35 @@ package render
 #include <GL/glext.h>
 #endif
 
-static unsigned char* captureCurrentFBO(int width, int height) {
-    unsigned char* pixels = (unsigned char*)malloc((size_t)width * (size_t)height * 4);
+static unsigned char* captureTextureViaFBO(unsigned int textureId, int width, int height) {
+    size_t sz = (size_t)width * (size_t)height * 4;
+    unsigned char* pixels = (unsigned char*)malloc(sz);
     if (!pixels) return NULL;
-    glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+
+    // Save previous framebuffer binding so we can restore it.
+    GLint prevFBO = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
+
+    // Create a temporary FBO and attach the render texture as colour read.
+    GLuint fbo;
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D, (GLuint)textureId, 0);
+
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status == GL_FRAMEBUFFER_COMPLETE) {
+        glReadPixels(0, 0, (GLsizei)width, (GLsizei)height,
+                     GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+    } else {
+        free(pixels);
+        pixels = NULL;
+    }
+
+    // Restore previous FBO and clean up.
+    glBindFramebuffer(GL_FRAMEBUFFER, (GLuint)prevFBO);
+    glDeleteFramebuffers(1, &fbo);
+
     return pixels;
 }
 */
@@ -35,11 +61,11 @@ import "C"
 
 import "unsafe"
 
-func readCurrentFBOPixels(width, height int) []byte {
+func readTexturePixels(textureID uint32, width, height int) []byte {
 	if width <= 0 || height <= 0 {
 		return nil
 	}
-	ptr := C.captureCurrentFBO(C.int(width), C.int(height))
+	ptr := C.captureTextureViaFBO(C.uint(textureID), C.int(width), C.int(height))
 	if ptr == nil {
 		return nil
 	}

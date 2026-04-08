@@ -174,19 +174,17 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			a.renderer.DrawRecordingIndicator(a.runtime.RecordingPaused)
 		}
 
-		// Capture frame BEFORE EndFrame: render texture FBO is still bound here.
-		// glReadPixels (used by CaptureFromFBO) works reliably from a bound FBO
-		// on all platforms including Apple Silicon where glGetTexImage does not.
-		var recordFrame []byte
-		if a.runtime.RecordingActive && !a.runtime.RecordingPaused && a.recorder != nil {
-			recordFrame = a.renderer.CaptureFromFBO()
-		}
-
 		a.renderer.EndFrame(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
 
-		// Write captured frame (or nil freeze) to the encoder pipe.
+		// Capture after EndFrame: render texture content is stable and the
+		// temporary-FBO approach in CaptureRenderTexture does not depend on
+		// Raylib's framebuffer binding state.
 		if a.runtime.RecordingActive && a.recorder != nil {
-			if err := a.recorder.WriteFrame(recordFrame); err != nil {
+			var frame []byte
+			if !a.runtime.RecordingPaused {
+				frame = a.renderer.CaptureRenderTexture()
+			}
+			if err := a.recorder.WriteFrame(frame); err != nil {
 				// Pipe broken — ffmpeg died. Abort cleanly.
 				a.stopRecording()
 			}
