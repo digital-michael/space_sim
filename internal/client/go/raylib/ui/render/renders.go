@@ -7,7 +7,6 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"unsafe"
 
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
@@ -209,24 +208,14 @@ func (r *Renderer) EndFrame(windowWidth, windowHeight int32) {
 	rl.EndDrawing()
 }
 
-// CaptureFrame reads the current render texture back to CPU and returns a
-// copy of the raw RGBA pixel bytes. The texture is bottom-up (OpenGL origin),
-// so callers feeding ffmpeg should pass -vf vflip. Returns nil when no render
-// target is active. Must be called on the main/GL thread.
-func (r *Renderer) CaptureFrame() []byte {
+// CaptureFromFBO reads the render texture pixels via glReadPixels while the
+// render texture FBO is still bound. Must be called BEFORE EndFrame.
+// Returns nil when no render target is active. Must be called on the GL thread.
+func (r *Renderer) CaptureFromFBO() []byte {
 	if !r.targetLoaded {
 		return nil
 	}
-	img := rl.LoadImageFromTexture(r.target.Texture)
-	if img == nil || img.Data == nil {
-		return nil
-	}
-	sz := int(img.Width) * int(img.Height) * 4
-	raw := unsafe.Slice((*byte)(img.Data), sz)
-	out := make([]byte, sz)
-	copy(out, raw)
-	rl.UnloadImage(img)
-	return out
+	return readCurrentFBOPixels(int(r.renderWidth), int(r.renderHeight))
 }
 
 func (r *Renderer) DrawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {

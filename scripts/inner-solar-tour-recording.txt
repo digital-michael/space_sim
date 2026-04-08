@@ -6,7 +6,7 @@ Visits: Sun, Mercury, Venus, Earth (+Moon), Mars, then returns to Sol.
 Total run time is roughly 2–3 minutes at the speeds below.
 
 Usage:
-  space-sim-repl < scripts/inner-solar-tour-recording.txt
+  space-sim-repl --script scripts/inner-solar-tour-recording.txt
 
 The recording is saved to ~/Desktop/inner-solar-tour.mp4.
 Use "record delete inner-solar-tour.mp4" to clean up afterwards.
@@ -22,7 +22,7 @@ window full on
 
 record start inner-solar-tour.mp4
 
-set $speed  25.0  // nav jump travel speed (higher = shorter transit time)
+set $speed  55.0  // nav jump travel speed (higher = shorter transit time)
 set $orbits 0.5   // half-orbit is enough for a tour shot
 set $dwell  2.0   // pause at each body (seconds)
 
