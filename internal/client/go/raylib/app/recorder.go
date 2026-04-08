@@ -13,12 +13,23 @@ import (
 // a H.264 MP4 file. Pause is implemented as freeze-frame: the last captured
 // frame is re-sent each tick so the video clock keeps advancing.
 type videoRecorder struct {
-	cmd       *exec.Cmd
-	pipe      io.WriteCloser
-	lastFrame []byte // held during pause; re-written each tick
-	width     int
-	height    int
+	cmd        *exec.Cmd
+	pipe       io.WriteCloser
+	lastFrame  []byte // held during pause; re-written each tick
+	width      int
+	height     int
 	outputPath string
+}
+
+// newVideoRecorder constructs a recorder with an already-open writer. Used by
+// tests and by startRecording (which provides the real ffmpeg pipe).
+func newVideoRecorder(pipe io.WriteCloser, width, height int, outputPath string) *videoRecorder {
+	return &videoRecorder{
+		pipe:       pipe,
+		width:      width,
+		height:     height,
+		outputPath: outputPath,
+	}
 }
 
 // startRecording forks an ffmpeg process and returns a ready recorder.
@@ -58,13 +69,9 @@ func startRecording(width, height int) (*videoRecorder, error) {
 	}
 
 	fmt.Printf("[REC] Started: %s\n", outPath)
-	return &videoRecorder{
-		cmd:        cmd,
-		pipe:       pipe,
-		width:      width,
-		height:     height,
-		outputPath: outPath,
-	}, nil
+	rec := newVideoRecorder(pipe, width, height, outPath)
+	rec.cmd = cmd
+	return rec, nil
 }
 
 // WriteFrame sends one RGBA frame to ffmpeg. Pass nil to freeze on the last
