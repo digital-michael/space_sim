@@ -53,7 +53,7 @@ func startRecording(width, height int, outputPath string) (*videoRecorder, error
 		"-s", size,
 		"-r", "60", // input frame rate
 		"-i", "pipe:0", // read from stdin
-		"-vf", "vflip", // flip Y — OpenGL render textures are bottom-up
+		"-vf", "vflip,scale=trunc(iw/2)*2:trunc(ih/2)*2", // flip Y; round to even dims required by libx264
 		"-vcodec", "libx264",
 		"-preset", "ultrafast", // minimise encode CPU overhead
 		"-pix_fmt", "yuv420p", // broadest H.264 compatibility
