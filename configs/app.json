@@ -6,7 +6,7 @@
     "resizable": true
   },
   "render": {
-    "mode": "native",
+    "mode": "fixed",
     "width": 1440,
     "height": 751
   }

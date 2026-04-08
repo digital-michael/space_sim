@@ -26,6 +26,9 @@ package render
 #endif
 
 static unsigned char* captureTextureViaFBO(unsigned int textureId, int width, int height) {
+    // Flush any pending GL errors before we start.
+    while (glGetError() != GL_NO_ERROR) {}
+
     size_t sz = (size_t)width * (size_t)height * 4;
     unsigned char* pixels = (unsigned char*)malloc(sz);
     if (!pixels) return NULL;
@@ -45,6 +48,10 @@ static unsigned char* captureTextureViaFBO(unsigned int textureId, int width, in
     if (status == GL_FRAMEBUFFER_COMPLETE) {
         glReadPixels(0, 0, (GLsizei)width, (GLsizei)height,
                      GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        if (glGetError() != GL_NO_ERROR) {
+            free(pixels);
+            pixels = NULL;
+        }
     } else {
         free(pixels);
         pixels = NULL;

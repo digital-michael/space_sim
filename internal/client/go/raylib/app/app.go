@@ -27,6 +27,11 @@ type App struct {
 	// cmdCh is the main-thread command gate. gRPC handler goroutines send
 	// AppCmds here; the interactive loop drains it each frame (non-blocking).
 	cmdCh chan AppCmd
+
+	// recordingForcedFixed is true when recording start caused a temporary
+	// switch from native to fixed render mode. The original mode is restored
+	// when recording stops.
+	recordingForcedFixed bool
 }
 
 // New constructs the application from validated configuration.

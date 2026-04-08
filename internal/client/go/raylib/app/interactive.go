@@ -485,6 +485,13 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 
 	case RecordStartCmd:
 		if !a.runtime.RecordingActive {
+			// Native mode has no render texture — capture would always return nil.
+			// Force fixed mode so syncRenderState creates a render texture this frame.
+			if a.runtime.RenderMode == RenderModeNative {
+				a.runtime.RenderMode = RenderModeFixed
+				a.syncRenderState()
+				a.recordingForcedFixed = true
+			}
 			a.startRecording(c.Path)
 		}
 
@@ -501,6 +508,12 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 	case RecordStopCmd:
 		if a.runtime.RecordingActive {
 			a.stopRecording()
+			// Restore native mode if we forced a switch on record start.
+			if a.recordingForcedFixed {
+				a.recordingForcedFixed = false
+				a.runtime.RenderMode = RenderModeNative
+				a.syncRenderState()
+			}
 		}
 	}
 }
