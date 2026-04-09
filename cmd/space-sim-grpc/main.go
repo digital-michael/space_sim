@@ -11,6 +11,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -22,6 +23,23 @@ import (
 )
 
 func main() {
+	renderScaleUsage := `multiply the display size to set the render resolution (forces fixed mode).
+Recommended:
+  1.0  — matches your display exactly (same as default native mode)
+  2.0  — 2× super-sample; doubles linear resolution, 4× the pixels (ideal for recording)
+  4.0  — 4× super-sample; very high quality, significant GPU/readback cost
+Reasonable range: 0.25 (lightweight) – 4.0 (high quality)
+Mutually exclusive with --render-size.`
+
+	renderSizeUsage := `set an explicit render resolution as WIDTHxHEIGHT (forces fixed mode).
+Example: --render-size=3840x2160
+Useful when you need a specific output resolution regardless of display size.
+Mutually exclusive with --render-scale.`
+
+	renderScale := flag.Float64("render-scale", 0, renderScaleUsage)
+	renderSize := flag.String("render-size", "", renderSizeUsage)
+	flag.Parse()
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -36,6 +54,8 @@ func main() {
 	cfg := rayapp.Config{
 		AppConfigPath: appConfigPath,
 		AppConfig:     appConfig,
+		RenderScale:   *renderScale,
+		RenderSize:    *renderSize,
 	}
 
 	// ── Build application (creates world internally) ───────────────────────

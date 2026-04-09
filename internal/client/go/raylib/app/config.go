@@ -1,6 +1,9 @@
 package app
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const (
 	DefaultAppConfigPath = "configs/app.json"
@@ -48,6 +51,32 @@ type Config struct {
 	Debug           bool
 	AppConfigPath   string
 	AppConfig       AppConfig
+
+	// RenderScale, when > 0, multiplies the display size at launch and forces
+	// fixed render mode. Mutually exclusive with RenderSize.
+	// Recommended: 1.0 (display resolution), 2.0 (2× super-sample).
+	RenderScale float64
+
+	// RenderSize, when non-empty, sets an explicit WxH render resolution and
+	// forces fixed render mode. Format: "WIDTHxHEIGHT" e.g. "3840x2160".
+	// Mutually exclusive with RenderScale.
+	RenderSize string
+}
+
+// ParseRenderSize parses a "WIDTHxHEIGHT" string into (w, h, error).
+func ParseRenderSize(s string) (int32, int32, error) {
+	parts := strings.SplitN(strings.ToLower(s), "x", 2)
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("render-size must be WIDTHxHEIGHT (got %q)", s)
+	}
+	var w, h int32
+	if _, err := fmt.Sscanf(parts[0], "%d", &w); err != nil || w <= 0 {
+		return 0, 0, fmt.Errorf("render-size: invalid width %q", parts[0])
+	}
+	if _, err := fmt.Sscanf(parts[1], "%d", &h); err != nil || h <= 0 {
+		return 0, 0, fmt.Errorf("render-size: invalid height %q", parts[1])
+	}
+	return w, h, nil
 }
 
 // WithDefaults returns cfg with default values filled in.
@@ -61,6 +90,31 @@ func (cfg Config) WithDefaults() Config {
 	if !cfg.AppConfig.Window.Resizable {
 		cfg.AppConfig.Window.Resizable = true
 	}
+
+	// CLI render overrides take precedence over app.json render config.
+	// RenderScale multiplies the configured window size; RenderSize is explicit.
+	// Both force fixed mode.
+	switch {
+	case cfg.RenderScale > 0:
+		w := int32(float64(cfg.AppConfig.Window.Width) * cfg.RenderScale)
+		h := int32(float64(cfg.AppConfig.Window.Height) * cfg.RenderScale)
+		if w < 1 {
+			w = 1
+		}
+		if h < 1 {
+			h = 1
+		}
+		cfg.AppConfig.Render.Mode = RenderModeFixed
+		cfg.AppConfig.Render.Width = w
+		cfg.AppConfig.Render.Height = h
+	case cfg.RenderSize != "":
+		if w, h, err := ParseRenderSize(cfg.RenderSize); err == nil {
+			cfg.AppConfig.Render.Mode = RenderModeFixed
+			cfg.AppConfig.Render.Width = w
+			cfg.AppConfig.Render.Height = h
+		}
+	}
+
 	if cfg.AppConfig.Render.Mode == "" {
 		cfg.AppConfig.Render.Mode = RenderModeNative
 	}
@@ -104,6 +158,17 @@ func (cfg Config) Validate() error {
 	}
 	if cfg.PerformanceMode && cfg.Profile != "worst" && cfg.Profile != "better" {
 		return fmt.Errorf("--profile must be 'worst' or 'better' (got %q)", cfg.Profile)
+	}
+	if cfg.RenderScale > 0 && cfg.RenderSize != "" {
+		return fmt.Errorf("--render-scale and --render-size are mutually exclusive")
+	}
+	if cfg.RenderScale < 0 {
+		return fmt.Errorf("--render-scale must be > 0 (got %g)", cfg.RenderScale)
+	}
+	if cfg.RenderSize != "" {
+		if _, _, err := ParseRenderSize(cfg.RenderSize); err != nil {
+			return err
+		}
 	}
 	if cfg.AppConfig.Render.Mode != RenderModeNative && cfg.AppConfig.Render.Mode != RenderModeFixed {
 		return fmt.Errorf("render.mode must be %q or %q (got %q)", RenderModeNative, RenderModeFixed, cfg.AppConfig.Render.Mode)
