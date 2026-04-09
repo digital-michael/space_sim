@@ -35,6 +35,7 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 	F-011 IAAM — Identity, Access, Authentication, and Management
 	F-012 Federated Compute — Collaborative Simulation Offload
 	F-013 N-Body Barycenter Integration
+	F-014 Nearby Systems Expansion Backlog
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -625,6 +626,51 @@ N-body integration replaces this with a force-sum approach: each body computes g
 - [ ] Validate: Earth-Moon barycenter should be inside the Sun; Alpha Centauri A/B should orbit their mutual barycenter
 - [ ] Performance benchmark: O(N²) force sum at 100 named bodies at 60 Hz on M1; establish whether Barnes-Hut is needed
 - [ ] Update scene camera's star-tracking logic to track barycenter for multi-star systems
+
+---
+
+### F-014 — Nearby Systems Expansion Backlog
+
+**Value**: Expand `data/systems/` beyond SOL and Alpha Centauri with nearby stellar systems that have enough confirmed or reasonably modelable structure to fit the current simulator. This backlog is ordered by practical fit for the current engine, not only raw distance from SOL.
+**Status**: 📋 Not started
+**Priority**: Medium — content expansion with direct user-facing value; best tackled while the current JSON loading path is stable
+**Depends on**: Existing system JSON flow in `data/systems/`; current parent-child orbital model remains acceptable for single-star systems and approximate multi-star hierarchies
+
+#### Recommended System Order
+
+1. **Epsilon Eridani**
+	Best immediate addition after Alpha Centauri. Nearby, well-studied, and compatible with the current simulator because it has a dominant primary star, at least one widely accepted giant planet, and debris-belt structure that maps cleanly onto the existing body + feature JSON model.
+2. **Epsilon Indi**
+	Strong follow-up because it has a confirmed giant planet around the primary plus the known brown-dwarf companion pair. The system is more complex than a simple single-star system, but still workable under the current approximate parent-child hierarchy.
+3. **GJ 1061**
+	Good fit for the current engine because it is a compact red-dwarf planetary system with multiple close-in planets and no major need for true barycentric motion.
+4. **Luyten's Star**
+	Useful nearby addition with a small planetary system that can be represented with the existing star-plus-planets JSON approach and does not require unusual renderer or physics support.
+5. **Teegarden's Star**
+	Another good compact system candidate. It offers a simple star with close planets and low modeling overhead under the current orbital assumptions.
+6. **Barnard's Star**
+	Extremely close and high-interest, but lower in execution priority because the planet picture has had more historical uncertainty. Add only if the project is comfortable modeling a system with more tentative planet data.
+7. **Wolf 359**
+	Very nearby and potentially interesting, but currently less compelling than the systems above because the planetary data is less settled and the modeling payoff is lower.
+8. **Sirius**
+	Stellar data is strong and the binary is scientifically important, but it is a weaker near-term content addition because there is no equally compelling confirmed planet set. Better as a multi-star showcase than a planet-system showcase.
+9. **Luhman 16**
+	Very close and scientifically interesting, but mainly a brown-dwarf binary. It is likely modelable visually, yet less aligned with the simulator's current star-and-planets content value than the systems above.
+
+#### Modeling Notes
+
+- Prefer systems with one dominant primary star and confirmed planets first; they fit the current orbital engine with minimal approximation.
+- Multi-star systems remain acceptable when modeled hierarchically, but should be treated as approximations until F-013 lands.
+- Debris belts and compact close-in planetary systems are good near-term targets because they reuse the existing JSON schema and rendering behavior effectively.
+- When planet detections are still disputed, either defer the system or explicitly mark candidate planets as provisional in the system design notes before adding JSON.
+
+#### Work Items
+
+- [ ] Create a per-system data brief for Epsilon Eridani, Epsilon Indi, GJ 1061, Luyten's Star, and Teegarden's Star using confirmed-first data
+- [ ] Decide whether Barnard's Star and Wolf 359 should be excluded until their planet sets are more stable
+- [ ] Decide whether Sirius and Luhman 16 belong in the same near-term content phase or in a separate multi-star showcase phase
+- [ ] Define a lightweight standard for provisional vs. confirmed exoplanet entries before adding uncertain systems
+- [ ] Add new `data/systems/*.json` files in backlog order, validating each one with the simulator before moving to the next
 
 ---
 
