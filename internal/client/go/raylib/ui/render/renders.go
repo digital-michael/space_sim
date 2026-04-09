@@ -60,8 +60,8 @@ func renderMousePosition() rl.Vector2 {
 	if layoutWidth <= 0 || layoutHeight <= 0 {
 		return m
 	}
-	windowW := float32(rl.GetScreenWidth())
-	windowH := float32(rl.GetScreenHeight())
+	windowW := float32(rl.GetRenderWidth())
+	windowH := float32(rl.GetRenderHeight())
 	scaleX := windowW / float32(layoutWidth)
 	scaleY := windowH / float32(layoutHeight)
 	scale := scaleX
@@ -175,7 +175,9 @@ func (r *Renderer) BeginFrame() {
 		setLayoutSize(r.renderWidth, r.renderHeight)
 		rl.BeginTextureMode(r.target)
 	} else {
-		setLayoutSize(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
+		// GetRenderWidth/Height accounts for HiDPI; GetScreenWidth/Height returns
+		// logical points which undersize the layout on Retina displays.
+		setLayoutSize(int32(rl.GetRenderWidth()), int32(rl.GetRenderHeight()))
 		rl.BeginDrawing()
 	}
 	rl.ClearBackground(rl.Black)
@@ -186,6 +188,11 @@ func (r *Renderer) EndFrame(windowWidth, windowHeight int32) {
 		rl.EndDrawing()
 		return
 	}
+	// On HiDPI displays the physical framebuffer is larger than the logical
+	// window size reported by GetScreenWidth/Height. Use the render dimensions
+	// so the blit covers the full framebuffer rather than a quadrant.
+	windowWidth = int32(rl.GetRenderWidth())
+	windowHeight = int32(rl.GetRenderHeight())
 
 	rl.EndTextureMode()
 	rl.BeginDrawing()
