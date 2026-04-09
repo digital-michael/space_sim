@@ -1,11 +1,21 @@
 # REPL Expansion — Implementation Plan
 
+> **STATUS: COMPLETE — READY TO ARCHIVE**
+> As of 2026-04-09, all phases are implemented in the production codebase.
+> Transport handlers (`camera_handler.go`, `navigation_handler.go`, `performance_handler.go`,
+> `system_handler.go`, `window_handler.go`, `shutdown_handler.go`, `recording_handler.go`)
+> all exist in `internal/transport/grpc/`. REPL command dispatch covers `camera`, `nav`,
+> `perf`, `record`, `system`, `window`. F-002 (`track <name>` / `track stop`) is also complete:
+> top-level `track` verb added to `commands.go` and `complete.go` with full TAB completion.
+> This document has no remaining open work items. Archive to `docs/history/` when convenient.
+> See [`docs/wip/roadmap.md`](roadmap.md) for authoritative planned work.
+
 ## Purpose
 Extend the Space Sim REPL with six new command categories and context-aware TAB completion.
 Each category maps to a new gRPC service, a new transport handler, new `commands.go` types, and new `repl.go` exec cases.
 
 ## Last Updated
-2026-04-03
+2026-04-09 (status note added — original plan 2026-04-03)
 
 ## Status Key
 

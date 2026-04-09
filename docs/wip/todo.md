@@ -4,8 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-04-08
-
+2026-04-09
 
 ## Table of Contents
 1. How to Use This File
@@ -18,7 +17,28 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 	4.4 Pre-Phase-6 Gate - Client/App Package Split
 	4.5 Phase 6 - gRPC Integration
 	4.6 Phase 7 - Additional Pool Types
-5. Related Docs
+	4.7 Belt Generation Quality - Overlap and Speed Uniqueness
+	4.8 UX Polish - Rendering, Camera, and Config
+5. Defects
+	DEF-001 Floating-Point Precision Collapse at Extreme Camera Distances
+6. Feature Backlog
+	F-001 Camera Collision Prevention
+	F-002 REPL: track <object> and track stop ✅
+	F-003 Texture/Bitmap Rendering
+	F-004 Procedural Star Field Background
+	F-005 Physical Lighting from Stars
+	F-006 XYZ Keyboard Navigation + Mouse Facing
+	F-007 User-Configurable Key Bindings
+	F-008 Artifact Object Type
+	F-009 Object-Object Collision / Proximity Detection
+	F-010 Multi-Machine Architecture (Option B split)
+	F-011 IAAM — Identity, Access, Authentication, and Management
+	F-012 Federated Compute — Collaborative Simulation Offload
+	F-013 N-Body Barycenter Integration
+7. Recommended Ordering
+8. Tech Debt
+	TD-001 Collapse handleInput / updateCameraState Param Lists
+9. Related Docs
 
 ## 1. How to Use This File
 
@@ -234,7 +254,34 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 - [x] Revert HiDPI coordinate queries from `GetRenderWidth/Height` to `GetScreenWidth/Height` (regression fix)
 - [x] Set initial tracking camera distance to star surface + 0.75 AU on startup
 
-## Tech Debt
+---
+
+## 7. Recommended Ordering
+
+This is the current best-guess execution sequence integrating dependency order, the three planning observations, and DEF-001. The owner manages actual sprint assignment.
+
+| Step | Item | Rationale |
+|------|------|-----------|
+| 1 | **F-013** N-body barycenter | Physics accuracy first; single-process validation before distributing |
+| 2 | **F-001** Camera collision prevention | 30-min fix; affects every session; pull forward from Group 1 |
+| 3 | **DEF-001** Floating-origin exploration + fix | Touches same render sites as F-003/F-004/F-005; fix before visual work to avoid double-rewrite |
+| 4 | **TD-001** Collapse handleInput param lists | Clean up before Group 5 network work adds more code around it |
+| 5 | **F-010** Multi-machine split (headless server + client) | Network foundation |
+| 6 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
+| 7 | **F-008** Artifact object type | Content foundation for F-009 |
+| 8 | **F-009** Object-object collision/proximity | Needs F-008 for full value |
+| 9 | **F-007** User-configurable key bindings | Group 3; do after TD-001 reduces handleInput complexity |
+| 10 | **F-006** XYZ keyboard nav + mouse facing | Benefits from F-007 |
+| 11 | **F-002** REPL track / track stop | Remaining Group 1 quick win |
+| 12 | **F-003** Textures on planets/moons | Group 2 visual; floating-origin fix (DEF-001) already done |
+| 13 | **F-004** Procedural star field | Group 2 visual |
+| 14 | **F-005** Physical lighting from stars | Needs F-003 |
+| 15 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable. Own phase. |
+| — | **4.7** Belt overlap/speed uniqueness | ⏸ Deferred — cosmetic only, insert whenever bandwidth allows |
+
+---
+
+## 8. Tech Debt
 
 ### TD-001 — Collapse `handleInput` / `updateCameraState` Param Lists
 
@@ -261,7 +308,327 @@ func updateCameraState(session *runtimeSession, runtime *RuntimeContext, dt floa
 - Do not merge `runtimeSession` and `RuntimeContext` — they have different lifetimes (session is discarded on system reload; RuntimeContext persists).
 - Do not add a "god context" that combines engine state, camera, input, and settings — violates SRP and Information Expert (GRASP).
 
-## 5. Related Docs
+## 5. Defects
+
+### DEF-001 — Floating-Point Precision Collapse at Extreme Camera Distances
+
+**Symptom**: When zooming far out from the solar system and looking back, the visual scene begins to contract as if boxed in and shrinking. Worsens with distance.
+**Status**: 📋 Not started — short technical exploration needed before full fix is scoped
+**Priority**: Medium-high — affects every recording and demo session; fix touches render call sites that F-003/F-004/F-005 also touch. Doing this before Group 2 visual work avoids rewriting those sites twice.
+**Depends on**: Nothing blocking; self-contained to the render path
+
+#### Root Cause
+
+Not a Raylib bug or misconfiguration. All object positions are stored as `float32` world-space vectors with SOL at the origin. Raylib's MVP matrix multiplies those positions by a matrix containing the camera's world-space translation. At large camera distances (100,000+ simulation units), the camera-translation components are large `float32` values. Subtracting small object coordinates from a large camera offset causes **catastrophic float32 cancellation** — mantissa bits are lost, objects snap to ghost grid positions, and the scene appears to contract. `CameraFarPlane = 200000.0` and `CameraNearPlane = 0.001` give a ratio of 200,000,000:1, which also destroys depth-buffer precision at range.
+
+#### Fix: Camera-Relative (Floating Origin) Rendering
+
+Before passing positions to the GPU, subtract the camera world position from every object position. The GPU always operates near `(0, 0, 0)` regardless of camera distance from SOL. Physics and protocol layers continue to use full world-space coordinates; only the render call sites change.
+
+#### Exploration Items
+
+- [ ] Reproduce and measure: at what camera distance (simulation units) does the artifact first appear? Establish a threshold.
+- [ ] Audit all `DrawSphere`, `DrawModel`, `DrawSphere3D` call sites in the render path — these are the sites that need camera-relative offsets applied
+- [ ] Determine whether Raylib's `SetMatrixModelview` or a manual translate before `BeginMode3D` is the cleanest integration point
+- [ ] Assess whether `float64` positions are needed in the physics layer (likely yes for long N-body runs, aligns with F-013)
+- [ ] Symbolic representation / LOD for extreme zoom-out (separate concern — scope after root cause is fixed)
+
+---
+
+## 6. Feature Backlog
+
+Prioritized by dependency order and user-visible value. Items lower in the list generally depend on or benefit from items above them.
+
+---
+
+### F-001 — Camera Collision Prevention
+
+**Value**: Camera should never clip inside a body. Currently possible when zooming in at tracking range or jumping to very small objects.
+**Status**: 📋 Not started
+**Priority**: High — safety constraint, no deps, contained change
+**Depends on**: Nothing
+
+#### Work Items
+
+- [ ] In `UpdateTracking`, clamp `TrackDistance` so the camera surface stays outside `target.Meta.PhysicalRadius + epsilon`
+- [ ] In `UpdateJump`, detect if landing position would be inside any rendered object and push the camera out to the object surface
+- [ ] Add a general camera-vs-object exclusion check in `updateCameraState` for free-fly mode (prevent flying through spheres)
+
+---
+
+### F-002 — REPL: `track <object>` and `track stop`
+
+**Value**: Lets scripts and live REPL sessions lock the camera to an object or release tracking without touching the keyboard.
+**Status**: ✅ Complete — 2026-04-09
+**Priority**: High — extends existing tracking system; aligns with REPL Expansion Phase C (Camera)
+**Depends on**: Existing `CameraTrackCmd`, REPL command dispatch
+
+#### Work Items
+
+- [x] Add `track <name>` command to REPL: issues `CameraTrackCmd{Name: name}`
+- [x] Add `track stop`: issues `CameraTrackCmd{Name: ""}` to enter free-fly
+- [x] Wire TAB completion for body names on `track` (stop + bodies; `track s` → `track stop`)
+- [x] Proto and gRPC transport already wired via `SetCameraTrack` RPC
+
+---
+
+### F-003 — Texture/Bitmap Rendering for Planets and Moons
+
+**Value**: Replace solid-color spheres with photorealistic diffuse textures. Toggleable so low-resource environments can use the color fallback.
+**Status**: 📋 Not started
+**Priority**: Medium-high — high visual impact; material system already has a `diffuse` material type and texture asset paths in `data/assets/textures.json`
+**Depends on**: Nothing blocking; texture assets already present for key bodies
+
+#### Work Items
+
+- [ ] Load and bind diffuse textures in the Raylib material pipeline for objects with `"material": "diffuse"` and a matching entry in `textures.json`
+- [ ] Normal-map and specular-map binding (already keyed in `textures.json`) as secondary pass
+- [ ] Night-lights and cloud-layer compositing for Earth
+- [ ] CLI flag `--no-textures` (default: textures on) mirroring `--no-msaa` pattern; persist in `app.json`
+- [ ] Graceful fallback to solid color when texture file is missing or flag is set
+
+---
+
+### F-004 — Procedural Star Field Background
+
+**Value**: Replace the blank black background with a static star field that shifts parallax-correctly with camera orientation (rotation only; no translational parallax at solar-system scale).
+**Status**: 📋 Not started
+**Priority**: Medium — high visual quality improvement; independent of simulation state
+**Depends on**: Camera forward vector (already available)
+
+#### Work Items
+
+- [ ] Generate a deterministic set of background star positions on a unit sphere at startup (seeded RNG, configurable count)
+- [ ] Draw as a sky-box or point-sprite pass before the 3D scene, using camera orientation only (strip camera translation from the view matrix)
+- [ ] Vary brightness and color temperature by a Gaussian distribution approximating the Milky Way density band
+- [ ] Optional: load a real-star catalog (Hipparcos subset) for accurate positions
+
+---
+
+### F-005 — Physical Lighting from Stars
+
+**Value**: Drive scene lighting from simulated star properties (luminosity derived from mass/type/color) rather than a fixed point light.
+**Status**: 📋 Not started
+**Priority**: Medium — depends on star data already in `solar_system.json`; requires shader or multi-light Raylib work
+**Depends on**: F-003 (textures must be bound before physically-based lighting is meaningful); star `mass`, `color`, and `radius` fields in `ObjectMeta`
+
+#### Work Items
+
+- [ ] Compute luminosity from star mass using a mass-luminosity approximation (L ∝ M^3.5 for main sequence)
+- [ ] Map luminosity + color to Raylib light intensity and tint
+- [ ] Support multiple stars in the scene (alpha Centauri system has two)
+- [ ] Inverse-square falloff per-object from each star's position
+- [ ] CLI flag `--no-lighting` (default: physical lighting on); persist in `app.json`
+
+---
+
+### F-006 — XYZ Keyboard Navigation + Mouse Facing
+
+**Value**: Provide an explicit 6-DOF free-fly mode (X/Y/Z translate via keyboard, yaw/pitch via mouse) as an alternative to the current relative WASD scheme. Useful for precise positioning and scripted camera work.
+**Status**: 📋 Not started
+**Priority**: Medium
+**Depends on**: F-007 (key remapping) is a prerequisite only if the new bindings would conflict; can ship with hardcoded defaults first
+
+#### Work Items
+
+- [ ] Add absolute-axis translate inputs (default: arrow keys + PgUp/PgDn, or configurable)
+- [ ] Expose a toggle between current relative mode and absolute XYZ mode
+- [ ] Decouple mouse look from movement mode so mouse always controls facing regardless of translate mode
+
+---
+
+### F-007 — User-Configurable Key Bindings
+
+**Value**: Allow players to remap any action to a different key without recompiling. Required for accessibility and non-QWERTY layouts.
+**Status**: 📋 Not started
+**Priority**: Medium — unblocks F-006 without conflict; architectural change touches `input.go`
+**Depends on**: Nothing; but complete TD-001 first to reduce `handleInput` complexity before restructuring it further
+
+#### Work Items
+
+- [ ] Define an action enum covering all current hard-coded key uses in `input.go`
+- [ ] Load a key-binding map from a config file (JSON, same pattern as `app.json`)
+- [ ] Replace `rl.IsKeyPressed(rl.KeyX)` call sites with action-lookup helper
+- [ ] Provide a default binding file; allow user overrides via a `keybindings.json` in the config directory
+- [ ] REPL / HUD: display current binding for each action in the help overlay
+
+---
+
+### F-008 — Artifact Object Type
+
+**Value**: Introduce a new object category for non-natural, non-spherical objects: asteroid shapes (polyhedra), satellites, space probes, comets, spacecraft. Enables richer scene content without forcing everything into a sphere.
+**Status**: 📋 Not started
+**Priority**: Medium-low — architectural; requires schema, loader, and renderer changes
+**Depends on**: F-003 (texture pipeline) for surface detail; possibly F-005 (lighting) for accurate material response
+
+#### Work Items
+
+- [ ] Add `CategoryArtifact` to `engine/object.go` object category enum
+- [ ] Extend the JSON schema to support `"type": "artifact"` with a `mesh` field pointing to an OBJ/GLB asset
+- [ ] Implement mesh loading in the Raylib renderer (Raylib has `LoadModel`/`DrawModel`)
+- [ ] Comet type: add dust-tail and ion-tail particle emitters driven by distance-to-star
+- [ ] Bounding-sphere approximation for camera collision (F-001) and frustum culling
+
+---
+
+### F-009 — Object-Object Collision / Proximity Detection
+
+**Value**: Fire events when two simulation objects come within a configurable threshold of each other. Foundation for impact alerts, gravitational capture detection, and gameplay events.
+**Status**: 📋 Not started
+**Priority**: Low — foundational event plumbing; highest value once Artifact objects (F-008) are in flight
+**Depends on**: Existing event queue (`internal/server/eventqueue`); F-008 for non-trivial shape detection
+
+#### Work Items
+
+- [ ] Add a `ProximityEvent` type to the event envelope
+- [ ] Implement a broad-phase sweep (AABBs or spatial grid already in `internal/client/go/raylib/spatial/`) to cull distant pairs
+- [ ] Narrow-phase: sphere-sphere distance check; extend to bounding-sphere vs mesh for artifacts
+- [ ] Per-pair configurable threshold stored in `ObjectMeta` or a separate proximity config
+- [ ] Publish `ProximityEvent` through `protocol.Broadcaster` so gRPC clients and the REPL can observe collisions
+
+---
+
+### F-010 — Multi-Machine Architecture (Option B: headless server + network clients)
+
+**Value**: Run the simulator and gRPC server on a remote/headless machine; connect one or more Raylib renderer clients over the network. Each client has an independent camera POV. Simulation commands are admin-only via a server-side REPL.
+**Status**: 📋 Not started
+**Priority**: High architectural — gates multi-client, multi-machine, and federated compute goals
+**Depends on**: F-011 (IAAM — need identity before multi-client commands make sense)
+
+#### Decisions (locked)
+
+| Topic | Decision |
+|-------|----------|
+| Simulation commands | Admin-only; exposed via a server-side REPL (not reachable by renderer clients) |
+| Client camera | Fully local to each renderer; never sent to or from the server |
+| Snapshot delivery | `WorldService.StreamSnapshot` already exists; clients subscribe over gRPC |
+| Snapshot rate vs. render rate | Server produces at physics Hz; clients render independently using latest received snapshot |
+
+#### Work Items
+
+**Group A — `cmd/space-sim-server` (headless)**
+- [ ] New entrypoint: no Raylib imports; starts `World`, starts gRPC server, blocks
+- [ ] Server-side admin REPL (stdin loop or dedicated port) for simulation commands (setspeed, pause, load, etc.)
+- [ ] Expose existing `SimulationService`, `WorldService`, and other handlers unchanged
+
+**Group B — `cmd/space-sim-client` (Raylib renderer)**
+- [ ] Subscribe to `WorldService.StreamSnapshot` over gRPC; store latest snapshot in an `atomic.Pointer`
+- [ ] Render loop reads from atomic pointer instead of calling `sim.Snapshot()` locally
+- [ ] All simulation command RPCs removed from client — camera, nav, window controls remain local
+
+**Bandwidth mitigations**
+- [ ] **POV frustum filtering**: client sends its current view frustum to the server each frame; server includes only objects within (or near) that frustum in the snapshot. Reuses existing `internal/client/go/raylib/spatial/` frustum logic, moved server-side.
+- [ ] **Client-side interpolation**: server streams at a reduced rate (e.g. 20 Hz); client interpolates object positions between received snapshots for smooth 60 Hz rendering.
+- [ ] **Delta compression**: server sends only changed fields since the last acknowledged snapshot per client. Requires per-client sequence tracking.
+- [ ] **LOD by distance**: objects beyond a configurable distance threshold are omitted or sent at reduced precision.
+
+---
+
+### F-011 — IAAM: Identity, Access, Authentication, and Management
+
+**Value**: Establish who each connected client is, what they are allowed to do, and how that is enforced at the transport boundary. Required before multi-client commands have safe semantics.
+**Status**: 📋 Not started
+**Priority**: High — blocks F-010 multi-client safety
+**Depends on**: F-010 (deployment model shapes token delivery); separate web frontend + auth backend (external component)
+
+#### Decisions (locked)
+
+| Topic | Decision |
+|-------|----------|
+| Token issuance | Separate web frontend + backend service; handles registration, login, token issuance. Opens gRPC connection to `space-sim-server` to validate token at connect time. |
+| Identity at connect | Bearer token presented in gRPC metadata; server validates with auth backend on connection; identity attached to `context.Context` for lifetime of connection |
+| Roles | `admin`, `moderator`, `team_lead`, `user` (see permission table below) |
+| Admin channel | Admin commands never exposed via network to non-admin roles; enforced in gRPC interceptor |
+| Auth mechanism | Bearer token over TLS; evaluated against ConnectRPC interceptors |
+
+#### Role × Permission Table (draft)
+
+| Command / Feature | admin | moderator | team_lead | user |
+|---|---|---|---|---|
+| Stream snapshot | ✅ | ✅ | ✅ | ✅ |
+| Camera / nav / window (local) | ✅ | ✅ | ✅ | ✅ |
+| Pause / resume simulation | ✅ | ✅ | ✅ | ❌ |
+| Load system | ✅ | ✅ | ❌ | ❌ |
+| Set speed | ✅ | ✅ | ✅ | ❌ |
+| Set dataset (asteroid density) | ✅ | ✅ | ✅ | ❌ |
+| Shutdown server | ✅ | ❌ | ❌ | ❌ |
+| User / role management | ✅ | ❌ | ❌ | ❌ |
+
+*Table is a starting draft — refine during design phase.*
+
+#### Work Items
+
+- [ ] Define role enum and permission table in `internal/auth/` package
+- [ ] Implement authentication interceptor in `internal/transport/grpc/interceptors.go`; validate token with auth backend; attach identity + role to `context.Context`
+- [ ] Enforce role checks in each handler per the permission table above
+- [ ] Token revocation: server calls auth backend to check revocation on each connection (or uses short-lived tokens with refresh)
+- [ ] Connection audit log: identity, role, commands issued, connect/disconnect timestamps
+- [ ] Design external auth backend interface (separate repo or service — out of scope for this repo except for the validation call)
+- [ ] TLS configuration for all gRPC connections (client and server)
+
+---
+
+### F-012 — Federated Compute: Collaborative Simulation Offload
+
+**Value**: Distribute physics computation across multiple machines so simulation scale (object count, fidelity) is not bounded by a single server's CPU. Primary goal is simulation accuracy and scale; fault tolerance is secondary. User count may be capped to protect simulation performance.
+**Status**: 📋 Not started — exploratory
+**Priority**: Low — long-term; F-010 and F-011 must be stable first
+**Depends on**: F-010 (stable server/client split), F-011 (node identity and trust), F-013 (N-body barycenter — accuracy requirement shapes partition strategy), existing `internal/server/pool/distributed/` stub
+
+#### Decisions (locked)
+
+| Topic | Decision |
+|-------|----------|
+| Primary goal | Simulation accuracy and scale first; redundancy/fault tolerance second |
+| User cap | Acceptable to limit concurrent clients to protect simulation fidelity |
+| Trust model | Compute nodes treated as trusted peers (internal/private network) |
+
+#### Open Questions (to be explored)
+
+- **Partition strategy**: spatial (octree regions), object-type (planets on one node, belts on another), or load-balanced? N-body gravity complicates pure spatial partitions — cross-boundary forces must be exchanged each tick.
+- **Reconciliation**: point-mass approximation for remote partitions vs. full cross-partition force exchange? Accuracy requirement may require full exchange for planet-scale bodies.
+- **Clock synchronization**: coordinator epoch (simplest) or vector clock? All nodes must agree on simulation time for a coherent `WorldSnapshot`.
+- **Failure handling**: partition freeze, migration to coordinator, or simplified fallback physics?
+- **Entry point**: `internal/server/pool/distributed/` stub is the natural starting point.
+
+---
+
+### F-013 — N-Body Barycenter Integration
+
+**Value**: Replace the current single-parent Keplerian approximation with true N-body gravitational simulation. Positions bodies at their mutual barycenter rather than a fixed center. Required for accurate multi-star systems (Alpha Centauri A/B), binary planets, and long-term orbital stability.
+**Status**: 📋 Not started
+**Priority**: Medium-high — accuracy is a stated project goal; also a prerequisite for F-012 accuracy claims
+**Depends on**: Nothing blocking; self-contained change to `internal/sim/engine/physics.go`. Coordinate with F-012 design (partition strategy depends on how forces are computed).
+
+#### Context
+
+Current physics (`updateObject` in `physics.go`) uses Keplerian two-body mechanics: each object orbits a fixed parent at a fixed center. This is efficient but ignores mutual gravitational attraction between all bodies. Barycenter motion and multi-body perturbations are not modeled.
+
+N-body integration replaces this with a force-sum approach: each body computes gravitational attraction from every other body each tick, then integrates velocity and position. Accuracy scales with integration step size and method.
+
+#### Decisions (open — to be resolved during design)
+
+| Topic | Options |
+|-------|--------|
+| Integrator | Leapfrog (symplectic, good energy conservation) vs. RK4 (higher accuracy, more expensive) vs. Verlet |
+| Force computation | Brute-force O(N²) (fine for solar-system scale, ~100 bodies) vs. Barnes-Hut tree (O(N log N), required for belt-scale N-body) |
+| Backward compatibility | Keplerian initial conditions can seed N-body starting state; existing JSON schema unchanged |
+| Belt objects | Full N-body for belt particles is prohibitive (tens of thousands); likely keep Keplerian for belts and apply N-body only to named bodies (planets, moons, stars, dwarf planets) |
+| Barycenter output | Publish barycenter position per multi-body group in `SimulationState` for use by renderer and camera |
+
+#### Work Items
+
+- [ ] Implement force accumulator: for each named body, sum gravitational attraction from all other named bodies each tick
+- [ ] Replace `updateObject` position integration with leapfrog or Verlet for named bodies; keep Keplerian for belt particles
+- [ ] Add barycenter computation per gravitationally-bound group; store in `SimulationState`
+- [ ] Update `ObjectMeta` / `AnimState` to carry velocity as a first-class field (already partially exists)
+- [ ] Validate: Earth-Moon barycenter should be inside the Sun; Alpha Centauri A/B should orbit their mutual barycenter
+- [ ] Performance benchmark: O(N²) force sum at 100 named bodies at 60 Hz on M1; establish whether Barnes-Hut is needed
+- [ ] Update scene camera's star-tracking logic to track barycenter for multi-star systems
+
+---
+
+## 9. Related Docs
 
 - [docs/standards/agent-readme.md](../standards/agent-readme.md): architecture, package map, boundaries.
 - [docs/standards/coding-standards.md](../standards/coding-standards.md): implementation standards and Definition of Done.

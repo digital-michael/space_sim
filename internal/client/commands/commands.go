@@ -682,6 +682,16 @@ func Parse(line string) (Cmd, error) {
 			return nil, fmt.Errorf("perf: unknown subcommand %q", args[0])
 		}
 
+	// ── Track (shorthand for camera track) ──────────────────────────────────
+	case "track":
+		if len(args) == 0 {
+			return nil, ErrUsage{Cmd: "track", Detail: "expected body name or stop", Example: "track Earth | track stop"}
+		}
+		if strings.EqualFold(args[0], "stop") {
+			return CameraTrack{Name: ""}, nil
+		}
+		return CameraTrack{Name: args[0]}, nil
+
 	// ── Shutdown ──────────────────────────────────────────────────────────────
 	case "shutdown":
 		return Shutdown{}, nil

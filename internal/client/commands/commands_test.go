@@ -335,6 +335,55 @@ func TestParse_Orbit_QuotedName(t *testing.T) {
 	}
 }
 
+func TestParse_Track_BodyName(t *testing.T) {
+	cmd, err := Parse("track Earth")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	c, ok := cmd.(CameraTrack)
+	if !ok {
+		t.Fatalf("want CameraTrack, got %T", cmd)
+	}
+	if c.Name != "Earth" {
+		t.Errorf("want name %q, got %q", "Earth", c.Name)
+	}
+}
+
+func TestParse_Track_Stop(t *testing.T) {
+	cmd, err := Parse("track stop")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	c, ok := cmd.(CameraTrack)
+	if !ok {
+		t.Fatalf("want CameraTrack, got %T", cmd)
+	}
+	if c.Name != "" {
+		t.Errorf("want empty name (free-fly), got %q", c.Name)
+	}
+}
+
+func TestParse_Track_StopCaseInsensitive(t *testing.T) {
+	cmd, err := Parse("track STOP")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	c, ok := cmd.(CameraTrack)
+	if !ok {
+		t.Fatalf("want CameraTrack, got %T", cmd)
+	}
+	if c.Name != "" {
+		t.Errorf("want empty name (free-fly), got %q", c.Name)
+	}
+}
+
+func TestParse_Track_NoArgs_ReturnsErrUsage(t *testing.T) {
+	_, err := Parse("track")
+	if err == nil {
+		t.Fatal("expected error for missing argument, got nil")
+	}
+}
+
 func TestParse_Labels_On(t *testing.T) {
 	cmd, err := Parse("labels on")
 	if err != nil {

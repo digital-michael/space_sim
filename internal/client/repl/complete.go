@@ -10,8 +10,8 @@ var topVerbs = []string{
 	"setdataset", "getdataset",
 	"gettime", "bodies", "inspect", "status", "stream",
 	"system", "window", "camera", "nav", "perf",
-        "orbit", "sleep", "hud", "labels", "sync", "set", "record",
-        "shutdown", "clear", "help", "quit", "exit",
+	"orbit", "track", "sleep", "hud", "labels", "sync", "set", "record",
+	"shutdown", "clear", "help", "quit", "exit",
 }
 
 // subCmds maps a multi-word verb to its valid sub-commands.
@@ -72,6 +72,10 @@ func replComplete(partial string, bodies []string) []string {
 			if verb == "orbit" {
 				return fullLine("orbit ", bodies)
 			}
+			// "track ": offer stop + body names.
+			if verb == "track" {
+				return fullLine("track ", append([]string{"stop"}, bodies...))
+			}
 			return fullLine(verb+" ", subCmds[verb])
 		}
 		return prefixMatch(fields[0], topVerbs)
@@ -97,6 +101,10 @@ func replComplete(partial string, bodies []string) []string {
 		// "orbit <partial>": complete the body name.
 		if verb == "orbit" {
 			return fullLine("orbit ", prefixMatch(partialSub, bodies))
+		}
+		// "track <partial>": complete stop or body name.
+		if verb == "track" {
+			return fullLine("track ", prefixMatch(partialSub, append([]string{"stop"}, bodies...)))
 		}
 		// Completing the sub-command token — return full lines.
 		subs := subCmds[verb]
@@ -141,11 +149,12 @@ func needsBodyNames(partial string) bool {
 		if !strings.HasSuffix(partial, " ") {
 			return false
 		}
-		return fields[0] == "orbit"
+		return fields[0] == "orbit" || fields[0] == "track"
 	case 2:
 		if !strings.HasSuffix(partial, " ") {
-			// "orbit <partial>" — need bodies for prefix match.
+			// "orbit <partial>" or "track <partial>" — need bodies for prefix match.
 			return fields[0] == "orbit" ||
+				fields[0] == "track" ||
 				(fields[0] == "nav" && fields[1] == "jump") ||
 				(fields[0] == "camera" && fields[1] == "track")
 		}

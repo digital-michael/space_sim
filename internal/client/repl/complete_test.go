@@ -148,4 +148,23 @@ func TestReplComplete_NavJumpBodyNames(t *testing.T) {
 	if !reflect.DeepEqual(got, []string{"nav jump clear"}) {
 		t.Errorf("nav jump with nil bodies: want [nav jump clear], got %v", got)
 	}
+
+	// "track " → stop + all bodies
+	got = replComplete("track ", bodies)
+	want = []string{"track stop", "track Earth", "track Mars", "track Sun"}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("track <space>: got %v; want %v", got, want)
+	}
+
+	// "track E" → prefix-filtered (no stop)
+	got = replComplete("track E", bodies)
+	if !reflect.DeepEqual(got, []string{"track Earth"}) {
+		t.Errorf("track E: got %v; want [track Earth]", got)
+	}
+
+	// "track s" → matches stop
+	got = replComplete("track s", bodies)
+	if !reflect.DeepEqual(got, []string{"track stop"}) {
+		t.Errorf("track s: got %v; want [track stop]", got)
+	}
 }
