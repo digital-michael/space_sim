@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-04-04
+2026-04-08
 
 
 ## Table of Contents
@@ -217,6 +217,22 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 - [ ] Ensure no two objects in the same shell share both distance and angle within a configurable tolerance
 - [ ] Add a test asserting minimum separation across a large generated dataset
 - [ ] Consider whether `MeanAnomalyAtEpoch` jitter alone is sufficient or structural placement is needed
+
+### 4.8 UX Polish — Rendering, Camera, and Config Improvements
+
+**Value**: Addressed accumulated rendering quality issues, sticky CLI flags, startup experience, and camera tracking regression.
+**Status**: ✅ Complete — 2026-04-08
+**Start Date**: 2026-04-07
+**Depends on**: Phase 6 complete
+
+#### Work Items
+
+- [x] Enable MSAA 4× by default; add `--no-msaa` to opt out
+- [x] Add `--reset` flag: writes factory defaults to `app.json` and exits
+- [x] Fix CLI render flags (`--render-scale`, `--render-size`) incorrectly persisting to `app.json` on exit
+- [x] Fix time rate HUD showing animation speed instead of simulation seconds-per-second
+- [x] Revert HiDPI coordinate queries from `GetRenderWidth/Height` to `GetScreenWidth/Height` (regression fix)
+- [x] Set initial tracking camera distance to star surface + 0.75 AU on startup
 
 ## Tech Debt
 

@@ -4,7 +4,7 @@
 Capture completed work after it leaves the active backlog. This is a concise delivery history, not a full commit log.
 
 ## Last Updated
-2026-03-30
+2026-04-08
 
 ## Table of Contents
 1. How to Use This File
@@ -16,6 +16,15 @@ Capture completed work after it leaves the active backlog. This is a concise del
 	2.5 Phase 1 - Core GroupPool
 	2.6 Phase 2 - Runtime Environment
 	2.7 Phase 1+2 Integration into space_sim
+3. 2026-04 Delivered Work
+	3.1 Phase 3 - SnapshotBroadcaster
+	3.2 Phase 3 - Event Queue System
+	3.3 Phase 4 - Event Loop and Worker Pool
+	3.4 Phase 5 - Persistence
+	3.5 Pre-Phase-6 Gate - Client/App Package Split
+	3.6 Phase 6 - gRPC Integration
+	3.7 Phase 7 - Additional Pool Types
+	3.8 UX Polish - Rendering, Camera, and Config
 
 ## 1. How to Use This File
 
@@ -165,3 +174,73 @@ Validation snapshot:
 - `go build ./internal/server/...` clean
 - `go test -race ./internal/server/...` — all 6 packages passed: eventloop, eventqueue, pool, pool/group, routines, runtime
 - `go test ./internal/space/...` — all existing space packages unaffected
+
+## 3. 2026-04 Delivered Work
+
+### 3.1 Phase 3 - SnapshotBroadcaster
+
+**End Date**: 2026-04-02
+
+- Added `protocol.Broadcaster` with thread-safe register/unregister/push
+- Wired into `App`; each `WorldSnapshot` pushed to broadcaster in the render loop
+- Concurrent push and unregister tests pass under `-race`
+
+### 3.2 Phase 3 - Event Queue System
+
+**End Date**: 2026-04-02
+
+- Per-GUID FIFO queues with cross-GUID parallelism
+- Rollback, best-effort, and no-transaction execution modes
+- Queue-full returns error, never panics; race tests pass
+
+### 3.3 Phase 4 - Event Loop and Worker Pool
+
+**End Date**: 2026-04-02
+
+- Multi-threaded worker pool with drain/shutdown
+- Event loop with runtime FPS control; frame timing metrics
+- `SetFPS` effective without restart; race tests pass
+
+### 3.4 Phase 5 - Persistence
+
+**End Date**: 2026-04-03
+
+- JSON definition + snapshot save/load with atomic writes
+- Append-and-replay event log (JSON lines format)
+- Non-blocking autosave subscriber
+- Round-trip, replay, and corrupt-file tests pass
+
+### 3.5 Pre-Phase-6 Gate — Client/App Package Split
+
+**End Date**: 2026-04-03
+
+- Created `internal/api/` as transport-agnostic contract layer (ports-and-adapters)
+- `internal/api` carries no deps on `sim`, `client`, or `server`
+- Updated `agent-readme.md` with actual package paths
+
+### 3.6 Phase 6 - gRPC Integration
+
+**End Date**: 2026-04-03
+
+- Three binaries: `space-sim-direct` (in-process), `space-sim-grpc` (ConnectRPC embedded), `space-sim-repl` (CLI client)
+- ConnectRPC transport: speaks gRPC + gRPC-Web + Connect protocols
+- `SimulationService`, `WorldService` handlers; connection limit + idle timeout interceptors
+- Integration tests with bufconn
+
+### 3.7 Phase 7 - Additional Pool Types
+
+**End Date**: 2026-04-03
+
+- `SimplePool` (388 ns/op), `DistributedPool` stub, pool factory
+- Benchmarks confirm SimplePool and GroupPool equivalent
+
+### 3.8 UX Polish — Rendering, Camera, and Config
+
+**End Date**: 2026-04-08
+
+- Enable MSAA 4× by default; `--no-msaa` flag to opt out
+- `--reset` flag: writes factory defaults to `app.json` and exits
+- Fix CLI render flags (`--render-scale`, `--render-size`) persisting to `app.json` on exit — now captured pre-CLI and restored on persist
+- Fix time rate HUD showing animation speed instead of simulation seconds-per-second
+- Revert HiDPI coordinate queries from `GetRenderWidth/Height` to `GetScreenWidth/Height` (windowed scaling regression fix)
+- Set initial tracking camera distance to star surface + 0.75 AU
