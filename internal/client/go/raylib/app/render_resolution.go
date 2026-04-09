@@ -31,10 +31,8 @@ func (a *App) desiredRenderSize() (int32, int32) {
 		return defaultScreenWidth, defaultScreenHeight
 	}
 
-	// GetRenderWidth/Height accounts for HiDPI (Retina) scaling; GetScreenWidth/Height
-	// returns logical points which on a 2× display is half the actual framebuffer size.
-	width := int32(rl.GetRenderWidth())
-	height := int32(rl.GetRenderHeight())
+	width := int32(rl.GetScreenWidth())
+	height := int32(rl.GetScreenHeight())
 	if width > 0 && height > 0 {
 		return width, height
 	}

@@ -13,6 +13,9 @@ func (a *App) initWindow() {
 	if a.runtime.Resizable {
 		flags |= rl.FlagWindowResizable
 	}
+	if !a.cfg.NoMSAA {
+		flags |= rl.FlagMsaa4xHint
+	}
 	rl.SetConfigFlags(flags)
 
 	rl.InitWindow(a.runtime.ScreenWidth, a.runtime.ScreenHeight, appWindowTitle)
@@ -77,7 +80,12 @@ func (a *App) syncWindowState() {
 
 func (a *App) persistWindowConfig() {
 	a.syncWindowState()
-	if err := SaveAppConfig(a.cfg.AppConfigPath, a.runtime.AppConfigSnapshot()); err != nil {
+	snap := a.runtime.AppConfigSnapshot()
+	// Always persist the render config as originally loaded from app.json,
+	// not the runtime state. CLI flags (--render-scale, --render-size) and
+	// transient recording mode switches must not soil the saved config.
+	snap.Render = a.savedRenderConfig
+	if err := SaveAppConfig(a.cfg.AppConfigPath, snap); err != nil {
 		log.Printf("Warning: could not save app config: %v", err)
 	}
 }

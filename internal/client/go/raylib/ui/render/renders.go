@@ -60,8 +60,8 @@ func renderMousePosition() rl.Vector2 {
 	if layoutWidth <= 0 || layoutHeight <= 0 {
 		return m
 	}
-	windowW := float32(rl.GetRenderWidth())
-	windowH := float32(rl.GetRenderHeight())
+	windowW := float32(rl.GetScreenWidth())
+	windowH := float32(rl.GetScreenHeight())
 	scaleX := windowW / float32(layoutWidth)
 	scaleY := windowH / float32(layoutHeight)
 	scale := scaleX
@@ -175,9 +175,7 @@ func (r *Renderer) BeginFrame() {
 		setLayoutSize(r.renderWidth, r.renderHeight)
 		rl.BeginTextureMode(r.target)
 	} else {
-		// GetRenderWidth/Height accounts for HiDPI; GetScreenWidth/Height returns
-		// logical points which undersize the layout on Retina displays.
-		setLayoutSize(int32(rl.GetRenderWidth()), int32(rl.GetRenderHeight()))
+		setLayoutSize(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
 		rl.BeginDrawing()
 	}
 	rl.ClearBackground(rl.Black)
@@ -188,11 +186,6 @@ func (r *Renderer) EndFrame(windowWidth, windowHeight int32) {
 		rl.EndDrawing()
 		return
 	}
-	// On HiDPI displays the physical framebuffer is larger than the logical
-	// window size reported by GetScreenWidth/Height. Use the render dimensions
-	// so the blit covers the full framebuffer rather than a quadrant.
-	windowWidth = int32(rl.GetRenderWidth())
-	windowHeight = int32(rl.GetRenderHeight())
 
 	rl.EndTextureMode()
 	rl.BeginDrawing()
@@ -894,7 +887,7 @@ func drawHUDDebug(state *engine.SimulationState, cameraState *ui.CameraState, as
 
 	var timeRateText string
 	timeRateColor := rl.Gray
-	sps := float32(speed) * state.SecondsPerSecond
+	sps := state.SecondsPerSecond
 	if sps == 0.0 {
 		timeRateText = "Time Rate: PAUSED"
 		timeRateColor = rl.Red

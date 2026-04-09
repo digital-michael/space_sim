@@ -38,6 +38,8 @@ Mutually exclusive with --render-scale.`
 
 	renderScale := flag.Float64("render-scale", 0, renderScaleUsage)
 	renderSize := flag.String("render-size", "", renderSizeUsage)
+	noMSAA := flag.Bool("no-msaa", false, "disable 4× MSAA anti-aliasing (enabled by default)")
+	reset := flag.Bool("reset", false, "restore app.json to factory defaults and exit")
 	flag.Parse()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -51,11 +53,22 @@ Mutually exclusive with --render-scale.`
 		os.Exit(1)
 	}
 
+	// ── Handle --reset ────────────────────────────────────────────────────
+	if *reset {
+		if err := rayapp.ResetAppConfig(appConfigPath); err != nil {
+			fmt.Fprintf(os.Stderr, "error resetting config: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Reset %s to factory defaults\n", appConfigPath)
+		os.Exit(0)
+	}
+
 	cfg := rayapp.Config{
 		AppConfigPath: appConfigPath,
 		AppConfig:     appConfig,
 		RenderScale:   *renderScale,
 		RenderSize:    *renderSize,
+		NoMSAA:        *noMSAA,
 	}
 
 	// ── Build application (creates world internally) ───────────────────────

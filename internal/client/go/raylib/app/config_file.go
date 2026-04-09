@@ -83,3 +83,19 @@ func SaveAppConfig(path string, cfg AppConfig) error {
 	}
 	return os.Rename(tempPath, path)
 }
+
+// ResetAppConfig writes factory-default configuration to disk.
+func ResetAppConfig(path string) error {
+	cfg := AppConfig{
+		Window: WindowConfig{
+			Width:      defaultScreenWidth,
+			Height:     defaultScreenHeight,
+			Fullscreen: false,
+			Resizable:  true,
+		},
+		Render: RenderConfig{
+			Mode: RenderModeNative,
+		},
+	}
+	return SaveAppConfig(path, cfg)
+}

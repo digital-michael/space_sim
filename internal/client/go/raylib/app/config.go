@@ -61,6 +61,17 @@ type Config struct {
 	// forces fixed render mode. Format: "WIDTHxHEIGHT" e.g. "3840x2160".
 	// Mutually exclusive with RenderScale.
 	RenderSize string
+
+	// NoMSAA disables the default 4× MSAA anti-aliasing hint.
+	NoMSAA bool
+
+	// Reset restores app.json to factory defaults and exits.
+	Reset bool
+
+	// CLIRenderOverride is true when RenderScale or RenderSize forced a
+	// transient render config change. Suppresses persisting the render
+	// section to app.json so CLI experiments don't soil saved config.
+	CLIRenderOverride bool
 }
 
 // ParseRenderSize parses a "WIDTHxHEIGHT" string into (w, h, error).
@@ -107,11 +118,13 @@ func (cfg Config) WithDefaults() Config {
 		cfg.AppConfig.Render.Mode = RenderModeFixed
 		cfg.AppConfig.Render.Width = w
 		cfg.AppConfig.Render.Height = h
+		cfg.CLIRenderOverride = true
 	case cfg.RenderSize != "":
 		if w, h, err := ParseRenderSize(cfg.RenderSize); err == nil {
 			cfg.AppConfig.Render.Mode = RenderModeFixed
 			cfg.AppConfig.Render.Width = w
 			cfg.AppConfig.Render.Height = h
+			cfg.CLIRenderOverride = true
 		}
 	}
 

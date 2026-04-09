@@ -45,9 +45,11 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 
 	initialState := sim.GetState().LockFront()
 	solIndex := -1
+	var starRadius float32
 	for i, obj := range initialState.Objects {
 		if obj.Meta.Category == engine.CategoryStar {
 			solIndex = i
+			starRadius = obj.Meta.PhysicalRadius
 			break
 		}
 	}
@@ -63,7 +65,10 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 
 	if solIndex >= 0 {
 		cameraState.StartTracking(solIndex)
-		log.Printf("Camera started tracking star (index %d)", solIndex)
+		// Position 0.75 AU beyond the star's surface.
+		// 1 AU = 100 simulation units (Earth semi_major_axis).
+		cameraState.TrackDistance = float64(starRadius) + 75.0
+		log.Printf("Camera started tracking star (index %d), TrackDistance=%.2f", solIndex, cameraState.TrackDistance)
 	} else {
 		log.Printf("Warning: no star found in simulation, starting in free-fly mode")
 	}

@@ -753,7 +753,6 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					// Jump to object with good viewing distance (5x radius)
 					cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, float64(targetObj.Meta.PhysicalRadius)*5.0)
 				} else if mode == ui.SelectionModeTrack {
-					// Start tracking object with auto-zoom (24% of screen height)
 					cameraState.StartTracking(actualIndex)
 					cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.24)
 				} else if mode == ui.SelectionModeTrackEquatorial {
@@ -776,7 +775,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 
 	// T: Open the tracking dialog with the default tracking mode.
 	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyT) && (cameraState.Mode == ui.CameraModeFree || cameraState.Mode == ui.CameraModeTracking) {
-		inputState.StartSelection(ui.SelectionModeTrackEquatorial)
+		inputState.StartSelection(ui.SelectionModeTrack)
 		inputState.FilterText = ""
 		inputState.ScrollOffset = 0
 		inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)

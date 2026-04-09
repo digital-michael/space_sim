@@ -32,21 +32,32 @@ type App struct {
 	// switch from native to fixed render mode. The original mode is restored
 	// when recording stops.
 	recordingForcedFixed bool
+
+	// savedRenderConfig holds the render config loaded from app.json at
+	// startup. It is persisted back on exit instead of the runtime render
+	// state, so CLI flags (--render-scale, --render-size) do not soil the
+	// saved configuration.
+	savedRenderConfig RenderConfig
 }
 
 // New constructs the application from validated configuration.
 func New(cfg Config) (*App, error) {
+	// Capture the render config as loaded from app.json before CLI flags
+	// can override it. This is what gets persisted back on exit.
+	savedRender := cfg.AppConfig.Render
+
 	cfg = cfg.WithDefaults()
 	if err := cfg.Validate(); err != nil {
 		return nil, err
 	}
 
 	return &App{
-		cfg:         cfg,
-		runtime:     NewRuntimeContext(cfg.AppConfig),
-		renderer:    render.New(),
-		broadcaster: &protocol.Broadcaster{},
-		cmdCh:       make(chan AppCmd, appCmdBufSize),
+		cfg:               cfg,
+		runtime:           NewRuntimeContext(cfg.AppConfig),
+		renderer:          render.New(),
+		broadcaster:       &protocol.Broadcaster{},
+		cmdCh:             make(chan AppCmd, appCmdBufSize),
+		savedRenderConfig: savedRender,
 	}, nil
 }
 

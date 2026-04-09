@@ -1376,3 +1376,54 @@ This applies to all future rendering additions (textures, sprites, shaders, UI p
 **`sync on`** in scripts is important before `record start`: it makes the REPL block until each command is acknowledged, preventing the recorder from being started before the prior nav command finishes setting up camera state.
 
 ---
+
+## Graphics Resolution and Quality
+
+### Raylib Coordinate System with FlagWindowHighdpi
+
+**Problem**: Using `GetRenderWidth/Height` (physical framebuffer pixels) for 2D drawing coordinates after `BeginDrawing()` caused objects to render in just the top-left quarter of the screen, and windowed mode scaling broke completely.
+
+**Root Cause**: After `BeginDrawing()`, Raylib applies a `screenScale` matrix (set by `rlMultMatrixf`) that maps logical coordinates to physical framebuffer pixels. On a 2× Retina display, logical (1440, 900) is multiplied to physical (2880, 1800) by the matrix. If you pass physical coords yourself, they get doubled again — drawing past the viewport edge.
+
+After `BeginTextureMode(target)`, Raylib resets the modelview to identity (no screenScale). Coordinates map 1:1 to texture pixels.
+
+**Rules**:
+- After `BeginDrawing()`: use `GetScreenWidth/Height` (logical). The screenScale matrix handles physical mapping.
+- After `BeginTextureMode()`: use the render texture dimensions directly. No DPI scaling.
+- `DrawTexturePro` dest rects after `EndTextureMode()` + `BeginDrawing()` are in logical coords.
+
+**Verification**: Raylib's own `core_highdpi_testbed.c` and `window_letterbox` examples use `GetScreenWidth()` for positioning after `BeginDrawing()`.
+
+---
+
+### MSAA Only Affects the Default Framebuffer
+
+**Fact**: `FlagMsaa4xHint` sets `glfwWindowHint(GLFW_SAMPLES, 4)` which multisamples only the OS window surface. `LoadRenderTexture` creates a standard `GL_FRAMEBUFFER` with no multisample attachments. Raylib does not expose multisampled FBO creation.
+
+**Consequence**: In `fixed` render mode (draw to render texture, blit to screen), MSAA has **no effect** on 3D geometry quality. The multisample resolve only anti-aliases the edges of the fullscreen blit quad — imperceptible. In `native` mode (draw directly to default framebuffer), MSAA smooths all polygon edges as expected.
+
+**Rule for recording**: Since recording forces `fixed` mode (need a render texture to capture), MSAA cannot improve recording quality. Use `--render-scale 2` (supersampling) instead — it renders at 2× resolution into the render texture, which achieves the same anti-aliasing effect through brute-force resolution.
+
+**Rule for daily use**: MSAA improves visual quality in the default `native` mode where no render texture is involved. Enable it by default.
+
+---
+
+### Render Resolution vs Object Quality
+
+**Observation**: `--render-scale` changes the render texture pixel count but does not change 3D mesh polygon count. `DrawSphereEx(pos, radius, rings, slices, color)` produces the same triangle count regardless of resolution. Higher resolution makes text and HUD sharper but sphere polygon edges remain identical.
+
+**What controls object quality**: The LOD system sets `rings`/`slices` based on camera distance. Current tiers: 32 (< 20 units) → 24 → 16 → 12 → 6 (> 200 units). These values determine the triangle count of each sphere.
+
+**Rule**: To improve 3D object quality, increase tessellation (rings/slices) in the LOD system. To improve pixel-level edge smoothness, use MSAA (native mode) or supersampling (fixed/recording mode). Resolution alone does not improve polygon geometry.
+
+---
+
+### CLI Flags Must Not Persist to app.json
+
+**Problem**: `--render-scale 2` forced `fixed` mode with 2× dimensions at startup. On exit, `persistWindowConfig()` saved the runtime render state to `app.json`. Next launch without the flag loaded the stale `fixed` config — render scale was "sticky" between sessions, soiling test results.
+
+**Fix**: Capture the render config as loaded from `app.json` before `WithDefaults()` applies CLI overrides. On exit, persist the original loaded render config, not the runtime state. CLI flags are session-scoped by design. Only user-edited `app.json` changes survive across sessions.
+
+**Rule**: CLI flags override config for the current session only. Never persist CLI-derived state back to the config file unless the user explicitly requests it.
+
+---
