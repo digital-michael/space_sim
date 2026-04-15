@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -12,6 +13,27 @@ import (
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
+
+// modAlt is the OS-appropriate label for the Alt/Option modifier key.
+// modSuper is the OS-appropriate label for the Super/Command modifier key.
+var (
+	modAlt   string
+	modSuper string
+)
+
+func init() {
+	switch runtime.GOOS {
+	case "darwin":
+		modAlt = "Opt"
+		modSuper = "Cmd"
+	case "windows":
+		modAlt = "Alt"
+		modSuper = "Win"
+	default: // linux and others
+		modAlt = "Alt"
+		modSuper = "Super"
+	}
+}
 
 var layoutWidth int32
 var layoutHeight int32
@@ -366,7 +388,7 @@ func drawHUDDialog(current ui.HUDState, selectedRow int) ui.HUDState {
 	// Close hint
 	hintY := panelY + panelH - scaledInt32(30)
 	hintFont := scaledInt32(14)
-	rl.DrawText("Opt+H to close", panelX+pad, hintY, hintFont, rl.Gray)
+	rl.DrawText(modAlt+"+H to close", panelX+pad, hintY, hintFont, rl.Gray)
 
 	return current
 }
@@ -1004,7 +1026,7 @@ func drawHUDHelp() {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	helpY := int32(currentScreenHeight()) - scaledInt32(30)
-	rl.DrawText("? for help | Opt+H HUD settings | Opt+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
+	rl.DrawText("? for help | "+modAlt+"+H HUD settings | "+modAlt+"+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
 }
 
 // drawZoomIndicator draws a visual indicator when zooming
@@ -1577,7 +1599,7 @@ func drawSystemSelectorUI(inputState *ui.InputState) {
 	titleText := "SELECT RUNTIME SYSTEM"
 	rl.DrawText(titleText, bgX+scaledInt32(18), bgY+scaledInt32(12), titleFont, rl.White)
 	rl.DrawText("UP/DOWN: select, ENTER: load, ESC: cancel", bgX+scaledInt32(18), bgY+scaledInt32(42), hintFont, rl.LightGray)
-	rl.DrawText("Cmd+S opens this selector", bgX+scaledInt32(18), bgY+scaledInt32(58), hintFont, rl.Gray)
+	rl.DrawText(modSuper+"+S opens this selector", bgX+scaledInt32(18), bgY+scaledInt32(58), hintFont, rl.Gray)
 
 	activeLabel := filepath.Base(inputState.ActiveSystemPath)
 	if activeLabel == "." || activeLabel == string(filepath.Separator) || activeLabel == "" {
@@ -2070,7 +2092,7 @@ func drawHelpScreen() {
 	rl.DrawText("Exit tracking/mouse mode", leftCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+Q", leftCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+Q", leftCol, y, bodySize, rl.White)
 	rl.DrawText("Quit application", leftCol+valueGap, y, bodySize, rl.LightGray)
 
 	// Right column - Display & Options
@@ -2078,43 +2100,43 @@ func drawHelpScreen() {
 	rl.DrawText("SYSTEM & DISPLAY", rightCol, y, headerSize, rl.Yellow)
 	y += lineHeight + 5
 
-	rl.DrawText("Opt+H", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+H", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle HUD", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+L", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+L", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle object labels", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+M", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+M", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle mouse mode", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+F", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+F", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle fullscreen", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+-  /  Opt+=", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+-  /  "+modAlt+"+=", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Asteroids (200->24K)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Cmd+<  /  Cmd+>", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modSuper+"+<  /  "+modSuper+"+>", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Time scale (PAUSED->1yr/sec)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+,  /  Opt+.", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+,  /  "+modAlt+"+.", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Anim speed (0%->100% of 60Hz)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+P", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+P", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+R", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+R", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Start/stop recording", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
-	rl.DrawText("Opt+Shift+R", rightCol, y, bodySize, rl.White)
+	rl.DrawText(modAlt+"+Shift+R", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Pause/resume recording", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
