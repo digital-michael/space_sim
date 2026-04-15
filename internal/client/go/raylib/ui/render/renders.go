@@ -53,6 +53,9 @@ type Renderer struct {
 	noTextures   bool
 	textureCache map[string]rl.Texture2D // path → GPU texture
 	modelCache   map[modelKey]rl.Model   // (path,rings,slices) → textured sphere model
+
+	// simTimeScale is simulated seconds per real second, used to drive axial spin.
+	simTimeScale float64
 }
 
 // modelKey indexes the model cache.
@@ -61,11 +64,17 @@ type modelKey struct {
 	rings, slices int32
 }
 
-// New creates a Raylib renderer.
-func New(noTextures bool) *Renderer {
+// New creates a Raylib renderer. simTimeScale is the number of simulated
+// seconds per real second used to drive axial spin; 0 defaults to 3600
+// (one sim-hour per real second).
+func New(noTextures bool, simTimeScale float64) *Renderer {
+	if simTimeScale <= 0 {
+		simTimeScale = 3600
+	}
 	setLayoutSize(0, 0)
 	return &Renderer{
 		noTextures:   noTextures,
+		simTimeScale: simTimeScale,
 		textureCache: make(map[string]rl.Texture2D),
 		modelCache:   make(map[modelKey]rl.Model),
 	}
@@ -624,7 +633,15 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				if !r.noTextures && texPath != "" {
 					if model, ok := r.getModel(texPath, batch.rings, batch.slices); ok {
 						scale := float32(obj.Meta.PhysicalRadius)
-						rl.DrawModelEx(model, pos, rl.Vector3{X: 1}, -90, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
+						tilt := obj.Meta.AxialTilt * rl.Deg2rad
+						var spin float32
+						if obj.Meta.RotationPeriod > 0 {
+							periodSec := float64(obj.Meta.RotationPeriod) * 3600.0
+							spin = float32(math.Mod(rl.GetTime()*r.simTimeScale/periodSec*360.0, 360.0)) * rl.Deg2rad
+						}
+						poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
+						model.Transform = rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
+						rl.DrawModel(model, pos, scale, rl.White)
 						drawnCount++
 						continue
 					}
@@ -783,7 +800,15 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, point
 	if !r.noTextures && texPath != "" {
 		if model, ok := r.getModel(texPath, rings, slices); ok {
 			scale := float32(obj.Meta.PhysicalRadius)
-			rl.DrawModelEx(model, pos, rl.Vector3{X: 1}, -90, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
+			tilt := obj.Meta.AxialTilt * rl.Deg2rad
+			var spin float32
+			if obj.Meta.RotationPeriod > 0 {
+				periodSec := float64(obj.Meta.RotationPeriod) * 3600.0
+				spin = float32(math.Mod(rl.GetTime()*r.simTimeScale/periodSec*360.0, 360.0)) * rl.Deg2rad
+			}
+			poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
+			model.Transform = rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
+			rl.DrawModel(model, pos, scale, rl.White)
 			return
 		}
 	}

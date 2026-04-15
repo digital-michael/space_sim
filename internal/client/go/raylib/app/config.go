@@ -68,6 +68,12 @@ type Config struct {
 	// NoTextures disables diffuse texture rendering; bodies use their fallback solid color.
 	NoTextures bool
 
+	// SimTimeScale is the number of simulated seconds that elapse per real second.
+	// Controls how fast bodies spin on their axes relative to wall-clock time.
+	// Common presets: 1 (real-time), 3600 (1 sim-hour/sec), 86400 (1 sim-day/sec),
+	// 604800 (1 sim-week/sec). Zero falls back to 3600.
+	SimTimeScale float64
+
 	// Reset restores app.json to factory defaults and exits.
 	Reset bool
 

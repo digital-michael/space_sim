@@ -26,6 +26,7 @@ func main() {
 	systemConfigFlag := flag.String("system-config", "", "Path to JSON system configuration file")
 	debugFlag := flag.Bool("debug", false, "Enable verbose debug logging and smoke debug instrumentation")
 	noTexturesFlag := flag.Bool("no-textures", false, "disable diffuse texture rendering; use solid colors (enabled by default)")
+	simSpeedFlag := flag.Float64("sim-speed", 3600, "simulated seconds per real second (1=real-time, 3600=1 sim-hour/sec, 86400=1 sim-day/sec, 604800=1 sim-week/sec)")
 	flag.Parse()
 
 	profileProvided := false
@@ -55,6 +56,7 @@ func main() {
 		SystemConfig:    *systemConfigFlag,
 		Debug:           *debugFlag,
 		NoTextures:      *noTexturesFlag,
+		SimTimeScale:    *simSpeedFlag,
 		AppConfigPath:   appConfigPath,
 		AppConfig:       appConfig,
 	}

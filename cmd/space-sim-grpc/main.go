@@ -40,6 +40,7 @@ Mutually exclusive with --render-scale.`
 	renderSize := flag.String("render-size", "", renderSizeUsage)
 	noMSAA := flag.Bool("no-msaa", false, "disable 4× MSAA anti-aliasing (enabled by default)")
 	noTextures := flag.Bool("no-textures", false, "disable diffuse texture rendering; use solid colors (enabled by default)")
+	simSpeed := flag.Float64("sim-speed", 3600, "simulated seconds per real second (1=real-time, 3600=1 sim-hour/sec, 86400=1 sim-day/sec, 604800=1 sim-week/sec)")
 	reset := flag.Bool("reset", false, "restore app.json to factory defaults and exit")
 	flag.Parse()
 
@@ -71,6 +72,7 @@ Mutually exclusive with --render-scale.`
 		RenderSize:    *renderSize,
 		NoMSAA:        *noMSAA,
 		NoTextures:    *noTextures,
+		SimTimeScale:  *simSpeed,
 	}
 
 	// ── Build application (creates world internally) ───────────────────────

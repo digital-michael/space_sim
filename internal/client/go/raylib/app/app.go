@@ -54,7 +54,7 @@ func New(cfg Config) (*App, error) {
 	return &App{
 		cfg:               cfg,
 		runtime:           NewRuntimeContext(cfg.AppConfig),
-		renderer:          render.New(cfg.NoTextures),
+		renderer:          render.New(cfg.NoTextures, cfg.SimTimeScale),
 		broadcaster:       &protocol.Broadcaster{},
 		cmdCh:             make(chan AppCmd, appCmdBufSize),
 		savedRenderConfig: savedRender,
