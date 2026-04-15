@@ -30,7 +30,37 @@ space_sim/
 
 - Go 1.24+
 - Raylib available for the local build environment
+- [buf](https://buf.build/docs/installation) — required for `make proto` (protobuf code generation); uses remote plugins hosted on buf.build, so no local `protoc-gen-go` or `protoc-gen-connect-go` installation is needed, but network access to buf.build is required
 - ffmpeg (optional — required only for video recording; see [README-extra.md](README-extra.md))
+
+### Installing buf
+
+**macOS (Homebrew):**
+```bash
+brew install bufbuild/buf/buf
+```
+
+**Linux (Homebrew — recommended; works on all distros):**
+```bash
+brew install bufbuild/buf/buf
+```
+
+**Linux (binary install — for systems without Homebrew):**
+
+`buf` is not packaged in apt or dnf repositories. Install the pre-built binary directly:
+
+```bash
+# x86_64
+BUF_VERSION=$(curl -sL https://api.github.com/repos/bufbuild/buf/releases/latest | grep tag_name | cut -d '"' -f4)
+curl -sSL "https://github.com/bufbuild/buf/releases/download/${BUF_VERSION}/buf-Linux-x86_64" -o /usr/local/bin/buf
+chmod +x /usr/local/bin/buf
+
+# ARM64
+curl -sSL "https://github.com/bufbuild/buf/releases/download/${BUF_VERSION}/buf-Linux-aarch64" -o /usr/local/bin/buf
+chmod +x /usr/local/bin/buf
+```
+
+Verify the install with `buf --version`.
 
 ## Common Commands
 
