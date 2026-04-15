@@ -1,0 +1,209 @@
+{
+  "name": "GJ 1061 System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "GJ 1061",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 10.0,
+        "mass": 2.486e+29,
+        "rotation_period": 3000.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive M5.5V star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          102,
+          84,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 150000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          80,
+          40,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.00156,
+        "surface_temperature_k": 3000,
+        "emission_color": [
+          255,
+          75,
+          25,
+          255
+        ],
+        "emission_intensity": 0.00156,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    },
+    {
+      "type": "planet",
+      "name": "GJ 1061 b",
+      "parent": "GJ 1061",
+      "orbit": {
+        "semi_major_axis": 2.1,
+        "eccentricity": 0.05,
+        "inclination": 0.02,
+        "orbital_period": 3.2073,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.26,
+        "mass": 6.629e+24,
+        "albedo": 0.1,
+        "albedo_note": "estimated – close-in potentially tidally locked"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          173,
+          110,
+          88,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "planet",
+      "name": "GJ 1061 c",
+      "parent": "GJ 1061",
+      "orbit": {
+        "semi_major_axis": 3.42,
+        "eccentricity": 0.02,
+        "inclination": 0.02,
+        "orbital_period": 6.6821,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.34,
+        "mass": 1.081e+25,
+        "albedo": 0.3,
+        "albedo_note": "estimated – potentially in habitable zone"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          126,
+          160,
+          142,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 80,
+        "principal_chemicals": [
+          "nitrogen",
+          "carbon_dioxide",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.4,
+        "cloud_composition": [
+          "water_ice",
+          "liquid_water_droplets"
+        ],
+        "color_hint": [
+          100,
+          140,
+          190,
+          120
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "GJ 1061 d",
+      "parent": "GJ 1061",
+      "orbit": {
+        "semi_major_axis": 5.4,
+        "eccentricity": 0.04,
+        "inclination": 0.02,
+        "orbital_period": 13.066,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.33,
+        "mass": 9.973e+24,
+        "albedo": 0.35,
+        "albedo_note": "estimated – outer edge of habitable zone"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          110,
+          136,
+          178,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 60,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "nitrogen",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.3,
+        "cloud_composition": [
+          "water_ice"
+        ],
+        "color_hint": [
+          130,
+          150,
+          170,
+          100
+        ]
+      }
+    }
+  ],
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  },
+  "features": []
+}

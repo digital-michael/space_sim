@@ -1,0 +1,241 @@
+{
+  "name": "Barnard's Star System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Barnard's Star",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 9.5,
+        "mass": 3.222e+29,
+        "rotation_period": 2737.4,
+        "albedo": 1.0,
+        "albedo_note": "emissive M4Ve star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          106,
+          86,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 200000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          80,
+          40,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.00351,
+        "surface_temperature_k": 3134,
+        "emission_color": [
+          255,
+          90,
+          35,
+          255
+        ],
+        "emission_intensity": 0.00351,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Barnard's Star d",
+      "parent": "Barnard's Star",
+      "orbit": {
+        "semi_major_axis": 1.88,
+        "eccentricity": 0.04,
+        "inclination": 0.02,
+        "orbital_period": 2.3402,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.15,
+        "mass": 1.57e+24,
+        "albedo": 0.15
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          176,
+          134,
+          112,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 30,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "argon"
+        ],
+        "cloud_coverage": 0.05,
+        "cloud_composition": [
+          "carbon_dioxide_ice"
+        ],
+        "color_hint": [
+          140,
+          110,
+          90,
+          60
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Barnard's Star b",
+      "parent": "Barnard's Star",
+      "orbit": {
+        "semi_major_axis": 2.29,
+        "eccentricity": 0.03,
+        "inclination": 0.02,
+        "orbital_period": 3.1542,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.17,
+        "mass": 1.786e+24,
+        "albedo": 0.1,
+        "albedo_note": "estimated – cold planet close to M-dwarf"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          148,
+          150,
+          134,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Barnard's Star c",
+      "parent": "Barnard's Star",
+      "orbit": {
+        "semi_major_axis": 2.74,
+        "eccentricity": 0.08,
+        "inclination": 0.02,
+        "orbital_period": 4.1244,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.18,
+        "mass": 2e+24,
+        "albedo": 0.2
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          124,
+          146,
+          176,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 50,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "nitrogen"
+        ],
+        "cloud_coverage": 0.15,
+        "cloud_composition": [
+          "carbon_dioxide_ice"
+        ],
+        "color_hint": [
+          150,
+          120,
+          100,
+          80
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Barnard's Star e",
+      "parent": "Barnard's Star",
+      "orbit": {
+        "semi_major_axis": 3.81,
+        "eccentricity": 0.04,
+        "inclination": 0.02,
+        "orbital_period": 6.7392,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.14,
+        "mass": 1.153e+24,
+        "albedo": 0.35
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          176,
+          162,
+          188,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  },
+  "features": []
+}

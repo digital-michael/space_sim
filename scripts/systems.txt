@@ -1,0 +1,92 @@
+/*
+
+Tour every configured system.
+Each block loads one system, waits 2 seconds so the welcome banner is visible,
+then jumps through every planet in that system with no extra delay.
+
+*/
+
+sync on
+
+hud off
+hud info on
+
+system load data/systems/alpha_centauri_system.json
+sleep 2
+for $p in planets
+  nav jump "$p" 4
+  sleep 1
+endfor
+
+system load data/systems/barnards_star_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/epsilon_eridani_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/epsilon_indi_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/gj_1061_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/luhman_16_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/luytens_star_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/sirius_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/solar_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/teegardens_star_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+system load data/systems/wolf_359_system.json
+sleep 2
+for $p in planets
+  nav jump "$p"
+  sleep 1
+endfor
+
+sync off
+exit

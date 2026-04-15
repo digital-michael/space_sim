@@ -1,0 +1,208 @@
+{
+  "name": "Teegarden's Star System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Teegarden's Star",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 8.5,
+        "mass": 1.929e+29,
+        "rotation_period": 2353.2,
+        "albedo": 1.0,
+        "albedo_note": "emissive M7V star – nearby ultra-cool red dwarf"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          104,
+          82,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 100000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          80,
+          40,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.000732,
+        "surface_temperature_k": 2904,
+        "emission_color": [
+          255,
+          65,
+          18,
+          255
+        ],
+        "emission_intensity": 0.000732,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Teegarden's Star b",
+      "parent": "Teegarden's Star",
+      "orbit": {
+        "semi_major_axis": 2.59,
+        "eccentricity": 0.03,
+        "inclination": 0.02,
+        "orbital_period": 4.90634,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.29,
+        "mass": 6.928e+24,
+        "albedo": 0.28,
+        "albedo_note": "estimated – potentially habitable zone planet"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          144,
+          168,
+          132,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 80,
+        "principal_chemicals": [
+          "nitrogen",
+          "carbon_dioxide",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.5,
+        "cloud_composition": [
+          "water_ice",
+          "liquid_water_droplets"
+        ],
+        "color_hint": [
+          110,
+          150,
+          200,
+          130
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Teegarden's Star c",
+      "parent": "Teegarden's Star",
+      "orbit": {
+        "semi_major_axis": 4.55,
+        "eccentricity": 0.04,
+        "inclination": 0.02,
+        "orbital_period": 11.416,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.28,
+        "mass": 6.27e+24,
+        "albedo": 0.25,
+        "albedo_note": "estimated – outer habitable zone margin"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          112,
+          138,
+          176,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 60,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "nitrogen"
+        ],
+        "cloud_coverage": 0.2,
+        "cloud_composition": [
+          "water_ice"
+        ],
+        "color_hint": [
+          130,
+          140,
+          160,
+          100
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Teegarden's Star d",
+      "parent": "Teegarden's Star",
+      "orbit": {
+        "semi_major_axis": 7.91,
+        "eccentricity": 0.07,
+        "inclination": 0.03,
+        "orbital_period": 26.13,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.24,
+        "mass": 4.897e+24,
+        "albedo": 0.1,
+        "albedo_note": "estimated – cold outer planet"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          154,
+          146,
+          184,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  },
+  "features": []
+}

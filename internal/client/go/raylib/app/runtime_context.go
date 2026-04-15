@@ -1,33 +1,37 @@
 package app
 
 import (
+	"time"
+
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	"github.com/digital-michael/space_sim/internal/sim/engine"
 )
 
 // RuntimeContext holds mutable runtime UI/window state for the running app.
 type RuntimeContext struct {
-	ScreenWidth      int32
-	ScreenHeight     int32
-	WindowedWidth    int32
-	WindowedHeight   int32
-	RenderWidth      int32
-	RenderHeight     int32
-	RenderMode       RenderMode
-	Fullscreen       bool
-	Resizable        bool
-	AsteroidDataset  engine.AsteroidDataset
-	HUDVisible       bool        // master switch — false hides all HUD categories
-	HUD              ui.HUDState // per-category visibility (only consulted when HUDVisible is true)
-	HUDDialogVisible bool        // Opt+H toggle for the HUD settings overlay
-	HUDDialogRow     int         // keyboard-selected row in HUD dialog (0-2)
-	HelpVisible      bool
-	RecordingActive  bool // true while recording to video
-	RecordingPaused  bool // true while recording is paused (freeze-frame)
-	MouseModeEnabled bool
-	LabelMode        ui.LabelMode
-	CameraSpeed      float32
-	MouseSensitivity float32
+	ScreenWidth       int32
+	ScreenHeight      int32
+	WindowedWidth     int32
+	WindowedHeight    int32
+	RenderWidth       int32
+	RenderHeight      int32
+	RenderMode        RenderMode
+	Fullscreen        bool
+	Resizable         bool
+	AsteroidDataset   engine.AsteroidDataset
+	HUDVisible        bool        // master switch — false hides all HUD categories
+	HUD               ui.HUDState // per-category visibility (only consulted when HUDVisible is true)
+	HUDDialogVisible  bool        // Opt+H toggle for the HUD settings overlay
+	HUDDialogRow      int         // keyboard-selected row in HUD dialog (0-2)
+	HelpVisible       bool
+	RecordingActive   bool // true while recording to video
+	RecordingPaused   bool // true while recording is paused (freeze-frame)
+	MouseModeEnabled  bool
+	LabelMode         ui.LabelMode
+	CameraSpeed       float32
+	MouseSensitivity  float32
+	WelcomeBannerText string
+	WelcomeBannerAt   time.Time
 }
 
 // NewRuntimeContext creates the initial runtime state from app config.

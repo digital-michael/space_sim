@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	spatial "github.com/digital-michael/space_sim/internal/client/go/raylib/spatial"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
@@ -79,9 +81,22 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		aspect := float32(renderWidth) / float32(renderHeight)
 		rl.SetMatrixProjection(rl.MatrixPerspective(engine.CameraFOV*rl.Deg2rad, aspect, engine.CameraNearPlane, engine.CameraFarPlane))
 
-		camera := rl.Camera3D{
+		// worldCam: absolute world-space positions — used only for frustum culling.
+		// Culling math must operate in world space to correctly eliminate out-of-view objects.
+		worldCam := rl.Camera3D{
 			Position:   rl.Vector3{X: session.cameraState.Position.X, Y: session.cameraState.Position.Y, Z: session.cameraState.Position.Z},
 			Target:     rl.Vector3Add(rl.Vector3{X: session.cameraState.Position.X, Y: session.cameraState.Position.Y, Z: session.cameraState.Position.Z}, rl.Vector3{X: session.cameraState.Forward.X, Y: session.cameraState.Forward.Y, Z: session.cameraState.Forward.Z}),
+			Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
+			Fovy:       engine.CameraFOV,
+			Projection: rl.CameraPerspective,
+		}
+
+		// camera: floating-origin — Raylib always works near (0,0,0).
+		// All object positions are shifted by -cameraPos before being passed to Draw calls,
+		// eliminating float32 catastrophic cancellation at large camera distances (DEF-001).
+		camera := rl.Camera3D{
+			Position:   rl.Vector3{},
+			Target:     rl.Vector3{X: session.cameraState.Forward.X, Y: session.cameraState.Forward.Y, Z: session.cameraState.Forward.Z},
 			Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
 			Fovy:       engine.CameraFOV,
 			Projection: rl.CameraPerspective,
@@ -101,9 +116,9 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		if session.inputState.PerfOptions.FrustumCulling {
 			preCullCount := len(objectsToRender)
 			if session.inputState.PerfOptions.SpatialPartition {
-				objectsToRender = spatial.SpatialFrustumCull(objectsToRender, camera)
+				objectsToRender = spatial.SpatialFrustumCull(objectsToRender, worldCam)
 			} else {
-				objectsToRender = spatial.FrustumCullObjects(objectsToRender, camera)
+				objectsToRender = spatial.FrustumCullObjects(objectsToRender, worldCam)
 			}
 
 			postCullCount := len(objectsToRender)
@@ -173,6 +188,14 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		if a.runtime.RecordingActive {
 			a.renderer.DrawRecordingIndicator(a.runtime.RecordingPaused)
 		}
+		if a.runtime.WelcomeBannerText != "" {
+			elapsed := time.Since(a.runtime.WelcomeBannerAt)
+			if elapsed >= 2*time.Second {
+				a.runtime.WelcomeBannerText = ""
+			} else {
+				a.renderer.DrawWelcomeBanner(a.runtime.WelcomeBannerText, elapsed)
+			}
+		}
 
 		a.renderer.EndFrame(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
 
@@ -205,6 +228,12 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			session = newSession
 			a.worldPtr.Store(newSession.sim)
 			a.runtime.HelpVisible = false
+			systemName := readSystemDisplayName(pendingSystemPath)
+			if systemName == "" {
+				systemName = filepath.Base(pendingSystemPath)
+			}
+			a.runtime.WelcomeBannerText = "Welcome to " + systemName
+			a.runtime.WelcomeBannerAt = time.Now()
 			sessionCancel = startSession(session)
 			log.Printf("Reloaded runtime session using %s", pendingSystemPath)
 		}

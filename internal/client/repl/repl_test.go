@@ -678,19 +678,19 @@ func TestParseForHeader(t *testing.T) {
 		{"foreach planets as X:", "", "", "", false}, // wrong keyword
 	}
 	for _, c := range cases {
-		group, varName, sliceSpec, ok := parseForHeader(c.input)
+		h, ok := parseForHeader(c.input)
 		if ok != c.ok {
 			t.Errorf("parseForHeader(%q): ok=%v want %v", c.input, ok, c.ok)
 			continue
 		}
-		if ok && group != c.group {
-			t.Errorf("parseForHeader(%q): group=%q want %q", c.input, group, c.group)
+		if ok && h.group != c.group {
+			t.Errorf("parseForHeader(%q): group=%q want %q", c.input, h.group, c.group)
 		}
-		if ok && varName != c.varName {
-			t.Errorf("parseForHeader(%q): varName=%q want %q", c.input, varName, c.varName)
+		if ok && h.varName != c.varName {
+			t.Errorf("parseForHeader(%q): varName=%q want %q", c.input, h.varName, c.varName)
 		}
-		if ok && sliceSpec != c.sliceSpec {
-			t.Errorf("parseForHeader(%q): sliceSpec=%q want %q", c.input, sliceSpec, c.sliceSpec)
+		if ok && h.sliceSpec != c.sliceSpec {
+			t.Errorf("parseForHeader(%q): sliceSpec=%q want %q", c.input, h.sliceSpec, c.sliceSpec)
 		}
 	}
 }
@@ -787,6 +787,57 @@ func TestREPL_ForLoop_IndentedBody_Tabs(t *testing.T) {
 	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
 	if !strings.Contains(out.String(), "ok") {
 		t.Errorf("expected 'ok' ack with tab-indented body, got:\n%s", out.String())
+	}
+}
+
+func TestREPL_ForLoop_Systems(t *testing.T) {
+	_, out, r := newTestServer(t)
+	input := "for systems as S:\nsystem load S\n\nquit\n"
+	r.Run(context.Background(), strings.NewReader(input)) //nolint:errcheck
+	if strings.Count(out.String(), "ok") != 2 {
+		t.Errorf("expected 2 'ok' acks (one per system), got:\n%s", out.String())
+	}
+}
+
+func TestSystemMatchesActive(t *testing.T) {
+	cases := []struct {
+		name      string
+		requested string
+		active    *v1.SystemInfo
+		want      bool
+	}{
+		{
+			name:      "exact relative path",
+			requested: "data/systems/solar_system.json",
+			active:    &v1.SystemInfo{Label: "solar_system.json", Path: "data/systems/solar_system.json"},
+			want:      true,
+		},
+		{
+			name:      "relative requested absolute active path",
+			requested: "data/systems/solar_system.json",
+			active:    &v1.SystemInfo{Label: "solar_system.json", Path: "/tmp/space_sim/data/systems/solar_system.json"},
+			want:      true,
+		},
+		{
+			name:      "filename requested absolute active path",
+			requested: "solar_system.json",
+			active:    &v1.SystemInfo{Label: "solar_system.json", Path: "/tmp/space_sim/data/systems/solar_system.json"},
+			want:      true,
+		},
+		{
+			name:      "different systems",
+			requested: "data/systems/alpha_centauri_system.json",
+			active:    &v1.SystemInfo{Label: "solar_system.json", Path: "/tmp/space_sim/data/systems/solar_system.json"},
+			want:      false,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := systemMatchesActive(tc.requested, tc.active); got != tc.want {
+				t.Fatalf("systemMatchesActive(%q, %+v) = %v, want %v", tc.requested, tc.active, got, tc.want)
+			}
+		})
 	}
 }
 

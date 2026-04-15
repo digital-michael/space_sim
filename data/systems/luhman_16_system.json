@@ -1,0 +1,146 @@
+{
+  "name": "Luhman 16 System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Luhman 16 A",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 7.0,
+        "mass": 6.719e+28,
+        "rotation_period": 6.94,
+        "albedo": 1.0,
+        "albedo_note": "emissive L7.5 brown dwarf"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          200,
+          125,
+          78,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 80000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.7,
+        "cloud_composition": [
+          "iron_droplets",
+          "silicate_dust",
+          "potassium_chloride"
+        ],
+        "color_hint": [
+          180,
+          80,
+          30,
+          200
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 9.35e-05,
+        "surface_temperature_k": 1500,
+        "emission_color": [
+          220,
+          100,
+          28,
+          255
+        ],
+        "emission_intensity": 9.35e-05,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    },
+    {
+      "type": "star",
+      "name": "Luhman 16 B",
+      "parent": "Luhman 16 A",
+      "orbit": {
+        "semi_major_axis": 352,
+        "eccentricity": 0.344,
+        "inclination": 1.395,
+        "longitude_ascending_node": 2.269,
+        "argument_periapsis": 2.385,
+        "orbital_period": 9694.0,
+        "initial_mean_anomaly": "1.1"
+      },
+      "physical": {
+        "radius": 6.5,
+        "mass": 5.58e+28,
+        "rotation_period": 5.28,
+        "albedo": 1.0,
+        "albedo_note": "emissive T0.5 brown dwarf with patchy cloud variability"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          148,
+          108,
+          170,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 80000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.5,
+        "cloud_composition": [
+          "iron_droplets",
+          "silicate_dust",
+          "methane_ice"
+        ],
+        "color_hint": [
+          160,
+          70,
+          25,
+          200
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 8.7e-05,
+        "surface_temperature_k": 1300,
+        "emission_color": [
+          200,
+          75,
+          18,
+          255
+        ],
+        "emission_intensity": 8.7e-05,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    }
+  ],
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  },
+  "features": []
+}

@@ -279,6 +279,10 @@ func (r *Renderer) DrawZoomIndicator(zoomValue float32) {
 	drawZoomIndicator(zoomValue)
 }
 
+func (r *Renderer) DrawWelcomeBanner(text string, elapsed time.Duration) {
+	drawWelcomeBanner(text, elapsed)
+}
+
 // DrawRecordingIndicator draws a ● REC (active) or ⏸ REC (paused) badge in
 // the top-right corner of the render surface when recording is active.
 func (r *Renderer) DrawRecordingIndicator(paused bool) {
@@ -516,9 +520,9 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 	for _, batch := range batches {
 		for _, obj := range batch.objects {
 			pos := rl.Vector3{
-				X: float32(obj.Anim.Position.X),
-				Y: float32(obj.Anim.Position.Y),
-				Z: float32(obj.Anim.Position.Z),
+				X: obj.Anim.Position.X - cameraPos.X,
+				Y: obj.Anim.Position.Y - cameraPos.Y,
+				Z: obj.Anim.Position.Z - cameraPos.Z,
 			}
 
 			color := rl.Color{
@@ -552,9 +556,9 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 // drawObject renders a single object
 func drawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool) {
 	pos := rl.Vector3{
-		X: float32(obj.Anim.Position.X),
-		Y: float32(obj.Anim.Position.Y),
-		Z: float32(obj.Anim.Position.Z),
+		X: obj.Anim.Position.X - cameraPos.X,
+		Y: obj.Anim.Position.Y - cameraPos.Y,
+		Z: obj.Anim.Position.Z - cameraPos.Z,
 	}
 
 	color := rl.Color{
@@ -729,8 +733,12 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 
 	// Project object positions to screen space and draw labels
 	for _, obj := range labeledObjects {
-		// Get object position in 3D
-		objPos := rl.Vector3{X: obj.Anim.Position.X, Y: obj.Anim.Position.Y, Z: obj.Anim.Position.Z}
+		// Camera-relative position keeps GetWorldToScreenEx numerically stable.
+		objPos := rl.Vector3{
+			X: obj.Anim.Position.X - cameraState.Position.X,
+			Y: obj.Anim.Position.Y - cameraState.Position.Y,
+			Z: obj.Anim.Position.Z - cameraState.Position.Z,
+		}
 
 		// Project to screen space
 		screenPos := rl.GetWorldToScreenEx(objPos, camera, int32(currentScreenWidth()), int32(currentScreenHeight()))
@@ -1026,7 +1034,7 @@ func drawHUDHelp() {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	helpY := int32(currentScreenHeight()) - scaledInt32(30)
-	rl.DrawText("? for help | "+modAlt+"+H HUD settings | "+modAlt+"+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
+	rl.DrawText("? for help | "+modSuper+"+S systems | "+modAlt+"+H HUD settings | "+modAlt+"+Q to quit", leftPad, helpY, fontLarge, rl.Gray)
 }
 
 // drawZoomIndicator draws a visual indicator when zooming
@@ -1073,6 +1081,42 @@ func drawZoomIndicator(zoomValue float32) {
 		// Zoom out - bar grows from center to left
 		rl.DrawRectangle(centerX-barLength, barY, barLength, 8, color)
 	}
+}
+
+func drawWelcomeBanner(text string, elapsed time.Duration) {
+	if text == "" {
+		return
+	}
+
+	alpha := uint8(255)
+	if elapsed > time.Second {
+		fadeDuration := time.Second
+		fadeElapsed := elapsed - time.Second
+		if fadeElapsed >= fadeDuration {
+			return
+		}
+		fadeRatio := 1.0 - float64(fadeElapsed)/float64(fadeDuration)
+		alpha = uint8(math.Round(255.0 * fadeRatio))
+	}
+
+	centerX := int32(currentScreenWidth() / 2)
+	centerY := int32(currentScreenHeight() / 2)
+	fontSize := scaledInt32(28)
+	padX := scaledInt32(24)
+	padY := scaledInt32(16)
+	textWidth := rl.MeasureText(text, fontSize)
+	bgWidth := int32(textWidth) + padX*2
+	bgHeight := fontSize + padY*2
+	x := centerX - bgWidth/2
+	y := centerY - bgHeight/2
+
+	bgAlpha := uint8(math.Round(float64(alpha) * 0.7))
+	borderAlpha := uint8(math.Round(float64(alpha) * 0.9))
+	textColor := rl.Color{R: 255, G: 255, B: 255, A: alpha}
+
+	rl.DrawRectangle(x, y, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: bgAlpha})
+	rl.DrawRectangleLinesEx(rl.Rectangle{X: float32(x), Y: float32(y), Width: float32(bgWidth), Height: float32(bgHeight)}, 2, rl.Color{R: 150, G: 210, B: 255, A: borderAlpha})
+	rl.DrawText(text, centerX-int32(textWidth)/2, y+padY, fontSize, textColor)
 }
 
 // drawTrackingInfo displays comprehensive information about the tracked object in the lower right
@@ -1601,9 +1645,21 @@ func drawSystemSelectorUI(inputState *ui.InputState) {
 	rl.DrawText("UP/DOWN: select, ENTER: load, ESC: cancel", bgX+scaledInt32(18), bgY+scaledInt32(42), hintFont, rl.LightGray)
 	rl.DrawText(modSuper+"+S opens this selector", bgX+scaledInt32(18), bgY+scaledInt32(58), hintFont, rl.Gray)
 
-	activeLabel := filepath.Base(inputState.ActiveSystemPath)
-	if activeLabel == "." || activeLabel == string(filepath.Separator) || activeLabel == "" {
-		activeLabel = inputState.ActiveSystemPath
+	activeLabel := ""
+	for _, option := range inputState.SystemOptions {
+		if option.Path == inputState.ActiveSystemPath {
+			activeLabel = option.DisplayName
+			if activeLabel == "" {
+				activeLabel = option.Label
+			}
+			break
+		}
+	}
+	if activeLabel == "" {
+		activeLabel = filepath.Base(inputState.ActiveSystemPath)
+		if activeLabel == "." || activeLabel == string(filepath.Separator) || activeLabel == "" {
+			activeLabel = inputState.ActiveSystemPath
+		}
 	}
 	rl.DrawText("Current: "+activeLabel, bgX+scaledInt32(18), bgY+scaledInt32(86), statusFont, rl.Color{R: 140, G: 210, B: 255, A: 255})
 
@@ -1641,12 +1697,16 @@ func drawSystemSelectorUI(inputState *ui.InputState) {
 
 			labelColor := rl.White
 			suffix := ""
+			labelText := option.DisplayName
+			if labelText == "" {
+				labelText = option.Label
+			}
 			if option.Path == inputState.ActiveSystemPath {
 				labelColor = rl.Color{R: 140, G: 210, B: 255, A: 255}
 				suffix = " [current]"
 			}
 
-			rl.DrawText(option.Label+suffix, bgX+scaledInt32(44), y+scaledInt32(4), itemFont, labelColor)
+			rl.DrawText(labelText+suffix, bgX+scaledInt32(44), y+scaledInt32(4), itemFont, labelColor)
 		}
 	}
 
@@ -2130,6 +2190,10 @@ func drawHelpScreen() {
 
 	rl.DrawText(modAlt+"+P", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText(modSuper+"+S", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Open runtime system selector", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText(modAlt+"+R", rightCol, y, bodySize, rl.White)

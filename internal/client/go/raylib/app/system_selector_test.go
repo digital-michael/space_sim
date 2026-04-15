@@ -9,9 +9,13 @@ import (
 func TestDiscoverSystemOptionsFromDirFiltersAndSorts(t *testing.T) {
 	tempDir := t.TempDir()
 
-	files := []string{"zeta_system.json", "alpha_system.JSON", "notes.txt"}
-	for _, name := range files {
-		if err := os.WriteFile(filepath.Join(tempDir, name), []byte("{}"), 0644); err != nil {
+	files := map[string]string{
+		"zeta_system.json":  `{"name":"Zeta System"}`,
+		"alpha_system.JSON": `{"name":"Alpha System"}`,
+		"notes.txt":         "{}",
+	}
+	for name, content := range files {
+		if err := os.WriteFile(filepath.Join(tempDir, name), []byte(content), 0644); err != nil {
 			t.Fatalf("WriteFile(%q) failed: %v", name, err)
 		}
 	}
@@ -29,8 +33,14 @@ func TestDiscoverSystemOptionsFromDirFiltersAndSorts(t *testing.T) {
 	if options[0].Label != "alpha_system.JSON" {
 		t.Fatalf("options[0].Label = %q, want alpha_system.JSON", options[0].Label)
 	}
+	if options[0].DisplayName != "Alpha System" {
+		t.Fatalf("options[0].DisplayName = %q, want Alpha System", options[0].DisplayName)
+	}
 	if options[1].Label != "zeta_system.json" {
 		t.Fatalf("options[1].Label = %q, want zeta_system.json", options[1].Label)
+	}
+	if options[1].DisplayName != "Zeta System" {
+		t.Fatalf("options[1].DisplayName = %q, want Zeta System", options[1].DisplayName)
 	}
 	for _, option := range options {
 		if !filepath.IsAbs(option.Path) {

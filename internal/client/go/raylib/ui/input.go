@@ -16,8 +16,9 @@ const (
 
 // SystemOption describes one runtime-loadable system entry for the selector UI.
 type SystemOption struct {
-	Label string
-	Path  string
+	Label       string
+	DisplayName string
+	Path        string
 }
 
 // PerformanceOptions holds runtime rendering/physics optimisation settings.

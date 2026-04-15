@@ -1,0 +1,130 @@
+{
+  "name": "Sirius System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Sirius A",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 46.7,
+        "mass": 4.103e+30,
+        "albedo": 1.0,
+        "albedo_note": "emissive A1V star – brightest in night sky"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          225,
+          235,
+          255,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 3000000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          200,
+          220,
+          255,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 25.4,
+        "surface_temperature_k": 9940,
+        "emission_color": [
+          200,
+          220,
+          255,
+          255
+        ],
+        "emission_intensity": 25.4
+      }
+    },
+    {
+      "type": "star",
+      "name": "Sirius B",
+      "parent": "Sirius A",
+      "orbit": {
+        "semi_major_axis": 1980,
+        "eccentricity": 0.591,
+        "inclination": 2.38,
+        "longitude_ascending_node": 0.792,
+        "argument_periapsis": 2.603,
+        "orbital_period": 18311.0,
+        "initial_mean_anomaly": "0.7"
+      },
+      "physical": {
+        "radius": 3.6,
+        "mass": 2.025e+30,
+        "albedo": 1.0,
+        "albedo_note": "emissive DA white dwarf – no atmosphere"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          245,
+          248,
+          255,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "hydrogen"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          255,
+          255,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.0244,
+        "surface_temperature_k": 25200,
+        "emission_color": [
+          210,
+          225,
+          255,
+          255
+        ],
+        "emission_intensity": 0.0244,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    }
+  ],
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  },
+  "features": []
+}

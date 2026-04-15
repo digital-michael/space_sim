@@ -4,10 +4,11 @@ package engine
 type MaterialType int
 
 const (
-	MaterialDiffuse  MaterialType = iota // Matte surface
-	MaterialEmissive                     // Glowing (sun)
-	MaterialMetallic                     // Shiny metal (asteroids)
-	MaterialMirror                       // Reflective (satellites)
+	MaterialDiffuse        MaterialType = iota // Matte surface
+	MaterialEmissive                           // Glowing (sun)
+	MaterialMetallic                           // Shiny metal (asteroids)
+	MaterialMirror                             // Reflective (satellites)
+	MaterialDiffuseThermal                     // Thermally self-luminous but not a star (gas giants, volcanic Io)
 )
 
 // ObjectCategory defines object grouping for UI navigation.
@@ -57,9 +58,24 @@ type ObjectMetadata struct {
 	Mass           float64        // Mass in kilograms
 	PhysicalRadius float32        // Physical size (or outer radius for rings)
 	InnerRadius    float32        // Inner radius (rings only; 0 for spheres)
-	Color          Color          // Display color
+	Color          Color          // Display color (fallback when no texture)
 	Material       MaterialType   // Rendering material
 	Importance     int            // Rendering priority 0-100
+
+	// Texture and surface
+	TexturePath string  // Path to diffuse texture image; empty means use Color
+	Albedo      float32 // Surface albedo 0–1; used for lighting calculations
+
+	// Luminosity (stars and thermally glowing bodies)
+	SelfLuminous        bool    // True if the body emits its own light
+	SolarLuminosity     float32 // Luminosity relative to Sol (1.0 = Sol)
+	SurfaceTemperatureK float32 // Surface or effective temperature in Kelvin
+	EmissionColor       Color   // Dominant emission color for light tinting
+
+	// Atmosphere
+	AtmosphereColorHint   Color   // Tint color for atmosphere overlay rendering
+	AtmosphereThicknessKm float32 // Nominal atmosphere thickness in km (0 = no atmosphere)
+	CloudCoverage         float32 // 0–1 fraction of surface covered by clouds
 
 	// Physical rotation
 	RotationPeriod float32 // Rotation period in hours

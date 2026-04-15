@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-04-09
+2026-04-13
 
 ## Table of Contents
 1. How to Use This File
@@ -36,6 +36,9 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 	F-012 Federated Compute — Collaborative Simulation Offload
 	F-013 N-Body Barycenter Integration
 	F-014 Nearby Systems Expansion Backlog
+	F-015 Epoch-Accurate Initial Mean Anomaly ("Start From Today")
+	F-016 Wire Rendering Data Pipeline (Schema → Engine → Renderer)
+	F-017 Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -671,6 +674,91 @@ N-body integration replaces this with a force-sum approach: each body computes g
 - [ ] Decide whether Sirius and Luhman 16 belong in the same near-term content phase or in a separate multi-star showcase phase
 - [ ] Define a lightweight standard for provisional vs. confirmed exoplanet entries before adding uncertain systems
 - [ ] Add new `data/systems/*.json` files in backlog order, validating each one with the simulator before moving to the next
+
+---
+
+---
+
+### F-015 — Epoch-Accurate Initial Mean Anomaly ("Start From Today")
+
+**Value**: Replace `"initial_mean_anomaly": "random"` on all solar system bodies with computed J2000 mean anomalies advanced to the actual launch date so the simulator opens with positions matching the real sky, making it useful as a reference and teaching tool alongside the existing free-running mode.
+**Status**: 📋 Not started
+**Priority**: Medium — high fidelity value; no engine change required; pure data work
+
+#### Background
+
+Every solar system body currently uses `"initial_mean_anomaly": "random"`, which is honest — the simulation is not a planetarium. To start from a real date the mean anomaly `M` for each body must be computed as:
+
+```
+M = M0 + n × (t - t0)
+```
+
+Where `M0` is the mean anomaly at the J2000 epoch (2000-01-01 12:00 TT), `n = 360 / orbital_period_days` is the mean motion in degrees/day, and `t - t0` is elapsed days since J2000. This can be precomputed for any target date and written directly into each body's `initial_mean_anomaly` field as a numeric value (degrees or radians, matching the existing unit convention).
+
+Exoplanet systems are excluded — orbital phases are not observationally constrained to a known epoch for most confirmed exoplanets.
+
+#### Scope
+
+- Solar system only: Sol, all 8 planets, all dwarf planets, all named moons.
+- Ring systems and belt features do not have a meaningful orbital phase.
+- The REPL or a CLI flag should eventually allow overriding the epoch date at runtime without needing to regenerate the data file.
+
+#### Work Items
+
+- [ ] Confirm unit convention for `initial_mean_anomaly` in the existing loader (`degrees` vs `radians`)
+- [ ] Write a script to compute and write J2000-epoch mean anomalies for each named solar system body using published orbital elements (JPL Horizons or equivalent)
+- [ ] Add a `epoch` top-level field to `solar_system.json` (e.g. `"epoch": "2000-01-01T12:00:00TT"`) so the loader knows what the anomaly values are relative to
+- [ ] Add optional `--epoch YYYY-MM-DD` flag to the REPL / direct binary to substitute a different start date without rebuilding the JSON
+- [ ] Validate by checking Earth, Mars, and Jupiter positions against a known ephemeris for the chosen date
+
+---
+
+### F-016 — Wire Rendering Data Pipeline (Schema → Engine → Renderer)
+
+**Value**: The JSON schema now carries `rendering.texture_image`, `rendering.fallback_color`, `rendering.material`, `physical.albedo`, `atmosphere`, and `luminosity` for every body. None of these fields except `color` and `material` flow past the loader — `ObjectMetadata` has no albedo, texture path, or luminosity fields, and the renderer only reads `Meta.Color` and `Meta.Material`. This item creates the plumbing that F-003 (texture rendering) and F-005 (physical star lighting) both depend on.
+**Status**: 📋 Not started
+**Priority**: High — blocking prerequisite for F-003 and F-005
+**Depends on**: Nothing; schema is already complete
+
+#### Work Items
+
+- [ ] Add `TexturePath`, `Albedo float32`, `SelfLuminous bool`, `SolarLuminosity float32`, `SurfaceTemperatureK float32`, and `EmissionColor engine.Color` fields to `ObjectMetadata` in `internal/sim/engine/object.go`
+- [ ] Update `loader.go` `createBodyFromConfig` to populate all new `ObjectMetadata` fields from `RenderingConfig`, `PhysicalConfig`, and the `luminosity` block (add `LuminosityConfig` struct to `schema.go` first)
+- [ ] Update `applyOverrides` in `loader.go` to merge the new fields correctly
+- [ ] Add `"diffuse_thermal"` as a recognized material string in `parseBodyMaterial` in `loader.go` (currently falls through to `MaterialDiffuse`; give it its own enum value in `engine/object.go`)
+- [ ] Thread texture path and albedo through to the Raylib renderer's `drawObject` / `drawObjectsInstanced` so F-003 can bind the texture without structural changes
+- [ ] Thread luminosity fields to the renderer's light-source pass so F-005 can use star position + luminosity without structural changes
+- [ ] Add `atmosphere` fields (`ThicknessKm`, `ColorHint`, `CloudCoverage`) to `ObjectMetadata` and populate from loader (needed for F-003 atmosphere overlay)
+- [ ] `make test` must stay green; add a loader test asserting Sol's `TexturePath` and `SolarLuminosity` are populated after loading `solar_system.json`
+
+---
+
+### F-017 — Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
+
+**Value**: Upgrade the renderer from Phong point-light shading (F-005) to physically plausible lighting with inter-body shadows, atmospheric glow, and post-process effects. Makes the sim visually convincing for eclipses, transits, and close-approach scenarios.
+**Status**: 📋 Not started
+**Priority**: Low — high complexity; depends on F-003 (texture binding) and F-005 (physical star lights) being complete first
+**Depends on**: F-016 (data pipeline), F-003 (textures), F-005 (star lights)
+
+#### Feature Checklist
+
+| Feature | Technique | Notes |
+|---|---|---|
+| **Shadows from blocking bodies** | Shadow map per star — render scene depth from star POV into a depth framebuffer; sample in main fragment shader | Raylib requires a custom GLSL shader pair; no built-in support |
+| **Eclipse / umbra-penumbra** | Per-fragment ray–sphere intersection against all bodies between fragment and star | Can be approximated as soft shadow kernel in the shadow map, or computed analytically in shader |
+| **Atmospheric scattering** (limb glow, haze) | Rayleigh/Mie scattering pass or screen-space atmosphere shader driven by `atmosphere.color_hint` and `thickness_km` | `AtmosphereThicknessKm` and `AtmosphereColorHint` already flow through `ObjectMetadata` after F-016 |
+| **Bloom / star glow corona** | Post-process blur pass on the render texture; extract bright pixels above threshold, Gaussian blur, additive composite | Render target already exists; needs a second pass stage |
+| **PBR (specular, roughness, metallic response)** | PBR shader with bound roughness/metallic maps; `albedo` from `ObjectMetadata.Albedo` | Replaces Phong entirely; roughness map sourced from `rendering.specular_map` field |
+| **Night-side emission** (Earth city lights) | Blend a night-lights texture where `dot(N, L) < 0`; controlled by a second `texture_image` slot | Requires a second texture path field (e.g. `rendering.night_texture_image`) in schema and `ObjectMetadata` |
+
+#### Work Items
+
+- [ ] Design and implement a shadow-map render pass: render depth from each star's position into a `rl.RenderTexture2D`, pass the depth texture and light-space matrix as shader uniforms to the main pass
+- [ ] Write a GLSL fragment shader (`body.frag`) that samples the shadow map and computes Phong + shadow attenuation; replace `DrawSphereEx` with `DrawMesh` + custom shader
+- [ ] Add a post-process pass after `EndTextureMode`: extract luminance above a threshold, Gaussian blur the bright layer, additively composite back onto the scene
+- [ ] Implement Rayleigh scattering as a screen-space approximation: for each atmosphere-bearing body, draw an additive-blended disc slightly larger than the sphere, color from `AtmosphereColorHint`, scaled by `AtmosphereThicknessKm`
+- [ ] Add `NightTexturePath string` to `ObjectMetadata` and `rendering.night_texture_image` to JSON schema; blend night texture where the star is below the horizon
+- [ ] Expose `--no-shadows`, `--no-bloom`, `--no-atmosphere` CLI flags; persist in `app.json`
 
 ---
 

@@ -18,17 +18,49 @@
         "mass": 2.187e+30,
         "rotation_period": 528.0,
         "axial_tilt": 0.0,
-        "color": [
+        "albedo": 1.0,
+        "albedo_note": "emissive G2V star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
           255,
           244,
           234,
           255
         ]
       },
-      "rendering": {
-        "material": "emissive"
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 1000000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          244,
+          234,
+          180
+        ]
       },
-      "importance": 100
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 1.519,
+        "surface_temperature_k": 5790,
+        "emission_color": [
+          255,
+          245,
+          222,
+          255
+        ],
+        "emission_intensity": 1.519
+      }
     },
     {
       "type": "star",
@@ -48,17 +80,49 @@
         "mass": 1.804e+30,
         "rotation_period": 984.0,
         "axial_tilt": 0.0,
-        "color": [
+        "albedo": 1.0,
+        "albedo_note": "emissive K1V star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
           255,
           204,
           144,
           255
         ]
       },
-      "rendering": {
-        "material": "emissive"
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 800000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          204,
+          144,
+          180
+        ]
       },
-      "importance": 100
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.5,
+        "surface_temperature_k": 5260,
+        "emission_color": [
+          255,
+          210,
+          155,
+          255
+        ],
+        "emission_intensity": 0.5
+      }
     },
     {
       "type": "star",
@@ -78,17 +142,50 @@
         "mass": 2.43e+29,
         "rotation_period": 1992.0,
         "axial_tilt": 0.0,
-        "color": [
+        "albedo": 1.0,
+        "albedo_note": "emissive M5.5Ve flare star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
           255,
           120,
           90,
           255
         ]
       },
-      "rendering": {
-        "material": "emissive"
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 300000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          120,
+          90,
+          180
+        ]
       },
-      "importance": 100
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.00155,
+        "surface_temperature_k": 3042,
+        "emission_color": [
+          255,
+          80,
+          30,
+          255
+        ],
+        "emission_intensity": 0.00155,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
     },
     {
       "type": "planet",
@@ -108,17 +205,41 @@
         "mass": 7.6e+24,
         "rotation_period": 268.0,
         "axial_tilt": 0.0,
-        "color": [
+        "albedo": 0.3,
+        "albedo_note": "estimated – potentially habitable zone planet"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
           118,
           144,
           168,
           255
         ]
       },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 80
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 100,
+        "principal_chemicals": [
+          "nitrogen",
+          "carbon_dioxide",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.5,
+        "cloud_composition": [
+          "water_ice",
+          "liquid_water_droplets"
+        ],
+        "color_hint": [
+          100,
+          150,
+          200,
+          140
+        ]
+      }
     },
     {
       "type": "planet",
@@ -138,17 +259,40 @@
         "mass": 2.6e+24,
         "rotation_period": 123.0,
         "axial_tilt": 0.0,
-        "color": [
+        "albedo": 0.35,
+        "albedo_note": "estimated – warm sub-Earth"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
           170,
           126,
           98,
           255
         ]
       },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 70
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 80,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "nitrogen"
+        ],
+        "cloud_coverage": 0.3,
+        "cloud_composition": [
+          "carbon_dioxide_ice",
+          "water_ice"
+        ],
+        "color_hint": [
+          160,
+          130,
+          100,
+          100
+        ]
+      }
     },
     {
       "type": "planet",
@@ -168,22 +312,45 @@
         "mass": 4.8e+25,
         "rotation_period": 384.0,
         "axial_tilt": 8.0,
-        "color": [
+        "albedo": 0.45,
+        "albedo_note": "estimated – cold super-Earth beyond snowline"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
           116,
           168,
           146,
           255
         ]
       },
-      "rendering": {
-        "material": "diffuse"
-      },
-      "importance": 50
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 50,
+        "principal_chemicals": [
+          "nitrogen",
+          "carbon_dioxide"
+        ],
+        "cloud_coverage": 0.2,
+        "cloud_composition": [
+          "water_ice"
+        ],
+        "color_hint": [
+          120,
+          160,
+          180,
+          100
+        ]
+      }
     }
   ],
   "default_state": {
     "simulation_hz": 60,
     "worker_threads": 4,
     "initial_dataset": "small"
-  }
+  },
+  "features": []
 }

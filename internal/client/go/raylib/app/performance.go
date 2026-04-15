@@ -168,8 +168,8 @@ func (a *App) runPerformanceTest(sim *simlib.World, cameraState *ui.CameraState,
 		rl.SetMatrixProjection(rl.MatrixPerspective(45.0*rl.Deg2rad, aspect, 0.001, 200000.0))
 
 		camera := rl.Camera3D{
-			Position:   rl.Vector3{X: cameraState.Position.X, Y: cameraState.Position.Y, Z: cameraState.Position.Z},
-			Target:     rl.Vector3{X: cameraState.Position.X + cameraState.Forward.X, Y: cameraState.Position.Y + cameraState.Forward.Y, Z: cameraState.Position.Z + cameraState.Forward.Z},
+			Position:   rl.Vector3{},
+			Target:     rl.Vector3{X: cameraState.Forward.X, Y: cameraState.Forward.Y, Z: cameraState.Forward.Z},
 			Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
 			Fovy:       45.0,
 			Projection: rl.CameraPerspective,
@@ -363,9 +363,16 @@ func (a *App) runSingleTest(sim *simlib.World, cameraState *ui.CameraState, inpu
 		aspect := float32(renderWidth) / float32(renderHeight)
 		rl.SetMatrixProjection(rl.MatrixPerspective(45.0*rl.Deg2rad, aspect, 0.001, 200000.0))
 
-		camera := rl.Camera3D{
+		worldCam := rl.Camera3D{
 			Position:   rl.Vector3{X: cameraState.Position.X, Y: cameraState.Position.Y, Z: cameraState.Position.Z},
 			Target:     rl.Vector3{X: cameraState.Position.X + cameraState.Forward.X, Y: cameraState.Position.Y + cameraState.Forward.Y, Z: cameraState.Position.Z + cameraState.Forward.Z},
+			Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
+			Fovy:       45.0,
+			Projection: rl.CameraPerspective,
+		}
+		camera := rl.Camera3D{
+			Position:   rl.Vector3{},
+			Target:     rl.Vector3{X: cameraState.Forward.X, Y: cameraState.Forward.Y, Z: cameraState.Forward.Z},
 			Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
 			Fovy:       45.0,
 			Projection: rl.CameraPerspective,
@@ -384,7 +391,7 @@ func (a *App) runSingleTest(sim *simlib.World, cameraState *ui.CameraState, inpu
 		// Apply culling if enabled
 		if inputState.PerfOptions.FrustumCulling {
 			if inputState.PerfOptions.SpatialPartition {
-				visibleObjects = spatial.SpatialFrustumCull(visibleObjects, camera)
+				visibleObjects = spatial.SpatialFrustumCull(visibleObjects, worldCam)
 			} else {
 				visibleObjects = spatial.SimpleFrustumCull(visibleObjects, cameraState)
 			}
@@ -439,9 +446,16 @@ func (a *App) runSingleTest(sim *simlib.World, cameraState *ui.CameraState, inpu
 		aspect := float32(renderWidth) / float32(renderHeight)
 		rl.SetMatrixProjection(rl.MatrixPerspective(45.0*rl.Deg2rad, aspect, 0.001, 200000.0))
 
-		camera := rl.Camera3D{
+		worldCam := rl.Camera3D{
 			Position:   rl.Vector3{X: cameraState.Position.X, Y: cameraState.Position.Y, Z: cameraState.Position.Z},
 			Target:     rl.Vector3{X: cameraState.Position.X + cameraState.Forward.X, Y: cameraState.Position.Y + cameraState.Forward.Y, Z: cameraState.Position.Z + cameraState.Forward.Z},
+			Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
+			Fovy:       45.0,
+			Projection: rl.CameraPerspective,
+		}
+		camera := rl.Camera3D{
+			Position:   rl.Vector3{},
+			Target:     rl.Vector3{X: cameraState.Forward.X, Y: cameraState.Forward.Y, Z: cameraState.Forward.Z},
 			Up:         rl.Vector3{X: 0, Y: 1, Z: 0},
 			Fovy:       45.0,
 			Projection: rl.CameraPerspective,
@@ -454,7 +468,7 @@ func (a *App) runSingleTest(sim *simlib.World, cameraState *ui.CameraState, inpu
 		visibleObjects := state.Objects
 		if inputState.PerfOptions.FrustumCulling {
 			if inputState.PerfOptions.SpatialPartition {
-				visibleObjects = spatial.SpatialFrustumCull(visibleObjects, camera)
+				visibleObjects = spatial.SpatialFrustumCull(visibleObjects, worldCam)
 			} else {
 				visibleObjects = spatial.SimpleFrustumCull(visibleObjects, cameraState)
 			}

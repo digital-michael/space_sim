@@ -162,9 +162,9 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 	for _, batch := range batches {
 		for _, obj := range batch.objects {
 			pos := rl.Vector3{
-				X: float32(obj.Anim.Position.X),
-				Y: float32(obj.Anim.Position.Y),
-				Z: float32(obj.Anim.Position.Z),
+				X: float32(obj.Anim.Position.X) - float32(cameraPos.X),
+				Y: float32(obj.Anim.Position.Y) - float32(cameraPos.Y),
+				Z: float32(obj.Anim.Position.Z) - float32(cameraPos.Z),
 			}
 
 			color := rl.Color{
@@ -198,9 +198,9 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 // drawObject renders a single object
 func drawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool) {
 	pos := rl.Vector3{
-		X: float32(obj.Anim.Position.X),
-		Y: float32(obj.Anim.Position.Y),
-		Z: float32(obj.Anim.Position.Z),
+		X: float32(obj.Anim.Position.X) - float32(cameraPos.X),
+		Y: float32(obj.Anim.Position.Y) - float32(cameraPos.Y),
+		Z: float32(obj.Anim.Position.Z) - float32(cameraPos.Z),
 	}
 
 	color := rl.Color{
@@ -368,8 +368,12 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 
 	// Project object positions to screen space and draw labels
 	for _, obj := range labeledObjects {
-		// Get object position in 3D
-		objPos := rl.Vector3{X: obj.Anim.Position.X, Y: obj.Anim.Position.Y, Z: obj.Anim.Position.Z}
+		// Camera-relative position keeps GetWorldToScreen numerically stable.
+		objPos := rl.Vector3{
+			X: obj.Anim.Position.X - cameraState.Position.X,
+			Y: obj.Anim.Position.Y - cameraState.Position.Y,
+			Z: obj.Anim.Position.Z - cameraState.Position.Z,
+		}
 
 		// Project to screen space
 		screenPos := rl.GetWorldToScreen(objPos, camera)

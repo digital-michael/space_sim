@@ -1,0 +1,124 @@
+{
+  "name": "Epsilon Eridani System",
+  "version": "1.0",
+  "scale_factor": 50,
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Epsilon Eridani",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 20.1,
+        "mass": 1.631e+30,
+        "rotation_period": 264.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive K2V star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          198,
+          120,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 600000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          170,
+          80,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.34,
+        "surface_temperature_k": 5084,
+        "emission_color": [
+          255,
+          195,
+          140,
+          255
+        ],
+        "emission_intensity": 0.34
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Epsilon Eridani b",
+      "parent": "Epsilon Eridani",
+      "orbit": {
+        "semi_major_axis": 353,
+        "eccentricity": 0.06,
+        "inclination": 0.698,
+        "longitude_ascending_node": 0.0,
+        "argument_periapsis": 1.2,
+        "orbital_period": 2677.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2.8,
+        "mass": 1.898e+27,
+        "albedo": 0.503,
+        "albedo_note": "estimated – likely Jupiter-analog gas giant"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          201,
+          176,
+          129,
+          255
+        ]
+      },
+      "importance": 90,
+      "atmosphere": {
+        "thickness_km": 8000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane",
+          "ammonia"
+        ],
+        "cloud_coverage": 1.0,
+        "cloud_composition": [
+          "ammonia_crystals",
+          "water_ice"
+        ],
+        "color_hint": [
+          210,
+          180,
+          130,
+          200
+        ]
+      }
+    }
+  ],
+  "default_state": {
+    "simulation_hz": 60,
+    "worker_threads": 4,
+    "initial_dataset": "small"
+  },
+  "features": []
+}

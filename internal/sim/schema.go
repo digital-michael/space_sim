@@ -21,15 +21,17 @@ type SystemConfig struct {
 
 // BodyConfig defines a celestial body (star, planet, moon, dwarf planet).
 type BodyConfig struct {
-	Type       string          `json:"type"`
-	Name       string          `json:"name"`
-	Parent     string          `json:"parent,omitempty"`
-	Template   string          `json:"template,omitempty"`
-	Overrides  map[string]any  `json:"overrides,omitempty"`
-	Orbit      OrbitConfig     `json:"orbit,omitempty"`
-	Physical   PhysicalConfig  `json:"physical"`
-	Rendering  RenderingConfig `json:"rendering,omitempty"`
-	Importance int             `json:"importance"`
+	Type       string            `json:"type"`
+	Name       string            `json:"name"`
+	Parent     string            `json:"parent,omitempty"`
+	Template   string            `json:"template,omitempty"`
+	Overrides  map[string]any    `json:"overrides,omitempty"`
+	Orbit      OrbitConfig       `json:"orbit,omitempty"`
+	Physical   PhysicalConfig    `json:"physical"`
+	Rendering  RenderingConfig   `json:"rendering,omitempty"`
+	Atmosphere *AtmosphereConfig `json:"atmosphere,omitempty"`
+	Luminosity LuminosityConfig  `json:"luminosity,omitempty"`
+	Importance int               `json:"importance"`
 }
 
 // OrbitConfig defines orbital mechanics parameters.
@@ -57,14 +59,17 @@ type PhysicalConfig struct {
 
 // RenderingConfig defines visual representation.
 type RenderingConfig struct {
-	Material    string            `json:"material,omitempty"`
-	Texture     string            `json:"texture,omitempty"`
-	NormalMap   string            `json:"normal_map,omitempty"`
-	SpecularMap string            `json:"specular_map,omitempty"`
-	BumpMap     string            `json:"bump_map,omitempty"`
-	Shader      string            `json:"shader,omitempty"`
-	LODLevels   []LODLevel        `json:"lod_levels,omitempty"`
-	Atmosphere  *AtmosphereConfig `json:"atmosphere,omitempty"`
+	Material      string     `json:"material,omitempty"`
+	Texture       string     `json:"texture,omitempty"`
+	TextureImage  string     `json:"texture_image,omitempty"`
+	ColorMap      string     `json:"color_map,omitempty"`
+	RingColorsMap string     `json:"ring_colors_map,omitempty"`
+	FallbackColor [4]uint8   `json:"fallback_color,omitempty"`
+	NormalMap     string     `json:"normal_map,omitempty"`
+	SpecularMap   string     `json:"specular_map,omitempty"`
+	BumpMap       string     `json:"bump_map,omitempty"`
+	Shader        string     `json:"shader,omitempty"`
+	LODLevels     []LODLevel `json:"lod_levels,omitempty"`
 }
 
 // LODLevel defines rendering detail at different distances.
@@ -76,13 +81,23 @@ type LODLevel struct {
 	PointSize float32 `json:"point_size,omitempty"`
 }
 
-// AtmosphereConfig defines atmospheric rendering.
+// AtmosphereConfig defines atmospheric properties for a body.
+// Fields match the JSON schema used in data/systems/*.json.
 type AtmosphereConfig struct {
-	Enabled    bool     `json:"enabled"`
-	Color      [4]uint8 `json:"color"`
-	Thickness  float32  `json:"thickness"`
-	Density    float32  `json:"density"`
-	Scattering bool     `json:"scattering,omitempty"`
+	ThicknessKm        float32  `json:"thickness_km"`
+	PrincipalChemicals []string `json:"principal_chemicals,omitempty"`
+	CloudCoverage      float32  `json:"cloud_coverage,omitempty"`
+	CloudComposition   []string `json:"cloud_composition,omitempty"`
+	ColorHint          [4]uint8 `json:"color_hint,omitempty"`
+}
+
+// LuminosityConfig defines self-emission properties for stars and glowing bodies.
+type LuminosityConfig struct {
+	SelfLuminous        bool     `json:"self_luminous,omitempty"`
+	SolarLuminosity     float32  `json:"solar_luminosity,omitempty"`
+	SurfaceTemperatureK float32  `json:"surface_temperature_k,omitempty"`
+	EmissionColor       [4]uint8 `json:"emission_color,omitempty"`
+	EmissionIntensity   float32  `json:"emission_intensity,omitempty"`
 }
 
 // StateConfig defines default simulation state.

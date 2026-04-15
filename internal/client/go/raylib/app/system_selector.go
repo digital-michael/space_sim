@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -12,6 +13,10 @@ import (
 
 const defaultSystemConfigPath = "data/systems/solar_system.json"
 
+type systemConfigSummary struct {
+	Name string `json:"name"`
+}
+
 func normalizeSystemConfigPath(path string) string {
 	if path == "" {
 		path = defaultSystemConfigPath
@@ -21,6 +26,20 @@ func normalizeSystemConfigPath(path string) string {
 		return filepath.Clean(absPath)
 	}
 	return filepath.Clean(path)
+}
+
+func readSystemDisplayName(path string) string {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return ""
+	}
+
+	var summary systemConfigSummary
+	if err := json.Unmarshal(data, &summary); err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(summary.Name)
 }
 
 func discoverSystemOptionsFromDir(dir string) ([]ui.SystemOption, error) {
@@ -36,14 +55,25 @@ func discoverSystemOptionsFromDir(dir string) ([]ui.SystemOption, error) {
 		}
 
 		configPath := normalizeSystemConfigPath(filepath.Join(dir, entry.Name()))
+		displayName := readSystemDisplayName(configPath)
+		if displayName == "" {
+			displayName = entry.Name()
+		}
+
 		options = append(options, ui.SystemOption{
-			Label: entry.Name(),
-			Path:  configPath,
+			Label:       entry.Name(),
+			DisplayName: displayName,
+			Path:        configPath,
 		})
 	}
 
 	sort.Slice(options, func(i, j int) bool {
-		return options[i].Label < options[j].Label
+		left := strings.ToLower(options[i].DisplayName)
+		right := strings.ToLower(options[j].DisplayName)
+		if left == right {
+			return options[i].Label < options[j].Label
+		}
+		return left < right
 	})
 
 	return options, nil

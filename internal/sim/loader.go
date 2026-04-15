@@ -12,6 +12,41 @@ import (
 	"github.com/digital-michael/space_sim/internal/sim/engine"
 )
 
+// resolveColor returns the first color with a non-zero alpha, converting [4]uint8 to engine.Color.
+// Prefers rendering.fallback_color; falls back to physical.color for backward compatibility.
+func resolveColor(primary, secondary [4]uint8) engine.Color {
+	c := primary
+	if c[3] == 0 {
+		c = secondary
+	}
+	if c[3] == 0 {
+		// neutral grey so the body is at least visible
+		c = [4]uint8{200, 200, 200, 255}
+	}
+	return engine.Color{R: c[0], G: c[1], B: c[2], A: c[3]}
+}
+
+func resolveAtmosphereColor(a *AtmosphereConfig) engine.Color {
+	if a == nil || a.ColorHint[3] == 0 {
+		return engine.Color{}
+	}
+	return engine.Color{R: a.ColorHint[0], G: a.ColorHint[1], B: a.ColorHint[2], A: a.ColorHint[3]}
+}
+
+func resolveAtmosphereThickness(a *AtmosphereConfig) float32 {
+	if a == nil {
+		return 0
+	}
+	return a.ThicknessKm
+}
+
+func resolveCloudCoverage(a *AtmosphereConfig) float32 {
+	if a == nil {
+		return 0
+	}
+	return a.CloudCoverage
+}
+
 // LoadSystemFromFile loads a solar system configuration from a JSON file.
 func LoadSystemFromFile(path string) (*engine.SimulationState, error) {
 	data, err := os.ReadFile(path)
@@ -188,6 +223,8 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 			material = engine.MaterialMetallic
 		case "mirror":
 			material = engine.MaterialMirror
+		case "diffuse_thermal":
+			material = engine.MaterialDiffuseThermal
 		}
 	}
 
@@ -241,14 +278,24 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 			Mass:           config.Physical.Mass,
 			PhysicalRadius: config.Physical.Radius,
 			InnerRadius:    config.Physical.InnerRadius,
-			Color: engine.Color{
-				R: config.Physical.Color[0],
-				G: config.Physical.Color[1],
-				B: config.Physical.Color[2],
-				A: config.Physical.Color[3],
-			},
-			Material:   material,
-			Importance: config.Importance,
+			Color:          resolveColor(config.Rendering.FallbackColor, config.Physical.Color),
+			Material:       material,
+			Importance:     config.Importance,
+
+			// Texture and surface
+			TexturePath: config.Rendering.TextureImage,
+			Albedo:      config.Physical.Albedo,
+
+			// Luminosity
+			SelfLuminous:        config.Luminosity.SelfLuminous,
+			SolarLuminosity:     config.Luminosity.SolarLuminosity,
+			SurfaceTemperatureK: config.Luminosity.SurfaceTemperatureK,
+			EmissionColor:       resolveColor(config.Luminosity.EmissionColor, config.Luminosity.EmissionColor),
+
+			// Atmosphere
+			AtmosphereColorHint:   resolveAtmosphereColor(config.Atmosphere),
+			AtmosphereThicknessKm: resolveAtmosphereThickness(config.Atmosphere),
+			CloudCoverage:         resolveCloudCoverage(config.Atmosphere),
 
 			RotationPeriod: config.Physical.RotationPeriod,
 			AxialTilt:      config.Physical.AxialTilt,
@@ -309,7 +356,9 @@ func applyOverrides(template BodyConfig, overrides BodyConfig) BodyConfig {
 	if overrides.Physical.Mass != 0 {
 		result.Physical.Mass = overrides.Physical.Mass
 	}
-	if overrides.Physical.Color[3] != 0 {
+	if overrides.Rendering.FallbackColor[3] != 0 {
+		result.Rendering.FallbackColor = overrides.Rendering.FallbackColor
+	} else if overrides.Physical.Color[3] != 0 {
 		result.Physical.Color = overrides.Physical.Color
 	}
 	if overrides.Rendering.Material != "" {
@@ -317,6 +366,18 @@ func applyOverrides(template BodyConfig, overrides BodyConfig) BodyConfig {
 	}
 	if overrides.Rendering.Texture != "" {
 		result.Rendering.Texture = overrides.Rendering.Texture
+	}
+	if overrides.Rendering.TextureImage != "" {
+		result.Rendering.TextureImage = overrides.Rendering.TextureImage
+	}
+	if overrides.Physical.Albedo != 0 {
+		result.Physical.Albedo = overrides.Physical.Albedo
+	}
+	if overrides.Atmosphere != nil {
+		result.Atmosphere = overrides.Atmosphere
+	}
+	if overrides.Luminosity.SelfLuminous {
+		result.Luminosity = overrides.Luminosity
 	}
 
 	return result

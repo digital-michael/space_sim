@@ -1,8 +1,8 @@
 {
   "window": {
-    "width": 1280,
-    "height": 720,
-    "fullscreen": false,
+    "width": 520,
+    "height": 386,
+    "fullscreen": true,
     "resizable": true
   },
   "render": {

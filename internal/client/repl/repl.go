@@ -119,9 +119,19 @@ func (r *REPL) Run(ctx context.Context, in io.Reader) error {
 		// Expand $vars before any further processing.
 		line = r.expandVars(line)
 
-		// For-loop block: "for <group>[slice] as <var>:"
-		if group, varName, sliceSpec, ok := parseForHeader(line); ok {
-			done, err := r.runForLoop(ctx, lr, group, varName, sliceSpec)
+		// For-loop block — three accepted forms:
+		//   for $v in bodies           (all named bodies)
+		//   for $v in planets          (specific group)
+		//   for <group>[slice] as $v:  (legacy form — kept for existing scripts)
+		//   for <n>                    (count loop)
+		if fh, ok := parseForHeader(line); ok {
+			var done bool
+			var err error
+			if fh.isCount {
+				done, err = r.runCountLoop(ctx, lr, fh.count)
+			} else {
+				done, err = r.runForLoop(ctx, lr, fh.group, fh.varName, fh.sliceSpec)
+			}
 			if err != nil {
 				r.printf("error: %v\n", err)
 			}
@@ -163,32 +173,91 @@ var groupToCategory = map[string]string{
 	"moon":          "moon",
 	"asteroids":     "asteroid",
 	"asteroid":      "asteroid",
+	"systems":       "system",
+	"system":        "system",
 }
 
-// parseForHeader parses a "for <group>[slice] as <var>:" header line.
-// The optional [start:end] suffix on the group token is returned as sliceSpec.
-// Returns (group, varName, sliceSpec, true) on success.
-func parseForHeader(line string) (group, varName, sliceSpec string, ok bool) {
-	l := strings.ToLower(strings.TrimSpace(line))
-	if !strings.HasPrefix(l, "for ") {
-		return "", "", "", false
-	}
-	// Strip optional trailing colon then split.
+// forHeader is the parsed result of a for-loop header line.
+type forHeader struct {
+	// Count loop: "for <n>"
+	isCount bool
+	count   int
+	// Iteration loop
+	group     string // normalised group name
+	varName   string // e.g. "$p" or "X"
+	sliceSpec string // e.g. "[3:]"
+}
+
+// parseForHeader recognises all accepted for-loop header forms:
+//
+//	for $v in bodies           — all named bodies
+//	for $v in bodies planets   — bodies of a specific group
+//	for $v in planets          — shorthand: group only (no 'bodies' keyword)
+//	for <group>[slice] as $v:  — legacy form
+//	for <n>                    — count loop (n ≥ 1)
+//
+// Returns (forHeader, true) on success.
+func parseForHeader(line string) (forHeader, bool) {
 	stripped := strings.TrimSuffix(strings.TrimSpace(line), ":")
 	fields := strings.Fields(stripped)
-	// Expect exactly: for <group>[slice] as <var>
-	if len(fields) != 4 ||
-		strings.ToLower(fields[0]) != "for" ||
-		strings.ToLower(fields[2]) != "as" {
-		return "", "", "", false
+	if len(fields) == 0 || !strings.EqualFold(fields[0], "for") {
+		return forHeader{}, false
 	}
-	groupToken := strings.ToLower(fields[1])
-	var spec string
-	if idx := strings.IndexByte(groupToken, '['); idx != -1 {
-		spec = groupToken[idx:]
-		groupToken = groupToken[:idx]
+	args := fields[1:]
+	if len(args) == 0 {
+		return forHeader{}, false
 	}
-	return groupToken, fields[3], spec, true
+
+	// Count loop: "for <n>"
+	if len(args) == 1 {
+		n, err := strconv.Atoi(args[0])
+		if err == nil && n >= 1 {
+			return forHeader{isCount: true, count: n}, true
+		}
+		// Single non-numeric arg is not a valid header.
+		return forHeader{}, false
+	}
+
+	// "for $v in <group>" or "for $v in bodies [group]"
+	if strings.EqualFold(args[1], "in") {
+		varName := args[0]
+		if len(args) < 3 {
+			return forHeader{}, false
+		}
+		groupToken := strings.ToLower(args[2])
+		var sliceSpec string
+		if idx := strings.IndexByte(groupToken, '['); idx != -1 {
+			sliceSpec = groupToken[idx:]
+			groupToken = groupToken[:idx]
+		}
+		// "for $v in bodies" or "for $v in bodies <group>"
+		if groupToken == "bodies" {
+			if len(args) >= 4 {
+				cat := strings.ToLower(args[3])
+				if idx := strings.IndexByte(cat, '['); idx != -1 {
+					sliceSpec = cat[idx:]
+					cat = cat[:idx]
+				}
+				return forHeader{group: cat, varName: varName, sliceSpec: sliceSpec}, true
+			}
+			// bare "bodies" = all named bodies
+			return forHeader{group: "bodies", varName: varName, sliceSpec: sliceSpec}, true
+		}
+		return forHeader{group: groupToken, varName: varName, sliceSpec: sliceSpec}, true
+	}
+
+	// Legacy form: "for <group>[slice] as <var>"
+	if len(args) == 3 && strings.EqualFold(args[1], "as") {
+		groupToken := strings.ToLower(args[0])
+		var sliceSpec string
+		if idx := strings.IndexByte(groupToken, '['); idx != -1 {
+			sliceSpec = groupToken[idx:]
+			groupToken = groupToken[:idx]
+		}
+		return forHeader{group: groupToken, varName: args[2], sliceSpec: sliceSpec}, true
+	}
+
+	return forHeader{}, false
 }
 
 // applyForSlice restricts names to the sub-range described by spec.
@@ -246,50 +315,337 @@ func applyForSlice(names []string, spec string) ([]string, error) {
 	return names[start:end], nil
 }
 
-// runForLoop collects the loop body (lines until blank line or EOF),
-// resolves the group to body names via a live snapshot, applies an optional
-// slice, then executes the body once per name with varName substituted.
-func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName, sliceSpec string) (bool, error) {
-	category, ok := groupToCategory[group]
-	if !ok {
-		validGroups := "stars, planets, dwarf_planets, moons, asteroids"
-		return false, fmt.Errorf("for: unknown group %q — valid groups: %s", group, validGroups)
-	}
-
-	// Collect body lines until the first blank line (or EOF).
+// collectLoopBody reads lines from lr until a blank line or "endfor" at depth 0,
+// or EOF. A blank line at depth 0 acts as a terminator so interactive scripts
+// can end a loop with a single Enter. Nested for-loops increment the depth
+// counter so that inner "endfor" tokens are captured as body lines.
+// Returns the collected non-empty body lines.
+func (r *REPL) collectLoopBody(lr *lineReader) ([]string, error) {
 	var body []string
+	depth := 0
 	for {
 		bl, err := lr.readLine("... ")
 		if err != nil {
 			if err == io.EOF {
-				break
+				return body, nil
 			}
-			return false, err
+			return nil, err
 		}
 		bl = strings.TrimSpace(bl)
-		if bl == "" {
-			break // blank line terminates for-loop body
+
+		// Blank line at depth 0 terminates the block (interactive convenience).
+		if bl == "" && depth == 0 {
+			return body, nil
 		}
+
+		// Detect nested for headers to increment depth.
+		if _, isFor := parseForHeader(bl); isFor {
+			depth++
+		}
+		// Detect endfor.
+		if strings.EqualFold(bl, "endfor") {
+			if depth == 0 {
+				return body, nil
+			}
+			depth--
+			body = append(body, bl)
+			continue
+		}
+
 		bl, err = stripComments(bl, lr)
 		if err != nil {
 			if err == io.EOF {
-				break
+				return body, nil
 			}
-			return false, err
+			return nil, err
 		}
 		if bl != "" {
 			body = append(body, bl)
 		}
 	}
+}
 
+// execLoopBody runs each line in body, replacing varName with name.
+// Nested for-loops inside the body are detected, their sub-body extracted
+// from the slice, and dispatched recursively.
+// Returns (done, error) where done signals REPL exit.
+func (r *REPL) execLoopBody(ctx context.Context, body []string, varName, name string) (bool, error) {
+	i := 0
+	for i < len(body) {
+		rawLine := body[i]
+		expanded := strings.ReplaceAll(r.expandVars(rawLine), varName, name)
+
+		// Nested for loop: collect its sub-body from the remaining slice.
+		if fh, ok := parseForHeader(expanded); ok {
+			sub, after, err := extractNestedBody(body, i+1)
+			if err != nil {
+				r.printf("error: %v\n", err)
+				return false, nil
+			}
+			var done bool
+			if fh.isCount {
+				done, err = r.execCountLoopInline(ctx, sub, varName, name, fh.count)
+			} else {
+				done, err = r.execForLoopInline(ctx, sub, varName, name, fh.group, fh.varName, fh.sliceSpec)
+			}
+			if err != nil {
+				r.printf("error: %v\n", err)
+			}
+			if done {
+				return true, nil
+			}
+			i = after
+			continue
+		}
+
+		// endfor at this level should not appear (collectLoopBody consumed the
+		// matching one); if it slips through, skip it.
+		if strings.EqualFold(strings.TrimSpace(expanded), "endfor") {
+			i++
+			continue
+		}
+
+		cmd, parseErr := commands.Parse(expanded)
+		if parseErr != nil {
+			r.printf("error [%s]: %v\n", name, parseErr)
+			i++
+			continue
+		}
+		if cmd == nil {
+			i++
+			continue
+		}
+		done, execErr := r.exec(ctx, cmd)
+		if execErr != nil {
+			r.printf("error [%s]: %v\n", name, execErr)
+		}
+		if done {
+			return true, nil
+		}
+		i++
+	}
+	return false, nil
+}
+
+// extractNestedBody scans body[start:] for the matching endfor at depth 0.
+// Returns (sub-body, index-after-endfor, error).
+func extractNestedBody(body []string, start int) ([]string, int, error) {
+	depth := 0
+	for i := start; i < len(body); i++ {
+		line := strings.TrimSpace(body[i])
+		if _, ok := parseForHeader(line); ok {
+			depth++
+		}
+		if strings.EqualFold(line, "endfor") {
+			if depth == 0 {
+				return body[start:i], i + 1, nil
+			}
+			depth--
+		}
+	}
+	return body[start:], len(body), nil
+}
+
+// execForLoopInline executes a nested body-iteration loop whose body lines
+// are already collected in-memory.
+func (r *REPL) execForLoopInline(ctx context.Context, sub []string, outerVar, outerName, group, innerVar, sliceSpec string) (bool, error) {
+	allBodies := group == "bodies"
+	var category string
+	if !allBodies {
+		var ok bool
+		category, ok = groupToCategory[group]
+		if !ok {
+			return false, fmt.Errorf("for: unknown group %q", group)
+		}
+	}
+	var names []string
+	var err error
+	if allBodies {
+		names, err = r.forLoopAllBodies(ctx)
+	} else {
+		names, err = r.forLoopItems(ctx, category)
+	}
+	if err != nil {
+		return false, err
+	}
+	names, err = applyForSlice(names, sliceSpec)
+	if err != nil {
+		return false, err
+	}
+	for _, innerName := range names {
+		// Expand the outer var first, then dispatch inner.
+		expanded := make([]string, len(sub))
+		for j, l := range sub {
+			expanded[j] = strings.ReplaceAll(l, outerVar, outerName)
+		}
+		done, execErr := r.execLoopBody(ctx, expanded, innerVar, innerName)
+		if execErr != nil {
+			return false, execErr
+		}
+		if done {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// execCountLoopInline executes a nested count loop whose body is in-memory.
+func (r *REPL) execCountLoopInline(ctx context.Context, sub []string, outerVar, outerName string, n int) (bool, error) {
+	expanded := make([]string, len(sub))
+	for j, l := range sub {
+		expanded[j] = strings.ReplaceAll(l, outerVar, outerName)
+	}
+	for i := 0; i < n; i++ {
+		done, err := r.execLoopBody(ctx, expanded, "", "")
+		if err != nil {
+			return false, err
+		}
+		if done {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// runForLoop collects the loop body (lines until endfor), resolves the group
+// to body names via a live snapshot, applies an optional slice, then executes
+// the body once per name with varName substituted.
+func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName, sliceSpec string) (bool, error) {
+	// "bodies" without a category = all named body categories combined.
+	allBodies := group == "bodies"
+	var category string
+	if !allBodies {
+		var ok bool
+		category, ok = groupToCategory[group]
+		if !ok {
+			validGroups := "bodies, stars, planets, dwarf_planets, moons, asteroids, systems"
+			return false, fmt.Errorf("for: unknown group %q — valid groups: %s", group, validGroups)
+		}
+	}
+
+	body, err := r.collectLoopBody(lr)
+	if err != nil {
+		return false, err
+	}
 	if len(body) == 0 {
 		return false, nil
+	}
+
+	var names []string
+	if allBodies {
+		names, err = r.forLoopAllBodies(ctx)
+	} else {
+		names, err = r.forLoopItems(ctx, category)
+	}
+	if err != nil {
+		return false, err
+	}
+
+	if len(names) == 0 {
+		r.printf("for: no bodies found in group %q\n", group)
+		return false, nil
+	}
+
+	names, err = applyForSlice(names, sliceSpec)
+	if err != nil {
+		return false, err
+	}
+	if len(names) == 0 {
+		return false, nil
+	}
+
+	for _, name := range names {
+		done, execErr := r.execLoopBody(ctx, body, varName, name)
+		if execErr != nil {
+			return false, execErr
+		}
+		if done {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// runCountLoop collects the loop body and executes it n times.
+func (r *REPL) runCountLoop(ctx context.Context, lr *lineReader, n int) (bool, error) {
+	body, err := r.collectLoopBody(lr)
+	if err != nil {
+		return false, err
+	}
+	if len(body) == 0 {
+		return false, nil
+	}
+	for i := 0; i < n; i++ {
+		done, execErr := r.execLoopBody(ctx, body, "", "")
+		if execErr != nil {
+			return false, execErr
+		}
+		if done {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// forLoopAllBodies fetches a snapshot and returns all named bodies across
+// all non-asteroid categories in stable order: stars, planets, dwarf_planets, moons.
+func (r *REPL) forLoopAllBodies(ctx context.Context) ([]string, error) {
+	snap, err := r.oneSnapshot(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("for: could not fetch snapshot: %w", err)
+	}
+	wantCats := map[string]int{"star": 0, "planet": 1, "dwarf_planet": 2, "moon": 3}
+	type entry struct {
+		name  string
+		order int
+	}
+	var entries []entry
+	seen := make(map[string]struct{})
+	for _, b := range snap.Bodies {
+		ord, ok := wantCats[strings.ToLower(b.Category)]
+		if !ok || b.Name == "" {
+			continue
+		}
+		if _, dup := seen[b.Name]; dup {
+			continue
+		}
+		seen[b.Name] = struct{}{}
+		entries = append(entries, entry{b.Name, ord})
+	}
+	sort.Slice(entries, func(i, j int) bool { return entries[i].order < entries[j].order })
+	names := make([]string, len(entries))
+	for i, e := range entries {
+		names[i] = e.name
+	}
+	return names, nil
+}
+
+func (r *REPL) forLoopItems(ctx context.Context, category string) ([]string, error) {
+	if category == "system" {
+		resp, err := r.sysClient.ListSystems(ctx, connect.NewRequest(&v1.ListSystemsRequest{}))
+		if err != nil {
+			return nil, fmt.Errorf("for: could not list systems: %w", err)
+		}
+
+		names := make([]string, 0, len(resp.Msg.Systems))
+		seen := make(map[string]struct{}, len(resp.Msg.Systems))
+		for _, sys := range resp.Msg.Systems {
+			if sys.GetLabel() == "" {
+				continue
+			}
+			if _, dup := seen[sys.GetLabel()]; dup {
+				continue
+			}
+			names = append(names, sys.GetLabel())
+			seen[sys.GetLabel()] = struct{}{}
+		}
+		return names, nil
 	}
 
 	// Fetch a snapshot to resolve body names.
 	snap, err := r.oneSnapshot(ctx)
 	if err != nil {
-		return false, fmt.Errorf("for: could not fetch snapshot: %w", err)
+		return nil, fmt.Errorf("for: could not fetch snapshot: %w", err)
 	}
 
 	// Build ordered, deduplicated name list for the category.
@@ -304,42 +660,7 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName, s
 		}
 	}
 
-	if len(names) == 0 {
-		r.printf("for: no bodies found for group %q\n", group)
-		return false, nil
-	}
-
-	names, err = applyForSlice(names, sliceSpec)
-	if err != nil {
-		return false, err
-	}
-	if len(names) == 0 {
-		return false, nil
-	}
-
-	// Execute the body once per name.
-	for _, name := range names {
-		for _, rawLine := range body {
-			expanded := strings.ReplaceAll(r.expandVars(rawLine), varName, name)
-			cmd, parseErr := commands.Parse(expanded)
-			if parseErr != nil {
-				r.printf("error [%s]: %v\n", name, parseErr)
-				continue
-			}
-			if cmd == nil {
-				continue
-			}
-			done, execErr := r.exec(ctx, cmd)
-			if execErr != nil {
-				r.printf("error [%s]: %v\n", name, execErr)
-			}
-			if done {
-				return true, nil
-			}
-		}
-	}
-
-	return false, nil
+	return names, nil
 }
 
 // parseSetVar parses a "set $name value" line.
@@ -465,6 +786,48 @@ func (r *REPL) waitForCamera(ctx context.Context) {
 	}
 }
 
+func (r *REPL) waitForSystem(ctx context.Context, requested string) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-time.After(100 * time.Millisecond):
+		}
+
+		resp, err := r.sysClient.GetActiveSystem(ctx, connect.NewRequest(&v1.GetActiveSystemRequest{}))
+		if err != nil {
+			return
+		}
+
+		active := resp.Msg.GetActive()
+		if active == nil {
+			continue
+		}
+
+		if systemMatchesActive(requested, active) {
+			return
+		}
+	}
+}
+
+func systemMatchesActive(requested string, active *v1.SystemInfo) bool {
+	if active == nil || requested == "" {
+		return false
+	}
+
+	requestedClean := filepath.Clean(requested)
+	requestedBase := filepath.Base(requestedClean)
+	activePath := filepath.Clean(active.GetPath())
+	activeBase := filepath.Base(activePath)
+	activeLabel := active.GetLabel()
+
+	return activePath == requestedClean ||
+		activeLabel == requested ||
+		activeLabel == requestedBase ||
+		activeBase == requested ||
+		activeBase == requestedBase
+}
+
 // exec dispatches cmd and returns (done=true) when the REPL should exit.
 func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 	switch c := cmd.(type) {
@@ -587,6 +950,9 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 		}
 		r.bodyNames = nil // new system — invalidate body name cache
 		r.printf("ok  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+		if r.syncMode {
+			r.waitForSystem(ctx, c.Label)
+		}
 
 	// ── Window ────────────────────────────────────────────────────────────────
 
@@ -1237,18 +1603,36 @@ Scripting
   set $name value           assign a persistent variable (sigil required)
                             value may be quoted: set $target "Alpha Centauri A"
                             supported separators: set $n v  set $n=v  set $n:=v
-  for <group>[slice] as <var>:  iterate over bodies in a category group
-    <commands using var>    use <var> anywhere in a command — it is substituted
-                            with each body name in order
-                            (blank line ends the loop body)
-  Groups: stars | planets | dwarf_planets | moons | asteroids
+
+  For loops (all forms require 'endfor' to close; nesting is supported):
+
+  for $v in bodies          iterate over all named bodies (stars, planets, moons, dwarfs)
+  for $v in bodies planets  iterate over bodies in a specific group
+  for $v in planets         shorthand — iterate over a named group directly
+  for <group>[slice] as $v: legacy form (still accepted)
+  for <n>                   repeat body n times (count loop)
+  endfor                    close the loop body
+
+  Groups: bodies | stars | planets | dwarf_planets | moons | asteroids | systems
   Slice (optional):  [3:]   skip first 3      [:10]  first 10 items
                      [3:10] items 3–9         [-5:]  last 5 items
   Example:
-    for planets as X:
-      nav jump X
-      orbit X 10 1
+    for $p in planets
+      nav jump $p
+      orbit $p 10 1
       sleep 3
+    endfor
+
+    for 3
+      orbit Earth 15 1
+    endfor
+
+    for $s in systems
+      system load $s
+      for $p in planets
+        nav jump $p
+      endfor
+    endfor
 `)
 }
 
