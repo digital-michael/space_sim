@@ -8,6 +8,7 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"unsafe"
 
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
@@ -56,7 +57,7 @@ type Renderer struct {
 
 // modelKey indexes the model cache.
 type modelKey struct {
-	path         string
+	path          string
 	rings, slices int32
 }
 
@@ -106,6 +107,15 @@ func (r *Renderer) getModel(path string, rings, slices int32) (rl.Model, bool) {
 		return rl.Model{}, false
 	}
 	mesh := rl.GenMeshSphere(1.0, int(rings), int(slices))
+	// par_shapes maps uv[0]→latitude (stored as U/horizontal) and uv[1]→longitude
+	// (stored as V/vertical), which is transposed from standard equirectangular
+	// convention (U=longitude, V=latitude, top=north). Swap to correct it.
+	n := int(mesh.VertexCount)
+	uv := unsafe.Slice(mesh.Texcoords, n*2)
+	for i := 0; i < n; i++ {
+		uv[i*2], uv[i*2+1] = uv[i*2+1], uv[i*2]
+	}
+	rl.UpdateMeshBuffer(mesh, 1, unsafe.Slice((*byte)(unsafe.Pointer(mesh.Texcoords)), n*8), 0)
 	model := rl.LoadModelFromMesh(mesh)
 	model.GetMaterials()[0].GetMap(rl.MapDiffuse).Texture = tex
 	r.modelCache[key] = model
@@ -614,7 +624,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				if !r.noTextures && texPath != "" {
 					if model, ok := r.getModel(texPath, batch.rings, batch.slices); ok {
 						scale := float32(obj.Meta.PhysicalRadius)
-						rl.DrawModelEx(model, pos, rl.Vector3{Y: 1}, 0, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
+						rl.DrawModelEx(model, pos, rl.Vector3{X: 1}, -90, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
 						drawnCount++
 						continue
 					}
@@ -773,7 +783,7 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, point
 	if !r.noTextures && texPath != "" {
 		if model, ok := r.getModel(texPath, rings, slices); ok {
 			scale := float32(obj.Meta.PhysicalRadius)
-			rl.DrawModelEx(model, pos, rl.Vector3{Y: 1}, 0, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
+			rl.DrawModelEx(model, pos, rl.Vector3{X: 1}, -90, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
 			return
 		}
 	}
