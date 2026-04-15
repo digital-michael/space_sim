@@ -46,12 +46,70 @@ type Renderer struct {
 	renderHeight int32
 	target       rl.RenderTexture2D
 	targetLoaded bool
+
+	// Texture and model resources (lazily loaded after GL context is ready).
+	// noTextures disables all diffuse texture rendering.
+	noTextures   bool
+	textureCache map[string]rl.Texture2D // path → GPU texture
+	modelCache   map[modelKey]rl.Model   // (path,rings,slices) → textured sphere model
+}
+
+// modelKey indexes the model cache.
+type modelKey struct {
+	path         string
+	rings, slices int32
 }
 
 // New creates a Raylib renderer.
-func New() *Renderer {
+func New(noTextures bool) *Renderer {
 	setLayoutSize(0, 0)
-	return &Renderer{}
+	return &Renderer{
+		noTextures:   noTextures,
+		textureCache: make(map[string]rl.Texture2D),
+		modelCache:   make(map[modelKey]rl.Model),
+	}
+}
+
+// loadTexture returns a cached GPU texture for path, loading it on first use.
+// Returns a zero Texture2D (ID=0) if the path is empty or the file cannot be
+// loaded — callers must check tex.ID > 0 before using.
+func (r *Renderer) loadTexture(path string) rl.Texture2D {
+	if path == "" {
+		return rl.Texture2D{}
+	}
+	if tex, ok := r.textureCache[path]; ok {
+		return tex
+	}
+	abs := filepath.Clean(path)
+	tex := rl.LoadTexture(abs)
+	if tex.ID == 0 {
+		// File missing or format unsupported — cache the zero value so we do not
+		// retry every frame.
+		r.textureCache[path] = rl.Texture2D{}
+		return rl.Texture2D{}
+	}
+	rl.SetTextureFilter(tex, rl.FilterBilinear)
+	r.textureCache[path] = tex
+	return tex
+}
+
+// getModel returns a cached textured sphere model for the given texture path
+// and LOD quality. The model uses a unit sphere scaled at draw time.
+// Returns (model, true) on success; (zero, false) if the texture failed to load.
+func (r *Renderer) getModel(path string, rings, slices int32) (rl.Model, bool) {
+	key := modelKey{path: path, rings: rings, slices: slices}
+	if m, ok := r.modelCache[key]; ok {
+		return m, true
+	}
+	tex := r.loadTexture(path)
+	if tex.ID == 0 {
+		return rl.Model{}, false
+	}
+	mesh := rl.GenMeshSphere(1.0, int(rings), int(slices))
+	model := rl.LoadModelFromMesh(mesh)
+	model.GetMaterials()[0].GetMap(rl.MapDiffuse).Texture = tex
+	r.modelCache[key] = model
+	return model, true
 }
 
 func setLayoutSize(width, height int32) {
@@ -189,6 +247,21 @@ func (r *Renderer) Close() {
 		rl.UnloadRenderTexture(r.target)
 		r.targetLoaded = false
 	}
+	// Unload cached models first (they hold their own mesh+material, but NOT the
+	// texture — the model's diffuse texture slot is cleared before unloading so
+	// Raylib does not double-free the cached texture we still own).
+	for key, model := range r.modelCache {
+		model.GetMaterials()[0].GetMap(rl.MapDiffuse).Texture = rl.Texture2D{}
+		rl.UnloadModel(model)
+		delete(r.modelCache, key)
+	}
+	// Unload cached textures.
+	for path, tex := range r.textureCache {
+		if tex.ID > 0 {
+			rl.UnloadTexture(tex)
+		}
+		delete(r.textureCache, path)
+	}
 	setLayoutSize(0, 0)
 }
 
@@ -248,11 +321,11 @@ func (r *Renderer) CaptureRenderTexture() []byte {
 }
 
 func (r *Renderer) DrawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
-	return drawObjectsInstanced(objects, cameraPos, pointRenderingEnabled, lodEnabled, importanceThreshold)
+	return drawObjectsInstanced(r, objects, cameraPos, pointRenderingEnabled, lodEnabled, importanceThreshold)
 }
 
 func (r *Renderer) DrawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool) {
-	drawObject(obj, cameraPos, pointRenderingEnabled, lodEnabled)
+	drawObject(r, obj, cameraPos, pointRenderingEnabled, lodEnabled)
 }
 
 func (r *Renderer) DrawGroundPlane() {
@@ -410,7 +483,7 @@ type InstanceBatch struct {
 }
 
 // drawObjectsInstanced draws objects using batching to reduce draw calls
-func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
+func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
 	// Group objects into batches by their rendering properties
 	batches := make(map[string]*InstanceBatch)
 	drawnCount := 0
@@ -423,7 +496,7 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 
 		// Skip rings - they need individual rendering
 		if obj.Meta.InnerRadius > 0 {
-			drawObject(obj, cameraPos, pointRenderingEnabled, lodEnabled)
+			drawObject(r, obj, cameraPos, pointRenderingEnabled, lodEnabled)
 			drawnCount++
 			continue
 		}
@@ -536,9 +609,18 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 				// Draw as point
 				rl.DrawSphere(pos, batch.pointSize*0.1, color)
 			} else {
-				// Draw as sphere with batch properties
+				// Textured draw: use a cached Model when texture is available.
+				texPath := obj.Meta.TexturePath
+				if !r.noTextures && texPath != "" {
+					if model, ok := r.getModel(texPath, batch.rings, batch.slices); ok {
+						scale := float32(obj.Meta.PhysicalRadius)
+						rl.DrawModelEx(model, pos, rl.Vector3{Y: 1}, 0, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
+						drawnCount++
+						continue
+					}
+				}
+				// Fallback: solid color sphere.
 				rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
-
 				// Wireframe
 				if obj.Meta.Material != engine.MaterialEmissive {
 					rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), batch.wireRings, batch.wireSlices,
@@ -554,7 +636,7 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 }
 
 // drawObject renders a single object
-func drawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool) {
+func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool) {
 	pos := rl.Vector3{
 		X: obj.Anim.Position.X - cameraPos.X,
 		Y: obj.Anim.Position.Y - cameraPos.Y,
@@ -686,6 +768,17 @@ func drawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnab
 		}
 	}
 
+	// Textured draw: use a cached Model when texture is available.
+	texPath := obj.Meta.TexturePath
+	if !r.noTextures && texPath != "" {
+		if model, ok := r.getModel(texPath, rings, slices); ok {
+			scale := float32(obj.Meta.PhysicalRadius)
+			rl.DrawModelEx(model, pos, rl.Vector3{Y: 1}, 0, rl.Vector3{X: scale, Y: scale, Z: scale}, rl.White)
+			return
+		}
+	}
+
+	// Fallback: solid color sphere with wireframe.
 	rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
 
 	// Draw wireframe for better depth perception (skip for rings and sun)

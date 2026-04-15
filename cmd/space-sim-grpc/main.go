@@ -39,6 +39,7 @@ Mutually exclusive with --render-scale.`
 	renderScale := flag.Float64("render-scale", 0, renderScaleUsage)
 	renderSize := flag.String("render-size", "", renderSizeUsage)
 	noMSAA := flag.Bool("no-msaa", false, "disable 4× MSAA anti-aliasing (enabled by default)")
+	noTextures := flag.Bool("no-textures", false, "disable diffuse texture rendering; use solid colors (enabled by default)")
 	reset := flag.Bool("reset", false, "restore app.json to factory defaults and exit")
 	flag.Parse()
 
@@ -69,6 +70,7 @@ Mutually exclusive with --render-scale.`
 		RenderScale:   *renderScale,
 		RenderSize:    *renderSize,
 		NoMSAA:        *noMSAA,
+		NoTextures:    *noTextures,
 	}
 
 	// ── Build application (creates world internally) ───────────────────────

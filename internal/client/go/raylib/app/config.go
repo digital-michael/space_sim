@@ -65,6 +65,9 @@ type Config struct {
 	// NoMSAA disables the default 4× MSAA anti-aliasing hint.
 	NoMSAA bool
 
+	// NoTextures disables diffuse texture rendering; bodies use their fallback solid color.
+	NoTextures bool
+
 	// Reset restores app.json to factory defaults and exits.
 	Reset bool
 

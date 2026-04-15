@@ -25,6 +25,7 @@ func main() {
 	noLockingFlag := flag.Bool("no-locking", false, "Disable double-buffer locking (unsafe, for performance testing only)")
 	systemConfigFlag := flag.String("system-config", "", "Path to JSON system configuration file")
 	debugFlag := flag.Bool("debug", false, "Enable verbose debug logging and smoke debug instrumentation")
+	noTexturesFlag := flag.Bool("no-textures", false, "disable diffuse texture rendering; use solid colors (enabled by default)")
 	flag.Parse()
 
 	profileProvided := false
@@ -53,6 +54,7 @@ func main() {
 		NoLocking:       *noLockingFlag,
 		SystemConfig:    *systemConfigFlag,
 		Debug:           *debugFlag,
+		NoTextures:      *noTexturesFlag,
 		AppConfigPath:   appConfigPath,
 		AppConfig:       appConfig,
 	}
