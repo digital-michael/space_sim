@@ -53,7 +53,7 @@ func CreateBelt(state *engine.SimulationState, config BeltConfig, dataset engine
 			inclination := config.InclinationMin + float32(rng.Float64())*(config.InclinationMax-config.InclinationMin)
 			orbitAngle := float32(rng.Float64()) * 2 * math.Pi
 			posX := distance * float32(math.Cos(float64(orbitAngle)))
-			posZ := distance * float32(math.Sin(float64(orbitAngle)))
+			posZ := distance * float32(-math.Sin(float64(orbitAngle)))
 			orbitYOffset := float32((rng.Float64() - 0.5) * float64(config.Thickness))
 
 			radius := typeConfig.SizeMin + float32(rng.Float64())*(typeConfig.SizeMax-typeConfig.SizeMin)

@@ -317,5 +317,5 @@ func rotateOrbit(x, y float32, argPeri, incl, longNode float32) Vector3 {
 	y3 := x2*sinO + y2*cosO
 	z3 := z2
 
-	return Vector3{X: x3, Y: z3, Z: y3} // Swap Y/Z to match Y-up coordinate system
+	return Vector3{X: x3, Y: z3, Z: -y3} // Swap Y/Z to match Y-up; negate Z for CCW-from-north orbits
 }
