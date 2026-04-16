@@ -154,13 +154,13 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		renderedCount := 0
 
 		if session.inputState.PerfOptions.InstancedRendering {
-			renderedCount = a.renderer.DrawObjectsInstanced(objectsToRender, session.cameraState.Position, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled, session.inputState.PerfOptions.ImportanceThreshold)
+			renderedCount = a.renderer.DrawObjectsInstanced(objectsToRender, session.cameraState.Position, state.Time, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled, session.inputState.PerfOptions.ImportanceThreshold)
 		} else {
 			for _, obj := range objectsToRender {
 				if obj.Meta.Importance < session.inputState.PerfOptions.ImportanceThreshold {
 					continue
 				}
-				a.renderer.DrawObject(obj, session.cameraState.Position, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled)
+				a.renderer.DrawObject(obj, session.cameraState.Position, state.Time, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled)
 				renderedCount++
 			}
 		}

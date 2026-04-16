@@ -179,7 +179,7 @@ func (a *App) runPerformanceTest(sim *simlib.World, cameraState *ui.CameraState,
 
 		// Draw all objects to initialize rendering
 		for _, obj := range state.Objects {
-			a.renderer.DrawObject(obj, cameraState.Position, false, false)
+			a.renderer.DrawObject(obj, cameraState.Position, state.Time, false, false)
 		}
 
 		rl.EndMode3D()
@@ -398,10 +398,10 @@ func (a *App) runSingleTest(sim *simlib.World, cameraState *ui.CameraState, inpu
 		}
 
 		if inputState.PerfOptions.InstancedRendering {
-			a.renderer.DrawObjectsInstanced(visibleObjects, cameraState.Position, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled, inputState.PerfOptions.ImportanceThreshold)
+			a.renderer.DrawObjectsInstanced(visibleObjects, cameraState.Position, state.Time, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled, inputState.PerfOptions.ImportanceThreshold)
 		} else {
 			for _, obj := range visibleObjects {
-				a.renderer.DrawObject(obj, cameraState.Position, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled)
+				a.renderer.DrawObject(obj, cameraState.Position, state.Time, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled)
 			}
 		}
 
@@ -479,10 +479,10 @@ func (a *App) runSingleTest(sim *simlib.World, cameraState *ui.CameraState, inpu
 		// Measure draw time
 		drawStart := time.Now()
 		if inputState.PerfOptions.InstancedRendering {
-			a.renderer.DrawObjectsInstanced(visibleObjects, cameraState.Position, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled, inputState.PerfOptions.ImportanceThreshold)
+			a.renderer.DrawObjectsInstanced(visibleObjects, cameraState.Position, state.Time, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled, inputState.PerfOptions.ImportanceThreshold)
 		} else {
 			for _, obj := range visibleObjects {
-				a.renderer.DrawObject(obj, cameraState.Position, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled)
+				a.renderer.DrawObject(obj, cameraState.Position, state.Time, inputState.PerfOptions.PointRendering, inputState.PerfOptions.LODEnabled)
 			}
 		}
 		drawTime := time.Since(drawStart)

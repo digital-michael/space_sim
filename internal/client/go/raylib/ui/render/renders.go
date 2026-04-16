@@ -54,8 +54,6 @@ type Renderer struct {
 	textureCache map[string]rl.Texture2D // path → GPU texture
 	modelCache   map[modelKey]rl.Model   // (path,rings,slices) → textured sphere model
 
-	// simTimeScale is simulated seconds per real second, used to drive axial spin.
-	simTimeScale float64
 }
 
 // modelKey indexes the model cache.
@@ -64,17 +62,11 @@ type modelKey struct {
 	rings, slices int32
 }
 
-// New creates a Raylib renderer. simTimeScale is the number of simulated
-// seconds per real second used to drive axial spin; 0 defaults to 3600
-// (one sim-hour per real second).
-func New(noTextures bool, simTimeScale float64) *Renderer {
-	if simTimeScale <= 0 {
-		simTimeScale = 3600
-	}
+// New creates a Raylib renderer.
+func New(noTextures bool) *Renderer {
 	setLayoutSize(0, 0)
 	return &Renderer{
 		noTextures:   noTextures,
-		simTimeScale: simTimeScale,
 		textureCache: make(map[string]rl.Texture2D),
 		modelCache:   make(map[modelKey]rl.Model),
 	}
@@ -344,12 +336,12 @@ func (r *Renderer) CaptureRenderTexture() []byte {
 	return readTexturePixels(r.target.Texture.ID, int(r.renderWidth), int(r.renderHeight))
 }
 
-func (r *Renderer) DrawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
-	return drawObjectsInstanced(r, objects, cameraPos, pointRenderingEnabled, lodEnabled, importanceThreshold)
+func (r *Renderer) DrawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
+	return drawObjectsInstanced(r, objects, cameraPos, simTime, pointRenderingEnabled, lodEnabled, importanceThreshold)
 }
 
-func (r *Renderer) DrawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool) {
-	drawObject(r, obj, cameraPos, pointRenderingEnabled, lodEnabled)
+func (r *Renderer) DrawObject(obj *engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool) {
+	drawObject(r, obj, cameraPos, simTime, pointRenderingEnabled, lodEnabled)
 }
 
 func (r *Renderer) DrawGroundPlane() {
@@ -507,7 +499,7 @@ type InstanceBatch struct {
 }
 
 // drawObjectsInstanced draws objects using batching to reduce draw calls
-func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
+func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
 	// Group objects into batches by their rendering properties
 	batches := make(map[string]*InstanceBatch)
 	drawnCount := 0
@@ -520,7 +512,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 
 		// Skip rings - they need individual rendering
 		if obj.Meta.InnerRadius > 0 {
-			drawObject(r, obj, cameraPos, pointRenderingEnabled, lodEnabled)
+			drawObject(r, obj, cameraPos, simTime, pointRenderingEnabled, lodEnabled)
 			drawnCount++
 			continue
 		}
@@ -642,7 +634,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 						var spin float32
 						if obj.Meta.RotationPeriod > 0 {
 							periodSec := float64(obj.Meta.RotationPeriod) * 3600.0
-							spin = float32(math.Mod(rl.GetTime()*r.simTimeScale/periodSec*360.0, 360.0)) * rl.Deg2rad
+							spin = float32(math.Mod(simTime/periodSec*360.0, 360.0)) * rl.Deg2rad
 						}
 						poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
 						model.Transform = rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
@@ -668,7 +660,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 }
 
 // drawObject renders a single object
-func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnabled bool, lodEnabled bool) {
+func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool) {
 	pos := rl.Vector3{
 		X: obj.Anim.Position.X - cameraPos.X,
 		Y: obj.Anim.Position.Y - cameraPos.Y,
@@ -809,7 +801,7 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, point
 			var spin float32
 			if obj.Meta.RotationPeriod > 0 {
 				periodSec := float64(obj.Meta.RotationPeriod) * 3600.0
-				spin = float32(math.Mod(rl.GetTime()*r.simTimeScale/periodSec*360.0, 360.0)) * rl.Deg2rad
+				spin = float32(math.Mod(simTime/periodSec*360.0, 360.0)) * rl.Deg2rad
 			}
 			poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
 			model.Transform = rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
