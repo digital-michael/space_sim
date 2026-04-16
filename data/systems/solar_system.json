@@ -987,7 +987,7 @@
       "orbit": {
         "semi_major_axis": 1.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.089797,
         "orbital_period": 27.322,
         "initial_mean_anomaly": "random"
       },
@@ -1031,7 +1031,7 @@
       "orbit": {
         "semi_major_axis": 0.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.019076,
         "orbital_period": 0.31891,
         "initial_mean_anomaly": "random"
       },
@@ -1070,7 +1070,7 @@
       "orbit": {
         "semi_major_axis": 0.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.031259,
         "orbital_period": 1.26244,
         "initial_mean_anomaly": "random"
       },
@@ -1109,7 +1109,7 @@
       "orbit": {
         "semi_major_axis": 2.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001047,
         "orbital_period": 0.295,
         "initial_mean_anomaly": "random"
       },
@@ -1148,7 +1148,7 @@
       "orbit": {
         "semi_major_axis": 2.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000524,
         "orbital_period": 0.298,
         "initial_mean_anomaly": "random"
       },
@@ -1187,7 +1187,7 @@
       "orbit": {
         "semi_major_axis": 2.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.006528,
         "orbital_period": 0.498,
         "initial_mean_anomaly": "random"
       },
@@ -1226,7 +1226,7 @@
       "orbit": {
         "semi_major_axis": 3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.01885,
         "orbital_period": 0.675,
         "initial_mean_anomaly": "random"
       },
@@ -1265,7 +1265,7 @@
       "orbit": {
         "semi_major_axis": 3.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000873,
         "orbital_period": 1.769,
         "initial_mean_anomaly": "random"
       },
@@ -1324,7 +1324,7 @@
       "orbit": {
         "semi_major_axis": 4.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.008221,
         "orbital_period": 3.551,
         "initial_mean_anomaly": "random"
       },
@@ -1365,7 +1365,7 @@
       "orbit": {
         "semi_major_axis": 5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.00356,
         "orbital_period": 7.155,
         "initial_mean_anomaly": "random"
       },
@@ -1407,7 +1407,7 @@
       "orbit": {
         "semi_major_axis": 6.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.003351,
         "orbital_period": 16.689,
         "initial_mean_anomaly": "random"
       },
@@ -1449,7 +1449,7 @@
       "orbit": {
         "semi_major_axis": 7.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.751888,
         "orbital_period": 130.02,
         "initial_mean_anomaly": "random"
       },
@@ -1488,7 +1488,7 @@
       "orbit": {
         "semi_major_axis": 9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.479267,
         "orbital_period": 238.72,
         "initial_mean_anomaly": "random"
       },
@@ -1527,7 +1527,7 @@
       "orbit": {
         "semi_major_axis": 9.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.479966,
         "orbital_period": 250.56,
         "initial_mean_anomaly": "random"
       },
@@ -1566,7 +1566,7 @@
       "orbit": {
         "semi_major_axis": 9.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.493928,
         "orbital_period": 259.22,
         "initial_mean_anomaly": "random"
       },
@@ -1605,7 +1605,7 @@
       "orbit": {
         "semi_major_axis": 10,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.518188,
         "orbital_period": 259.65,
         "initial_mean_anomaly": "random"
       },
@@ -1644,7 +1644,7 @@
       "orbit": {
         "semi_major_axis": 10.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.481536,
         "orbital_period": 287.0,
         "initial_mean_anomaly": "random"
       },
@@ -1683,7 +1683,7 @@
       "orbit": {
         "semi_major_axis": 11.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.901113,
         "orbital_period": 456.1,
         "initial_mean_anomaly": "random"
       },
@@ -1722,7 +1722,7 @@
       "orbit": {
         "semi_major_axis": 12,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.546435,
         "orbital_period": 622.56,
         "initial_mean_anomaly": "random"
       },
@@ -1761,7 +1761,7 @@
       "orbit": {
         "semi_major_axis": 12.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.598795,
         "orbital_period": 620.64,
         "initial_mean_anomaly": "random"
       },
@@ -1800,7 +1800,7 @@
       "orbit": {
         "semi_major_axis": 12.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.593559,
         "orbital_period": 627.21,
         "initial_mean_anomaly": "random"
       },
@@ -1839,7 +1839,7 @@
       "orbit": {
         "semi_major_axis": 12.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.54469,
         "orbital_period": 550.74,
         "initial_mean_anomaly": "random"
       },
@@ -1878,7 +1878,7 @@
       "orbit": {
         "semi_major_axis": 13,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.598795,
         "orbital_period": 629.77,
         "initial_mean_anomaly": "random"
       },
@@ -1917,7 +1917,7 @@
       "orbit": {
         "semi_major_axis": 13.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.630211,
         "orbital_period": 633.9,
         "initial_mean_anomaly": "random"
       },
@@ -1956,7 +1956,7 @@
       "orbit": {
         "semi_major_axis": 13.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.595305,
         "orbital_period": 625.3,
         "initial_mean_anomaly": "random"
       },
@@ -1995,7 +1995,7 @@
       "orbit": {
         "semi_major_axis": 13.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.642428,
         "orbital_period": 628.09,
         "initial_mean_anomaly": "random"
       },
@@ -2034,7 +2034,7 @@
       "orbit": {
         "semi_major_axis": 13.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.70177,
         "orbital_period": 634.77,
         "initial_mean_anomaly": "random"
       },
@@ -2073,7 +2073,7 @@
       "orbit": {
         "semi_major_axis": 13.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.607522,
         "orbital_period": 631.5,
         "initial_mean_anomaly": "random"
       },
@@ -2112,7 +2112,7 @@
       "orbit": {
         "semi_major_axis": 13.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.881539,
         "orbital_period": 730.18,
         "initial_mean_anomaly": "random"
       },
@@ -2151,7 +2151,7 @@
       "orbit": {
         "semi_major_axis": 13.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 728.3,
         "initial_mean_anomaly": "random"
       },
@@ -2190,7 +2190,7 @@
       "orbit": {
         "semi_major_axis": 14,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.883284,
         "orbital_period": 732.2,
         "initial_mean_anomaly": "random"
       },
@@ -2229,7 +2229,7 @@
       "orbit": {
         "semi_major_axis": 14,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 734.17,
         "initial_mean_anomaly": "random"
       },
@@ -2268,7 +2268,7 @@
       "orbit": {
         "semi_major_axis": 14.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.886775,
         "orbital_period": 723.8,
         "initial_mean_anomaly": "random"
       },
@@ -2307,7 +2307,7 @@
       "orbit": {
         "semi_major_axis": 14.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.883284,
         "orbital_period": 742.0,
         "initial_mean_anomaly": "random"
       },
@@ -2346,7 +2346,7 @@
       "orbit": {
         "semi_major_axis": 14.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.881539,
         "orbital_period": 726.23,
         "initial_mean_anomaly": "random"
       },
@@ -2385,7 +2385,7 @@
       "orbit": {
         "semi_major_axis": 14.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.879793,
         "orbital_period": 729.47,
         "initial_mean_anomaly": "random"
       },
@@ -2424,7 +2424,7 @@
       "orbit": {
         "semi_major_axis": 14.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 728.3,
         "initial_mean_anomaly": "random"
       },
@@ -2463,7 +2463,7 @@
       "orbit": {
         "semi_major_axis": 14.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.867576,
         "orbital_period": 717.8,
         "initial_mean_anomaly": "random"
       },
@@ -2502,7 +2502,7 @@
       "orbit": {
         "semi_major_axis": 14.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.881539,
         "orbital_period": 719.44,
         "initial_mean_anomaly": "random"
       },
@@ -2541,7 +2541,7 @@
       "orbit": {
         "semi_major_axis": 14.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.88852,
         "orbital_period": 746.4,
         "initial_mean_anomaly": "random"
       },
@@ -2580,7 +2580,7 @@
       "orbit": {
         "semi_major_axis": 14.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.879793,
         "orbital_period": 723.9,
         "initial_mean_anomaly": "random"
       },
@@ -2619,7 +2619,7 @@
       "orbit": {
         "semi_major_axis": 15,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.642428,
         "orbital_period": 743.63,
         "initial_mean_anomaly": "random"
       },
@@ -2658,7 +2658,7 @@
       "orbit": {
         "semi_major_axis": 15.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.635447,
         "orbital_period": 748.34,
         "initial_mean_anomaly": "random"
       },
@@ -2697,7 +2697,7 @@
       "orbit": {
         "semi_major_axis": 15.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.659882,
         "orbital_period": 761.0,
         "initial_mean_anomaly": "random"
       },
@@ -2736,7 +2736,7 @@
       "orbit": {
         "semi_major_axis": 15.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.666863,
         "orbital_period": 752.8,
         "initial_mean_anomaly": "random"
       },
@@ -2775,7 +2775,7 @@
       "orbit": {
         "semi_major_axis": 15.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.567379,
         "orbital_period": 758.77,
         "initial_mean_anomaly": "random"
       },
@@ -2814,7 +2814,7 @@
       "orbit": {
         "semi_major_axis": 15.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.624975,
         "orbital_period": 737.8,
         "initial_mean_anomaly": "random"
       },
@@ -2853,7 +2853,7 @@
       "orbit": {
         "semi_major_axis": 15.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.759366,
         "orbital_period": 758.9,
         "initial_mean_anomaly": "random"
       },
@@ -2892,7 +2892,7 @@
       "orbit": {
         "semi_major_axis": 15.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.762856,
         "orbital_period": 761.5,
         "initial_mean_anomaly": "random"
       },
@@ -2931,7 +2931,7 @@
       "orbit": {
         "semi_major_axis": 15.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.659882,
         "orbital_period": 776.02,
         "initial_mean_anomaly": "random"
       },
@@ -2970,7 +2970,7 @@
       "orbit": {
         "semi_major_axis": 16,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.67908,
         "orbital_period": 981.55,
         "initial_mean_anomaly": "random"
       },
@@ -3009,7 +3009,7 @@
       "orbit": {
         "semi_major_axis": 16.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.583087,
         "orbital_period": 583.88,
         "initial_mean_anomaly": "random"
       },
@@ -3048,7 +3048,7 @@
       "orbit": {
         "semi_major_axis": 16.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.600541,
         "orbital_period": 723.2,
         "initial_mean_anomaly": "random"
       },
@@ -3087,7 +3087,7 @@
       "orbit": {
         "semi_major_axis": 16.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.879793,
         "orbital_period": 738.73,
         "initial_mean_anomaly": "random"
       },
@@ -3126,7 +3126,7 @@
       "orbit": {
         "semi_major_axis": 16.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 683.0,
         "initial_mean_anomaly": "random"
       },
@@ -3165,7 +3165,7 @@
       "orbit": {
         "semi_major_axis": 16.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 716.25,
         "initial_mean_anomaly": "random"
       },
@@ -3204,7 +3204,7 @@
       "orbit": {
         "semi_major_axis": 16.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.54469,
         "orbital_period": 489.72,
         "initial_mean_anomaly": "random"
       },
@@ -3243,7 +3243,7 @@
       "orbit": {
         "semi_major_axis": 16.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.530727,
         "orbital_period": 689.77,
         "initial_mean_anomaly": "random"
       },
@@ -3282,7 +3282,7 @@
       "orbit": {
         "semi_major_axis": 16.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.617994,
         "orbital_period": 616.33,
         "initial_mean_anomaly": "random"
       },
@@ -3321,7 +3321,7 @@
       "orbit": {
         "semi_major_axis": 16.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.583087,
         "orbital_period": 596.58,
         "initial_mean_anomaly": "random"
       },
@@ -3360,7 +3360,7 @@
       "orbit": {
         "semi_major_axis": 17,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.844887,
         "orbital_period": 740.43,
         "initial_mean_anomaly": "random"
       },
@@ -3399,7 +3399,7 @@
       "orbit": {
         "semi_major_axis": 17.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.600541,
         "orbital_period": 732.45,
         "initial_mean_anomaly": "random"
       },
@@ -3438,7 +3438,7 @@
       "orbit": {
         "semi_major_axis": 17.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.848377,
         "orbital_period": 723.2,
         "initial_mean_anomaly": "random"
       },
@@ -3477,7 +3477,7 @@
       "orbit": {
         "semi_major_axis": 17.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.64941,
         "orbital_period": 726.8,
         "initial_mean_anomaly": "random"
       },
@@ -3516,7 +3516,7 @@
       "orbit": {
         "semi_major_axis": 17.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.841396,
         "orbital_period": 582.0,
         "initial_mean_anomaly": "random"
       },
@@ -3555,7 +3555,7 @@
       "orbit": {
         "semi_major_axis": 17.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.59705,
         "orbital_period": 726.1,
         "initial_mean_anomaly": "random"
       },
@@ -3594,7 +3594,7 @@
       "orbit": {
         "semi_major_axis": 17.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.43997,
         "orbital_period": 603.0,
         "initial_mean_anomaly": "random"
       },
@@ -3633,7 +3633,7 @@
       "orbit": {
         "semi_major_axis": 17.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.879793,
         "orbital_period": 632.0,
         "initial_mean_anomaly": "random"
       },
@@ -3672,7 +3672,7 @@
       "orbit": {
         "semi_major_axis": 17.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.604031,
         "orbital_period": 734.0,
         "initial_mean_anomaly": "random"
       },
@@ -3711,7 +3711,7 @@
       "orbit": {
         "semi_major_axis": 17.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.876303,
         "orbital_period": 723.0,
         "initial_mean_anomaly": "random"
       },
@@ -3750,7 +3750,7 @@
       "orbit": {
         "semi_major_axis": 18,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.617994,
         "orbital_period": 732.0,
         "initial_mean_anomaly": "random"
       },
@@ -3789,7 +3789,7 @@
       "orbit": {
         "semi_major_axis": 18.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.881539,
         "orbital_period": 690.0,
         "initial_mean_anomaly": "random"
       },
@@ -3828,7 +3828,7 @@
       "orbit": {
         "semi_major_axis": 18.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.605777,
         "orbital_period": 612.0,
         "initial_mean_anomaly": "random"
       },
@@ -3867,7 +3867,7 @@
       "orbit": {
         "semi_major_axis": 18.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.853613,
         "orbital_period": 724.0,
         "initial_mean_anomaly": "random"
       },
@@ -3906,7 +3906,7 @@
       "orbit": {
         "semi_major_axis": 18.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.872812,
         "orbital_period": 621.0,
         "initial_mean_anomaly": "random"
       },
@@ -3945,7 +3945,7 @@
       "orbit": {
         "semi_major_axis": 18.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.659882,
         "orbital_period": 733.0,
         "initial_mean_anomaly": "random"
       },
@@ -3984,7 +3984,7 @@
       "orbit": {
         "semi_major_axis": 18.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.49131,
         "orbital_period": 251.77,
         "initial_mean_anomaly": "random"
       },
@@ -4023,7 +4023,7 @@
       "orbit": {
         "semi_major_axis": 18.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.530727,
         "orbital_period": 689.0,
         "initial_mean_anomaly": "random"
       },
@@ -4062,7 +4062,7 @@
       "orbit": {
         "semi_major_axis": 18.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.598795,
         "orbital_period": 584.0,
         "initial_mean_anomaly": "random"
       },
@@ -4101,7 +4101,7 @@
       "orbit": {
         "semi_major_axis": 18.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.591841,
         "orbital_period": 532.0,
         "initial_mean_anomaly": "random"
       },
@@ -4140,7 +4140,7 @@
       "orbit": {
         "semi_major_axis": 19,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.534245,
         "orbital_period": 250.23,
         "initial_mean_anomaly": "random"
       },
@@ -4179,7 +4179,7 @@
       "orbit": {
         "semi_major_axis": 19.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.642428,
         "orbital_period": 730.0,
         "initial_mean_anomaly": "random"
       },
@@ -4218,7 +4218,7 @@
       "orbit": {
         "semi_major_axis": 19.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.588323,
         "orbital_period": 628.0,
         "initial_mean_anomaly": "random"
       },
@@ -4257,7 +4257,7 @@
       "orbit": {
         "semi_major_axis": 19.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.665118,
         "orbital_period": 583.0,
         "initial_mean_anomaly": "random"
       },
@@ -4296,7 +4296,7 @@
       "orbit": {
         "semi_major_axis": 19.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.871067,
         "orbital_period": 720.0,
         "initial_mean_anomaly": "random"
       },
@@ -4335,7 +4335,7 @@
       "orbit": {
         "semi_major_axis": 19.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.617994,
         "orbital_period": 726.0,
         "initial_mean_anomaly": "random"
       },
@@ -4374,7 +4374,7 @@
       "orbit": {
         "semi_major_axis": 19.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.879793,
         "orbital_period": 688.0,
         "initial_mean_anomaly": "random"
       },
@@ -4413,7 +4413,7 @@
       "orbit": {
         "semi_major_axis": 19.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.609267,
         "orbital_period": 732.0,
         "initial_mean_anomaly": "random"
       },
@@ -4452,7 +4452,7 @@
       "orbit": {
         "semi_major_axis": 19.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.874557,
         "orbital_period": 620.0,
         "initial_mean_anomaly": "random"
       },
@@ -4491,7 +4491,7 @@
       "orbit": {
         "semi_major_axis": 19.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.59705,
         "orbital_period": 734.0,
         "initial_mean_anomaly": "random"
       },
@@ -4530,7 +4530,7 @@
       "orbit": {
         "semi_major_axis": 20,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.860595,
         "orbital_period": 735.0,
         "initial_mean_anomaly": "random"
       },
@@ -4569,7 +4569,7 @@
       "orbit": {
         "semi_major_axis": 20.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.6529,
         "orbital_period": 728.0,
         "initial_mean_anomaly": "random"
       },
@@ -4608,7 +4608,7 @@
       "orbit": {
         "semi_major_axis": 20.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 730.0,
         "initial_mean_anomaly": "random"
       },
@@ -4647,7 +4647,7 @@
       "orbit": {
         "semi_major_axis": 20.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.614503,
         "orbital_period": 732.0,
         "initial_mean_anomaly": "random"
       },
@@ -4686,7 +4686,7 @@
       "orbit": {
         "semi_major_axis": 20.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.62323,
         "orbital_period": 725.0,
         "initial_mean_anomaly": "random"
       },
@@ -4725,7 +4725,7 @@
       "orbit": {
         "semi_major_axis": 20.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.883284,
         "orbital_period": 729.0,
         "initial_mean_anomaly": "random"
       },
@@ -4764,7 +4764,7 @@
       "orbit": {
         "semi_major_axis": 20.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.593559,
         "orbital_period": 731.0,
         "initial_mean_anomaly": "random"
       },
@@ -4803,7 +4803,7 @@
       "orbit": {
         "semi_major_axis": 20.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.858849,
         "orbital_period": 733.0,
         "initial_mean_anomaly": "random"
       },
@@ -4842,7 +4842,7 @@
       "orbit": {
         "semi_major_axis": 2.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 1.7e-05,
         "orbital_period": 0.575,
         "initial_mean_anomaly": "random"
       },
@@ -4881,7 +4881,7 @@
       "orbit": {
         "semi_major_axis": 2.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 1.7e-05,
         "orbital_period": 0.594,
         "initial_mean_anomaly": "random"
       },
@@ -4920,7 +4920,7 @@
       "orbit": {
         "semi_major_axis": 2.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 5.2e-05,
         "orbital_period": 0.602,
         "initial_mean_anomaly": "random"
       },
@@ -4959,7 +4959,7 @@
       "orbit": {
         "semi_major_axis": 2.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.00014,
         "orbital_period": 0.613,
         "initial_mean_anomaly": "random"
       },
@@ -4998,7 +4998,7 @@
       "orbit": {
         "semi_major_axis": 2.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000873,
         "orbital_period": 0.629,
         "initial_mean_anomaly": "random"
       },
@@ -5037,7 +5037,7 @@
       "orbit": {
         "semi_major_axis": 2.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.006126,
         "orbital_period": 0.694,
         "initial_mean_anomaly": "random"
       },
@@ -5076,7 +5076,7 @@
       "orbit": {
         "semi_major_axis": 2.85,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.002845,
         "orbital_period": 0.695,
         "initial_mean_anomaly": "random"
       },
@@ -5115,7 +5115,7 @@
       "orbit": {
         "semi_major_axis": 3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.027471,
         "orbital_period": 0.942,
         "initial_mean_anomaly": "random"
       },
@@ -5154,7 +5154,7 @@
       "orbit": {
         "semi_major_axis": 3.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000157,
         "orbital_period": 1.37,
         "initial_mean_anomaly": "random"
       },
@@ -5206,7 +5206,7 @@
       "orbit": {
         "semi_major_axis": 4.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.019548,
         "orbital_period": 1.888,
         "initial_mean_anomaly": "random"
       },
@@ -5245,7 +5245,7 @@
       "orbit": {
         "semi_major_axis": 4.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000489,
         "orbital_period": 2.737,
         "initial_mean_anomaly": "random"
       },
@@ -5286,7 +5286,7 @@
       "orbit": {
         "semi_major_axis": 6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.005707,
         "orbital_period": 4.518,
         "initial_mean_anomaly": "random"
       },
@@ -5328,7 +5328,7 @@
       "orbit": {
         "semi_major_axis": 7.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.006091,
         "orbital_period": 15.945,
         "initial_mean_anomaly": "random"
       },
@@ -5380,7 +5380,7 @@
       "orbit": {
         "semi_major_axis": 8.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.010734,
         "orbital_period": 21.277,
         "initial_mean_anomaly": "random"
       },
@@ -5419,7 +5419,7 @@
       "orbit": {
         "semi_major_axis": 10,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.130708,
         "orbital_period": 79.33,
         "initial_mean_anomaly": "random"
       },
@@ -5459,7 +5459,7 @@
       "orbit": {
         "semi_major_axis": 12,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.059562,
         "orbital_period": 550.48,
         "initial_mean_anomaly": "random"
       },
@@ -5498,7 +5498,7 @@
       "orbit": {
         "semi_major_axis": 12.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.810531,
         "orbital_period": 451.42,
         "initial_mean_anomaly": "random"
       },
@@ -5537,7 +5537,7 @@
       "orbit": {
         "semi_major_axis": 13,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.79779,
         "orbital_period": 449.22,
         "initial_mean_anomaly": "random"
       },
@@ -5576,7 +5576,7 @@
       "orbit": {
         "semi_major_axis": 13.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.787667,
         "orbital_period": 686.95,
         "initial_mean_anomaly": "random"
       },
@@ -5615,7 +5615,7 @@
       "orbit": {
         "semi_major_axis": 13.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.665118,
         "orbital_period": 728.2,
         "initial_mean_anomaly": "random"
       },
@@ -5654,7 +5654,7 @@
       "orbit": {
         "semi_major_axis": 13.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.597077,
         "orbital_period": 783.45,
         "initial_mean_anomaly": "random"
       },
@@ -5693,7 +5693,7 @@
       "orbit": {
         "semi_major_axis": 13.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.036873,
         "orbital_period": 808.08,
         "initial_mean_anomaly": "random"
       },
@@ -5732,7 +5732,7 @@
       "orbit": {
         "semi_major_axis": 13.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.61104,
         "orbital_period": 834.84,
         "initial_mean_anomaly": "random"
       },
@@ -5771,7 +5771,7 @@
       "orbit": {
         "semi_major_axis": 13.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.605455,
         "orbital_period": 871.19,
         "initial_mean_anomaly": "random"
       },
@@ -5810,7 +5810,7 @@
       "orbit": {
         "semi_major_axis": 14,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.813471,
         "orbital_period": 878.29,
         "initial_mean_anomaly": "random"
       },
@@ -5849,7 +5849,7 @@
       "orbit": {
         "semi_major_axis": 14,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.799361,
         "orbital_period": 895.53,
         "initial_mean_anomaly": "random"
       },
@@ -5888,7 +5888,7 @@
       "orbit": {
         "semi_major_axis": 14.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.804422,
         "orbital_period": 887.48,
         "initial_mean_anomaly": "random"
       },
@@ -5927,7 +5927,7 @@
       "orbit": {
         "semi_major_axis": 14.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.138102,
         "orbital_period": 921.19,
         "initial_mean_anomaly": "random"
       },
@@ -5966,7 +5966,7 @@
       "orbit": {
         "semi_major_axis": 14.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.642428,
         "orbital_period": 931.86,
         "initial_mean_anomaly": "random"
       },
@@ -6005,7 +6005,7 @@
       "orbit": {
         "semi_major_axis": 14.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.850123,
         "orbital_period": 943.78,
         "initial_mean_anomaly": "random"
       },
@@ -6044,7 +6044,7 @@
       "orbit": {
         "semi_major_axis": 14.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.919936,
         "orbital_period": 951.41,
         "initial_mean_anomaly": "random"
       },
@@ -6083,7 +6083,7 @@
       "orbit": {
         "semi_major_axis": 14.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.54469,
         "orbital_period": 1003.86,
         "initial_mean_anomaly": "random"
       },
@@ -6122,7 +6122,7 @@
       "orbit": {
         "semi_major_axis": 14.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.766347,
         "orbital_period": 1005.74,
         "initial_mean_anomaly": "random"
       },
@@ -6161,7 +6161,7 @@
       "orbit": {
         "semi_major_axis": 14.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.050836,
         "orbital_period": 1016.67,
         "initial_mean_anomaly": "random"
       },
@@ -6200,7 +6200,7 @@
       "orbit": {
         "semi_major_axis": 14.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.893756,
         "orbital_period": 1038.61,
         "initial_mean_anomaly": "random"
       },
@@ -6239,7 +6239,7 @@
       "orbit": {
         "semi_major_axis": 15,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.530727,
         "orbital_period": 1088.72,
         "initial_mean_anomaly": "random"
       },
@@ -6278,7 +6278,7 @@
       "orbit": {
         "semi_major_axis": 15.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.729695,
         "orbital_period": 1085.55,
         "initial_mean_anomaly": "random"
       },
@@ -6317,7 +6317,7 @@
       "orbit": {
         "semi_major_axis": 15.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.063053,
         "orbital_period": 1094.11,
         "initial_mean_anomaly": "random"
       },
@@ -6356,7 +6356,7 @@
       "orbit": {
         "semi_major_axis": 15.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.909464,
         "orbital_period": 1117.52,
         "initial_mean_anomaly": "random"
       },
@@ -6395,7 +6395,7 @@
       "orbit": {
         "semi_major_axis": 15.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.879793,
         "orbital_period": 1140.24,
         "initial_mean_anomaly": "random"
       },
@@ -6434,7 +6434,7 @@
       "orbit": {
         "semi_major_axis": 15.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.885029,
         "orbital_period": 1046.19,
         "initial_mean_anomaly": "random"
       },
@@ -6473,7 +6473,7 @@
       "orbit": {
         "semi_major_axis": 15.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.942625,
         "orbital_period": 933.48,
         "initial_mean_anomaly": "random"
       },
@@ -6512,7 +6512,7 @@
       "orbit": {
         "semi_major_axis": 15.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.933898,
         "orbital_period": 985.45,
         "initial_mean_anomaly": "random"
       },
@@ -6551,7 +6551,7 @@
       "orbit": {
         "semi_major_axis": 15.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.72795,
         "orbital_period": 1230.97,
         "initial_mean_anomaly": "random"
       },
@@ -6590,7 +6590,7 @@
       "orbit": {
         "semi_major_axis": 15.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 1260.35,
         "initial_mean_anomaly": "random"
       },
@@ -6629,7 +6629,7 @@
       "orbit": {
         "semi_major_axis": 16,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.097959,
         "orbital_period": 1297.36,
         "initial_mean_anomaly": "random"
       },
@@ -6668,7 +6668,7 @@
       "orbit": {
         "semi_major_axis": 16.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.017674,
         "orbital_period": 1315.14,
         "initial_mean_anomaly": "random"
       },
@@ -6707,7 +6707,7 @@
       "orbit": {
         "semi_major_axis": 16.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.930408,
         "orbital_period": 1311.36,
         "initial_mean_anomaly": "random"
       },
@@ -6746,7 +6746,7 @@
       "orbit": {
         "semi_major_axis": 16.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.974041,
         "orbital_period": 1494.2,
         "initial_mean_anomaly": "random"
       },
@@ -6785,7 +6785,7 @@
       "orbit": {
         "semi_major_axis": 16.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.96706,
         "orbital_period": 1100.0,
         "initial_mean_anomaly": "random"
       },
@@ -6824,7 +6824,7 @@
       "orbit": {
         "semi_major_axis": 16.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.635447,
         "orbital_period": 1150.0,
         "initial_mean_anomaly": "random"
       },
@@ -6863,7 +6863,7 @@
       "orbit": {
         "semi_major_axis": 16.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.958333,
         "orbital_period": 1200.0,
         "initial_mean_anomaly": "random"
       },
@@ -6902,7 +6902,7 @@
       "orbit": {
         "semi_major_axis": 16.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.883284,
         "orbital_period": 1250.0,
         "initial_mean_anomaly": "random"
       },
@@ -6941,7 +6941,7 @@
       "orbit": {
         "semi_major_axis": 16.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.007202,
         "orbital_period": 1050.0,
         "initial_mean_anomaly": "random"
       },
@@ -6980,7 +6980,7 @@
       "orbit": {
         "semi_major_axis": 17,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.764602,
         "orbital_period": 1180.0,
         "initial_mean_anomaly": "random"
       },
@@ -7019,7 +7019,7 @@
       "orbit": {
         "semi_major_axis": 17.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.928662,
         "orbital_period": 1220.0,
         "initial_mean_anomaly": "random"
       },
@@ -7058,7 +7058,7 @@
       "orbit": {
         "semi_major_axis": 17.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.021165,
         "orbital_period": 1130.0,
         "initial_mean_anomaly": "random"
       },
@@ -7097,7 +7097,7 @@
       "orbit": {
         "semi_major_axis": 17.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.698279,
         "orbital_period": 1170.0,
         "initial_mean_anomaly": "random"
       },
@@ -7136,7 +7136,7 @@
       "orbit": {
         "semi_major_axis": 17.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.979277,
         "orbital_period": 1210.0,
         "initial_mean_anomaly": "random"
       },
@@ -7175,7 +7175,7 @@
       "orbit": {
         "semi_major_axis": 17.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.07527,
         "orbital_period": 1240.0,
         "initial_mean_anomaly": "random"
       },
@@ -7214,7 +7214,7 @@
       "orbit": {
         "semi_major_axis": 17.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.843141,
         "orbital_period": 1090.0,
         "initial_mean_anomaly": "random"
       },
@@ -7253,7 +7253,7 @@
       "orbit": {
         "semi_major_axis": 17.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.94088,
         "orbital_period": 1140.0,
         "initial_mean_anomaly": "random"
       },
@@ -7292,7 +7292,7 @@
       "orbit": {
         "semi_major_axis": 17.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.70526,
         "orbital_period": 1190.0,
         "initial_mean_anomaly": "random"
       },
@@ -7331,7 +7331,7 @@
       "orbit": {
         "semi_major_axis": 17.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.991494,
         "orbital_period": 1230.0,
         "initial_mean_anomaly": "random"
       },
@@ -7370,7 +7370,7 @@
       "orbit": {
         "semi_major_axis": 18,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.858849,
         "orbital_period": 1270.0,
         "initial_mean_anomaly": "random"
       },
@@ -7409,7 +7409,7 @@
       "orbit": {
         "semi_major_axis": 18.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.953097,
         "orbital_period": 1110.0,
         "initial_mean_anomaly": "random"
       },
@@ -7448,7 +7448,7 @@
       "orbit": {
         "semi_major_axis": 18.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.745403,
         "orbital_period": 1160.0,
         "initial_mean_anomaly": "random"
       },
@@ -7487,7 +7487,7 @@
       "orbit": {
         "semi_major_axis": 18.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.0456,
         "orbital_period": 1200.0,
         "initial_mean_anomaly": "random"
       },
@@ -7526,7 +7526,7 @@
       "orbit": {
         "semi_major_axis": 18.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.794272,
         "orbital_period": 1250.0,
         "initial_mean_anomaly": "random"
       },
@@ -7565,7 +7565,7 @@
       "orbit": {
         "semi_major_axis": 18.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.909464,
         "orbital_period": 1280.0,
         "initial_mean_anomaly": "random"
       },
@@ -7604,7 +7604,7 @@
       "orbit": {
         "semi_major_axis": 18.65,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.937389,
         "orbital_period": 1095.0,
         "initial_mean_anomaly": "random"
       },
@@ -7643,7 +7643,7 @@
       "orbit": {
         "semi_major_axis": 18.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.715732,
         "orbital_period": 1145.0,
         "initial_mean_anomaly": "random"
       },
@@ -7682,7 +7682,7 @@
       "orbit": {
         "semi_major_axis": 18.75,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.003712,
         "orbital_period": 1195.0,
         "initial_mean_anomaly": "random"
       },
@@ -7721,7 +7721,7 @@
       "orbit": {
         "semi_major_axis": 18.800001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.869321,
         "orbital_period": 1245.0,
         "initial_mean_anomaly": "random"
       },
@@ -7760,7 +7760,7 @@
       "orbit": {
         "semi_major_axis": 18.85,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.963569,
         "orbital_period": 1085.0,
         "initial_mean_anomaly": "random"
       },
@@ -7799,7 +7799,7 @@
       "orbit": {
         "semi_major_axis": 18.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.743658,
         "orbital_period": 1135.0,
         "initial_mean_anomaly": "random"
       },
@@ -7838,7 +7838,7 @@
       "orbit": {
         "semi_major_axis": 18.95,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.844887,
         "orbital_period": 1185.0,
         "initial_mean_anomaly": "random"
       },
@@ -7877,7 +7877,7 @@
       "orbit": {
         "semi_major_axis": 19,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.038618,
         "orbital_period": 1235.0,
         "initial_mean_anomaly": "random"
       },
@@ -7916,7 +7916,7 @@
       "orbit": {
         "semi_major_axis": 19.050001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.64941,
         "orbital_period": 1075.0,
         "initial_mean_anomaly": "random"
       },
@@ -7955,7 +7955,7 @@
       "orbit": {
         "semi_major_axis": 19.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.972296,
         "orbital_period": 1125.0,
         "initial_mean_anomaly": "random"
       },
@@ -7994,7 +7994,7 @@
       "orbit": {
         "semi_major_axis": 19.15,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.080506,
         "orbital_period": 1175.0,
         "initial_mean_anomaly": "random"
       },
@@ -8033,7 +8033,7 @@
       "orbit": {
         "semi_major_axis": 19.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.773328,
         "orbital_period": 1225.0,
         "initial_mean_anomaly": "random"
       },
@@ -8072,7 +8072,7 @@
       "orbit": {
         "semi_major_axis": 19.25,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.892011,
         "orbital_period": 1065.0,
         "initial_mean_anomaly": "random"
       },
@@ -8111,7 +8111,7 @@
       "orbit": {
         "semi_major_axis": 19.300001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.659882,
         "orbital_period": 1115.0,
         "initial_mean_anomaly": "random"
       },
@@ -8150,7 +8150,7 @@
       "orbit": {
         "semi_major_axis": 19.35,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.949606,
         "orbital_period": 1165.0,
         "initial_mean_anomaly": "random"
       },
@@ -8189,7 +8189,7 @@
       "orbit": {
         "semi_major_axis": 19.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.829179,
         "orbital_period": 1215.0,
         "initial_mean_anomaly": "random"
       },
@@ -8228,7 +8228,7 @@
       "orbit": {
         "semi_major_axis": 19.45,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.998476,
         "orbital_period": 1265.0,
         "initial_mean_anomaly": "random"
       },
@@ -8267,7 +8267,7 @@
       "orbit": {
         "semi_major_axis": 19.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.710496,
         "orbital_period": 1055.0,
         "initial_mean_anomaly": "random"
       },
@@ -8306,7 +8306,7 @@
       "orbit": {
         "semi_major_axis": 19.550001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.029892,
         "orbital_period": 1105.0,
         "initial_mean_anomaly": "random"
       },
@@ -8345,7 +8345,7 @@
       "orbit": {
         "semi_major_axis": 19.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.782055,
         "orbital_period": 1155.0,
         "initial_mean_anomaly": "random"
       },
@@ -8384,7 +8384,7 @@
       "orbit": {
         "semi_major_axis": 19.65,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.918191,
         "orbital_period": 1205.0,
         "initial_mean_anomaly": "random"
       },
@@ -8423,7 +8423,7 @@
       "orbit": {
         "semi_major_axis": 19.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.853613,
         "orbital_period": 1255.0,
         "initial_mean_anomaly": "random"
       },
@@ -8462,7 +8462,7 @@
       "orbit": {
         "semi_major_axis": 19.75,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.054326,
         "orbital_period": 1045.0,
         "initial_mean_anomaly": "random"
       },
@@ -8501,7 +8501,7 @@
       "orbit": {
         "semi_major_axis": 19.800001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.682571,
         "orbital_period": 1095.0,
         "initial_mean_anomaly": "random"
       },
@@ -8540,7 +8540,7 @@
       "orbit": {
         "semi_major_axis": 19.85,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.946116,
         "orbital_period": 1145.0,
         "initial_mean_anomaly": "random"
       },
@@ -8579,7 +8579,7 @@
       "orbit": {
         "semi_major_axis": 19.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.802999,
         "orbital_period": 1195.0,
         "initial_mean_anomaly": "random"
       },
@@ -8618,7 +8618,7 @@
       "orbit": {
         "semi_major_axis": 19.95,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.008948,
         "orbital_period": 1245.0,
         "initial_mean_anomaly": "random"
       },
@@ -8657,7 +8657,7 @@
       "orbit": {
         "semi_major_axis": 20,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.736676,
         "orbital_period": 1035.0,
         "initial_mean_anomaly": "random"
       },
@@ -8696,7 +8696,7 @@
       "orbit": {
         "semi_major_axis": 20.050001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.878048,
         "orbital_period": 1085.0,
         "initial_mean_anomaly": "random"
       },
@@ -8735,7 +8735,7 @@
       "orbit": {
         "semi_major_axis": 20.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.094469,
         "orbital_period": 1135.0,
         "initial_mean_anomaly": "random"
       },
@@ -8774,7 +8774,7 @@
       "orbit": {
         "semi_major_axis": 20.15,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.638938,
         "orbital_period": 1185.0,
         "initial_mean_anomaly": "random"
       },
@@ -8813,7 +8813,7 @@
       "orbit": {
         "semi_major_axis": 20.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.956588,
         "orbital_period": 1235.0,
         "initial_mean_anomaly": "random"
       },
@@ -8852,7 +8852,7 @@
       "orbit": {
         "semi_major_axis": 20.25,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.822197,
         "orbital_period": 1025.0,
         "initial_mean_anomaly": "random"
       },
@@ -8891,7 +8891,7 @@
       "orbit": {
         "semi_major_axis": 20.300001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.033382,
         "orbital_period": 1075.0,
         "initial_mean_anomaly": "random"
       },
@@ -8930,7 +8930,7 @@
       "orbit": {
         "semi_major_axis": 20.35,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.689552,
         "orbital_period": 1125.0,
         "initial_mean_anomaly": "random"
       },
@@ -8969,7 +8969,7 @@
       "orbit": {
         "semi_major_axis": 20.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.923426,
         "orbital_period": 1175.0,
         "initial_mean_anomaly": "random"
       },
@@ -9008,7 +9008,7 @@
       "orbit": {
         "semi_major_axis": 20.45,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.832669,
         "orbital_period": 1225.0,
         "initial_mean_anomaly": "random"
       },
@@ -9047,7 +9047,7 @@
       "orbit": {
         "semi_major_axis": 20.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.064798,
         "orbital_period": 1015.0,
         "initial_mean_anomaly": "random"
       },
@@ -9086,7 +9086,7 @@
       "orbit": {
         "semi_major_axis": 20.550001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.668608,
         "orbital_period": 1065.0,
         "initial_mean_anomaly": "random"
       },
@@ -9125,7 +9125,7 @@
       "orbit": {
         "semi_major_axis": 20.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.975786,
         "orbital_period": 1115.0,
         "initial_mean_anomaly": "random"
       },
@@ -9164,7 +9164,7 @@
       "orbit": {
         "semi_major_axis": 20.65,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.851868,
         "orbital_period": 1165.0,
         "initial_mean_anomaly": "random"
       },
@@ -9203,7 +9203,7 @@
       "orbit": {
         "semi_major_axis": 20.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.085742,
         "orbital_period": 1215.0,
         "initial_mean_anomaly": "random"
       },
@@ -9242,7 +9242,7 @@
       "orbit": {
         "semi_major_axis": 20.75,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.719223,
         "orbital_period": 1005.0,
         "initial_mean_anomaly": "random"
       },
@@ -9281,7 +9281,7 @@
       "orbit": {
         "semi_major_axis": 20.800001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.933898,
         "orbital_period": 1055.0,
         "initial_mean_anomaly": "random"
       },
@@ -9320,7 +9320,7 @@
       "orbit": {
         "semi_major_axis": 20.85,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.80998,
         "orbital_period": 1105.0,
         "initial_mean_anomaly": "random"
       },
@@ -9359,7 +9359,7 @@
       "orbit": {
         "semi_major_axis": 20.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.042109,
         "orbital_period": 1155.0,
         "initial_mean_anomaly": "random"
       },
@@ -9398,7 +9398,7 @@
       "orbit": {
         "semi_major_axis": 20.95,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.673844,
         "orbital_period": 1205.0,
         "initial_mean_anomaly": "random"
       },
@@ -9437,7 +9437,7 @@
       "orbit": {
         "semi_major_axis": 21,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.912955,
         "orbital_period": 1255.0,
         "initial_mean_anomaly": "random"
       },
@@ -9476,7 +9476,7 @@
       "orbit": {
         "semi_major_axis": 21.050001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.787291,
         "orbital_period": 995.0,
         "initial_mean_anomaly": "random"
       },
@@ -9515,7 +9515,7 @@
       "orbit": {
         "semi_major_axis": 21.1,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.012438,
         "orbital_period": 1045.0,
         "initial_mean_anomaly": "random"
       },
@@ -9554,7 +9554,7 @@
       "orbit": {
         "semi_major_axis": 21.15,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.724459,
         "orbital_period": 1095.0,
         "initial_mean_anomaly": "random"
       },
@@ -9593,7 +9593,7 @@
       "orbit": {
         "semi_major_axis": 21.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.872812,
         "orbital_period": 1145.0,
         "initial_mean_anomaly": "random"
       },
@@ -9632,7 +9632,7 @@
       "orbit": {
         "semi_major_axis": 21.25,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.106686,
         "orbital_period": 1195.0,
         "initial_mean_anomaly": "random"
       },
@@ -9671,7 +9671,7 @@
       "orbit": {
         "semi_major_axis": 21.300001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.644174,
         "orbital_period": 1245.0,
         "initial_mean_anomaly": "random"
       },
@@ -9710,7 +9710,7 @@
       "orbit": {
         "semi_major_axis": 21.35,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.954842,
         "orbital_period": 985.0,
         "initial_mean_anomaly": "random"
       },
@@ -9749,7 +9749,7 @@
       "orbit": {
         "semi_major_axis": 21.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.801253,
         "orbital_period": 1035.0,
         "initial_mean_anomaly": "random"
       },
@@ -9788,7 +9788,7 @@
       "orbit": {
         "semi_major_axis": 21.45,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.02291,
         "orbital_period": 1085.0,
         "initial_mean_anomaly": "random"
       },
@@ -9827,7 +9827,7 @@
       "orbit": {
         "semi_major_axis": 21.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.70177,
         "orbital_period": 1135.0,
         "initial_mean_anomaly": "random"
       },
@@ -9866,7 +9866,7 @@
       "orbit": {
         "semi_major_axis": 21.550001,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.925172,
         "orbital_period": 1185.0,
         "initial_mean_anomaly": "random"
       },
@@ -9905,7 +9905,7 @@
       "orbit": {
         "semi_major_axis": 21.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.841396,
         "orbital_period": 1235.0,
         "initial_mean_anomaly": "random"
       },
@@ -9944,7 +9944,7 @@
       "orbit": {
         "semi_major_axis": 21.65,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 3.070034,
         "orbital_period": 975.0,
         "initial_mean_anomaly": "random"
       },
@@ -9983,7 +9983,7 @@
       "orbit": {
         "semi_major_axis": 21.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.663372,
         "orbital_period": 1025.0,
         "initial_mean_anomaly": "random"
       },
@@ -10022,7 +10022,7 @@
       "orbit": {
         "semi_major_axis": 1.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001484,
         "orbital_period": 0.335,
         "initial_mean_anomaly": "random"
       },
@@ -10061,7 +10061,7 @@
       "orbit": {
         "semi_major_axis": 1.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001815,
         "orbital_period": 0.376,
         "initial_mean_anomaly": "random"
       },
@@ -10100,7 +10100,7 @@
       "orbit": {
         "semi_major_axis": 1.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.003368,
         "orbital_period": 0.435,
         "initial_mean_anomaly": "random"
       },
@@ -10139,7 +10139,7 @@
       "orbit": {
         "semi_major_axis": 1.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000105,
         "orbital_period": 0.464,
         "initial_mean_anomaly": "random"
       },
@@ -10178,7 +10178,7 @@
       "orbit": {
         "semi_major_axis": 1.7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001972,
         "orbital_period": 0.474,
         "initial_mean_anomaly": "random"
       },
@@ -10217,7 +10217,7 @@
       "orbit": {
         "semi_major_axis": 1.75,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001134,
         "orbital_period": 0.493,
         "initial_mean_anomaly": "random"
       },
@@ -10256,7 +10256,7 @@
       "orbit": {
         "semi_major_axis": 1.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.00103,
         "orbital_period": 0.513,
         "initial_mean_anomaly": "random"
       },
@@ -10295,7 +10295,7 @@
       "orbit": {
         "semi_major_axis": 1.85,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.004869,
         "orbital_period": 0.558,
         "initial_mean_anomaly": "random"
       },
@@ -10334,7 +10334,7 @@
       "orbit": {
         "semi_major_axis": 1.88,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001745,
         "orbital_period": 0.618,
         "initial_mean_anomaly": "random"
       },
@@ -10373,7 +10373,7 @@
       "orbit": {
         "semi_major_axis": 1.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000541,
         "orbital_period": 0.624,
         "initial_mean_anomaly": "random"
       },
@@ -10412,7 +10412,7 @@
       "orbit": {
         "semi_major_axis": 1.92,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 0.638,
         "initial_mean_anomaly": "random"
       },
@@ -10451,7 +10451,7 @@
       "orbit": {
         "semi_major_axis": 1.95,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.005568,
         "orbital_period": 0.762,
         "initial_mean_anomaly": "random"
       },
@@ -10490,7 +10490,7 @@
       "orbit": {
         "semi_major_axis": 1.98,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.002339,
         "orbital_period": 0.923,
         "initial_mean_anomaly": "random"
       },
@@ -10529,7 +10529,7 @@
       "orbit": {
         "semi_major_axis": 2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.073862,
         "orbital_period": 1.413,
         "initial_mean_anomaly": "random"
       },
@@ -10568,7 +10568,7 @@
       "orbit": {
         "semi_major_axis": 2.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.004538,
         "orbital_period": 2.52,
         "initial_mean_anomaly": "random"
       },
@@ -10607,7 +10607,7 @@
       "orbit": {
         "semi_major_axis": 3.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.003578,
         "orbital_period": 4.144,
         "initial_mean_anomaly": "random"
       },
@@ -10646,7 +10646,7 @@
       "orbit": {
         "semi_major_axis": 4.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.005934,
         "orbital_period": 8.706,
         "initial_mean_anomaly": "random"
       },
@@ -10685,7 +10685,7 @@
       "orbit": {
         "semi_major_axis": 5.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001012,
         "orbital_period": 13.463,
         "initial_mean_anomaly": "random"
       },
@@ -10724,7 +10724,7 @@
       "orbit": {
         "semi_major_axis": 6.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.57087,
         "orbital_period": 266.56,
         "initial_mean_anomaly": "random"
       },
@@ -10763,7 +10763,7 @@
       "orbit": {
         "semi_major_axis": 7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.469641,
         "orbital_period": 579.73,
         "initial_mean_anomaly": "random"
       },
@@ -10802,7 +10802,7 @@
       "orbit": {
         "semi_major_axis": 7.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.509783,
         "orbital_period": 677.36,
         "initial_mean_anomaly": "random"
       },
@@ -10841,7 +10841,7 @@
       "orbit": {
         "semi_major_axis": 7.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.919936,
         "orbital_period": 758.1,
         "initial_mean_anomaly": "random"
       },
@@ -10880,7 +10880,7 @@
       "orbit": {
         "semi_major_axis": 8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.782055,
         "orbital_period": 1288.3,
         "initial_mean_anomaly": "random"
       },
@@ -10919,7 +10919,7 @@
       "orbit": {
         "semi_major_axis": 8.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 1.001819,
         "orbital_period": 1687.01,
         "initial_mean_anomaly": "random"
       },
@@ -10958,7 +10958,7 @@
       "orbit": {
         "semi_major_axis": 8.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.64941,
         "orbital_period": 1978.29,
         "initial_mean_anomaly": "random"
       },
@@ -10997,7 +10997,7 @@
       "orbit": {
         "semi_major_axis": 8.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.761111,
         "orbital_period": 2225.21,
         "initial_mean_anomaly": "random"
       },
@@ -11036,7 +11036,7 @@
       "orbit": {
         "semi_major_axis": 9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.963569,
         "orbital_period": 2887.21,
         "initial_mean_anomaly": "random"
       },
@@ -11075,7 +11075,7 @@
       "orbit": {
         "semi_major_axis": 1.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.081856,
         "orbital_period": 0.294,
         "initial_mean_anomaly": "random"
       },
@@ -11114,7 +11114,7 @@
       "orbit": {
         "semi_major_axis": 2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.002356,
         "orbital_period": 0.311,
         "initial_mean_anomaly": "random"
       },
@@ -11153,7 +11153,7 @@
       "orbit": {
         "semi_major_axis": 2.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001187,
         "orbital_period": 0.335,
         "initial_mean_anomaly": "random"
       },
@@ -11192,7 +11192,7 @@
       "orbit": {
         "semi_major_axis": 2.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.000942,
         "orbital_period": 0.429,
         "initial_mean_anomaly": "random"
       },
@@ -11231,7 +11231,7 @@
       "orbit": {
         "semi_major_axis": 2.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.004381,
         "orbital_period": 0.555,
         "initial_mean_anomaly": "random"
       },
@@ -11270,7 +11270,7 @@
       "orbit": {
         "semi_major_axis": 3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 0.95,
         "initial_mean_anomaly": "random"
       },
@@ -11309,7 +11309,7 @@
       "orbit": {
         "semi_major_axis": 3.2,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.009146,
         "orbital_period": 1.122,
         "initial_mean_anomaly": "random"
       },
@@ -11348,7 +11348,7 @@
       "orbit": {
         "semi_major_axis": 3.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.73816,
         "orbital_period": 5.877,
         "initial_mean_anomaly": "random"
       },
@@ -11399,7 +11399,7 @@
       "orbit": {
         "semi_major_axis": 5.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.126187,
         "orbital_period": 360.14,
         "initial_mean_anomaly": "random"
       },
@@ -11438,7 +11438,7 @@
       "orbit": {
         "semi_major_axis": 7,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 1.970477,
         "orbital_period": 1879.71,
         "initial_mean_anomaly": "random"
       },
@@ -11477,7 +11477,7 @@
       "orbit": {
         "semi_major_axis": 7.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.846485,
         "orbital_period": 2912.72,
         "initial_mean_anomaly": "random"
       },
@@ -11516,7 +11516,7 @@
       "orbit": {
         "semi_major_axis": 7.8,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.624828,
         "orbital_period": 3171.33,
         "initial_mean_anomaly": "random"
       },
@@ -11555,7 +11555,7 @@
       "orbit": {
         "semi_major_axis": 8.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.398082,
         "orbital_period": 9115.91,
         "initial_mean_anomaly": "random"
       },
@@ -11594,7 +11594,7 @@
       "orbit": {
         "semi_major_axis": 9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 2.380629,
         "orbital_period": 9740.73,
         "initial_mean_anomaly": "random"
       },
@@ -11633,7 +11633,7 @@
       "orbit": {
         "semi_major_axis": 0.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.001396,
         "orbital_period": 6.387,
         "initial_mean_anomaly": "random"
       },
@@ -11672,7 +11672,7 @@
       "orbit": {
         "semi_major_axis": 0.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 20.16,
         "initial_mean_anomaly": "random"
       },
@@ -11711,7 +11711,7 @@
       "orbit": {
         "semi_major_axis": 0.75,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 24.85,
         "initial_mean_anomaly": "random"
       },
@@ -11750,7 +11750,7 @@
       "orbit": {
         "semi_major_axis": 0.9,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 32.17,
         "initial_mean_anomaly": "random"
       },
@@ -11789,7 +11789,7 @@
       "orbit": {
         "semi_major_axis": 1.05,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 38.2,
         "initial_mean_anomaly": "random"
       },
@@ -11828,7 +11828,7 @@
       "orbit": {
         "semi_major_axis": 0.5,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 1.064651,
         "orbital_period": 15.774,
         "initial_mean_anomaly": "random"
       },
@@ -11867,7 +11867,7 @@
       "orbit": {
         "semi_major_axis": 0.6,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 49.12,
         "initial_mean_anomaly": "random"
       },
@@ -11906,7 +11906,7 @@
       "orbit": {
         "semi_major_axis": 0.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.232129,
         "orbital_period": 18.28,
         "initial_mean_anomaly": "random"
       },
@@ -11945,7 +11945,7 @@
       "orbit": {
         "semi_major_axis": 0.35,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 12.4,
         "initial_mean_anomaly": "random"
       },
@@ -11984,7 +11984,7 @@
       "orbit": {
         "semi_major_axis": 0.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 1.832596,
         "orbital_period": 12.44,
         "initial_mean_anomaly": "random"
       },
@@ -12023,7 +12023,7 @@
       "orbit": {
         "semi_major_axis": 0.35,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.244346,
         "orbital_period": 12.438,
         "initial_mean_anomaly": "random"
       },
@@ -12062,7 +12062,7 @@
       "orbit": {
         "semi_major_axis": 0.4,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 1.396263,
         "orbital_period": 25.0,
         "initial_mean_anomaly": "random"
       },
@@ -12101,7 +12101,7 @@
       "orbit": {
         "semi_major_axis": 0.35,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.411898,
         "orbital_period": 12.5,
         "initial_mean_anomaly": "random"
       },
@@ -12140,7 +12140,7 @@
       "orbit": {
         "semi_major_axis": 0.3,
         "eccentricity": 0,
-        "inclination": 0,
+        "inclination": 0.0,
         "orbital_period": 10.0,
         "initial_mean_anomaly": "random"
       },
