@@ -1427,3 +1427,120 @@ After `BeginTextureMode(target)`, Raylib resets the modelview to identity (no sc
 **Rule**: CLI flags override config for the current session only. Never persist CLI-derived state back to the config file unless the user explicitly requests it.
 
 ---
+
+## Diffuse Texture Mapping on Procedural Spheres (F-003)
+
+**Date**: April 15, 2026
+
+### Overview
+
+Applying equirectangular planet texture maps to Raylib procedural spheres required fixing four independent, additive errors. Each one was invisible until the previous was corrected, making iterative debugging misleading. This entry documents every assumption that proved wrong.
+
+---
+
+### How Textures Are Applied
+
+Raylib does not natively support textured procedural sphere meshes with a simple one-liner. The pipeline used:
+
+1. **`rl.GenMeshSphere(radius, rings, slices)`** — generates a UV sphere mesh in CPU memory using the `par_shapes` library (bundled C source). Returns a `rl.Mesh` struct with a `Texcoords` float32 slice (2 floats per vertex: `[U, V, U, V, ...]`), `Vertices`, and `Normals` allocated in CPU memory.
+
+2. **UV correction in CPU memory** — before uploading to the GPU, the entire `Texcoords` slice is walked in Go using `unsafe.Slice` to remap every vertex's UV coordinates.
+
+3. **`rl.UpdateMeshBuffer(mesh, 1, ...)`** — re-uploads the corrected UV buffer (slot 1) to the GPU. Buffer index 1 is the texcoord VBO in Raylib's fixed-layout VAO.
+
+4. **`rl.LoadModelFromMesh(mesh)`** — creates a `rl.Model` wrapping the mesh. At this point the VAO/VBOs are on the GPU; the CPU-side `Texcoords` pointer is now redundant.
+
+5. **`model.GetMaterials()[0].GetMap(rl.MapDiffuse).Texture = tex`** — assigns the loaded GPU texture to the model's diffuse slot. This binds the texture to the material, not to the vertices — vertices only hold UV coordinates that index into the texture.
+
+6. **`model.Transform`** — set per draw call (not cached) to apply pole-alignment and axial tilt. `model` is a value type from the cache, so mutating `Transform` on the local copy does not affect the cached entry.
+
+7. **`rl.DrawModel(model, pos, scale, rl.White)`** — renders the model. Raylib's shader reads `MapDiffuse`'s texture, samples it at each fragment's interpolated UV coordinates, and multiplies by the tint color.
+
+**Key distinction**: the texture is applied to a mesh via material diffuse map + per-vertex UV coordinates. There is no cube-mapping, triplanar, or spherical projection at draw time — it is standard UV-unwrapped texturing. The correctness of the result depends entirely on the UV coordinates stored on the vertices.
+
+---
+
+### The Four Errors
+
+#### Error 1 — Axis Transposition (par_shapes UV convention)
+
+**Assumption**: `GenMeshSphere` produces standard equirectangular UVs where `U` = longitude (0=west, 1=east) and `V` = latitude (0=south, 1=north).
+
+**Reality**: par_shapes' `par_shapes__sphere` function computes:
+```c
+float phi   = uv[0] * PI;     // uv[0] = latitude (0=north, π=south)
+float theta = uv[1] * 2*PI;   // uv[1] = longitude
+xyz[0] = cos(theta) * sin(phi);
+xyz[1] = sin(theta) * sin(phi);
+xyz[2] = cos(phi);             // +Z at phi=0 = north pole
+```
+The vertex tex coord array stores these as `[uv[0], uv[1]] = [latitude, longitude]` — transposed from the equirectangular convention. A planet texture applied without correction would wrap latitude along the horizontal axis of the image, smearing the poles across the equator visually.
+
+**Fix**: Swap: `new_U = old_uv[1]`, `new_V = old_uv[0]`.
+
+---
+
+#### Error 2 — V-Axis Inversion (stb_image vs. OpenGL origin)
+
+**Assumption**: After the axis swap, `V=0` samples the top of the image file (north).
+
+**Reality**: `stb_image` loads image rows top-to-bottom and places them in memory row 0 = top. OpenGL's texture coordinate `V=0` maps to the **bottom** of the texture as stored in GPU memory. Raylib never calls `stbi_set_flip_vertically_on_load`, so no flip occurs on load. The mismatch means `V=0` → bottom of image → south of texture. A plane with `V=0` at the top (sky) would show the ground. On the sphere, the north pole vertex (which had `V=0` after the swap) sampled the south-pole region of the image.
+
+**Fix**: `new_V = 1.0 - old_V` after the axis swap.
+
+---
+
+#### Error 3 — U-Axis Mirror (inside-out winding)
+
+**Assumption**: After fixing axes and V, longitude now increases left-to-right (west=0, east=1) matching the texture.
+
+**Reality**: par_shapes generates sphere meshes for **inside-view rendering** (sky-dome convention). The triangle winding is inverted relative to outside-view. As a consequence, when viewed from outside the sphere, the UV longitude axis runs right-to-left — east and west are mirrored. Africa's west coast appears on the right side of the visible face.
+
+**Fix**: `new_U = 1.0 - old_U`.
+
+**Final remap applied in one pass**:
+```go
+new_U = 1.0 - old_uv[1]   // swap axes + mirror U
+new_V = 1.0 - old_uv[0]   // swap axes + flip V
+// i.e.: uv[i*2], uv[i*2+1] = 1.0 - uv[i*2+1], 1.0 - uv[i*2]
+```
+
+---
+
+#### Error 4 — Pole Axis Misalignment (par_shapes vs Raylib world axis)
+
+**Assumption**: `GenMeshSphere` places the north pole at world `+Y` (Raylib's up axis).
+
+**Reality**: par_shapes' north pole is at object `+Z` (where `phi=0` → `xyz=(0,0,1)`). Raylib's world is Y-up. When drawn without correction, both poles appear near the equator (the poles are "sideways" pointing into and out of the camera).
+
+**Fix**: At draw time, set `model.Transform` to include a `RotX(-90°)` rotation, which brings `+Z` up to `+Y`:
+```go
+poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
+model.Transform = rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
+```
+The full transform composes: pole correction (RotX -90°), axial tilt (RotZ), and axial spin (RotY, driven by `RotationPeriod` and `simTimeScale`). Spin is innermost so it rotates around the body's own tilted axis rather than the world Y axis.
+
+This is applied per-draw on a value-copy of the cached model, so the cache is never mutated.
+
+---
+
+### Orbital Direction Fix (related)
+
+**Problem discovered alongside texturing**: Planets orbited clockwise from the north pole view, opposite to the real solar system.
+
+**Root cause**: `rotateOrbit` returned `{X: x3, Y: z3, Z: y3}`. For zero-inclination orbits, this placed `ν=π/2` at world `+Z`, producing orbital sequence `+X → +Z → -X → -Z` — clockwise from north in a right-handed Y-up system.
+
+**Fix**: Changed to `Z: -y3`. Prograde now maps `+X → -Z → -X → +Z` — counter-clockwise from north, matching the real solar system. Belt initial positions negated `sin(angle)` to match.
+
+---
+
+### Rules Derived
+
+- **Never assume par_shapes UV convention matches equirectangular.** The axis order is latitude-major, not longitude-major.
+- **Always account for the stb_image / OpenGL V-origin mismatch** when loading textures without a vertical flip. `V=0` is the bottom of the GPU texture, but the top of the PNG file.
+- **par_shapes sphere meshes are wound for inside-view.** Correct U mirroring when rendering from outside.
+- **Correct the pole axis before applying axial tilt/spin.** Order matters: pole fix first (RotX -90°), then tilt (RotZ), then spin (RotY innermost).
+- **UV correction belongs in the mesh, not the shader or draw call.** Fix it once in `getModel` at mesh-build time; all downstream rendering is clean.
+- **UpdateMeshBuffer slot 1 is the texcoord VBO.** Raylib's fixed VAO layout: 0=vertices, 1=texcoords, 2=normals, 3=colors, 4=tangents, 5=texcoords2.
+- **model.Transform is a value field.** Mutating it on a locally-returned struct from a `map` does not modify the cached copy. Safe to set per-frame.
+
