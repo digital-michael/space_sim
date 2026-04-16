@@ -122,7 +122,12 @@ func (r *Renderer) getModel(path string, rings, slices int32) (rl.Model, bool) {
 	n := int(mesh.VertexCount)
 	uv := unsafe.Slice(mesh.Texcoords, n*2)
 	for i := 0; i < n; i++ {
-		uv[i*2], uv[i*2+1] = uv[i*2+1], uv[i*2]
+		// par_shapes UV fix — four independent corrections stacked:
+		//   1. Swap axes: par_shapes uv[0]=latitude, uv[1]=longitude; standard equirectangular is opposite.
+		//   2. Flip V: stb_image loads top-first; OpenGL V=0 is bottom. Without flip, north pole samples south of image.
+		//   3. Flip U: sphere UVs are wound for viewing from inside (sky-dome convention). Viewed from outside, longitude increases left instead of right — mirror east/west.
+		//   4. Axis fix (draw time): par_shapes north pole is +Z; corrected to world +Y via RotX(-90°) in model.Transform.
+		uv[i*2], uv[i*2+1] = 1.0-uv[i*2+1], 1.0-uv[i*2]
 	}
 	rl.UpdateMeshBuffer(mesh, 1, unsafe.Slice((*byte)(unsafe.Pointer(mesh.Texcoords)), n*8), 0)
 	model := rl.LoadModelFromMesh(mesh)
