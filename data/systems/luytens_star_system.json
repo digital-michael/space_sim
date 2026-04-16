@@ -18,7 +18,8 @@
         "mass": 5.768e+29,
         "rotation_period": 2774.0,
         "albedo": 1.0,
-        "albedo_note": "emissive M3.5V star"
+        "albedo_note": "emissive M3.5V star",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
@@ -77,7 +78,9 @@
         "radius": 0.28,
         "mass": 7.047e+24,
         "albedo": 0.1,
-        "albedo_note": "estimated – inner close-in planet"
+        "albedo_note": "estimated \u2013 inner close-in planet",
+        "axial_tilt": 0.0,
+        "rotation_period": 113.3616
       },
       "rendering": {
         "material": "diffuse",
@@ -115,7 +118,9 @@
         "radius": 0.38,
         "mass": 1.726e+25,
         "albedo": 0.3,
-        "albedo_note": "estimated – potentially habitable super-Earth"
+        "albedo_note": "estimated \u2013 potentially habitable super-Earth",
+        "axial_tilt": 0.0,
+        "rotation_period": 447.5952
       },
       "rendering": {
         "material": "diffuse",
@@ -164,7 +169,9 @@
       "physical": {
         "radius": 0.95,
         "mass": 6.45e+25,
-        "albedo": 0.2
+        "albedo": 0.2,
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
       },
       "rendering": {
         "material": "diffuse",
@@ -211,7 +218,9 @@
       "physical": {
         "radius": 0.88,
         "mass": 5.554e+25,
-        "albedo": 0.35
+        "albedo": 0.35,
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
       },
       "rendering": {
         "material": "diffuse",

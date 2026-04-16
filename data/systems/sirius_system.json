@@ -17,7 +17,9 @@
         "radius": 46.7,
         "mass": 4.103e+30,
         "albedo": 1.0,
-        "albedo_note": "emissive A1V star – brightest in night sky"
+        "albedo_note": "emissive A1V star \u2013 brightest in night sky",
+        "axial_tilt": 0.0,
+        "rotation_period": 16.4
       },
       "rendering": {
         "material": "emissive",
@@ -77,7 +79,9 @@
         "radius": 3.6,
         "mass": 2.025e+30,
         "albedo": 1.0,
-        "albedo_note": "emissive DA white dwarf – no atmosphere"
+        "albedo_note": "emissive DA white dwarf \u2013 no atmosphere",
+        "axial_tilt": 0.0,
+        "rotation_period": 224.0
       },
       "rendering": {
         "material": "emissive",

@@ -18,7 +18,8 @@
         "mass": 1.631e+30,
         "rotation_period": 264.0,
         "albedo": 1.0,
-        "albedo_note": "emissive K2V star"
+        "albedo_note": "emissive K2V star",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
@@ -78,7 +79,9 @@
         "radius": 2.8,
         "mass": 1.898e+27,
         "albedo": 0.503,
-        "albedo_note": "estimated – likely Jupiter-analog gas giant"
+        "albedo_note": "estimated \u2013 likely Jupiter-analog gas giant",
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
       },
       "rendering": {
         "material": "diffuse",

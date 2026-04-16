@@ -18,7 +18,8 @@
         "mass": 1.555e+30,
         "rotation_period": 857.6,
         "albedo": 1.0,
-        "albedo_note": "emissive K5V star"
+        "albedo_note": "emissive K5V star",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
@@ -78,7 +79,9 @@
         "radius": 3.1,
         "mass": 1.198e+28,
         "albedo": 0.5,
-        "albedo_note": "estimated – cold super-Jupiter at wide orbit"
+        "albedo_note": "estimated \u2013 cold super-Jupiter at wide orbit",
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
       },
       "rendering": {
         "material": "diffuse",
@@ -133,7 +136,8 @@
         "mass": 1.27e+29,
         "rotation_period": 5.0,
         "albedo": 1.0,
-        "albedo_note": "emissive T1 brown dwarf"
+        "albedo_note": "emissive T1 brown dwarf",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
@@ -201,7 +205,8 @@
         "mass": 1.011e+29,
         "rotation_period": 5.0,
         "albedo": 1.0,
-        "albedo_note": "emissive T6 brown dwarf"
+        "albedo_note": "emissive T6 brown dwarf",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",

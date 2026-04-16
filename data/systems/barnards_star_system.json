@@ -18,7 +18,8 @@
         "mass": 3.222e+29,
         "rotation_period": 2737.4,
         "albedo": 1.0,
-        "albedo_note": "emissive M4Ve star"
+        "albedo_note": "emissive M4Ve star",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
@@ -76,7 +77,9 @@
       "physical": {
         "radius": 0.15,
         "mass": 1.57e+24,
-        "albedo": 0.15
+        "albedo": 0.15,
+        "axial_tilt": 0.0,
+        "rotation_period": 56.1648
       },
       "rendering": {
         "material": "diffuse",
@@ -124,7 +127,9 @@
         "radius": 0.17,
         "mass": 1.786e+24,
         "albedo": 0.1,
-        "albedo_note": "estimated – cold planet close to M-dwarf"
+        "albedo_note": "estimated \u2013 cold planet close to M-dwarf",
+        "axial_tilt": 0.0,
+        "rotation_period": 75.7008
       },
       "rendering": {
         "material": "diffuse",
@@ -161,7 +166,9 @@
       "physical": {
         "radius": 0.18,
         "mass": 2e+24,
-        "albedo": 0.2
+        "albedo": 0.2,
+        "axial_tilt": 0.0,
+        "rotation_period": 98.9856
       },
       "rendering": {
         "material": "diffuse",
@@ -208,7 +215,9 @@
       "physical": {
         "radius": 0.14,
         "mass": 1.153e+24,
-        "albedo": 0.35
+        "albedo": 0.35,
+        "axial_tilt": 0.0,
+        "rotation_period": 161.7408
       },
       "rendering": {
         "material": "diffuse",

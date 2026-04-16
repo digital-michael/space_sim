@@ -18,7 +18,9 @@
         "radius": 27.25,
         "mass": 1.989e+30,
         "albedo": 1.0,
-        "albedo_note": "emissive – not reflective"
+        "albedo_note": "emissive \u2013 not reflective",
+        "axial_tilt": 7.25,
+        "rotation_period": 609.12
       },
       "rendering": {
         "material": "emissive",
@@ -712,7 +714,7 @@
         "rotation_period": 25.9,
         "axial_tilt": 0.0,
         "albedo": 0.96,
-        "albedo_note": "extremely high – fresh methane/nitrogen ice surface"
+        "albedo_note": "extremely high \u2013 fresh methane/nitrogen ice surface"
       },
       "rendering": {
         "material": "diffuse",
@@ -5162,7 +5164,7 @@
         "rotation_period": 32.9,
         "axial_tilt": 0.0,
         "albedo": 0.99,
-        "albedo_note": "among the highest known – constantly resurfaced by cryo-volcanic ice plumes"
+        "albedo_note": "among the highest known \u2013 constantly resurfaced by cryo-volcanic ice plumes"
       },
       "rendering": {
         "material": "diffuse",
@@ -5427,7 +5429,7 @@
         "axial_tilt": 0.0,
         "rotation_period": 79.33,
         "albedo": 0.04,
-        "albedo_note": "bimodal surface – leading hemisphere very dark (0.04), trailing bright (0.5)"
+        "albedo_note": "bimodal surface \u2013 leading hemisphere very dark (0.04), trailing bright (0.5)"
       },
       "rendering": {
         "material": "diffuse",
@@ -12133,7 +12135,7 @@
     },
     {
       "type": "moon",
-      "name": "Ilmarë",
+      "name": "Ilmar\u00eb",
       "parent": "Varda",
       "orbit": {
         "semi_major_axis": 0.3,

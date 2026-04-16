@@ -18,7 +18,8 @@
         "mass": 1.929e+29,
         "rotation_period": 2353.2,
         "albedo": 1.0,
-        "albedo_note": "emissive M7V star – nearby ultra-cool red dwarf"
+        "albedo_note": "emissive M7V star \u2013 nearby ultra-cool red dwarf",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
@@ -77,7 +78,9 @@
         "radius": 0.29,
         "mass": 6.928e+24,
         "albedo": 0.28,
-        "albedo_note": "estimated – potentially habitable zone planet"
+        "albedo_note": "estimated \u2013 potentially habitable zone planet",
+        "axial_tilt": 0.0,
+        "rotation_period": 117.7522
       },
       "rendering": {
         "material": "diffuse",
@@ -127,7 +130,9 @@
         "radius": 0.28,
         "mass": 6.27e+24,
         "albedo": 0.25,
-        "albedo_note": "estimated – outer habitable zone margin"
+        "albedo_note": "estimated \u2013 outer habitable zone margin",
+        "axial_tilt": 0.0,
+        "rotation_period": 273.984
       },
       "rendering": {
         "material": "diffuse",
@@ -175,7 +180,9 @@
         "radius": 0.24,
         "mass": 4.897e+24,
         "albedo": 0.1,
-        "albedo_note": "estimated – cold outer planet"
+        "albedo_note": "estimated \u2013 cold outer planet",
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
       },
       "rendering": {
         "material": "diffuse",

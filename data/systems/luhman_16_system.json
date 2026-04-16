@@ -18,7 +18,8 @@
         "mass": 6.719e+28,
         "rotation_period": 6.94,
         "albedo": 1.0,
-        "albedo_note": "emissive L7.5 brown dwarf"
+        "albedo_note": "emissive L7.5 brown dwarf",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
@@ -86,7 +87,8 @@
         "mass": 5.58e+28,
         "rotation_period": 5.28,
         "albedo": 1.0,
-        "albedo_note": "emissive T0.5 brown dwarf with patchy cloud variability"
+        "albedo_note": "emissive T0.5 brown dwarf with patchy cloud variability",
+        "axial_tilt": 0.0
       },
       "rendering": {
         "material": "emissive",
