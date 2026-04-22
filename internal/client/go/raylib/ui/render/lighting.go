@@ -136,11 +136,11 @@ void main() {
 
 // atmosphereState owns the rim-glow + day/night atmosphere shader.
 type atmosphereState struct {
-	shader        rl.Shader
-	loaded        bool
-	locLightPos   int32
-	locGlowColor  int32
-	locGlowEdge   int32
+	shader       rl.Shader
+	loaded       bool
+	locLightPos  int32
+	locGlowColor int32
+	locGlowEdge  int32
 }
 
 // load compiles the atmosphere shader and caches uniform locations. Idempotent.

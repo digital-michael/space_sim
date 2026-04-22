@@ -61,8 +61,8 @@ type Renderer struct {
 
 	// atmosphere holds the rim-glow + day/night shader; atmoSphere is a
 	// lazily-loaded unit-sphere model reused for all atmosphere draw calls.
-	atmosphere      atmosphereState
-	atmoSphere      rl.Model
+	atmosphere       atmosphereState
+	atmoSphere       rl.Model
 	atmoSphereLoaded bool
 }
 
@@ -909,7 +909,10 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 		float32(ch.A) / 255.0 * 0.6, // intensity weight
 	}
 	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowColor, glowColor, rl.ShaderUniformVec4)
-	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locLightPos, r.lighting.PrimaryLightPos[:], rl.ShaderUniformVec3)
+	// Copy PrimaryLightPos to a fresh local slice — slicing a struct field produces an
+	// interior pointer into Renderer (which contains Go pointers), and CGo rejects that.
+	lightPos := []float32{r.lighting.PrimaryLightPos[0], r.lighting.PrimaryLightPos[1], r.lighting.PrimaryLightPos[2]}
+	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locLightPos, lightPos, rl.ShaderUniformVec3)
 	const glowEdge = float32(3.5) // Fresnel exponent: narrower > 5, broader < 3
 	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowEdge, []float32{glowEdge}, rl.ShaderUniformFloat)
 
