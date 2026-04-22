@@ -1637,3 +1637,23 @@ lightScale = 0.9 × 100² / 1.0 = 9000
 
 **Rule derived**: After shipping a lighting shader, immediately test at the terminator. Brightness tuning is always necessary before the effect is clearly visible. Start with `ambient ≤ 0.03` and raise `lightScale` until the lit side is ~90% brightness at expected viewing distances.
 
+---
+
+### Automated Editors Strip Per-Call Side-Effect Calls — Dual Draw Paths Require Explicit Audits
+
+**Problem**: After `applyToModel` was added to both draw paths, an automated editor (formatter or assistant) removed it from `drawObjectsInstanced` while leaving it in `drawObject`. The shader was never applied in practice because instanced rendering is the default; the bug was invisible until a terminator test.
+
+**Why this is high-risk**:
+- `applyToModel` looks like dead code inside a `getModel` success branch — it has no return value and no compile-time visibility.
+- Automated editors optimise for apparent simplicity and will silently drop calls that don't look load-bearing.
+- The app compiled clean and ran correctly without any error — only the visual result was wrong.
+- The two draw paths (`drawObjectsInstanced` / `drawObject`) are structurally similar, so a reviewer checking one may not notice the other is diverged.
+
+**Detection**: The bug produced *no crash, no error, no log line* — just uniform full brightness everywhere, which is also the correct appearance for a star. It was only detectable by positioning the camera at the terminator and verifying dark-side shadowing.
+
+**Rules derived**:
+- **Any call that wires a per-object side effect (shader, material override, state mutation) must appear in both draw paths.** Comment both with `// MUST match drawObject / drawObjectsInstanced` so editors and reviewers treat them as a paired invariant.
+- **After every automated edit to renders.go, diff both draw paths against each other.** They should be structurally identical in their textured-draw blocks.
+- **Proof of lighting**: the correct verification is a terminator test, not a frontal view. "Looks lit" from the sunny side proves nothing. Only "dark side is dark" proves the shader is active.
+- **Feature acceptance criteria for any visual shader: include an explicit terminator/shadow test in the PR description** so the acceptance gate is unambiguous.
+
