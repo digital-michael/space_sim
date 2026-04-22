@@ -812,8 +812,8 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 - [ ] Design and implement a shadow-map render pass: render depth from each star's position into a `rl.RenderTexture2D`, pass the depth texture and light-space matrix as shader uniforms to the main pass
 - [ ] Write a GLSL fragment shader (`body.frag`) that samples the shadow map and computes Phong + shadow attenuation; replace `DrawSphereEx` with `DrawMesh` + custom shader
 - [ ] Add a post-process pass after `EndTextureMode`: extract luminance above a threshold, Gaussian blur the bright layer, additively composite back onto the scene
-- [ ] Implement Rayleigh scattering as a screen-space approximation: for each atmosphere-bearing body, draw an additive-blended disc slightly larger than the sphere, color from `AtmosphereColorHint`, scaled by `AtmosphereThicknessKm`
-- [ ] Add `NightTexturePath string` to `ObjectMetadata` and `rendering.night_texture_image` to JSON schema; blend night texture where the star is below the horizon
+- [x] Implement Rayleigh scattering as a screen-space approximation: for each atmosphere-bearing body, draw an additive-blended disc slightly larger than the sphere, color from `AtmosphereColorHint`, scaled by `AtmosphereThicknessKm` (**done — F-017a; `drawAtmosphereGlow` in renders.go**)
+- [x] Add `NightTexturePath string` to `ObjectMetadata` and `rendering.night_texture_image` to JSON schema; blend night texture where the star is below the horizon (**done — F-017a; Earth wired to earth_nightmap.jpg**)
 - [ ] Expose `--no-shadows`, `--no-bloom`, `--no-atmosphere` CLI flags; persist in `app.json`
 
 ---

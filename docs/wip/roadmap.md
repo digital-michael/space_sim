@@ -210,6 +210,14 @@ GLSL 330 Phong shader compiled at runtime. Inverse-square falloff, up to 4 star 
 
 ---
 
+### Step 14b — F-017a: Atmosphere Limb Glow + Night-Side City Lights
+**Status**: ✅ Complete — 2026-04-21 (pulled forward; partial delivery of F-017)  
+**Depends on**: F-003 ✅, F-005 ✅  
+
+`drawAtmosphereGlow`: additive-blended sphere at physicalRadius×1.10 using `AtmosphereColorHint`; visible for Venus, Earth, Jupiter, Saturn, Uranus, Neptune, Sol corona. Extended `phongFS` shader: `texture1` (city lights) blended on dark side via `smoothstep` on `maxDiff`; `hasNightTexture` int uniform guards the branch. Earth wired to `earth_nightmap.jpg`.
+
+---
+
 ### Step 15 — F-012: Federated Compute
 **Status**: 📋 Not started — exploratory  
 **Depends on**: F-010, F-011, F-013 (all must be stable); `internal/server/pool/distributed/` stub is the entry point  
