@@ -58,7 +58,6 @@ type Renderer struct {
 	// the default Raylib shader (flat diffuse texture, no shadowing).
 	noLighting bool
 	lighting   lightingState
-
 }
 
 // modelKey indexes the model cache.
@@ -640,6 +639,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 					if model, ok := r.getModel(texPath, batch.rings, batch.slices); ok {
 						transform, drawScale := buildModelTransform(obj.Meta, simTime)
 						model.Transform = transform
+						r.lighting.applyToModel(model, obj.Meta.SelfLuminous)
 						rl.DrawModel(model, pos, drawScale, rl.White)
 						drawnCount++
 						continue
