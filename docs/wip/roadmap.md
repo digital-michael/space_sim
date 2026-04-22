@@ -83,7 +83,7 @@ Items are ordered by the agreed priority sequence. Dependencies are noted per it
 ---
 
 ### Step 1 — F-013: N-Body Barycenter Integration
-**Status**: 📋 Not started  
+**Status**: 📋 Not started — implementation plan complete ([f013-nbody-plan.md](f013-nbody-plan.md))  
 **Independent**: Yes — self-contained to `internal/sim/engine/physics.go`  
 **Why first**: Physics accuracy is a stated project goal (G1). Validating correctness in a single-process model before distributing (F-010, F-012) avoids compounding errors. Also informs DEF-001's `float64` position requirement and F-012's partition strategy.
 
@@ -184,11 +184,11 @@ Absolute-axis translate (arrow keys + PgUp/PgDn or configurable). Toggle between
 ---
 
 ### Step 12 — F-003: Texture / Bitmap Rendering
-**Status**: 📋 Not started  
-**Depends on**: DEF-001 (floating-origin fix must be in place first)  
+**Status**: ✅ Complete — 2026-04-14 (pulled forward before DEF-001)  
+**Depends on**: ~~DEF-001~~ (dependency relaxed; float32 precision acceptable at inner-system camera distances where textures are visible)  
 **Independent from**: Network group
 
-Diffuse, normal, specular, night-lights, cloud layers. `--no-textures` flag mirroring `--no-msaa` pattern. Graceful fallback to solid color when texture missing.
+Diffuse texture layer + UV correction (V-flip, U-mirror, pole rotation). `--no-textures` flag. Solid-color fallback. Normal-map, specular, night-lights deferred to F-017.
 
 ---
 
@@ -202,11 +202,11 @@ Deterministic unit-sphere point distribution, camera-orientation-only parallax, 
 ---
 
 ### Step 14 — F-005: Physical Lighting from Stars
-**Status**: 📋 Not started  
-**Depends on**: F-003 (lighting meaningful only with texture pipeline bound), F-013 (stellar mass/type for luminosity)  
+**Status**: ✅ Complete — 2026-04-21 (pulled forward before F-013)  
+**Depends on**: F-003 ✅; ~~F-013~~ (dependency relaxed; SolarLuminosity field used directly instead of mass-derived value)  
 **Independent from**: Network group
 
-Luminosity from stellar mass (L ∝ M^3.5 main sequence), inverse-square falloff, multi-star support, `--no-lighting` flag.
+GLSL 330 Phong shader compiled at runtime. Inverse-square falloff, up to 4 star lights, warm-white emission fallback, `--no-lighting` flag, day/night terminator confirmed working.
 
 ---
 

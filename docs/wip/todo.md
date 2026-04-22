@@ -24,6 +24,9 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 	DEF-002 Stars Disappear at Outer-Planet Camera Distances
 6. Feature Backlog
 	F-001 Camera Collision Prevention
+
+Planning Documents
+	[f013-nbody-plan.md](f013-nbody-plan.md) — F-013 implementation plan (phases, algorithms, validation)
 	F-002 REPL: track <object> and track stop ✅
 	F-003 Texture/Bitmap Rendering
 	F-004 Procedural Star Field Background
@@ -464,17 +467,17 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-005 — Physical Lighting from Stars
 
 **Value**: Drive scene lighting from simulated star properties (luminosity derived from mass/type/color) rather than a fixed point light.
-**Status**: 📋 Not started
+**Status**: ✅ Complete — 2026-04-21
 **Priority**: Medium — depends on star data already in `solar_system.json`; requires shader or multi-light Raylib work
 **Depends on**: F-003 (textures must be bound before physically-based lighting is meaningful); star `mass`, `color`, and `radius` fields in `ObjectMeta`
 
 #### Work Items
 
-- [ ] Compute luminosity from star mass using a mass-luminosity approximation (L ∝ M^3.5 for main sequence)
-- [ ] Map luminosity + color to Raylib light intensity and tint
-- [ ] Support multiple stars in the scene (alpha Centauri system has two)
-- [ ] Inverse-square falloff per-object from each star's position
-- [ ] CLI flag `--no-lighting` (default: physical lighting on); persist in `app.json`
+- [x] Compute luminosity from star mass using a mass-luminosity approximation (L ∝ M^3.5 for main sequence) — simplified: SolarLuminosity field in JSON; defaults to 1.0
+- [x] Map luminosity + color to Raylib light intensity and tint — GLSL 330 Phong shader, warm-white fallback
+- [x] Support multiple stars in the scene (up to 4 via `maxLights`; multi-star systems supported)
+- [x] Inverse-square falloff per-object from each star's position — `lightScale / dist²` in fragment shader
+- [x] CLI flag `--no-lighting` (default: physical lighting on); wired through `app/config.go` → `render.New`
 
 ---
 
@@ -652,9 +655,10 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-013 — N-Body Barycenter Integration
 
 **Value**: Replace the current single-parent Keplerian approximation with true N-body gravitational simulation. Positions bodies at their mutual barycenter rather than a fixed center. Required for accurate multi-star systems (Alpha Centauri A/B), binary planets, and long-term orbital stability.
-**Status**: 📋 Not started
+**Status**: 📋 Not started — plan complete, ready to implement
 **Priority**: Medium-high — accuracy is a stated project goal; also a prerequisite for F-012 accuracy claims
 **Depends on**: Nothing blocking; self-contained change to `internal/sim/engine/physics.go`. Coordinate with F-012 design (partition strategy depends on how forces are computed).
+**Plan**: [docs/wip/f013-nbody-plan.md](f013-nbody-plan.md)
 
 #### Context
 
