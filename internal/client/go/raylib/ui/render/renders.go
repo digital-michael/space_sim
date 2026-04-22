@@ -639,14 +639,20 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 					if model, ok := r.getModel(texPath, batch.rings, batch.slices); ok {
 						transform, drawScale := buildModelTransform(obj.Meta, simTime)
 						model.Transform = transform
-						r.lighting.applyToModel(model, obj.Meta.SelfLuminous)
+						var nightTex rl.Texture2D
+						if obj.Meta.NightTexturePath != "" {
+							nightTex = r.loadTexture(obj.Meta.NightTexturePath)
+						}
+						r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
 						rl.DrawModel(model, pos, drawScale, rl.White)
+						drawAtmosphereGlow(obj, pos)
 						drawnCount++
 						continue
 					}
 				}
 				// Fallback: solid color sphere.
 				rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
+				drawAtmosphereGlow(obj, pos)
 				// Wireframe
 				if obj.Meta.Material != engine.MaterialEmissive {
 					rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), batch.wireRings, batch.wireSlices,
@@ -805,14 +811,20 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		if model, ok := r.getModel(texPath, rings, slices); ok {
 			transform, drawScale := buildModelTransform(obj.Meta, simTime)
 			model.Transform = transform
-			r.lighting.applyToModel(model, obj.Meta.SelfLuminous)
+			var nightTex rl.Texture2D
+			if obj.Meta.NightTexturePath != "" {
+				nightTex = r.loadTexture(obj.Meta.NightTexturePath)
+			}
+			r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
 			rl.DrawModel(model, pos, drawScale, rl.White)
+			drawAtmosphereGlow(obj, pos)
 			return
 		}
 	}
 
 	// Fallback: solid color sphere with wireframe.
 	rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
+	drawAtmosphereGlow(obj, pos)
 
 	// Draw wireframe for better depth perception (skip for rings and sun)
 	// Use simpler wireframe for distant objects when LOD is enabled
@@ -825,6 +837,32 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		}
 		rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), wireRings, wireSlices, rl.Color{R: 255, G: 255, B: 255, A: 100})
 	}
+}
+
+// drawAtmosphereGlow renders an additive-blended sphere slightly larger than
+// the body's physical radius to simulate an atmospheric limb glow (haze, corona,
+// or exosphere). Uses BlendAddColors so the glow never darkens the scene.
+// No-op when the body has no atmosphere color hint or zero alpha.
+func drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
+	if obj.Meta.AtmosphereThicknessKm <= 0 || obj.Meta.AtmosphereColorHint.A == 0 {
+		return
+	}
+	// Visual glow radius: 10% larger than physical radius (equatorial when oblate).
+	glowRadius := obj.Meta.PhysicalRadius * 1.10
+	if obj.Meta.EquatorialRadius > 0 {
+		glowRadius = obj.Meta.EquatorialRadius * 1.10
+	}
+	// Derive glow color from AtmosphereColorHint; scale intensity by normalised alpha.
+	intensity := float32(obj.Meta.AtmosphereColorHint.A) / 255.0 * 0.5
+	glowColor := rl.Color{
+		R: uint8(float32(obj.Meta.AtmosphereColorHint.R) * intensity),
+		G: uint8(float32(obj.Meta.AtmosphereColorHint.G) * intensity),
+		B: uint8(float32(obj.Meta.AtmosphereColorHint.B) * intensity),
+		A: 255,
+	}
+	rl.BeginBlendMode(rl.BlendAddColors)
+	rl.DrawSphereEx(pos, glowRadius, 8, 8, glowColor)
+	rl.EndBlendMode()
 }
 
 // drawGroundPlane draws a grid for spatial reference

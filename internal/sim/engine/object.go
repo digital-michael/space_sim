@@ -65,8 +65,9 @@ type ObjectMetadata struct {
 	Importance       int            // Rendering priority 0-100
 
 	// Texture and surface
-	TexturePath string  // Path to diffuse texture image; empty means use Color
-	Albedo      float32 // Surface albedo 0–1; used for lighting calculations
+	TexturePath      string  // Path to diffuse texture image; empty means use Color
+	NightTexturePath string  // Path to night-side emission texture (city lights); empty means no night glow
+	Albedo           float32 // Surface albedo 0–1; used for lighting calculations
 
 	// Luminosity (stars and thermally glowing bodies)
 	SelfLuminous        bool    // True if the body emits its own light

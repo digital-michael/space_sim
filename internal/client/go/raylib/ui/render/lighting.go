@@ -53,11 +53,14 @@ void main() {
 
 // phongFS is the GLSL 330 fragment shader. Sums inverse-square Lambert
 // contributions from each star light and adds a small ambient floor.
+// When hasNightTexture == 1, texture1 (city lights) is blended on the dark side.
 const phongFS = `#version 330
 in vec3 fragPos;
 in vec2 fragTexCoord;
 in vec3 fragNormal;
-uniform sampler2D texture0;
+uniform sampler2D texture0;    // diffuse (day) texture
+uniform sampler2D texture1;    // night-side emission (city lights); only sampled when hasNightTexture==1
+uniform int       hasNightTexture;
 uniform vec4 colDiffuse;
 #define MAX_LIGHTS 4
 uniform int   lightCount;
@@ -68,18 +71,26 @@ uniform float lightScale;
 uniform float ambient;
 out vec4 finalColor;
 void main() {
-    vec4 texSample   = texture(texture0, fragTexCoord);
+    vec4 texSample    = texture(texture0, fragTexCoord);
     vec3 surfaceColor = texSample.rgb * colDiffuse.rgb;
-    vec3 norm        = normalize(fragNormal);
-    vec3 diffuse     = vec3(0.0);
+    vec3 norm         = normalize(fragNormal);
+    vec3 diffuse      = vec3(0.0);
+    float maxDiff     = 0.0;
     for (int i = 0; i < lightCount; i++) {
         vec3  toLight = lightPos[i] - fragPos;
         float dist2   = max(dot(toLight, toLight), 0.0001);
         float diff    = max(dot(norm, normalize(toLight)), 0.0);
         diffuse += lightColor[i] * diff * (lightIntensity[i] * lightScale / dist2);
+        maxDiff = max(maxDiff, diff);
     }
     vec3 result = clamp((ambient + diffuse) * surfaceColor, 0.0, 1.0);
-    finalColor  = vec4(result, texSample.a * colDiffuse.a);
+    // City lights: blend night texture on the unlit side, fading at the terminator.
+    if (hasNightTexture == 1) {
+        vec3 nightSample = texture(texture1, fragTexCoord).rgb;
+        float nightBlend = 1.0 - smoothstep(0.0, 0.15, maxDiff);
+        result += nightSample * nightBlend * 0.8;
+    }
+    finalColor = vec4(clamp(result, 0.0, 1.0), texSample.a * colDiffuse.a);
 }
 `
 
@@ -88,12 +99,13 @@ type lightingState struct {
 	shader rl.Shader
 	loaded bool
 
-	locCount     int32
-	locPos       [maxLights]int32
-	locColor     [maxLights]int32
-	locIntensity [maxLights]int32
-	locScale     int32
-	locAmbient   int32
+	locCount           int32
+	locPos             [maxLights]int32
+	locColor           [maxLights]int32
+	locIntensity       [maxLights]int32
+	locScale           int32
+	locAmbient         int32
+	locHasNightTexture int32
 }
 
 // load compiles the Phong shader and caches uniform locations. Idempotent.
@@ -111,6 +123,7 @@ func (ls *lightingState) load() {
 	}
 	ls.locScale = rl.GetShaderLocation(ls.shader, "lightScale")
 	ls.locAmbient = rl.GetShaderLocation(ls.shader, "ambient")
+	ls.locHasNightTexture = rl.GetShaderLocation(ls.shader, "hasNightTexture")
 
 	// Set static defaults once; they persist until explicitly changed.
 	rl.SetShaderValue(ls.shader, ls.locScale, []float32{defaultLightScale}, rl.ShaderUniformFloat)
@@ -170,15 +183,28 @@ func (ls *lightingState) setLights(objects []*engine.Object, cameraPos engine.Ve
 	rl.SetShaderValue(ls.shader, ls.locCount, []float32{countF}, rl.ShaderUniformInt)
 }
 
-// applyToModel sets the lighting shader on the first material of model.
+// applyToModel sets the lighting shader on the first material of model and
+// optionally binds a night-side emission texture (city lights). Pass a zero
+// Texture2D (ID == 0) when the body has no night texture.
 // Self-luminous (star) bodies skip this so they always render at full
 // brightness regardless of scene lighting.
-func (ls *lightingState) applyToModel(model rl.Model, selfLuminous bool) {
+func (ls *lightingState) applyToModel(model rl.Model, selfLuminous bool, nightTex rl.Texture2D) {
 	if !ls.loaded || selfLuminous {
 		return
 	}
 	mats := model.GetMaterials()
-	if len(mats) > 0 {
-		mats[0].Shader = ls.shader
+	if len(mats) == 0 {
+		return
 	}
+	mats[0].Shader = ls.shader
+	// Bind night texture to MAP_SPECULAR (slot 1 → texture1 in GLSL).
+	// Raylib binds material.maps[1] to texture unit 1 when drawing with a custom shader.
+	mats[0].GetMap(rl.MapSpecular).Texture = nightTex
+	// Upload hasNightTexture flag (int uniform via bit-reinterpretation).
+	hasNight := int32(0)
+	if nightTex.ID > 0 {
+		hasNight = 1
+	}
+	hasNightF := *(*float32)(unsafe.Pointer(&hasNight))
+	rl.SetShaderValue(ls.shader, ls.locHasNightTexture, []float32{hasNightF}, rl.ShaderUniformInt)
 }

@@ -285,8 +285,9 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 			Importance:       config.Importance,
 
 			// Texture and surface
-			TexturePath: config.Rendering.TextureImage,
-			Albedo:      config.Physical.Albedo,
+			TexturePath:      config.Rendering.TextureImage,
+			NightTexturePath: config.Rendering.NightTextureImage,
+			Albedo:           config.Physical.Albedo,
 
 			// Luminosity
 			SelfLuminous:        config.Luminosity.SelfLuminous,
@@ -377,6 +378,9 @@ func applyOverrides(template BodyConfig, overrides BodyConfig) BodyConfig {
 	}
 	if overrides.Rendering.TextureImage != "" {
 		result.Rendering.TextureImage = overrides.Rendering.TextureImage
+	}
+	if overrides.Rendering.NightTextureImage != "" {
+		result.Rendering.NightTextureImage = overrides.Rendering.NightTextureImage
 	}
 	if overrides.Physical.Albedo != 0 {
 		result.Physical.Albedo = overrides.Physical.Albedo

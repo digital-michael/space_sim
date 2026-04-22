@@ -185,6 +185,7 @@
       "rendering": {
         "material": "diffuse",
         "texture_image": "data/assets/textures/earthmap1k.jpg",
+        "night_texture_image": "data/assets/textures/earth_nightmap.jpg",
         "color_map": "data/assets/textures/earthbump1k.jpg",
         "ring_colors_map": null,
         "fallback_color": [
