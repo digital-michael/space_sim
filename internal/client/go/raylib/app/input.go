@@ -641,28 +641,17 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 		if rl.IsKeyPressed(rl.KeyDown) {
 			inputState.SelectNext(len(inputState.FilteredIndices) - 1)
-			// Auto-scroll to keep selection visible
-			// Calculate visible items (must match drawSelectionUI calculation)
-			bgHeight := int32(500)
-			tabHeight := int32(30)
-			filterBoxHeight := int32(30) // 25 + 5 padding
-			startY := int32(75) + filterBoxHeight + tabHeight + 10
-			lineHeight := int32(30)
-			listAreaHeight := bgHeight - startY - 10
-			visibleItems := int(listAreaHeight / lineHeight)
+			// Auto-scroll to keep selection visible.
+			// Replicates drawSelectionUI panel calculation: 40% of screen width, clamped [400,700], square.
+			// Fixed header height is 155px (startY=145 + bottom-pad=10); lineHeight=30.
+			visibleItems := selectionDialogVisibleItems()
 			if inputState.SelectedIndex >= inputState.ScrollOffset+visibleItems {
 				inputState.ScrollOffset = inputState.SelectedIndex - visibleItems + 1
 			}
 		}
 		// Page Up/Down for faster navigation
 		if rl.IsKeyPressed(rl.KeyPageUp) {
-			bgHeight := int32(500)
-			tabHeight := int32(30)
-			filterBoxHeight := int32(30)
-			startY := int32(75) + filterBoxHeight + tabHeight + 10
-			lineHeight := int32(30)
-			listAreaHeight := bgHeight - startY - 10
-			visibleItems := int(listAreaHeight / lineHeight)
+			visibleItems := selectionDialogVisibleItems()
 
 			inputState.SelectedIndex -= visibleItems
 			if inputState.SelectedIndex < 0 {
@@ -671,13 +660,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 			inputState.ScrollOffset = inputState.SelectedIndex
 		}
 		if rl.IsKeyPressed(rl.KeyPageDown) {
-			bgHeight := int32(500)
-			tabHeight := int32(30)
-			filterBoxHeight := int32(30)
-			startY := int32(75) + filterBoxHeight + tabHeight + 10
-			lineHeight := int32(30)
-			listAreaHeight := bgHeight - startY - 10
-			visibleItems := int(listAreaHeight / lineHeight)
+			visibleItems := selectionDialogVisibleItems()
 			maxIndex := len(inputState.FilteredIndices) - 1
 
 			inputState.SelectedIndex += visibleItems
@@ -698,13 +681,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 			maxIndex := len(inputState.FilteredIndices) - 1
 			inputState.SelectedIndex = maxIndex
 			// Scroll to show last item
-			bgHeight := int32(500)
-			tabHeight := int32(30)
-			filterBoxHeight := int32(30)
-			startY := int32(75) + filterBoxHeight + tabHeight + 10
-			lineHeight := int32(30)
-			listAreaHeight := bgHeight - startY - 10
-			visibleItems := int(listAreaHeight / lineHeight)
+			visibleItems := selectionDialogVisibleItems()
 			inputState.ScrollOffset = maxIndex - visibleItems + 1
 			if inputState.ScrollOffset < 0 {
 				inputState.ScrollOffset = 0

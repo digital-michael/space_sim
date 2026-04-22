@@ -43,7 +43,8 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 		return nil, fmt.Errorf("failed to load system %s: %w", normalizedPath, err)
 	}
 	if a.cfg.SimTimeScale > 0 {
-		sim.SetSpeed(a.cfg.SimTimeScale)
+		back := sim.GetState().GetBack()
+		back.SecondsPerSecond = float32(a.cfg.SimTimeScale)
 	}
 
 	initialState := sim.GetState().LockFront()

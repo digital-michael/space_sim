@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
+	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
 // filterObjectsByCategory returns indices of objects matching the given category
@@ -113,4 +114,19 @@ func filterObjectsByCategoryAndText(objects []*engine.Object, category engine.Ob
 		}
 	}
 	return indices
+}
+
+// selectionDialogVisibleItems returns the number of list rows visible inside
+// the Jump/Track selection dialog at the current window size.
+// The panel is 40% of screen width, clamped to [400, 700], and square.
+// Fixed header height is 155 px (startY=145 + bottom-padding=10); line height is 30 px.
+func selectionDialogVisibleItems() int {
+	bgWidth := int32(rl.GetScreenWidth()) * 40 / 100
+	if bgWidth < 400 {
+		bgWidth = 400
+	}
+	if bgWidth > 700 {
+		bgWidth = 700
+	}
+	return int((bgWidth - 155) / 30)
 }

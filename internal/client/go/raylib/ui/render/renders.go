@@ -597,8 +597,22 @@ type InstanceBatch struct {
 
 // drawObjectsInstanced draws objects using batching to reduce draw calls
 func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
+	// Build a name→radius map so ring shadow computation can look up the host
+	// planet's physical radius without accessing the full object list per ring.
+	parentRadius := make(map[string]float32, len(objects))
+	for _, obj := range objects {
+		if obj.Meta.InnerRadius == 0 {
+			parentRadius[obj.Meta.Name] = obj.Meta.PhysicalRadius
+		}
+	}
+
 	// Group objects into batches by their rendering properties
 	batches := make(map[string]*InstanceBatch)
+	// Rings are collected here and drawn after all planet batches (including their
+	// atmosphere glows) to eliminate ring/atmosphere Z-fighting at the equatorial
+	// boundary — both are transparent (DisableDepthMask) and share the same depth
+	// range around the planet centre; drawing rings last gives consistent ordering.
+	var deferredRings []*engine.Object
 	drawnCount := 0
 
 	for _, obj := range objects {
@@ -607,10 +621,9 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 			continue
 		}
 
-		// Skip rings - they need individual rendering
+		// Defer rings — see deferredRings comment above.
 		if obj.Meta.InnerRadius > 0 {
-			drawObject(r, obj, cameraPos, simTime, pointRenderingEnabled, lodEnabled)
-			drawnCount++
+			deferredRings = append(deferredRings, obj)
 			continue
 		}
 
@@ -746,6 +759,18 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 		}
 	}
 
+	// Draw rings after all opaque bodies and their atmosphere glows.
+	for _, obj := range deferredRings {
+		pos := rl.Vector3{
+			X: obj.Anim.Position.X - cameraPos.X,
+			Y: obj.Anim.Position.Y - cameraPos.Y,
+			Z: obj.Anim.Position.Z - cameraPos.Z,
+		}
+		pr := parentRadius[obj.Meta.ParentName]
+		drawRingDisc(r, obj, pos, pr)
+		drawnCount++
+	}
+
 	return drawnCount
 }
 
@@ -821,75 +846,11 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 			rl.DrawSphere(pos, pointSize*0.1, color)
 			return
 		}
-	} // Planetary rings are drawn as transparent flat discs with radial texture sampling.
-	// BlendAlpha + DisableDepthMask prevents ring geometry from occluding objects
-	// behind it while still being depth-tested against closer geometry (same lesson
-	// as the atmosphere glow fix).
+	} // Planetary rings are drawn after all opaque objects and their atmosphere glows
+	// (see drawObjectsInstanced). This path handles the single-object draw case
+	// (no parent radius available, so planet shadow is skipped).
 	if obj.Meta.InnerRadius > 0 {
-		const segments = 64   // angular resolution
-		const radialBands = 8 // radial subdivisions for texture colour sampling
-		outerRadius := float32(obj.Meta.PhysicalRadius)
-		innerRadius := float32(obj.Meta.InnerRadius)
-		ringRange := outerRadius - innerRadius
-
-		// Load CPU-side colour strip for radial sampling (nil = use fallback color).
-		var ringImg *rl.Image
-		hasTexture := !r.noTextures && obj.Meta.TexturePath != ""
-		if hasTexture {
-			ringImg = r.loadRingImage(obj.Meta.TexturePath)
-			hasTexture = ringImg != nil
-		}
-
-		rl.PushMatrix()
-		rl.Translatef(pos.X, pos.Y, pos.Z)
-		if obj.Meta.AxialTilt != 0 {
-			rl.Rotatef(obj.Meta.AxialTilt, 1, 0, 0)
-		}
-
-		rl.BeginBlendMode(rl.BlendAlpha)
-		rl.DisableDepthMask()
-
-		for band := 0; band < radialBands; band++ {
-			bandInner := innerRadius + float32(band)/float32(radialBands)*ringRange
-			bandOuter := innerRadius + float32(band+1)/float32(radialBands)*ringRange
-			bandMidU := (float32(band) + 0.5) / float32(radialBands)
-
-			segColor := color
-			if hasTexture {
-				sampled := sampleRingTexture(ringImg, bandMidU)
-				// Preserve the ring's configured alpha; use texture RGB for colour.
-				segColor = rl.Color{R: sampled.R, G: sampled.G, B: sampled.B, A: color.A}
-			}
-
-			for side := 0; side < 2; side++ {
-				for i := 0; i < segments; i++ {
-					angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
-					angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
-
-					cos1 := float32(math.Cos(float64(angle1)))
-					sin1 := float32(math.Sin(float64(angle1)))
-					cos2 := float32(math.Cos(float64(angle2)))
-					sin2 := float32(math.Sin(float64(angle2)))
-
-					p1 := rl.Vector3{X: bandOuter * cos1, Y: 0, Z: bandOuter * sin1}
-					p2 := rl.Vector3{X: bandOuter * cos2, Y: 0, Z: bandOuter * sin2}
-					p3 := rl.Vector3{X: bandInner * cos1, Y: 0, Z: bandInner * sin1}
-					p4 := rl.Vector3{X: bandInner * cos2, Y: 0, Z: bandInner * sin2}
-
-					if side == 0 {
-						rl.DrawTriangle3D(p1, p2, p3, segColor)
-						rl.DrawTriangle3D(p2, p4, p3, segColor)
-					} else {
-						rl.DrawTriangle3D(p1, p3, p2, segColor)
-						rl.DrawTriangle3D(p2, p3, p4, segColor)
-					}
-				}
-			}
-		}
-
-		rl.EnableDepthMask()
-		rl.EndBlendMode()
-		rl.PopMatrix()
+		drawRingDisc(r, obj, pos, 0)
 		return
 	}
 
@@ -944,6 +905,175 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 			wireSlices = 4
 		}
 		rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), wireRings, wireSlices, rl.Color{R: 255, G: 255, B: 255, A: 100})
+	}
+}
+
+// drawRingDisc renders a planetary ring disc with optional planet-shadow darkening.
+//
+// Rings are composed of small particles that scatter light in all directions
+// (forward and backward), so a Lambertian surface model is not appropriate —
+// rings appear bright even when the star is nearly edge-on to the ring plane.
+// Instead ring segments are rendered at full colour and only darkened when they
+// fall inside the host planet's shadow cylinder (the sun-planet-ring alignment
+// that causes the visible shadow band on Saturn's rings, for example).
+//
+// Pass parentRadius > 0 to enable per-segment planet-shadow testing.
+// Pass 0 to skip shadow computation (e.g. when drawn via the single-object path).
+//
+// Rings are drawn with BlendAlpha + DisableDepthMask so they do not occlude
+// objects behind them while still depth-testing against closer opaque geometry.
+func drawRingDisc(r *Renderer, obj *engine.Object, pos rl.Vector3, parentRadius float32) {
+	const segments = 64   // angular resolution
+	const radialBands = 8 // radial subdivisions for texture colour sampling
+
+	outerRadius := float32(obj.Meta.PhysicalRadius)
+	innerRadius := float32(obj.Meta.InnerRadius)
+	ringRange := outerRadius - innerRadius
+
+	// Load CPU-side colour strip for radial sampling (nil = use fallback color).
+	var ringImg *rl.Image
+	hasTexture := !r.noTextures && obj.Meta.TexturePath != ""
+	if hasTexture {
+		ringImg = r.loadRingImage(obj.Meta.TexturePath)
+		hasTexture = ringImg != nil
+	}
+
+	// Axial tilt (same value used in rl.Rotatef below).
+	tiltRad := float64(obj.Meta.AxialTilt) * math.Pi / 180.0
+
+	// Shadow axis: anti-star direction in camera-relative world space.
+	// Computed only when planet-shadow testing is needed.
+	const ringAmbient = float32(0.05)
+	var shadowAxisX, shadowAxisY, shadowAxisZ float32
+	hasShadow := !r.noLighting && r.lighting.loaded && parentRadius > 0
+	if hasShadow {
+		dx := r.lighting.PrimaryLightPos[0] - pos.X
+		dy := r.lighting.PrimaryLightPos[1] - pos.Y
+		dz := r.lighting.PrimaryLightPos[2] - pos.Z
+		dist := float32(math.Sqrt(float64(dx*dx + dy*dy + dz*dz)))
+		if dist > 0 {
+			shadowAxisX = -dx / dist
+			shadowAxisY = -dy / dist
+			shadowAxisZ = -dz / dist
+		} else {
+			hasShadow = false
+		}
+	}
+
+	color := rl.Color{
+		R: obj.Meta.Color.R,
+		G: obj.Meta.Color.G,
+		B: obj.Meta.Color.B,
+		A: obj.Meta.Color.A,
+	}
+
+	rl.PushMatrix()
+	rl.Translatef(pos.X, pos.Y, pos.Z)
+	if obj.Meta.AxialTilt != 0 {
+		rl.Rotatef(obj.Meta.AxialTilt, 1, 0, 0)
+	}
+
+	rl.BeginBlendMode(rl.BlendAlpha)
+	rl.DisableDepthMask()
+
+	for band := 0; band < radialBands; band++ {
+		bandInner := innerRadius + float32(band)/float32(radialBands)*ringRange
+		bandOuter := innerRadius + float32(band+1)/float32(radialBands)*ringRange
+		bandMidU := (float32(band) + 0.5) / float32(radialBands)
+		bandMidRadius := (bandInner + bandOuter) * 0.5
+
+		baseColor := color
+		if hasTexture {
+			sampled := sampleRingTexture(ringImg, bandMidU)
+			// Preserve the ring's configured alpha; use texture RGB for colour.
+			baseColor = rl.Color{R: sampled.R, G: sampled.G, B: sampled.B, A: color.A}
+		}
+
+		for i := 0; i < segments; i++ {
+			angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
+			angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
+
+			segColor := baseColor
+			if hasShadow {
+				midAngle := (angle1 + angle2) * 0.5
+				if ringSegmentInPlanetShadow(float64(bandMidRadius), float64(midAngle),
+					tiltRad, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius) {
+					segColor = applyRingLightFactor(baseColor, ringAmbient)
+				}
+			}
+
+			cos1 := float32(math.Cos(float64(angle1)))
+			sin1 := float32(math.Sin(float64(angle1)))
+			cos2 := float32(math.Cos(float64(angle2)))
+			sin2 := float32(math.Sin(float64(angle2)))
+
+			p1 := rl.Vector3{X: bandOuter * cos1, Y: 0, Z: bandOuter * sin1}
+			p2 := rl.Vector3{X: bandOuter * cos2, Y: 0, Z: bandOuter * sin2}
+			p3 := rl.Vector3{X: bandInner * cos1, Y: 0, Z: bandInner * sin1}
+			p4 := rl.Vector3{X: bandInner * cos2, Y: 0, Z: bandInner * sin2}
+
+			// Front face
+			rl.DrawTriangle3D(p1, p2, p3, segColor)
+			rl.DrawTriangle3D(p2, p4, p3, segColor)
+			// Back face
+			rl.DrawTriangle3D(p1, p3, p2, segColor)
+			rl.DrawTriangle3D(p2, p3, p4, segColor)
+		}
+	}
+
+	rl.EnableDepthMask()
+	rl.EndBlendMode()
+	rl.PopMatrix()
+}
+
+// ringSegmentInPlanetShadow reports whether a ring point at the given polar
+// coordinates (radius, angle) in the ring plane falls inside the planet's shadow.
+// The shadow is modelled as a cylinder of radius parentRadius aligned with shadowAxis
+// (the normalised anti-star direction in camera-relative world space).
+//
+// The ring point is transformed into world space by applying the axial tilt:
+//
+//	P = Rx(tiltRad) * (radius·cos(a), 0, radius·sin(a))
+//	  = (radius·cos(a), −radius·sin(a)·sin(tilt), radius·sin(a)·cos(tilt))
+func ringSegmentInPlanetShadow(radius, angle, tiltRad float64, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius float32) bool {
+	cos_a := float32(math.Cos(angle))
+	sin_a := float32(math.Sin(angle))
+	cos_t := float32(math.Cos(tiltRad))
+	sin_t := float32(math.Sin(tiltRad))
+	rv := float32(radius)
+
+	px := rv * cos_a
+	py := -rv * sin_a * sin_t
+	pz := rv * sin_a * cos_t
+
+	// Project P onto the shadow axis (anti-star direction from planet centre).
+	proj := px*shadowAxisX + py*shadowAxisY + pz*shadowAxisZ
+	if proj <= 0 {
+		return false // point is on the illuminated side
+	}
+
+	// Perpendicular distance squared from the shadow axis.
+	perpX := px - proj*shadowAxisX
+	perpY := py - proj*shadowAxisY
+	perpZ := pz - proj*shadowAxisZ
+	perpDist2 := perpX*perpX + perpY*perpY + perpZ*perpZ
+
+	return perpDist2 < parentRadius*parentRadius
+}
+
+// applyRingLightFactor scales the RGB channels of c by factor, leaving alpha unchanged.
+func applyRingLightFactor(c rl.Color, factor float32) rl.Color {
+	if factor >= 1.0 {
+		return c
+	}
+	if factor < 0 {
+		factor = 0
+	}
+	return rl.Color{
+		R: uint8(float32(c.R) * factor),
+		G: uint8(float32(c.G) * factor),
+		B: uint8(float32(c.B) * factor),
+		A: c.A,
 	}
 }
 
