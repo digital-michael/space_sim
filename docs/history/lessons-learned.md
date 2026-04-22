@@ -1657,3 +1657,46 @@ lightScale = 0.9 × 100² / 1.0 = 9000
 - **Proof of lighting**: the correct verification is a terminator test, not a frontal view. "Looks lit" from the sunny side proves nothing. Only "dark side is dark" proves the shader is active.
 - **Feature acceptance criteria for any visual shader: include an explicit terminator/shadow test in the PR description** so the acceptance gate is unambiguous.
 
+---
+
+## CGo Interior-Pointer Panic: Slicing a Struct Field
+
+**Date**: 2026-04-21  
+**Symptom**: `panic: runtime error: argument of cgo function has Go pointer to unpinned Go pointer` at runtime, only after the atmosphere shader was first invoked.
+
+**Root Cause**: Passing `r.lighting.PrimaryLightPos[:]` to `rl.SetShaderValue`. Slicing an array field of a struct produces a slice whose backing array is an *interior pointer* into the `Renderer` allocation. `Renderer` also holds `textureCache` and `modelCache` (Go maps — Go pointer types). CGo's pointer checker sees "Go pointer to an object that contains other Go pointers" and panics at the first CGo call that frame.
+
+**Fix**: Copy to a fresh local slice before the call:
+```go
+// BAD — interior pointer into Renderer (which contains maps):
+rl.SetShaderValue(shader, loc, r.lighting.PrimaryLightPos[:], rl.ShaderUniformVec3)
+
+// GOOD — clean allocation, no Go pointers inside:
+lightPos := []float32{r.lighting.PrimaryLightPos[0], r.lighting.PrimaryLightPos[1], r.lighting.PrimaryLightPos[2]}
+rl.SetShaderValue(shader, loc, lightPos, rl.ShaderUniformVec3)
+```
+
+**Rule derived**: **Never pass a sub-slice of a struct field to a CGo function.** Any `structField[:]` expression is suspect. Always copy to a fresh `[]T{a, b, c}` literal. This applies to all `rl.SetShaderValue` calls and any other raylib CGo boundary.
+
+---
+
+## Atmosphere Shader: Fresnel Rim-Glow + Day/Night Lighting
+
+**Date**: 2026-04-21  
+**Problem**: The original `DrawSphereEx` atmosphere had two visual defects:
+1. **Hard outer edge** — the additive sphere ended abruptly at the mesh boundary.
+2. **Full-bright night side** — the glow was uniform regardless of sun angle.
+
+**Solution**: Custom GLSL shader (`atmoVS`/`atmoFS`) with two terms:
+
+- **Fresnel rim**: `pow(1.0 - abs(dot(N, viewDir)), glowEdge)` — face-on fragments produce 0 (transparent), limb fragments produce 1 (full glow). This produces a natural edge fade with no hard boundary.
+- **Lambert sun term**: `mix(0.08, 1.0, max(dot(N, toLight), 0.0))` — night side receives 8% (secondary scatter floor), day side receives up to 100%.
+
+**Render setup**:
+- A single unit sphere (`GenMeshSphere(1.0, 64, 32)`) is lazy-loaded and reused across all atmosphere draw calls; scaled per-body via `model.Transform = MatrixScale(r, r, r)`.
+- Drawn with `BlendAddColors` (GL_ONE, GL_ONE) — the glow only brightens; Z-order is irrelevant.
+- The shader's `glowColor.a` component is used as an intensity weight inside the shader, not as actual alpha (alpha is unused in additive blend).
+- `PrimaryLightPos` is captured once per frame in `setLights()` from the first self-luminous object and stored on `lightingState`.
+
+**Tuning knob**: `glowEdge` constant (default 3.5). Higher → narrower bright ring. Lower → wider diffuse halo.
+
