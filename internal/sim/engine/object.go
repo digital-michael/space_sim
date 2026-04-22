@@ -57,6 +57,7 @@ type ObjectMetadata struct {
 	Category         ObjectCategory // Object category for UI grouping
 	Mass             float64        // Mass in kilograms
 	PhysicalRadius   float32        // Physical size (or outer radius for rings); equatorial radius when oblate
+	PhysicalRadiusKm float32        // Real-world equatorial radius in km; 0 = derive from Earth-calibrated km/su
 	EquatorialRadius float32        // Equatorial radius for oblate bodies; 0 means use PhysicalRadius uniformly
 	PolarRadius      float32        // Polar radius for oblate bodies; 0 means use PhysicalRadius uniformly
 	InnerRadius      float32        // Inner radius (rings only; 0 for spheres)

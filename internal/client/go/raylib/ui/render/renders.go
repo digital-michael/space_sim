@@ -50,9 +50,10 @@ type Renderer struct {
 
 	// Texture and model resources (lazily loaded after GL context is ready).
 	// noTextures disables all diffuse texture rendering.
-	noTextures   bool
-	textureCache map[string]rl.Texture2D // path → GPU texture
-	modelCache   map[modelKey]rl.Model   // (path,rings,slices) → textured sphere model
+	noTextures     bool
+	textureCache   map[string]rl.Texture2D // path → GPU texture
+	modelCache     map[modelKey]rl.Model   // (path,rings,slices) → textured sphere model
+	ringImageCache map[string]*rl.Image    // path → CPU-side ring colour strip image
 
 	// noLighting disables the Phong star lighting shader; bodies render with
 	// the default Raylib shader (flat diffuse texture, no shadowing).
@@ -76,10 +77,11 @@ type modelKey struct {
 func New(noTextures, noLighting bool) *Renderer {
 	setLayoutSize(0, 0)
 	return &Renderer{
-		noTextures:   noTextures,
-		noLighting:   noLighting,
-		textureCache: make(map[string]rl.Texture2D),
-		modelCache:   make(map[modelKey]rl.Model),
+		noTextures:     noTextures,
+		noLighting:     noLighting,
+		textureCache:   make(map[string]rl.Texture2D),
+		modelCache:     make(map[modelKey]rl.Model),
+		ringImageCache: make(map[string]*rl.Image),
 	}
 }
 
@@ -139,6 +141,41 @@ func (r *Renderer) getModel(path string, rings, slices int32) (rl.Model, bool) {
 	return model, true
 }
 
+// loadRingImage returns a cached CPU-side image for the given ring colour-strip
+// path.  Returns nil if the path is empty or unreadable.  The image is kept in
+// CPU memory so per-segment colours can be sampled each frame without a GPU
+// readback.
+func (r *Renderer) loadRingImage(path string) *rl.Image {
+	if path == "" {
+		return nil
+	}
+	if img, ok := r.ringImageCache[path]; ok {
+		return img
+	}
+	abs := filepath.Clean(path)
+	img := rl.LoadImage(abs)
+	if img == nil || img.Width == 0 || img.Height == 0 {
+		r.ringImageCache[path] = nil
+		return nil
+	}
+	r.ringImageCache[path] = img
+	return img
+}
+
+// sampleRingTexture samples a colour from a horizontal ring colour-strip at
+// normalised radial position u ∈ [0,1] (0 = inner edge, 1 = outer edge).
+// The middle row of the image is used, which works for any image height.
+func sampleRingTexture(img *rl.Image, u float32) rl.Color {
+	if u < 0 {
+		u = 0
+	} else if u > 1 {
+		u = 1
+	}
+	px := int32(u * float32(img.Width-1))
+	py := img.Height / 2
+	return rl.GetImageColor(*img, px, py)
+}
+
 func setLayoutSize(width, height int32) {
 	layoutWidth = width
 	layoutHeight = height
@@ -156,6 +193,35 @@ func currentScreenHeight() int {
 		return int(layoutHeight)
 	}
 	return rl.GetScreenHeight()
+}
+
+// lodScale returns a multiplier applied to the absolute LOD distance thresholds
+// so that large bodies retain higher geometry quality at greater distances.
+//
+// Larger bodies subtend a bigger solid angle at the same camera distance — their
+// triangulation is more visible. The multiplier is proportional to physical
+// radius relative to an Earth-sized reference (0.5 sim units), clamped to
+// [1, 10] so very small bodies get no degradation and very large bodies (Sol)
+// are bounded to 10× the normal quality budget.
+//
+// Example results:
+//
+//	Sol (r=27.25): 10× → LODFar = 2000 instead of 200
+//	Jupiter (r=2.8): 5.6× → LODFar = 1120
+//	Earth (r=0.5): 1.0× (unchanged)
+//	Asteroids (<0.5): 1.0× (clamped, no quality reduction)
+const lodScaleRef = float32(0.5) // Earth-sized reference
+
+func lodScale(physRadius float32) float64 {
+	const maxScale = 10.0
+	s := float64(physRadius / lodScaleRef)
+	if s < 1.0 {
+		s = 1.0
+	}
+	if s > maxScale {
+		s = maxScale
+	}
+	return s
 }
 
 // renderMousePosition converts the OS/window mouse position into render-texture
@@ -288,6 +354,13 @@ func (r *Renderer) Close() {
 			rl.UnloadTexture(tex)
 		}
 		delete(r.textureCache, path)
+	}
+	// Unload cached ring CPU images.
+	for path, img := range r.ringImageCache {
+		if img != nil && img.Width > 0 {
+			rl.UnloadImage(img)
+		}
+		delete(r.ringImageCache, path)
 	}
 	setLayoutSize(0, 0)
 	r.lighting.unload()
@@ -577,13 +650,16 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 		wireSlices := int32(8)
 
 		if lodEnabled && !isPoint {
-			if distance < engine.LODVeryClose {
+			// Scale LOD thresholds by body size — larger bodies subtend a bigger solid
+			// angle and show triangulation artefacts sooner. See lodScale().
+			ls := lodScale(obj.Meta.PhysicalRadius)
+			if distance < engine.LODVeryClose*ls {
 				rings, slices = 128, 128
-			} else if distance < engine.LODClose {
+			} else if distance < engine.LODClose*ls {
 				rings, slices = 64, 64
-			} else if distance < engine.LODMedium {
+			} else if distance < engine.LODMedium*ls {
 				rings, slices = 32, 32
-			} else if distance < engine.LODFar {
+			} else if distance < engine.LODFar*ls {
 				rings, slices = 16, 16
 			} else {
 				rings, slices = 8, 8
@@ -745,66 +821,92 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 			rl.DrawSphere(pos, pointSize*0.1, color)
 			return
 		}
-	} // Planetary rings are drawn as flat circles, not spheres
-	// Check if this object has an InnerRadius (rings have inner radius > 0)
+	} // Planetary rings are drawn as transparent flat discs with radial texture sampling.
+	// BlendAlpha + DisableDepthMask prevents ring geometry from occluding objects
+	// behind it while still being depth-tested against closer geometry (same lesson
+	// as the atmosphere glow fix).
 	if obj.Meta.InnerRadius > 0 {
-		// This is a ring - draw as a flat disc in XZ plane with axial tilt
-		segments := 64 // More segments for smoother rings
+		const segments = 64   // angular resolution
+		const radialBands = 8 // radial subdivisions for texture colour sampling
 		outerRadius := float32(obj.Meta.PhysicalRadius)
 		innerRadius := float32(obj.Meta.InnerRadius)
+		ringRange := outerRadius - innerRadius
 
-		// Apply axial tilt rotation if present
+		// Load CPU-side colour strip for radial sampling (nil = use fallback color).
+		var ringImg *rl.Image
+		hasTexture := !r.noTextures && obj.Meta.TexturePath != ""
+		if hasTexture {
+			ringImg = r.loadRingImage(obj.Meta.TexturePath)
+			hasTexture = ringImg != nil
+		}
+
 		rl.PushMatrix()
-		// Translate to object position
 		rl.Translatef(pos.X, pos.Y, pos.Z)
-		// Rotate around X-axis by axial tilt angle
 		if obj.Meta.AxialTilt != 0 {
 			rl.Rotatef(obj.Meta.AxialTilt, 1, 0, 0)
 		}
 
-		// Draw both sides of the ring for visibility from any angle
-		// (Ring is now at origin due to translation)
-		for side := 0; side < 2; side++ {
-			for i := 0; i < segments; i++ {
-				angle1 := float32(i) * 2.0 * 3.14159 / float32(segments)
-				angle2 := float32(i+1) * 2.0 * 3.14159 / float32(segments)
+		rl.BeginBlendMode(rl.BlendAlpha)
+		rl.DisableDepthMask()
 
-				// Outer arc (relative to origin)
-				p1 := rl.Vector3{X: outerRadius * float32(math.Cos(float64(angle1))), Y: 0, Z: outerRadius * float32(math.Sin(float64(angle1)))}
-				p2 := rl.Vector3{X: outerRadius * float32(math.Cos(float64(angle2))), Y: 0, Z: outerRadius * float32(math.Sin(float64(angle2)))}
+		for band := 0; band < radialBands; band++ {
+			bandInner := innerRadius + float32(band)/float32(radialBands)*ringRange
+			bandOuter := innerRadius + float32(band+1)/float32(radialBands)*ringRange
+			bandMidU := (float32(band) + 0.5) / float32(radialBands)
 
-				// Inner arc (relative to origin)
-				p3 := rl.Vector3{X: innerRadius * float32(math.Cos(float64(angle1))), Y: 0, Z: innerRadius * float32(math.Sin(float64(angle1)))}
-				p4 := rl.Vector3{X: innerRadius * float32(math.Cos(float64(angle2))), Y: 0, Z: innerRadius * float32(math.Sin(float64(angle2)))}
+			segColor := color
+			if hasTexture {
+				sampled := sampleRingTexture(ringImg, bandMidU)
+				// Preserve the ring's configured alpha; use texture RGB for colour.
+				segColor = rl.Color{R: sampled.R, G: sampled.G, B: sampled.B, A: color.A}
+			}
 
-				// Draw quad (ring segment) - reverse winding for back side
-				if side == 0 {
-					rl.DrawTriangle3D(p1, p2, p3, color)
-					rl.DrawTriangle3D(p2, p4, p3, color)
-				} else {
-					rl.DrawTriangle3D(p1, p3, p2, color)
-					rl.DrawTriangle3D(p2, p3, p4, color)
+			for side := 0; side < 2; side++ {
+				for i := 0; i < segments; i++ {
+					angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
+					angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
+
+					cos1 := float32(math.Cos(float64(angle1)))
+					sin1 := float32(math.Sin(float64(angle1)))
+					cos2 := float32(math.Cos(float64(angle2)))
+					sin2 := float32(math.Sin(float64(angle2)))
+
+					p1 := rl.Vector3{X: bandOuter * cos1, Y: 0, Z: bandOuter * sin1}
+					p2 := rl.Vector3{X: bandOuter * cos2, Y: 0, Z: bandOuter * sin2}
+					p3 := rl.Vector3{X: bandInner * cos1, Y: 0, Z: bandInner * sin1}
+					p4 := rl.Vector3{X: bandInner * cos2, Y: 0, Z: bandInner * sin2}
+
+					if side == 0 {
+						rl.DrawTriangle3D(p1, p2, p3, segColor)
+						rl.DrawTriangle3D(p2, p4, p3, segColor)
+					} else {
+						rl.DrawTriangle3D(p1, p3, p2, segColor)
+						rl.DrawTriangle3D(p2, p3, p4, segColor)
+					}
 				}
 			}
 		}
 
+		rl.EnableDepthMask()
+		rl.EndBlendMode()
 		rl.PopMatrix()
 		return
 	}
 
 	// Draw sphere for planets and other objects with LOD support
-	// Determine sphere quality based on distance
+	// Determine sphere quality based on distance; scale thresholds for large bodies.
 	rings := int32(64)
 	slices := int32(64)
 
 	if lodEnabled {
-		if distance < engine.LODVeryClose {
+		ls := lodScale(obj.Meta.PhysicalRadius)
+		if distance < engine.LODVeryClose*ls {
 			rings, slices = 128, 128
-		} else if distance < engine.LODClose {
+		} else if distance < engine.LODClose*ls {
 			rings, slices = 64, 64
-		} else if distance < engine.LODMedium {
+		} else if distance < engine.LODMedium*ls {
 			rings, slices = 32, 32
-		} else if distance < engine.LODFar {
+		} else if distance < engine.LODFar*ls {
 			rings, slices = 16, 16
 		} else {
 			rings, slices = 8, 8
@@ -876,12 +978,19 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	}
 	// Physics-calibrated glow fraction.
 	const (
-		kmPerSimUnit = float32(12742) // Earth: 6371 km / 0.5 sim units
-		atmoBoost    = float32(4)     // visual boost; 100km/6371km*4 ≈ 6% for Earth
-		atmoFloor    = float32(0.04)  // minimum 4% — ensures any atmosphere is visible
-		atmoCap      = float32(0.60)  // maximum 60% — bounds Sol's corona to 1.6× radius
+		// kmPerSimUnit is the Earth-calibrated fallback: 6371 km / 0.5 sim units.
+		// Gas giants have a ~2× larger real km/su ratio; bodies with PhysicalRadiusKm
+		// set will use the accurate per-body conversion instead.
+		kmPerSimUnit = float32(12742)
+		atmoBoost    = float32(4)    // visual boost; 100km/6371km*4 ≈ 6% for Earth
+		atmoFloor    = float32(0.04) // minimum 4% — ensures any atmosphere is visible
+		atmoCap      = float32(0.60) // maximum 60% — bounds Sol's corona to 1.6× radius
 	)
+	// Use the stored real-world radius when available; fall back to Earth-calibrated.
 	bodyRadiusKm := baseRadius * kmPerSimUnit
+	if obj.Meta.PhysicalRadiusKm > 0 {
+		bodyRadiusKm = obj.Meta.PhysicalRadiusKm
+	}
 	frac := (obj.Meta.AtmosphereThicknessKm / bodyRadiusKm) * atmoBoost
 	if frac < atmoFloor {
 		frac = atmoFloor

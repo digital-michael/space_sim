@@ -49,6 +49,7 @@ type OrbitConfig struct {
 // PhysicalConfig defines physical characteristics.
 type PhysicalConfig struct {
 	Radius           float32  `json:"radius"`
+	RadiusKm         float32  `json:"radius_km,omitempty"`
 	EquatorialRadius float32  `json:"equatorial_radius,omitempty"`
 	PolarRadius      float32  `json:"polar_radius,omitempty"`
 	InnerRadius      float32  `json:"inner_radius,omitempty"`

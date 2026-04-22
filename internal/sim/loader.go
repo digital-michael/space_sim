@@ -277,6 +277,7 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 			Category:         category,
 			Mass:             config.Physical.Mass,
 			PhysicalRadius:   config.Physical.Radius,
+			PhysicalRadiusKm: config.Physical.RadiusKm,
 			EquatorialRadius: config.Physical.EquatorialRadius,
 			PolarRadius:      config.Physical.PolarRadius,
 			InnerRadius:      config.Physical.InnerRadius,
@@ -539,6 +540,10 @@ func createRingSystemFromConfig(state *engine.SimulationState, config engine.Fea
 			A: config.Physical.Color[3],
 		}
 	}
+	if config.Rendering.FallbackColor[3] != 0 {
+		c := config.Rendering.FallbackColor
+		color = engine.Color{R: c[0], G: c[1], B: c[2], A: c[3]}
+	}
 
 	obj := &engine.Object{
 		Meta: engine.ObjectMetadata{
@@ -554,6 +559,7 @@ func createRingSystemFromConfig(state *engine.SimulationState, config engine.Fea
 			OrbitRadius:    0,
 			OrbitSpeed:     0,
 			ParentName:     config.Parent,
+			TexturePath:    config.Rendering.RingColorsMap,
 		},
 		Anim: engine.AnimationState{
 			Position:    parent.Anim.Position,

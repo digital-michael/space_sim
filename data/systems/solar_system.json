@@ -16,6 +16,7 @@
       },
       "physical": {
         "radius": 27.25,
+        "radius_km": 696340,
         "mass": 1.989e+30,
         "albedo": 1.0,
         "albedo_note": "emissive \u2013 not reflective",
@@ -287,6 +288,7 @@
       },
       "physical": {
         "radius": 2.8,
+        "radius_km": 71492,
         "mass": 1.898e+27,
         "rotation_period": 9.9,
         "axial_tilt": 3.1,
@@ -308,7 +310,7 @@
       },
       "importance": 90,
       "atmosphere": {
-        "thickness_km": 5000,
+        "thickness_km": 1000,
         "principal_chemicals": [
           "hydrogen",
           "helium",
@@ -355,6 +357,7 @@
       },
       "physical": {
         "radius": 2.35,
+        "radius_km": 60268,
         "mass": 5.683e+26,
         "rotation_period": 10.7,
         "axial_tilt": 26.7,
@@ -422,6 +425,7 @@
       },
       "physical": {
         "radius": 1,
+        "radius_km": 25559,
         "mass": 8.681e+25,
         "rotation_period": 17.2,
         "axial_tilt": 97.8,
@@ -441,7 +445,7 @@
       },
       "importance": 70,
       "atmosphere": {
-        "thickness_km": 5000,
+        "thickness_km": 600,
         "principal_chemicals": [
           "hydrogen",
           "helium",
@@ -475,6 +479,7 @@
       },
       "physical": {
         "radius": 0.98,
+        "radius_km": 24622,
         "mass": 1.024e+26,
         "rotation_period": 16.1,
         "axial_tilt": 28.3,
@@ -494,7 +499,7 @@
       },
       "importance": 70,
       "atmosphere": {
-        "thickness_km": 5000,
+        "thickness_km": 600,
         "principal_chemicals": [
           "hydrogen",
           "helium",

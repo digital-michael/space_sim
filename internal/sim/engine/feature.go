@@ -28,7 +28,9 @@ type FeaturePhysical struct {
 
 // FeatureRendering defines visual representation for feature-driven objects.
 type FeatureRendering struct {
-	Material string `json:"material,omitempty"`
+	Material      string   `json:"material,omitempty"`
+	RingColorsMap string   `json:"ring_colors_map,omitempty"`
+	FallbackColor [4]uint8 `json:"fallback_color,omitempty"`
 }
 
 // FeatureDistribution defines spatial distribution of a feature.
