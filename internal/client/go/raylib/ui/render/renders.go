@@ -917,7 +917,13 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowEdge, []float32{glowEdge}, rl.ShaderUniformFloat)
 
 	rl.BeginBlendMode(rl.BlendAddColors)
+	// Disable depth writes so the atmosphere sphere does not overwrite the depth
+	// buffer at glowRadius. Without this, opaque objects between physicalRadius
+	// and glowRadius fail the depth test on subsequent draw calls and flicker.
+	// The atmosphere contributes colour only — it must never occlude geometry.
+	rl.DisableDepthMask()
 	rl.DrawModel(r.atmoSphere, pos, 1.0, rl.White)
+	rl.EnableDepthMask()
 	rl.EndBlendMode()
 }
 
