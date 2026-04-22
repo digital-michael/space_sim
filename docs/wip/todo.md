@@ -21,6 +21,7 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 	4.8 UX Polish - Rendering, Camera, and Config
 5. Defects
 	DEF-001 Floating-Point Precision Collapse at Extreme Camera Distances
+	DEF-002 Stars Disappear at Outer-Planet Camera Distances
 6. Feature Backlog
 	F-001 Camera Collision Prevention
 	F-002 REPL: track <object> and track stop ✅
@@ -339,7 +340,57 @@ Before passing positions to the GPU, subtract the camera world position from eve
 
 ---
 
-## 6. Feature Backlog
+### DEF-002 — Stars Disappear at Outer-Planet Camera Distances
+
+**Symptom**: Sol vanishes from the display when the camera is at Neptune distance (~3 000 sim units) or further. Any star-jump to an outer planet leaves no visible reference point for the star — the solar system appears unanchored.
+**Status**: 📋 Not started
+**Priority**: High — orientation and navigation break without a visible star at any camera distance
+
+#### Root Cause (diagnosed)
+
+`drawObjectsInstanced` falls through to the `pointRenderingEnabled` path for distant objects. Stars have no dedicated `PointThresholdStar` constant; they fall through to `PointThresholdDefault = 200.0`. At Neptune (~3 000 sim units) Sol is already 15× past that threshold, so it renders as `DrawSphere(pos, pointSize*0.1, color)` → sphere of radius `0.2`. At 3 000 units that is sub-pixel and invisible.
+
+There is no special-case to exempt high-importance or `MaterialEmissive` objects from the point-size collapse.
+
+#### Fix
+
+Two-part: a minimum angular-size floor for stars, and a guaranteed-visible fallback for `MaterialEmissive` bodies regardless of distance.
+
+**Part 1 — Star-specific point threshold and size**
+Add `PointThresholdStar` and `PointSizeStar` constants in `engine/constants.go`. Stars should never fall below a minimum rendered size:
+```go
+PointThresholdStar = math.MaxFloat64  // stars never become points via threshold
+PointSizeStar      = float32(10.0)    // minimum apparent radius when forced to point
+```
+
+Alternatively: keep the threshold but clamp the point size so it scales with distance to keep apparent angular size constant (pixel-size floor).
+
+**Part 2 — Distance-invariant minimum draw size for emissive bodies**
+In `drawObjectsInstanced` and `drawObject`, when `obj.Meta.Material == engine.MaterialEmissive`:
+- Bypass the `isPoint` path entirely, OR
+- Clamp the draw size: `max(physicalRadius * (drawScale / distance), minPixelRadius)` so the body always subtends at least N screen pixels.
+
+**Part 3 — Add `CategoryStar` to the point-threshold dispatch**
+The `if pointRenderingEnabled` block checks `CategoryAsteroid`, `CategoryPlanet`, `CategoryMoon` but has no branch for `CategoryStar`. Add it:
+```go
+} else if obj.Meta.Category == engine.CategoryStar {
+    pointThreshold = engine.PointThresholdStar
+    pointSize = engine.PointSizeStar
+}
+```
+
+#### Acceptance Criteria
+
+- [ ] Sol is visible as a bright disc or large point from Neptune (~3 000 sim units)
+- [ ] Sol is visible as a bright point from the edge of the solar system (~10 000 sim units)
+- [ ] Stars in multi-star systems (Alpha Centauri) remain visible at similar inter-system distances
+- [ ] No regression to Sol rendering at close range (< 200 sim units)
+
+#### Depends on
+
+Nothing blocking; self-contained to `engine/constants.go` and the point-rendering dispatch in `renders.go`.
+
+---
 
 Prioritized by dependency order and user-visible value. Items lower in the list generally depend on or benefit from items above them.
 
