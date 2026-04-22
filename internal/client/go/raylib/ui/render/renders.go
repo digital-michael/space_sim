@@ -861,7 +861,7 @@ func drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 		A: 255,
 	}
 	rl.BeginBlendMode(rl.BlendAddColors)
-	rl.DrawSphereEx(pos, glowRadius, 8, 8, glowColor)
+	rl.DrawSphereEx(pos, glowRadius, 64, 32, glowColor)
 	rl.EndBlendMode()
 }
 

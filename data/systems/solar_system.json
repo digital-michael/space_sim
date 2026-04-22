@@ -1044,7 +1044,7 @@
         "radius": 0.011,
         "mass": 10659000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.31891,
+        "rotation_period": 7.654,
         "albedo": 0.071
       },
       "rendering": {
@@ -1083,7 +1083,7 @@
         "radius": 0.006,
         "mass": 1476200000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 1.26244,
+        "rotation_period": 30.299,
         "albedo": 0.068
       },
       "rendering": {
@@ -1122,7 +1122,7 @@
         "radius": 0.021,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.295,
+        "rotation_period": 7.08,
         "albedo": 0.06
       },
       "rendering": {
@@ -1161,7 +1161,7 @@
         "radius": 0.01,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.298,
+        "rotation_period": 7.152,
         "albedo": 0.06
       },
       "rendering": {
@@ -1200,7 +1200,7 @@
         "radius": 0.083,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.498,
+        "rotation_period": 11.952,
         "albedo": 0.09
       },
       "rendering": {
@@ -1239,7 +1239,7 @@
         "radius": 0.049,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.675,
+        "rotation_period": 16.2,
         "albedo": 0.06
       },
       "rendering": {
@@ -4855,7 +4855,7 @@
         "radius": 0.014,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.575,
+        "rotation_period": 13.8,
         "albedo": 0.5
       },
       "rendering": {
@@ -4894,7 +4894,7 @@
         "radius": 0.004,
         "mass": 100000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.594,
+        "rotation_period": 14.256,
         "albedo": 0.5
       },
       "rendering": {
@@ -4933,7 +4933,7 @@
         "radius": 0.015,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.602,
+        "rotation_period": 14.448,
         "albedo": 0.4
       },
       "rendering": {
@@ -4972,7 +4972,7 @@
         "radius": 0.043,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.613,
+        "rotation_period": 14.712,
         "albedo": 0.6
       },
       "rendering": {
@@ -5011,7 +5011,7 @@
         "radius": 0.04,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.629,
+        "rotation_period": 15.096,
         "albedo": 0.5
       },
       "rendering": {
@@ -5050,7 +5050,7 @@
         "radius": 0.058,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.694,
+        "rotation_period": 16.656,
         "albedo": 0.73
       },
       "rendering": {
@@ -5089,7 +5089,7 @@
         "radius": 0.089,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.695,
+        "rotation_period": 16.68,
         "albedo": 0.71
       },
       "rendering": {
@@ -5128,7 +5128,7 @@
         "radius": 0.02,
         "mass": 37500000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.942,
+        "rotation_period": 22.608,
         "albedo": 0.962
       },
       "rendering": {
@@ -5219,7 +5219,7 @@
         "radius": 0.053,
         "mass": 617000000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 1.888,
+        "rotation_period": 45.312,
         "albedo": 0.8
       },
       "rendering": {
@@ -5258,7 +5258,7 @@
         "radius": 0.056,
         "mass": 1.1e+21,
         "axial_tilt": 0.0,
-        "rotation_period": 2.737,
+        "rotation_period": 65.688,
         "albedo": 0.998
       },
       "rendering": {
@@ -5299,7 +5299,7 @@
         "radius": 0.076,
         "mass": 2.31e+21,
         "axial_tilt": 0.0,
-        "rotation_period": 4.518,
+        "rotation_period": 108.432,
         "albedo": 0.949
       },
       "rendering": {
@@ -5432,7 +5432,7 @@
         "radius": 0.073,
         "mass": 1.81e+21,
         "axial_tilt": 0.0,
-        "rotation_period": 79.33,
+        "rotation_period": 1903.92,
         "albedo": 0.04,
         "albedo_note": "bimodal surface \u2013 leading hemisphere very dark (0.04), trailing bright (0.5)"
       },
@@ -10035,7 +10035,7 @@
         "radius": 0.02,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.335,
+        "rotation_period": 8.04,
         "albedo": 0.07
       },
       "rendering": {
@@ -10074,7 +10074,7 @@
         "radius": 0.021,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.376,
+        "rotation_period": 9.024,
         "albedo": 0.07
       },
       "rendering": {
@@ -10113,7 +10113,7 @@
         "radius": 0.025,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.435,
+        "rotation_period": 10.44,
         "albedo": 0.065
       },
       "rendering": {
@@ -10152,7 +10152,7 @@
         "radius": 0.04,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.464,
+        "rotation_period": 11.136,
         "albedo": 0.069
       },
       "rendering": {
@@ -10191,7 +10191,7 @@
         "radius": 0.032,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.474,
+        "rotation_period": 11.376,
         "albedo": 0.069
       },
       "rendering": {
@@ -10230,7 +10230,7 @@
         "radius": 0.047,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.493,
+        "rotation_period": 11.832,
         "albedo": 0.075
       },
       "rendering": {
@@ -10269,7 +10269,7 @@
         "radius": 0.068,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.513,
+        "rotation_period": 12.312,
         "albedo": 0.069
       },
       "rendering": {
@@ -10308,7 +10308,7 @@
         "radius": 0.036,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.558,
+        "rotation_period": 13.392,
         "albedo": 0.072
       },
       "rendering": {
@@ -10347,7 +10347,7 @@
         "radius": 0.009,
         "mass": 500000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.618,
+        "rotation_period": 14.832,
         "albedo": 0.07
       },
       "rendering": {
@@ -10386,7 +10386,7 @@
         "radius": 0.04,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.624,
+        "rotation_period": 14.976,
         "albedo": 0.068
       },
       "rendering": {
@@ -10425,7 +10425,7 @@
         "radius": 0.013,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.638,
+        "rotation_period": 15.312,
         "albedo": 0.07
       },
       "rendering": {
@@ -10464,7 +10464,7 @@
         "radius": 0.081,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.762,
+        "rotation_period": 18.288,
         "albedo": 0.11
       },
       "rendering": {
@@ -10503,7 +10503,7 @@
         "radius": 0.012,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.923,
+        "rotation_period": 22.152,
         "albedo": 0.1
       },
       "rendering": {
@@ -10542,7 +10542,7 @@
         "radius": 0.023,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 1.413,
+        "rotation_period": 33.912,
         "albedo": 0.32
       },
       "rendering": {
@@ -10581,7 +10581,7 @@
         "radius": 0.058,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 2.52,
+        "rotation_period": 60.48,
         "albedo": 0.39
       },
       "rendering": {
@@ -10620,7 +10620,7 @@
         "radius": 0.058,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 4.144,
+        "rotation_period": 99.456,
         "albedo": 0.21
       },
       "rendering": {
@@ -10659,7 +10659,7 @@
         "radius": 0.078,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 8.706,
+        "rotation_period": 208.944,
         "albedo": 0.27
       },
       "rendering": {
@@ -10698,7 +10698,7 @@
         "radius": 0.076,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 13.463,
+        "rotation_period": 323.112,
         "albedo": 0.23
       },
       "rendering": {
@@ -11088,7 +11088,7 @@
         "radius": 0.033,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.294,
+        "rotation_period": 7.056,
         "albedo": 0.072
       },
       "rendering": {
@@ -11127,7 +11127,7 @@
         "radius": 0.041,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.311,
+        "rotation_period": 7.464,
         "albedo": 0.091
       },
       "rendering": {
@@ -11166,7 +11166,7 @@
         "radius": 0.075,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.335,
+        "rotation_period": 8.04,
         "albedo": 0.09
       },
       "rendering": {
@@ -11205,7 +11205,7 @@
         "radius": 0.088,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.429,
+        "rotation_period": 10.296,
         "albedo": 0.079
       },
       "rendering": {
@@ -11244,7 +11244,7 @@
         "radius": 0.097,
         "mass": 50000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.555,
+        "rotation_period": 13.32,
         "albedo": 0.091
       },
       "rendering": {
@@ -11283,7 +11283,7 @@
         "radius": 0.018,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 0.95,
+        "rotation_period": 22.8,
         "albedo": 0.08
       },
       "rendering": {
@@ -11322,7 +11322,7 @@
         "radius": 0.21,
         "mass": 100000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 1.122,
+        "rotation_period": 26.928,
         "albedo": 0.096
       },
       "rendering": {
@@ -11685,7 +11685,7 @@
         "radius": 0.005,
         "mass": 500000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 20.16,
+        "rotation_period": 483.84,
         "albedo": 0.65
       },
       "rendering": {
@@ -11724,7 +11724,7 @@
         "radius": 0.018,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 24.85,
+        "rotation_period": 596.4,
         "albedo": 0.56
       },
       "rendering": {
@@ -11763,7 +11763,7 @@
         "radius": 0.008,
         "mass": 500000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 32.17,
+        "rotation_period": 772.08,
         "albedo": 0.56
       },
       "rendering": {
@@ -11802,7 +11802,7 @@
         "radius": 0.021,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 38.2,
+        "rotation_period": 916.8,
         "albedo": 0.83
       },
       "rendering": {
@@ -11841,7 +11841,7 @@
         "radius": 0.035,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 15.774,
+        "rotation_period": 378.576,
         "albedo": 0.04
       },
       "rendering": {
@@ -11880,7 +11880,7 @@
         "radius": 0.016,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 49.12,
+        "rotation_period": 1178.88,
         "albedo": 0.06
       },
       "rendering": {
@@ -11919,7 +11919,7 @@
         "radius": 0.008,
         "mass": 500000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 18.28,
+        "rotation_period": 438.72,
         "albedo": 0.6
       },
       "rendering": {
@@ -11958,7 +11958,7 @@
         "radius": 0.008,
         "mass": 500000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 12.4,
+        "rotation_period": 297.6,
         "albedo": 0.04
       },
       "rendering": {
@@ -11997,7 +11997,7 @@
         "radius": 0.022,
         "mass": 10000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 12.44,
+        "rotation_period": 298.56,
         "albedo": 0.08
       },
       "rendering": {
@@ -12036,7 +12036,7 @@
         "radius": 0.009,
         "mass": 500000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 12.438,
+        "rotation_period": 298.512,
         "albedo": 0.1
       },
       "rendering": {
@@ -12075,7 +12075,7 @@
         "radius": 0.012,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 25.0,
+        "rotation_period": 600.0,
         "albedo": 0.05
       },
       "rendering": {
@@ -12114,7 +12114,7 @@
         "radius": 0.014,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 12.5,
+        "rotation_period": 300.0,
         "albedo": 0.04
       },
       "rendering": {
@@ -12153,7 +12153,7 @@
         "radius": 0.013,
         "mass": 2000000000000000,
         "axial_tilt": 0.0,
-        "rotation_period": 10.0,
+        "rotation_period": 240.0,
         "albedo": 0.1
       },
       "rendering": {

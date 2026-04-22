@@ -61,18 +61,18 @@ type PhysicalConfig struct {
 
 // RenderingConfig defines visual representation.
 type RenderingConfig struct {
-	Material         string     `json:"material,omitempty"`
-	Texture          string     `json:"texture,omitempty"`
-	TextureImage     string     `json:"texture_image,omitempty"`
-	NightTextureImage string    `json:"night_texture_image,omitempty"`
-	ColorMap         string     `json:"color_map,omitempty"`
-	RingColorsMap    string     `json:"ring_colors_map,omitempty"`
-	FallbackColor    [4]uint8   `json:"fallback_color,omitempty"`
-	NormalMap        string     `json:"normal_map,omitempty"`
-	SpecularMap      string     `json:"specular_map,omitempty"`
-	BumpMap          string     `json:"bump_map,omitempty"`
-	Shader           string     `json:"shader,omitempty"`
-	LODLevels        []LODLevel `json:"lod_levels,omitempty"`
+	Material          string     `json:"material,omitempty"`
+	Texture           string     `json:"texture,omitempty"`
+	TextureImage      string     `json:"texture_image,omitempty"`
+	NightTextureImage string     `json:"night_texture_image,omitempty"`
+	ColorMap          string     `json:"color_map,omitempty"`
+	RingColorsMap     string     `json:"ring_colors_map,omitempty"`
+	FallbackColor     [4]uint8   `json:"fallback_color,omitempty"`
+	NormalMap         string     `json:"normal_map,omitempty"`
+	SpecularMap       string     `json:"specular_map,omitempty"`
+	BumpMap           string     `json:"bump_map,omitempty"`
+	Shader            string     `json:"shader,omitempty"`
+	LODLevels         []LODLevel `json:"lod_levels,omitempty"`
 }
 
 // LODLevel defines rendering detail at different distances.
