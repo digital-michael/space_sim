@@ -379,17 +379,18 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-003 — Texture/Bitmap Rendering for Planets and Moons
 
 **Value**: Replace solid-color spheres with photorealistic diffuse textures. Toggleable so low-resource environments can use the color fallback.
-**Status**: 📋 Not started
+**Status**: ✅ Done
 **Priority**: Medium-high — high visual impact; material system already has a `diffuse` material type and texture asset paths in `data/assets/textures.json`
 **Depends on**: Nothing blocking; texture assets already present for key bodies
 
 #### Work Items
 
-- [ ] Load and bind diffuse textures in the Raylib material pipeline for objects with `"material": "diffuse"` and a matching entry in `textures.json`
-- [ ] Normal-map and specular-map binding (already keyed in `textures.json`) as secondary pass
-- [ ] Night-lights and cloud-layer compositing for Earth
-- [ ] CLI flag `--no-textures` (default: textures on) mirroring `--no-msaa` pattern; persist in `app.json`
-- [ ] Graceful fallback to solid color when texture file is missing or flag is set
+- [x] Load and bind diffuse textures in the Raylib material pipeline — `loadTexture`/`getModel` with UV correction for par_shapes transposed coords, V-flip, U-mirror, and pole rotation
+- [x] Textured `DrawModel` path with axial tilt and real-time spin from `RotationPeriod`; fallback to `DrawSphereEx` when texture absent
+- [x] CLI flag `--no-textures` (default: textures on); wired through `app/config.go` → `render.New(noTextures)`
+- [x] Graceful fallback to solid color when texture file is missing or flag is set
+- [ ] Normal-map and specular-map binding as secondary pass (deferred to F-017)
+- [ ] Night-lights and cloud-layer compositing for Earth (deferred to F-017)
 
 ---
 

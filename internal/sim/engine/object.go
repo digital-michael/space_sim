@@ -53,14 +53,16 @@ func (d AsteroidDataset) Name() string {
 
 // ObjectMetadata contains immutable physical and rendering properties.
 type ObjectMetadata struct {
-	Name           string         // Display name
-	Category       ObjectCategory // Object category for UI grouping
-	Mass           float64        // Mass in kilograms
-	PhysicalRadius float32        // Physical size (or outer radius for rings)
-	InnerRadius    float32        // Inner radius (rings only; 0 for spheres)
-	Color          Color          // Display color (fallback when no texture)
-	Material       MaterialType   // Rendering material
-	Importance     int            // Rendering priority 0-100
+	Name             string         // Display name
+	Category         ObjectCategory // Object category for UI grouping
+	Mass             float64        // Mass in kilograms
+	PhysicalRadius   float32        // Physical size (or outer radius for rings); equatorial radius when oblate
+	EquatorialRadius float32        // Equatorial radius for oblate bodies; 0 means use PhysicalRadius uniformly
+	PolarRadius      float32        // Polar radius for oblate bodies; 0 means use PhysicalRadius uniformly
+	InnerRadius      float32        // Inner radius (rings only; 0 for spheres)
+	Color            Color          // Display color (fallback when no texture)
+	Material         MaterialType   // Rendering material
+	Importance       int            // Rendering priority 0-100
 
 	// Texture and surface
 	TexturePath string  // Path to diffuse texture image; empty means use Color

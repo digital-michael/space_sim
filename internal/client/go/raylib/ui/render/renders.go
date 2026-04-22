@@ -547,32 +547,22 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 		}
 
 		// Determine LOD level
-		rings := int32(16)
-		slices := int32(16)
+		rings := int32(64)
+		slices := int32(64)
 		wireRings := int32(8)
 		wireSlices := int32(8)
 
 		if lodEnabled && !isPoint {
 			if distance < engine.LODVeryClose {
-				rings, slices = 32, 32
+				rings, slices = 128, 128
 			} else if distance < engine.LODClose {
-				rings, slices = 24, 24
+				rings, slices = 64, 64
 			} else if distance < engine.LODMedium {
-				rings, slices = 16, 16
+				rings, slices = 32, 32
 			} else if distance < engine.LODFar {
-				rings, slices = 12, 12
+				rings, slices = 16, 16
 			} else {
-				rings, slices = 6, 6 // Reduced for better FPS
-			}
-
-			if obj.Meta.PhysicalRadius < 1.0 {
-				rings, slices = rings/2, slices/2
-				if rings < 4 {
-					rings = 4
-				}
-				if slices < 4 {
-					slices = 4
-				}
+				rings, slices = 8, 8
 			}
 
 			if distance > 50.0 {
@@ -629,16 +619,9 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				texPath := obj.Meta.TexturePath
 				if !r.noTextures && texPath != "" {
 					if model, ok := r.getModel(texPath, batch.rings, batch.slices); ok {
-						scale := float32(obj.Meta.PhysicalRadius)
-						tilt := obj.Meta.AxialTilt * rl.Deg2rad
-						var spin float32
-						if obj.Meta.RotationPeriod > 0 {
-							periodSec := float64(obj.Meta.RotationPeriod) * 3600.0
-							spin = float32(math.Mod(simTime/periodSec*360.0, 360.0)) * rl.Deg2rad
-						}
-						poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
-						model.Transform = rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
-						rl.DrawModel(model, pos, scale, rl.White)
+						transform, drawScale := buildModelTransform(obj.Meta, simTime)
+						model.Transform = transform
+						rl.DrawModel(model, pos, drawScale, rl.White)
 						drawnCount++
 						continue
 					}
@@ -657,6 +640,34 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 	}
 
 	return drawnCount
+}
+
+// buildModelTransform returns the rotation+scale transform and the uniform draw
+// scale for DrawModel. For oblate bodies (equatorial_radius ≠ polar_radius) the
+// non-uniform scale is baked into the transform and drawScale is returned as 1.0
+// so that DrawModel applies no additional uniform scaling. For all other bodies
+// drawScale is PhysicalRadius and the transform is pure rotation.
+func buildModelTransform(meta engine.ObjectMetadata, simTime float64) (rl.Matrix, float32) {
+	tilt := meta.AxialTilt * rl.Deg2rad
+	var spin float32
+	if meta.RotationPeriod > 0 {
+		periodSec := float64(meta.RotationPeriod) * 3600.0
+		spin = float32(math.Mod(simTime/periodSec*360.0, 360.0)) * rl.Deg2rad
+	}
+	poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
+	rotMat := rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
+
+	eqR := meta.EquatorialRadius
+	polR := meta.PolarRadius
+	if eqR > 0 && polR > 0 {
+		// Oblate: bake non-uniform scale — eqR on X/Z, polR on Y — into transform.
+		// Matrix is column-major; M0/M5/M10/M15 are the diagonal of a scale matrix.
+		scaleMat := rl.Matrix{
+			M0: eqR, M5: polR, M10: eqR, M15: 1,
+		}
+		return rl.MatrixMultiply(rotMat, scaleMat), 1.0
+	}
+	return rotMat, meta.PhysicalRadius
 }
 
 // drawObject renders a single object
@@ -752,43 +763,20 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 
 	// Draw sphere for planets and other objects with LOD support
 	// Determine sphere quality based on distance
-	rings := int32(16)
-	slices := int32(16)
+	rings := int32(64)
+	slices := int32(64)
 
 	if lodEnabled {
-		// LOD levels based on distance
 		if distance < engine.LODVeryClose {
-			// Very close: High detail
-			rings = 32
-			slices = 32
+			rings, slices = 128, 128
 		} else if distance < engine.LODClose {
-			// Close: Medium-high detail
-			rings = 24
-			slices = 24
+			rings, slices = 64, 64
 		} else if distance < engine.LODMedium {
-			// Medium: Medium detail
-			rings = 16
-			slices = 16
+			rings, slices = 32, 32
 		} else if distance < engine.LODFar {
-			// Far: Low detail
-			rings = 12
-			slices = 12
+			rings, slices = 16, 16
 		} else {
-			// Very far: Minimal detail (reduced for better FPS with many objects)
-			rings = 6
-			slices = 6
-		}
-
-		// Smaller objects get simpler geometry
-		if obj.Meta.PhysicalRadius < 1.0 {
-			rings = rings / 2
-			slices = slices / 2
-			if rings < 4 {
-				rings = 4
-			}
-			if slices < 4 {
-				slices = 4
-			}
+			rings, slices = 8, 8
 		}
 	}
 
@@ -796,16 +784,9 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 	texPath := obj.Meta.TexturePath
 	if !r.noTextures && texPath != "" {
 		if model, ok := r.getModel(texPath, rings, slices); ok {
-			scale := float32(obj.Meta.PhysicalRadius)
-			tilt := obj.Meta.AxialTilt * rl.Deg2rad
-			var spin float32
-			if obj.Meta.RotationPeriod > 0 {
-				periodSec := float64(obj.Meta.RotationPeriod) * 3600.0
-				spin = float32(math.Mod(simTime/periodSec*360.0, 360.0)) * rl.Deg2rad
-			}
-			poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
-			model.Transform = rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
-			rl.DrawModel(model, pos, scale, rl.White)
+			transform, drawScale := buildModelTransform(obj.Meta, simTime)
+			model.Transform = transform
+			rl.DrawModel(model, pos, drawScale, rl.White)
 			return
 		}
 	}

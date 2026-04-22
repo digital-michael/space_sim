@@ -289,7 +289,9 @@
         "mass": 1.898e+27,
         "rotation_period": 9.9,
         "axial_tilt": 3.1,
-        "albedo": 0.503
+        "albedo": 0.503,
+        "equatorial_radius": 2.8,
+        "polar_radius": 2.62
       },
       "rendering": {
         "material": "diffuse_thermal",
@@ -355,7 +357,9 @@
         "mass": 5.683e+26,
         "rotation_period": 10.7,
         "axial_tilt": 26.7,
-        "albedo": 0.499
+        "albedo": 0.499,
+        "equatorial_radius": 2.35,
+        "polar_radius": 2.12
       },
       "rendering": {
         "material": "diffuse_thermal",

@@ -48,13 +48,15 @@ type OrbitConfig struct {
 
 // PhysicalConfig defines physical characteristics.
 type PhysicalConfig struct {
-	Radius         float32  `json:"radius"`
-	InnerRadius    float32  `json:"inner_radius,omitempty"`
-	Mass           float64  `json:"mass"`
-	RotationPeriod float32  `json:"rotation_period,omitempty"`
-	AxialTilt      float32  `json:"axial_tilt,omitempty"`
-	Color          [4]uint8 `json:"color"`
-	Albedo         float32  `json:"albedo,omitempty"`
+	Radius           float32  `json:"radius"`
+	EquatorialRadius float32  `json:"equatorial_radius,omitempty"`
+	PolarRadius      float32  `json:"polar_radius,omitempty"`
+	InnerRadius      float32  `json:"inner_radius,omitempty"`
+	Mass             float64  `json:"mass"`
+	RotationPeriod   float32  `json:"rotation_period,omitempty"`
+	AxialTilt        float32  `json:"axial_tilt,omitempty"`
+	Color            [4]uint8 `json:"color"`
+	Albedo           float32  `json:"albedo,omitempty"`
 }
 
 // RenderingConfig defines visual representation.

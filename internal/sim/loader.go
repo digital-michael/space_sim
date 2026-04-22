@@ -273,14 +273,16 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 
 	obj := &engine.Object{
 		Meta: engine.ObjectMetadata{
-			Name:           config.Name,
-			Category:       category,
-			Mass:           config.Physical.Mass,
-			PhysicalRadius: config.Physical.Radius,
-			InnerRadius:    config.Physical.InnerRadius,
-			Color:          resolveColor(config.Rendering.FallbackColor, config.Physical.Color),
-			Material:       material,
-			Importance:     config.Importance,
+			Name:             config.Name,
+			Category:         category,
+			Mass:             config.Physical.Mass,
+			PhysicalRadius:   config.Physical.Radius,
+			EquatorialRadius: config.Physical.EquatorialRadius,
+			PolarRadius:      config.Physical.PolarRadius,
+			InnerRadius:      config.Physical.InnerRadius,
+			Color:            resolveColor(config.Rendering.FallbackColor, config.Physical.Color),
+			Material:         material,
+			Importance:       config.Importance,
 
 			// Texture and surface
 			TexturePath: config.Rendering.TextureImage,
@@ -352,6 +354,12 @@ func applyOverrides(template BodyConfig, overrides BodyConfig) BodyConfig {
 	}
 	if overrides.Physical.Radius != 0 {
 		result.Physical.Radius = overrides.Physical.Radius
+	}
+	if overrides.Physical.EquatorialRadius != 0 {
+		result.Physical.EquatorialRadius = overrides.Physical.EquatorialRadius
+	}
+	if overrides.Physical.PolarRadius != 0 {
+		result.Physical.PolarRadius = overrides.Physical.PolarRadius
 	}
 	if overrides.Physical.Mass != 0 {
 		result.Physical.Mass = overrides.Physical.Mass
