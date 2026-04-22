@@ -54,6 +54,11 @@ type Renderer struct {
 	textureCache map[string]rl.Texture2D // path → GPU texture
 	modelCache   map[modelKey]rl.Model   // (path,rings,slices) → textured sphere model
 
+	// noLighting disables the Phong star lighting shader; bodies render with
+	// the default Raylib shader (flat diffuse texture, no shadowing).
+	noLighting bool
+	lighting   lightingState
+
 }
 
 // modelKey indexes the model cache.
@@ -63,10 +68,11 @@ type modelKey struct {
 }
 
 // New creates a Raylib renderer.
-func New(noTextures bool) *Renderer {
+func New(noTextures, noLighting bool) *Renderer {
 	setLayoutSize(0, 0)
 	return &Renderer{
 		noTextures:   noTextures,
+		noLighting:   noLighting,
 		textureCache: make(map[string]rl.Texture2D),
 		modelCache:   make(map[modelKey]rl.Model),
 	}
@@ -279,6 +285,7 @@ func (r *Renderer) Close() {
 		delete(r.textureCache, path)
 	}
 	setLayoutSize(0, 0)
+	r.lighting.unload()
 }
 
 func (r *Renderer) BeginFrame() {
@@ -342,6 +349,18 @@ func (r *Renderer) DrawObjectsInstanced(objects []*engine.Object, cameraPos engi
 
 func (r *Renderer) DrawObject(obj *engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool) {
 	drawObject(r, obj, cameraPos, simTime, pointRenderingEnabled, lodEnabled)
+}
+
+// UpdateLights uploads the current star light data to the Phong shader so all
+// subsequent DrawObjectsInstanced / DrawObject calls this frame are correctly
+// lit. Pass the full state.Objects slice (not frustum-culled) so that stars
+// off-screen still illuminate the scene. No-op when noLighting is true.
+func (r *Renderer) UpdateLights(objects []*engine.Object, cameraPos engine.Vector3) {
+	if r.noLighting {
+		return
+	}
+	r.lighting.load()
+	r.lighting.setLights(objects, cameraPos)
 }
 
 func (r *Renderer) DrawGroundPlane() {
@@ -786,6 +805,7 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		if model, ok := r.getModel(texPath, rings, slices); ok {
 			transform, drawScale := buildModelTransform(obj.Meta, simTime)
 			model.Transform = transform
+			r.lighting.applyToModel(model, obj.Meta.SelfLuminous)
 			rl.DrawModel(model, pos, drawScale, rl.White)
 			return
 		}

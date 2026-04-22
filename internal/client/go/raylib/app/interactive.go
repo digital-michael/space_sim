@@ -153,6 +153,11 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		}
 		renderedCount := 0
 
+		// Upload current star light positions/colours to the Phong shader before
+		// any draw calls. Uses the full state.Objects (not frustum-culled) so the
+		// sun illuminates the scene even when it is behind the camera.
+		a.renderer.UpdateLights(state.Objects, session.cameraState.Position)
+
 		if session.inputState.PerfOptions.InstancedRendering {
 			renderedCount = a.renderer.DrawObjectsInstanced(objectsToRender, session.cameraState.Position, state.Time, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled, session.inputState.PerfOptions.ImportanceThreshold)
 		} else {

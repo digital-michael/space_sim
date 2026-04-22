@@ -68,6 +68,10 @@ type Config struct {
 	// NoTextures disables diffuse texture rendering; bodies use their fallback solid color.
 	NoTextures bool
 
+	// NoLighting disables the Phong star-lighting shader; bodies render with
+	// Raylib's default flat diffuse shader (no inverse-square shadowing).
+	NoLighting bool
+
 	// SimTimeScale is the number of simulated seconds that elapse per real second.
 	// Controls how fast bodies spin on their axes relative to wall-clock time.
 	// Common presets: 1 (real-time), 3600 (1 sim-hour/sec), 86400 (1 sim-day/sec),
