@@ -4,7 +4,7 @@
 Capture the major implementation defects, debugging discoveries, performance findings, and follow-up recommendations uncovered while building and stabilizing the performance testing workflow.
 
 ## Last Updated
-2026-03-26
+2026-04-21
 
 ## Table of Contents
 1. Session Overview
@@ -1543,4 +1543,97 @@ This is applied per-draw on a value-copy of the cached model, so the cache is ne
 - **UV correction belongs in the mesh, not the shader or draw call.** Fix it once in `getModel` at mesh-build time; all downstream rendering is clean.
 - **UpdateMeshBuffer slot 1 is the texcoord VBO.** Raylib's fixed VAO layout: 0=vertices, 1=texcoords, 2=normals, 3=colors, 4=tangents, 5=texcoords2.
 - **model.Transform is a value field.** Mutating it on a locally-returned struct from a `map` does not modify the cached copy. Safe to set per-frame.
+
+---
+
+## Rendering Quality & Visual Fidelity (April 21, 2026) [RENDER]
+
+### LOD Tessellation: Small-Body Radius Halving Was Wrong
+
+**Problem**: Earth and other planets with `radius < 1.0` sim-units had visible polygon faceting during texture rotation. The "fix" for it made things worse.
+
+**Root cause**: A `PhysicalRadius < 1.0` guard halved rings/slices for small bodies, cutting Earth to a maximum of 16×16 (from an already-low 16×16 base). Sub-unit scale does not imply low visual importance; Earth is the most-viewed body in the solar system view.
+
+**Wrong rule**: Halve geometry for small objects.  
+**Correct rule**: LOD is purely distance-based. Object angular size on screen is what matters, not world-space radius.
+
+**Fix**: Removed the halving block entirely. Raised the base tessellation levels:
+
+| LOD band | Before | After |
+|---|---|---|
+| VeryClose (<20u) | 32×32 | 128×128 |
+| Close (<50u) | 24×24 | 64×64 |
+| Medium (<100u) | 16×16 | 32×32 |
+| Far (<200u) | 12×12 | 16×16 |
+| Beyond | 6×6 | 8×8 |
+| Default (LOD off) | 16×16 | 64×64 |
+
+**Rule derived**: Never use world-space radius to gate tessellation quality. Angular size (screen coverage) is the only meaningful LOD metric.
+
+---
+
+### Oblate Spheroids: Non-Uniform Scale via model.Transform
+
+**Problem**: Jupiter and Saturn are visually oblate (~7% and ~10% equatorial bulge), but were rendering as perfect spheres. Using `DrawModel(model, pos, uniformScale, tint)` cannot express non-uniform scale.
+
+**Approach**: Bake a non-uniform scale matrix into `model.Transform` and pass `drawScale=1.0` to `DrawModel`. Raylib applies `model.Transform` before the draw-time uniform scale, so the effective transform is `(rotation)(scale)` composed as a single matrix.
+
+**Key detail**: `rl.Matrix` is column-major. A pure scale matrix has only the diagonal set:
+```go
+scaleMat := rl.Matrix{M0: eqR, M5: polR, M10: eqR, M15: 1}
+// Then: rotMat × scaleMat  (scale applied first, then rotation)
+```
+
+**Go trap**: `:=` cannot destructure into a struct field on the left-hand side:
+```go
+// Compile error:
+model.Transform, drawScale := buildModelTransform(meta, simTime)
+
+// Correct:
+transform, drawScale := buildModelTransform(meta, simTime)
+model.Transform = transform
+```
+
+**Rule derived**: For non-uniform body scaling, bake the scale into `model.Transform` and pass `1.0` as the `DrawModel` scale. Separate the assignment from the declaration when the LHS contains a struct field.
+
+---
+
+### GLSL Phong Lighting: SetShaderValue Integer Uniforms
+
+**Problem**: `rl.SetShaderValue` takes `[]float32` for all types, including `ShaderUniformInt`. Passing an integer as float causes the shader to receive garbage.
+
+**Correct pattern** for setting an `int` uniform via the `[]float32` overload:
+```go
+// Reinterpret the int32 bit-pattern as float32 before passing:
+countF := *(*float32)(unsafe.Pointer(&count))
+rl.SetShaderValue(ls.shader, ls.locCount, []float32{countF}, rl.ShaderUniformInt)
+```
+
+**Alternative**: Use `rl.SetShaderValueV` when sending multiple elements; same reinterpretation applies.
+
+**Rule derived**: `SetShaderValue` is type-unsafe. Always reinterpret non-float types through `unsafe.Pointer` before handing them to the `[]float32` slice. Document it at the call site.
+
+---
+
+### Physical Lighting: Brightness Tuning
+
+**Problem**: A freshly shipped Phong shader may be imperceptible if `lightScale` is tuned for the wrong distance range. The lit side appears dimmer, not brighter, compared to the previous flat-diffuse look — and users may not notice the day/night divide.
+
+**Why**: The shader replaces full-brightness flat diffuse with `(ambient + diffuse * intensity/dist²)`. If `intensity/dist² < 1`, the lit side is duller than before. If ambient is too high, the dark side is not dark enough to create visible contrast.
+
+**Tuning formula** for desired lit-side brightness `B` (0–1):
+```
+lightScale = B × dist_au² / solarLuminosity
+```
+At Earth's sim distance ≈ 100 units and desired lit brightness 0.9:
+```
+lightScale = 0.9 × 100² / 1.0 = 9000
+```
+
+**Verification steps**:
+1. Park camera at body's equator, 90° from the star (terminator edge).
+2. Rotate so star is fully to one side — one hemisphere should be bright, one near-black.
+3. Compare with `--no-lighting` to confirm contrast is an improvement.
+
+**Rule derived**: After shipping a lighting shader, immediately test at the terminator. Brightness tuning is always necessary before the effect is clearly visible. Start with `ambient ≤ 0.03` and raise `lightScale` until the lit side is ~90% brightness at expected viewing distances.
 

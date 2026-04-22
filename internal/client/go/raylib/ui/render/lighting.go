@@ -24,11 +24,11 @@ const maxLights = 4
 // defaultLightScale converts SolarLuminosity / dist² into a [0,1] fragment
 // contribution. Earth (dist≈100) from Sol (luminosity=1.0):
 //
-//	1.0 * 5000 / (100 * 100) = 0.5  → half-illumination, looks natural.
-const defaultLightScale = float32(5000)
+//	1.0 * 9000 / (100 * 100) = 0.9  → ~90% lit-side brightness, strong day/night contrast.
+const defaultLightScale = float32(9000)
 
 // defaultAmbient is the minimum surface brightness on the night side.
-const defaultAmbient = float32(0.03)
+const defaultAmbient = float32(0.02)
 
 // phongVS is the GLSL 330 vertex shader. Passes world-space position and
 // corrected normal to the fragment stage. Raylib auto-populates mvp, matModel,
