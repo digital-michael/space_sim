@@ -58,6 +58,12 @@ type Renderer struct {
 	// the default Raylib shader (flat diffuse texture, no shadowing).
 	noLighting bool
 	lighting   lightingState
+
+	// atmosphere holds the rim-glow + day/night shader; atmoSphere is a
+	// lazily-loaded unit-sphere model reused for all atmosphere draw calls.
+	atmosphere      atmosphereState
+	atmoSphere      rl.Model
+	atmoSphereLoaded bool
 }
 
 // modelKey indexes the model cache.
@@ -645,14 +651,14 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 						}
 						r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
 						rl.DrawModel(model, pos, drawScale, rl.White)
-						drawAtmosphereGlow(obj, pos)
+						r.drawAtmosphereGlow(obj, pos)
 						drawnCount++
 						continue
 					}
 				}
 				// Fallback: solid color sphere.
 				rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
-				drawAtmosphereGlow(obj, pos)
+				r.drawAtmosphereGlow(obj, pos)
 				// Wireframe
 				if obj.Meta.Material != engine.MaterialEmissive {
 					rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), batch.wireRings, batch.wireSlices,
@@ -817,14 +823,14 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 			}
 			r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
 			rl.DrawModel(model, pos, drawScale, rl.White)
-			drawAtmosphereGlow(obj, pos)
+			r.drawAtmosphereGlow(obj, pos)
 			return
 		}
 	}
 
 	// Fallback: solid color sphere with wireframe.
 	rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
-	drawAtmosphereGlow(obj, pos)
+	r.drawAtmosphereGlow(obj, pos)
 
 	// Draw wireframe for better depth perception (skip for rings and sun)
 	// Use simpler wireframe for distant objects when LOD is enabled
@@ -839,22 +845,30 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 	}
 }
 
-// drawAtmosphereGlow renders an additive-blended sphere slightly larger than
-// the body's physical radius to simulate an atmospheric limb glow (haze, corona,
-// or exosphere). Uses BlendAddColors so the glow never darkens the scene.
-// No-op when the body has no atmosphere color hint or zero alpha.
+// drawAtmosphereGlow renders a Fresnel rim-glow atmosphere with day/night lighting.
+// Uses a custom GLSL shader (atmosphereState) that applies:
+//   - a Fresnel term: transparent face-on, bright at the limb (grazing angle)
+//   - a Lambert sun-facing term: day side lit, night side 8% ambient (secondary scatter)
 //
 // Glow radius is physics-calibrated from AtmosphereThicknessKm:
-//   km_per_sim_unit = 12742  (calibrated to Earth: 6371 km / 0.5 sim = 12742 km/su)
-//   frac = (AtmosphereThicknessKm / (bodyRadius * km_per_sim_unit)) * 4
-//   glowRadius = bodyRadius * (1 + clamp(frac, 0.04, 0.60))
-// A visual boost of 4× makes thin rocky-planet atmospheres (~100 km / 1.6% ratio)
-// perceptible as a ~6% halo. The cap of 0.60 bounds Sol's 287% corona to 1.6×
-// body radius. Gas giants render at ~2× km/sim, so their frac is halved naturally.
-func drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
+//
+//	km_per_sim_unit = 12742  (calibrated to Earth: 6371 km / 0.5 sim = 12742 km/su)
+//	frac = (AtmosphereThicknessKm / (bodyRadius * km_per_sim_unit)) * 4
+//	glowRadius = bodyRadius * (1 + clamp(frac, 0.04, 0.60))
+func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	if obj.Meta.AtmosphereThicknessKm <= 0 || obj.Meta.AtmosphereColorHint.A == 0 {
 		return
 	}
+	// Lazy-load atmosphere shader and unit-sphere model.
+	if !r.atmosphere.loaded {
+		r.atmosphere.load()
+	}
+	if !r.atmoSphereLoaded {
+		mesh := rl.GenMeshSphere(1.0, 64, 32)
+		r.atmoSphere = rl.LoadModelFromMesh(mesh)
+		r.atmoSphereLoaded = true
+	}
+
 	// Base radius: equatorial for oblate bodies, physical radius otherwise.
 	baseRadius := obj.Meta.PhysicalRadius
 	if obj.Meta.EquatorialRadius > 0 {
@@ -876,16 +890,31 @@ func drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 		frac = atmoCap
 	}
 	glowRadius := baseRadius * (1.0 + frac)
-	// Derive glow color from AtmosphereColorHint; scale intensity by normalised alpha.
-	intensity := float32(obj.Meta.AtmosphereColorHint.A) / 255.0 * 0.5
-	glowColor := rl.Color{
-		R: uint8(float32(obj.Meta.AtmosphereColorHint.R) * intensity),
-		G: uint8(float32(obj.Meta.AtmosphereColorHint.G) * intensity),
-		B: uint8(float32(obj.Meta.AtmosphereColorHint.B) * intensity),
-		A: 255,
+
+	// Scale the unit sphere to the glow radius.
+	r.atmoSphere.Transform = rl.MatrixScale(glowRadius, glowRadius, glowRadius)
+
+	// Bind atmosphere shader to the model's material.
+	mats := r.atmoSphere.GetMaterials()
+	if len(mats) > 0 {
+		mats[0].Shader = r.atmosphere.shader
 	}
+
+	// Upload per-draw uniforms.
+	ch := obj.Meta.AtmosphereColorHint
+	glowColor := []float32{
+		float32(ch.R) / 255.0,
+		float32(ch.G) / 255.0,
+		float32(ch.B) / 255.0,
+		float32(ch.A) / 255.0 * 0.6, // intensity weight
+	}
+	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowColor, glowColor, rl.ShaderUniformVec4)
+	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locLightPos, r.lighting.PrimaryLightPos[:], rl.ShaderUniformVec3)
+	const glowEdge = float32(3.5) // Fresnel exponent: narrower > 5, broader < 3
+	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowEdge, []float32{glowEdge}, rl.ShaderUniformFloat)
+
 	rl.BeginBlendMode(rl.BlendAddColors)
-	rl.DrawSphereEx(pos, glowRadius, 64, 32, glowColor)
+	rl.DrawModel(r.atmoSphere, pos, 1.0, rl.White)
 	rl.EndBlendMode()
 }
 
