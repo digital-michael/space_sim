@@ -843,15 +843,39 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 // the body's physical radius to simulate an atmospheric limb glow (haze, corona,
 // or exosphere). Uses BlendAddColors so the glow never darkens the scene.
 // No-op when the body has no atmosphere color hint or zero alpha.
+//
+// Glow radius is physics-calibrated from AtmosphereThicknessKm:
+//   km_per_sim_unit = 12742  (calibrated to Earth: 6371 km / 0.5 sim = 12742 km/su)
+//   frac = (AtmosphereThicknessKm / (bodyRadius * km_per_sim_unit)) * 4
+//   glowRadius = bodyRadius * (1 + clamp(frac, 0.04, 0.60))
+// A visual boost of 4× makes thin rocky-planet atmospheres (~100 km / 1.6% ratio)
+// perceptible as a ~6% halo. The cap of 0.60 bounds Sol's 287% corona to 1.6×
+// body radius. Gas giants render at ~2× km/sim, so their frac is halved naturally.
 func drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	if obj.Meta.AtmosphereThicknessKm <= 0 || obj.Meta.AtmosphereColorHint.A == 0 {
 		return
 	}
-	// Visual glow radius: 10% larger than physical radius (equatorial when oblate).
-	glowRadius := obj.Meta.PhysicalRadius * 1.10
+	// Base radius: equatorial for oblate bodies, physical radius otherwise.
+	baseRadius := obj.Meta.PhysicalRadius
 	if obj.Meta.EquatorialRadius > 0 {
-		glowRadius = obj.Meta.EquatorialRadius * 1.10
+		baseRadius = obj.Meta.EquatorialRadius
 	}
+	// Physics-calibrated glow fraction.
+	const (
+		kmPerSimUnit = float32(12742) // Earth: 6371 km / 0.5 sim units
+		atmoBoost    = float32(4)     // visual boost; 100km/6371km*4 ≈ 6% for Earth
+		atmoFloor    = float32(0.04)  // minimum 4% — ensures any atmosphere is visible
+		atmoCap      = float32(0.60)  // maximum 60% — bounds Sol's corona to 1.6× radius
+	)
+	bodyRadiusKm := baseRadius * kmPerSimUnit
+	frac := (obj.Meta.AtmosphereThicknessKm / bodyRadiusKm) * atmoBoost
+	if frac < atmoFloor {
+		frac = atmoFloor
+	}
+	if frac > atmoCap {
+		frac = atmoCap
+	}
+	glowRadius := baseRadius * (1.0 + frac)
 	// Derive glow color from AtmosphereColorHint; scale intensity by normalised alpha.
 	intensity := float32(obj.Meta.AtmosphereColorHint.A) / 255.0 * 0.5
 	glowColor := rl.Color{
