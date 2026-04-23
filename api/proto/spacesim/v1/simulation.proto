@@ -444,6 +444,7 @@ message PerformanceState {
   bool  hud_help              = 15;
   bool  hud_player            = 16;
   string labels_mode          = 17;
+  int32  infra_mode            = 18;
 }
 
 message GetPerformanceRequest  { uint32 version = 1; }
@@ -473,6 +474,7 @@ message SetPerformanceRequest {
   bool set_hud_help             = 15;
   bool set_hud_player           = 16;
   bool set_labels_mode          = 17;
+  bool set_infra_mode           = 18;
 }
 message SetPerformanceResponse {
   uint32     version = 1;

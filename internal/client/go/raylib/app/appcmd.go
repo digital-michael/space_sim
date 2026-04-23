@@ -122,6 +122,10 @@ type PerfSetCmd struct {
 	LabelMode    ui.LabelMode
 	SetLabelMode bool
 
+	// Infrastructure ambient-light mode override (0=off, 1=spotlight, 2=reserved).
+	InfraMode    int
+	SetInfraMode bool
+
 	SetFrustumCulling      bool
 	SetLODEnabled          bool
 	SetInstancedRendering  bool
@@ -147,6 +151,7 @@ type PerfSnapshot struct {
 	HUDVisible  bool
 	HUD         ui.HUDState
 	LabelMode   ui.LabelMode
+	InfraMode   int
 }
 
 // ── System commands ───────────────────────────────────────────────────────────

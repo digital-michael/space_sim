@@ -1268,6 +1268,16 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 		}
 		r.printf("ok  labels %s  event_id=%s  status=%s\n", c.Mode, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
 
+	case commands.Infra:
+		resp, err := r.perfClient.SetPerformance(ctx, connect.NewRequest(&v1.SetPerformanceRequest{
+			State:        &v1.PerformanceState{InfraMode: int32(c.Mode)},
+			SetInfraMode: true,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("ok  infra %d  event_id=%s  status=%s\n", c.Mode, resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
 	// ── Sync ────────────────────────────────────────────────────────────────────
 
 	case commands.Sync:

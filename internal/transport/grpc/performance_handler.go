@@ -46,6 +46,7 @@ func (h *PerformanceHandler) GetPerformance(ctx context.Context, _ *connect.Requ
 				HudHelp:             snap.HUD.Help,
 				HudPlayer:           snap.HUD.Player,
 				LabelsMode:          snap.LabelMode.String(),
+				InfraMode:           int32(snap.InfraMode),
 			},
 		}), nil
 	case <-ctx.Done():
@@ -96,6 +97,8 @@ func (h *PerformanceHandler) SetPerformance(_ context.Context, req *connect.Requ
 		SetHUDPlayer:           msg.SetHudPlayer,
 		LabelMode:              ui.LabelModeFromString(s.LabelsMode),
 		SetLabelMode:           msg.SetLabelsMode,
+		InfraMode:              int(s.InfraMode),
+		SetInfraMode:           msg.SetInfraMode,
 	}
 
 	if !h.sendCmd(cmd) {

@@ -302,6 +302,15 @@ type Labels struct {
 	Mode string // "on" | "off" | "nearest"
 }
 
+// Infra sets the infrastructure ambient-light mode.
+// Mode 0 = off, 1 = spotlight (boost ambient for objects in camera FOV centre),
+// 2 = reserved / deferred.
+//
+//	infra 0 | infra 1 | infra 2
+type Infra struct {
+	Mode int
+}
+
 // Sync enables or disables synchronous mode.
 // When on, animated commands (nav jump, orbit) block until the animation
 // finishes before the REPL reads the next line.
@@ -366,6 +375,7 @@ func (HUD) isCmd()              {}
 func (HUDList) isCmd()          {}
 func (HUDCategory) isCmd()      {}
 func (Labels) isCmd()           {}
+func (Infra) isCmd()            {}
 func (Sync) isCmd()             {}
 func (RecordStart) isCmd()      {}
 func (RecordPause) isCmd()      {}
@@ -762,6 +772,22 @@ func Parse(line string) (Cmd, error) {
 			return Labels{Mode: mode}, nil
 		default:
 			return nil, ErrUsage{Cmd: "labels", Detail: fmt.Sprintf("unknown mode %q", args[0]), Example: "labels on|off|nearest"}
+		}
+
+	// ── Infra ────────────────────────────────────────────────────────────────
+	case "infra":
+		if len(args) != 1 {
+			return nil, ErrUsage{Cmd: "infra", Detail: "expected mode 0, 1, or 2", Example: "infra 1"}
+		}
+		switch args[0] {
+		case "0":
+			return Infra{Mode: 0}, nil
+		case "1":
+			return Infra{Mode: 1}, nil
+		case "2":
+			return Infra{Mode: 2}, nil
+		default:
+			return nil, ErrUsage{Cmd: "infra", Detail: fmt.Sprintf("unknown mode %q", args[0]), Example: "infra 0|1|2"}
 		}
 
 	// ── Sync ────────────────────────────────────────────────────────────────

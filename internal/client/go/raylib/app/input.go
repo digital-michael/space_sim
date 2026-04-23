@@ -76,6 +76,11 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 	}
 
+	// I: Cycle infra ambient-light mode (0=off → 1=spotlight → 2=reserved → 0)
+	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyI) {
+		app.runtime.InfraMode = (app.runtime.InfraMode + 1) % 3
+	}
+
 	// Opt+M: Toggle mouse mode (camera control vs UI cursor)
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyM) && altHeld && !superHeld {
 		mouseModeEnabled = !mouseModeEnabled

@@ -10,7 +10,7 @@ var topVerbs = []string{
 	"setdataset", "getdataset",
 	"gettime", "bodies", "inspect", "status", "stream",
 	"system", "window", "camera", "nav", "perf",
-	"orbit", "track", "sleep", "hud", "labels", "sync", "set", "record",
+	"orbit", "track", "sleep", "hud", "labels", "infra", "sync", "set", "record",
 	"shutdown", "clear", "help", "quit", "exit",
 }
 
@@ -23,6 +23,7 @@ var subCmds = map[string][]string{
 	"perf":   {"get", "set"},
 	"hud":    {"on", "off", "list", "debug", "info", "help", "player"},
 	"labels": {"on", "off", "nearest"},
+	"infra":  {"0", "1", "2"},
 	"sync":   {"on", "off"},
 	"record": {"start", "pause", "stop", "delete"},
 }

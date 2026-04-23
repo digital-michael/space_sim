@@ -32,6 +32,9 @@ type RuntimeContext struct {
 	MouseSensitivity  float32
 	WelcomeBannerText string
 	WelcomeBannerAt   time.Time
+	// InfraMode is the infrastructure ambient-light mode.
+	// 0 = off (default), 1 = spotlight (FOV-centre ambient boost), 2 = reserved.
+	InfraMode int
 }
 
 // NewRuntimeContext creates the initial runtime state from app config.
