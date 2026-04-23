@@ -67,7 +67,14 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 	inputState := ui.NewInputState(firstCategory)
 	inputState.ActiveSystemPath = normalizedPath
 	// Restore persisted performance options.
-	inputState.PerfOptions.LODEnabled = a.runtime.LODEnabled
+	pc := a.runtime.PerfConfig
+	inputState.PerfOptions.FrustumCulling = pc.FrustumCulling
+	inputState.PerfOptions.LODEnabled = pc.LODEnabled
+	inputState.PerfOptions.InstancedRendering = pc.InstancedRendering
+	inputState.PerfOptions.SpatialPartition = pc.SpatialPartition
+	inputState.PerfOptions.PointRendering = pc.PointRendering
+	inputState.PerfOptions.ImportanceThreshold = pc.ImportanceThreshold
+	inputState.PerfOptions.UseInPlaceSwap = pc.UseInPlaceSwap
 
 	if solIndex >= 0 {
 		cameraState.StartTracking(solIndex)

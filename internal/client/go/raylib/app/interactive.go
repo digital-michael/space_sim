@@ -408,25 +408,31 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 	case PerfSetCmd:
 		if c.SetFrustumCulling {
 			is.PerfOptions.FrustumCulling = c.Options.FrustumCulling
+			a.runtime.PerfConfig.FrustumCulling = c.Options.FrustumCulling
 		}
 		if c.SetLODEnabled {
 			is.PerfOptions.LODEnabled = c.Options.LODEnabled
-			a.runtime.LODEnabled = c.Options.LODEnabled
+			a.runtime.PerfConfig.LODEnabled = c.Options.LODEnabled
 		}
 		if c.SetInstancedRendering {
 			is.PerfOptions.InstancedRendering = c.Options.InstancedRendering
+			a.runtime.PerfConfig.InstancedRendering = c.Options.InstancedRendering
 		}
 		if c.SetSpatialPartition {
 			is.PerfOptions.SpatialPartition = c.Options.SpatialPartition
+			a.runtime.PerfConfig.SpatialPartition = c.Options.SpatialPartition
 		}
 		if c.SetPointRendering {
 			is.PerfOptions.PointRendering = c.Options.PointRendering
+			a.runtime.PerfConfig.PointRendering = c.Options.PointRendering
 		}
 		if c.SetImportanceThreshold {
 			is.PerfOptions.ImportanceThreshold = c.Options.ImportanceThreshold
+			a.runtime.PerfConfig.ImportanceThreshold = c.Options.ImportanceThreshold
 		}
 		if c.SetUseInPlaceSwap {
 			is.PerfOptions.UseInPlaceSwap = c.Options.UseInPlaceSwap
+			a.runtime.PerfConfig.UseInPlaceSwap = c.Options.UseInPlaceSwap
 			if c.Options.UseInPlaceSwap {
 				session.sim.GetState().EnableInPlaceSwap()
 			} else {

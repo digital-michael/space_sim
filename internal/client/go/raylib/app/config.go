@@ -37,7 +37,13 @@ type RenderConfig struct {
 
 // PerformanceConfig holds performance options that are persisted to app.json.
 type PerformanceConfig struct {
-	LODEnabled bool `json:"lod_enabled"`
+	FrustumCulling      bool `json:"frustum_culling"`
+	LODEnabled          bool `json:"lod_enabled"`
+	InstancedRendering  bool `json:"instanced_rendering"`
+	SpatialPartition    bool `json:"spatial_partition"`
+	PointRendering      bool `json:"point_rendering"`
+	ImportanceThreshold int  `json:"importance_threshold"`
+	UseInPlaceSwap      bool `json:"use_in_place_swap"`
 }
 
 // AppConfig holds application-level configuration.

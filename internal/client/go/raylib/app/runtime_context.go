@@ -36,10 +36,9 @@ type RuntimeContext struct {
 	// 0 = off (default), 1 = spotlight (FOV-centre ambient boost), 2 = reserved.
 	InfraMode int
 
-	// LODEnabled tracks whether Level of Detail is currently on.
-	// Kept in sync with session.inputState.PerfOptions.LODEnabled so it can be
-	// persisted at shutdown via AppConfigSnapshot.
-	LODEnabled bool
+	// PerfConfig mirrors the active PerformanceOptions so they can be persisted
+	// at shutdown via AppConfigSnapshot and restored at startup.
+	PerfConfig PerformanceConfig
 }
 
 // NewRuntimeContext creates the initial runtime state from app config.
@@ -73,7 +72,7 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 		LabelMode:        ui.LabelModeOff,
 		CameraSpeed:      10.0,
 		MouseSensitivity: 0.003,
-		LODEnabled:       cfg.Performance.LODEnabled,
+		PerfConfig:       cfg.Performance,
 	}
 }
 
@@ -128,8 +127,6 @@ func (ctx *RuntimeContext) AppConfigSnapshot() AppConfig {
 			Width:  ctx.RenderWidth,
 			Height: ctx.RenderHeight,
 		},
-		Performance: PerformanceConfig{
-			LODEnabled: ctx.LODEnabled,
-		},
+		Performance: ctx.PerfConfig,
 	}
 }

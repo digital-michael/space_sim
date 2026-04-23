@@ -527,21 +527,26 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					switch inputState.SelectedIndex {
 					case 0:
 						inputState.PerfOptions.FrustumCulling = !inputState.PerfOptions.FrustumCulling
+						app.runtime.PerfConfig.FrustumCulling = inputState.PerfOptions.FrustumCulling
 					case 1:
 						inputState.PerfOptions.LODEnabled = !inputState.PerfOptions.LODEnabled
-						app.runtime.LODEnabled = inputState.PerfOptions.LODEnabled
+						app.runtime.PerfConfig.LODEnabled = inputState.PerfOptions.LODEnabled
 					case 2:
 						inputState.PerfOptions.InstancedRendering = !inputState.PerfOptions.InstancedRendering
+						app.runtime.PerfConfig.InstancedRendering = inputState.PerfOptions.InstancedRendering
 					case 3:
 						inputState.PerfOptions.SpatialPartition = !inputState.PerfOptions.SpatialPartition
+						app.runtime.PerfConfig.SpatialPartition = inputState.PerfOptions.SpatialPartition
 					case 4:
 						inputState.PerfOptions.PointRendering = !inputState.PerfOptions.PointRendering
+						app.runtime.PerfConfig.PointRendering = inputState.PerfOptions.PointRendering
 					}
 				} else {
 					// Configuration tab toggles
 					switch inputState.SelectedIndex {
 					case 1:
 						inputState.PerfOptions.UseInPlaceSwap = !inputState.PerfOptions.UseInPlaceSwap
+						app.runtime.PerfConfig.UseInPlaceSwap = inputState.PerfOptions.UseInPlaceSwap
 						// Apply the change to simulation
 						if inputState.PerfOptions.UseInPlaceSwap {
 							sim.GetState().EnableInPlaceSwap()
@@ -569,6 +574,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					if current <= thresholds[0] {
 						inputState.PerfOptions.ImportanceThreshold = thresholds[len(thresholds)-1]
 					}
+					app.runtime.PerfConfig.ImportanceThreshold = inputState.PerfOptions.ImportanceThreshold
 				}
 				if rl.IsKeyPressed(rl.KeyRight) {
 					// Cycle through: 0, 5, 10, 15, 30, 40, 50, 60, 70, 80, 90
@@ -583,6 +589,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					if current >= thresholds[len(thresholds)-1] {
 						inputState.PerfOptions.ImportanceThreshold = thresholds[0]
 					}
+					app.runtime.PerfConfig.ImportanceThreshold = inputState.PerfOptions.ImportanceThreshold
 				}
 			}
 			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
