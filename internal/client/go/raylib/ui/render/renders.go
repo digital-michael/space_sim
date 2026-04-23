@@ -940,17 +940,20 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 	}
 }
 
-// drawRingDisc renders a planetary ring disc with optional planet-shadow darkening.
+// drawRingDisc renders a planetary ring disc with Lambert star illumination and
+// optional smooth planet-shadow darkening.
 //
-// Rings are composed of small particles that scatter light in all directions
-// (forward and backward), so a Lambertian surface model is not appropriate —
-// rings appear bright even when the star is nearly edge-on to the ring plane.
-// Instead ring segments are rendered at full colour and only darkened when they
-// fall inside the host planet's shadow cylinder (the sun-planet-ring alignment
-// that causes the visible shadow band on Saturn's rings, for example).
+// Illumination: ring particles scatter light diffusely; the whole disc is scaled
+// by |dot(ringNormal, toStar)| — brightest when starlight shines from above/below
+// the ring plane, dimmest (ambient floor) when edge-on. Because the Lambert factor
+// is the same for every point on the flat disc it is computed once and applied as
+// a global multiplier before per-segment shadow blending.
 //
-// Pass parentRadius > 0 to enable per-segment planet-shadow testing.
-// Pass 0 to skip shadow computation (e.g. when drawn via the single-object path).
+// Shadow: when parentRadius > 0 each segment is tested against the planet's shadow
+// cylinder with a smoothstep penumbra (see ringSegmentShadowFactor). Segments in
+// shadow are further dimmed to ringAmbient regardless of the Lambert factor.
+//
+// Pass parentRadius 0 to skip shadow computation (single-object draw path).
 //
 // Rings are drawn with BlendAlpha + DisableDepthMask so they do not occlude
 // objects behind them while still depth-testing against closer opaque geometry.
@@ -972,21 +975,38 @@ func drawRingDisc(r *Renderer, obj *engine.Object, pos rl.Vector3, parentRadius 
 
 	// Axial tilt (same value used in rl.Rotatef below).
 	tiltRad := float64(obj.Meta.AxialTilt) * math.Pi / 180.0
+	cos_t := float32(math.Cos(tiltRad))
+	sin_t := float32(math.Sin(tiltRad))
 
-	// Shadow axis: anti-star direction in camera-relative world space.
-	// Computed only when planet-shadow testing is needed.
+	// Lighting: Lambert factor and shadow axis, computed once per ring.
+	// Ring normal in world space after Rx(tilt): (0, cos_t, sin_t).
 	const ringAmbient = float32(0.05)
 	var shadowAxisX, shadowAxisY, shadowAxisZ float32
-	hasShadow := !r.noLighting && r.lighting.loaded && parentRadius > 0
-	if hasShadow {
+	lambertFactor := float32(1.0) // full brightness when lighting is off
+	hasLighting := !r.noLighting && r.lighting.loaded
+	hasShadow := hasLighting && parentRadius > 0
+	if hasLighting {
 		dx := r.lighting.PrimaryLightPos[0] - pos.X
 		dy := r.lighting.PrimaryLightPos[1] - pos.Y
 		dz := r.lighting.PrimaryLightPos[2] - pos.Z
 		dist := float32(math.Sqrt(float64(dx*dx + dy*dy + dz*dz)))
 		if dist > 0 {
-			shadowAxisX = -dx / dist
-			shadowAxisY = -dy / dist
-			shadowAxisZ = -dz / dist
+			toStarX := dx / dist
+			toStarY := dy / dist
+			toStarZ := dz / dist
+
+			// |dot(ringNormal, toStar)| — two-sided disc.
+			lf := cos_t*toStarY + sin_t*toStarZ
+			if lf < 0 {
+				lf = -lf
+			}
+			lambertFactor = ringAmbient + lf*(1.0-ringAmbient)
+
+			if hasShadow {
+				shadowAxisX = -toStarX
+				shadowAxisY = -toStarY
+				shadowAxisZ = -toStarZ
+			}
 		} else {
 			hasShadow = false
 		}
@@ -1025,13 +1045,24 @@ func drawRingDisc(r *Renderer, obj *engine.Object, pos rl.Vector3, parentRadius 
 			angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
 			angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
 
-			segColor := baseColor
+			// Start from the global Lambert factor; attenuate further in shadow.
+			litFactor := lambertFactor
 			if hasShadow {
 				midAngle := (angle1 + angle2) * 0.5
-				if ringSegmentInPlanetShadow(float64(bandMidRadius), float64(midAngle),
-					tiltRad, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius) {
-					segColor = applyRingLightFactor(baseColor, ringAmbient)
+				shadowLit := ringSegmentShadowFactor(float64(bandMidRadius), float64(midAngle),
+					tiltRad, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius)
+				if shadowLit < 1.0 {
+					// In shadow: darken to ringAmbient, smoothly blended at the penumbra.
+					inShadowFactor := ringAmbient + (1.0-ringAmbient)*shadowLit
+					if inShadowFactor < litFactor {
+						litFactor = inShadowFactor
+					}
 				}
+			}
+
+			segColor := baseColor
+			if litFactor < 1.0 {
+				segColor = applyRingLightFactor(baseColor, litFactor)
 			}
 
 			cos1 := float32(math.Cos(float64(angle1)))
@@ -1058,16 +1089,24 @@ func drawRingDisc(r *Renderer, obj *engine.Object, pos rl.Vector3, parentRadius 
 	rl.PopMatrix()
 }
 
-// ringSegmentInPlanetShadow reports whether a ring point at the given polar
-// coordinates (radius, angle) in the ring plane falls inside the planet's shadow.
-// The shadow is modelled as a cylinder of radius parentRadius aligned with shadowAxis
-// (the normalised anti-star direction in camera-relative world space).
+// ringSegmentShadowFactor returns a [0,1] light factor for a ring point at the
+// given polar coordinates (radius, angle) in the ring plane.
+//
+//	0 = fully in the planet's shadow (darkened to ringAmbient by caller)
+//	1 = fully lit
+//
+// The shadow is modelled as a cylinder of radius parentRadius aligned with
+// shadowAxis (the normalised anti-star direction in camera-relative world space).
+// A smoothstep penumbra spanning ±ringPenumbraFrac of parentRadius around the
+// cylinder edge removes the staircase artefact from the discrete segment grid.
 //
 // The ring point is transformed into world space by applying the axial tilt:
 //
 //	P = Rx(tiltRad) * (radius·cos(a), 0, radius·sin(a))
 //	  = (radius·cos(a), −radius·sin(a)·sin(tilt), radius·sin(a)·cos(tilt))
-func ringSegmentInPlanetShadow(radius, angle, tiltRad float64, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius float32) bool {
+const ringPenumbraFrac = float32(0.25) // shadow-edge transition = ±25% of planet radius
+
+func ringSegmentShadowFactor(radius, angle, tiltRad float64, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius float32) float32 {
 	cos_a := float32(math.Cos(angle))
 	sin_a := float32(math.Sin(angle))
 	cos_t := float32(math.Cos(tiltRad))
@@ -1081,16 +1120,28 @@ func ringSegmentInPlanetShadow(radius, angle, tiltRad float64, shadowAxisX, shad
 	// Project P onto the shadow axis (anti-star direction from planet centre).
 	proj := px*shadowAxisX + py*shadowAxisY + pz*shadowAxisZ
 	if proj <= 0 {
-		return false // point is on the illuminated side
+		return 1.0 // illuminated side
 	}
 
-	// Perpendicular distance squared from the shadow axis.
+	// Perpendicular distance from the shadow axis.
 	perpX := px - proj*shadowAxisX
 	perpY := py - proj*shadowAxisY
 	perpZ := pz - proj*shadowAxisZ
-	perpDist2 := perpX*perpX + perpY*perpY + perpZ*perpZ
+	perpDist := float32(math.Sqrt(float64(perpX*perpX + perpY*perpY + perpZ*perpZ)))
 
-	return perpDist2 < parentRadius*parentRadius
+	// Penumbra zone: innerEdge (full shadow) → outerEdge (full lit).
+	innerEdge := parentRadius * (1.0 - ringPenumbraFrac)
+	outerEdge := parentRadius * (1.0 + ringPenumbraFrac)
+
+	if perpDist >= outerEdge {
+		return 1.0 // fully lit
+	}
+	if perpDist <= innerEdge {
+		return 0.0 // fully in shadow
+	}
+	// Smooth transition across the penumbra band.
+	t := (perpDist - innerEdge) / (outerEdge - innerEdge)
+	return t * t * (3 - 2*t) // smoothstep(0,1,t)
 }
 
 // applyRingLightFactor scales the RGB channels of c by factor, leaving alpha unchanged.
