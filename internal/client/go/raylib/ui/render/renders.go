@@ -141,6 +141,22 @@ func (r *Renderer) getModel(path string, rings, slices int32) (rl.Model, bool) {
 	return model, true
 }
 
+// getUntexturedModel returns a cached unit-sphere model with no texture bound.
+// Used to apply the Phong shader with a solid-colour tint to untextured bodies
+// (moons, dwarf planets, asteroids). The default Raylib texture for an unbound
+// MAP_DIFFUSE slot is a 1×1 white pixel, so the fragment colour becomes
+// colDiffuse × lighting — exactly the object's configured colour shaded by stars.
+func (r *Renderer) getUntexturedModel(rings, slices int32) rl.Model {
+	key := modelKey{path: "", rings: rings, slices: slices}
+	if m, ok := r.modelCache[key]; ok {
+		return m
+	}
+	mesh := rl.GenMeshSphere(1.0, int(rings), int(slices))
+	model := rl.LoadModelFromMesh(mesh)
+	r.modelCache[key] = model
+	return model
+}
+
 // loadRingImage returns a cached CPU-side image for the given ring colour-strip
 // path.  Returns nil if the path is empty or unreadable.  The image is kept in
 // CPU memory so per-segment colours can be sampled each frame without a GPU
@@ -745,8 +761,16 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 						continue
 					}
 				}
-				// Fallback: solid color sphere.
-				rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
+				// Fallback: untextured sphere with Phong lighting when available.
+				if !r.noLighting && !obj.Meta.SelfLuminous {
+					model := r.getUntexturedModel(batch.rings, batch.slices)
+					transform, drawScale := buildModelTransform(obj.Meta, simTime)
+					model.Transform = transform
+					r.lighting.applyToModel(model, false, rl.Texture2D{})
+					rl.DrawModel(model, pos, drawScale, color)
+				} else {
+					rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
+				}
 				r.drawAtmosphereGlow(obj, pos)
 				// Wireframe
 				if obj.Meta.Material != engine.MaterialEmissive {
@@ -891,8 +915,16 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		}
 	}
 
-	// Fallback: solid color sphere with wireframe.
-	rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
+	// Fallback: untextured sphere with Phong lighting when available.
+	if !r.noLighting && !obj.Meta.SelfLuminous {
+		model := r.getUntexturedModel(rings, slices)
+		transform, drawScale := buildModelTransform(obj.Meta, simTime)
+		model.Transform = transform
+		r.lighting.applyToModel(model, false, rl.Texture2D{})
+		rl.DrawModel(model, pos, drawScale, color)
+	} else {
+		rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
+	}
 	r.drawAtmosphereGlow(obj, pos)
 
 	// Draw wireframe for better depth perception (skip for rings and sun)
