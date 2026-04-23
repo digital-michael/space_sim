@@ -4,7 +4,7 @@
 Capture the major implementation defects, debugging discoveries, performance findings, and follow-up recommendations uncovered while building and stabilizing the performance testing workflow.
 
 ## Last Updated
-2026-04-21
+2026-04-23
 
 ## Table of Contents
 1. Session Overview
@@ -1699,4 +1699,252 @@ rl.SetShaderValue(shader, loc, lightPos, rl.ShaderUniformVec3)
 - `PrimaryLightPos` is captured once per frame in `setLights()` from the first self-luminous object and stored on `lightingState`.
 
 **Tuning knob**: `glowEdge` constant (default 3.5). Higher → narrower bright ring. Lower → wider diffuse halo.
+
+---
+
+## Rendering: Transparency, Draw Order, and Lighting (April 22, 2026) [RENDER]
+
+### Additive Blend Does Not Suppress Depth Writes
+
+**Commit**: `2c243a5` — fix: atmosphere flicker — disable depth write during additive blend
+
+**Problem**: The atmosphere glow sphere flickered intermittently on planets that had close-by opaque objects (e.g. ring systems). Flickering was frame-rate dependent and position-dependent; it was absent at some camera angles and severe at others.
+
+**Root Cause**: `rl.BeginBlendMode(rl.BlendAddColors)` sets the GL blend equation to `(ONE, ONE)` — additive colour compositing — but it does **not** modify the depth-write mask. The atmosphere sphere, drawn with `DrawModel`, still wrote its depth values to the depth buffer at `glowRadius`. On the next frame (or later in the same frame), opaque objects (rings, near-surface geometry) whose screen fragments fell inside the glow zone failed the depth test against the already-written glow depth values and were culled.
+
+**Fix**:
+```go
+// Disable depth writes for the additive glow sphere only:
+rl.DisableDepthMask()
+rl.DrawModel(model, pos, scale, color)
+rl.EnableDepthMask()
+```
+
+**Rule**: Any additive or semi-transparent draw that should never occlude opaque geometry must explicitly suppress depth writes with `DisableDepthMask()` around the draw call. `BeginBlendMode` alone is not sufficient.
+
+**Files fixed**: `internal/client/go/raylib/ui/render/renders.go`
+
+---
+
+### Transparent Objects Must Be Drawn After All Opaque Objects
+
+**Commit**: `a0a2bd5` — fix: ring draw order, planet shadow, and sim-speed startup
+
+**Problem**: Rings were drawn inside the main planet batch (interleaved with planet draw calls). The result was Z-fighting between ring fragments and planet surface fragments and incorrect alpha compositing at ring/planet boundaries.
+
+**Root Cause**: `BlendAlpha` ring draw calls compete with opaque planet draws in depth order. The depth buffer sorts opaque geometry correctly, but semi-transparent draws must be composited on top of a fully resolved opaque scene. Any transparent draw that runs before an opaque draw behind it will produce incorrect results.
+
+**Fix**: Collect all ring draw calls into a deferred list during the planet batch pass, then execute the deferred ring draws after all planet batches and atmosphere glow passes complete.
+
+**Rule**: Transparent/semi-transparent objects must be sorted and drawn after all opaque geometry in the same frame. Never interleave `BlendAlpha` draws with opaque draws.
+
+**Also fixed in this commit**:
+- **Ring shadow cylinder test**: each ring segment tests whether its centre falls inside the planet's shadow cylinder (cylinder aligned with sun direction, radius = planet physical radius). Segments inside the cylinder receive ambient-floor-only lighting. The test uses a point-to-cylinder-axis distance check.
+- **`--sim-speed` CLI flag**: was routing to the animation speed multiplier instead of `SecondsPerSecond`, so the startup time rate was wrong. Fixed by routing to the simulation time parameter.
+- **Selection dialog scroll**: was using a hardcoded `500px` panel height instead of live `rl.GetScreenWidth()`, breaking on non-default window sizes.
+
+**Files fixed**: `internal/client/go/raylib/ui/render/renders.go`, `internal/client/go/raylib/app/input.go`, `session.go`
+
+---
+
+### Transparent Rings: Texture Bands + Per-Body Physical Radius in Schema
+
+**Commit**: `e5254de` — render: rings transparent+textured, atmosphere scale fix, size-aware LOD
+
+**Problem 1 — Ring appearance**: Rings rendered as a single opaque disc using `fallback_color`. No transparency, no radial texture variation.
+
+**Fix**: Split each ring disc into 8 radial bands. Each band samples from `saturnringcolor.jpg` using the band's normalised radial position as the U coordinate. `BlendAlpha` + `DisableDepthMask` applied per band. The `fallback_color.a` field is preserved as the opacity weight.
+
+**Problem 2 — Gas giant atmosphere radius**: Jupiter, Uranus, and Neptune glow spheres extended far beyond ring inner edges because the glow fraction was calibrated against Earth's km-to-sim-unit ratio (`12742 km/su`). Gas giants are much larger; the same fraction produced a glow sphere with a radius that swallowed the rings.
+
+**Fix**: Added `radius_km` field to `ObjectMetadata` schema and set it for Sol, Jupiter, Saturn, Uranus, Neptune. `drawAtmosphereGlow` uses `PhysicalRadiusKm` when available; falls back to Earth-calibrated default. Gas giant atmosphere thicknesses corrected to 1000 km (Jupiter) and 600 km (Neptune/Uranus) so glow radii stay inside ring inner edges.
+
+**Problem 3 — LOD quality budget ignores object size**: `lodScale()` computed distance thresholds uniformly for all objects. At the same camera distance, Sol (radius ≫ 1 sim-unit) and a moon (radius ≪ 1 sim-unit) received the same tessellation budget, producing a faceted Sun.
+
+**Fix**: `lodScale()` now multiplies all distance thresholds by `clamp(radius/0.5, 1, 10)`. Sol (radius ≈ 47 sim-units) gets a 10× budget; small bodies are unchanged. This gives large objects proportionally more geometry at any given camera distance.
+
+**Rule**: LOD thresholds should reflect on-screen angular size, which is proportional to both world-space radius and inverse camera distance. Objects with very large radii need larger threshold multipliers, not just more rings/slices at the closest tier.
+
+**Files fixed**: `internal/client/go/raylib/ui/render/renders.go`, `internal/sim/engine/feature.go`, `internal/sim/schema.go`, `data/systems/solar_system.json`
+
+---
+
+### Ring Lighting: Material Must Be Wired to Shader on Every Draw Call
+
+**Commit**: `2c36bd2` — made rings respond to lighting effects
+
+**Problem**: Rings rendered at full brightness regardless of sun position, while planets and moons correctly showed day/night shading.
+
+**Root Cause**: The ring draw path called `DrawModel` without first setting the model's material to use the Phong lighting shader. The per-frame `setLights()` call uploads light uniforms to the shader, but the `DrawModel` call uses whatever shader the model's material currently references. Without explicitly assigning `ls.shader` to `model.GetMaterials()[0].Shader`, Raylib uses the default unlit material shader — which ignores all light uniforms.
+
+**Fix**: Before each ring `DrawModel` call (and each band within it), set `model.GetMaterials()[0].Shader = ls.shader`. Mirrors the pattern already used for planet/moon draw calls.
+
+**Rule**: Uploading light uniforms to a shader does not automatically make all objects use that shader. Each `DrawModel` call uses the shader referenced by the model's own material. Any object that should participate in lighting must have `model.GetMaterials()[0].Shader = ls.shader` set immediately before `DrawModel`.
+
+**Files fixed**: `internal/client/go/raylib/ui/render/renders.go`
+
+---
+
+### RotateY Sign Convention: Positive Is Clockwise From Above
+
+**Commit**: `848d9ab` — fix: negate spin in buildModelTransform so prograde bodies rotate CCW
+
+**Problem**: Planets rotated clockwise when viewed from above (north), opposite to the real solar system.
+
+**Root Cause**: In Raylib's right-handed Y-up coordinate system, `rl.MatrixRotateY(+θ)` rotates clockwise when viewed from above. The real solar system's prograde direction (Earth, all gas giants) is counter-clockwise from above. Passing `+spinAngle` produced retrograde-looking rotation.
+
+**Fix**: Negate the spin angle:
+```go
+// Was (clockwise = wrong for prograde bodies):
+rl.MatrixRotateY(spinAngle)
+
+// Now (counter-clockwise = correct for prograde):
+rl.MatrixRotateY(-spinAngle)
+```
+
+**Rule**: In Raylib Y-up, `RotateY(+)` is clockwise from above. Prograde planetary spin requires `RotateY(-)`. If a retrograde body (Venus, Uranus) has `rotation_period` stored as a negative value in data, negating the spin angle will make it rotate clockwise — which is correct for retrograde.
+
+**Files fixed**: `internal/client/go/raylib/ui/render/renders.go`
+
+---
+
+## Config Persistence and Infra Mode (April 22–23, 2026) [CONFIG]
+
+### JSON Unmarshal Zero-Value Trap for bool Defaults
+
+**Commit**: `d4f5321` — fix: seed PerformanceConfig defaults before JSON unmarshal in LoadAppConfig
+
+**Problem**: On first run (or whenever `app.json` predated the `"performance"` block), all `PerformanceConfig` fields loaded as `false` / `0`, silently disabling features that should default to enabled (`FrustumCulling`, `InstancedRendering`, `SpatialPartition`, `UseInPlaceSwap`).
+
+**Root Cause**: `json.Unmarshal` only writes fields that are present in the JSON. When the `"performance"` key is absent, none of the struct fields are touched — they remain at Go zero-values. For `bool`, zero-value is `false`. Features with correct defaults of `true` were therefore silently disabled on every fresh install.
+
+**What Doesn't Work**:
+```go
+var cfg AppConfig
+if err := json.Unmarshal(data, &cfg); err != nil { ... }
+// cfg.Performance.FrustumCulling == false  ← WRONG, should be true
+```
+
+**Fix**: Pre-seed the struct with correct defaults before calling `Unmarshal`. The unmarshal then only overwrites keys that are present, preserving the defaults for absent keys:
+```go
+cfg := AppConfig{
+    Performance: PerformanceConfig{
+        FrustumCulling:      true,
+        InstancedRendering:  true,
+        SpatialPartition:    true,
+        UseInPlaceSwap:      true,
+        ImportanceThreshold: defaultImportanceThreshold,
+    },
+}
+_ = json.Unmarshal(data, &cfg)  // only overwrites present keys
+```
+
+This pattern was already used for `Window` and `Render` config sections but was omitted for the new `Performance` section.
+
+**Rule**: Any config struct deserialized with `json.Unmarshal` where fields have non-zero defaults **must** be pre-initialized before the unmarshal call. Do not rely on JSON absence to preserve defaults — absence produces zero-values, not defaults. This is especially critical for `bool` fields that default to `true`.
+
+**Files fixed**: `internal/client/go/raylib/app/config_file.go`
+
+---
+
+### RuntimeContext as the Single Source of Truth for Persisted State
+
+**Commit**: `aafae1f` — feat: persist all performance options to app.json
+
+**Problem**: Performance toggle key handlers in `input.go` and `PerfSetCmd` dispatch in `interactive.go` updated `inputState.PerfOptions` (which controls the running session) but not `runtime.PerfConfig` (which persists to `app.json`). On shutdown, `AppConfigSnapshot()` serialized the stale `runtime.PerfConfig` values, losing all changes made during the session.
+
+**Architecture**:
+- `InputState.PerfOptions` — session-scoped, reconstructed from `NewInputState()` defaults each run. Controls what the renderer actually does this frame.
+- `RuntimeContext.PerfConfig` — persists for the app's lifetime, serialized via `AppConfigSnapshot()`. Source of truth for `app.json`.
+
+**Fix**: At every mutation site (key toggles in `input.go`, `PerfSetCmd` dispatch in `interactive.go`), update **both**:
+1. `inputState.PerfOptions.Xxx` — for the running session
+2. `a.runtime.PerfConfig.Xxx` — for persistence
+
+**Rule**: Mutable state that must survive shutdown lives in `RuntimeContext`, not `InputState`. `InputState` is session-local. When adding any new persistable option, always write to both the session state and `RuntimeContext` at every mutation site. Forgetting `RuntimeContext` causes silent persistence failure with no compile-time error.
+
+**Files fixed**: `internal/client/go/raylib/app/interactive.go`, `internal/client/go/raylib/app/input.go`
+
+---
+
+### Per-Object Shader Uniform: Set Before Draw, Restore Immediately After
+
+**Commit**: `025cc26` — feat: implement infra mode 1 spotlight ambient boost
+
+**Problem**: Infra mode 1 (night-vision spotlight) needed to boost the ambient light for objects near the camera's centre and reduce it for objects at the cone periphery, without affecting the base shader behaviour for objects outside infra mode.
+
+**Implementation**: The ambient uniform is set per-object immediately before `DrawModel`, then restored to the default immediately after:
+```go
+// Compute spotlight factor for this object (0.0 = outside cone, 1.0 = centre)
+infraF := spotlightFactor(obj.Pos, cameraPos, r.cameraForward)
+
+// Boost ambient before draw:
+r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
+rl.DrawModel(model, pos, scale, tint)
+
+// Restore immediately — do not leave the shader in boosted state:
+r.lighting.setAmbient(defaultAmbient)
+```
+
+**Why the restore matters**: If an early-exit path (e.g. `continue`, texture load failure) skips the draw call but not the restore, the shader is left in boosted state for every subsequent object in the batch. The restore must be unconditional and placed immediately after `DrawModel`, not at the end of the loop body.
+
+**Rule**: Per-object shader state mutations (uniform overrides) must be structured as `set → draw → restore`, all three unconditionally adjacent. The restore must use the exact known-good constant (`defaultAmbient = float32(0.02)`), not a locally snapshotted value, to guarantee global consistency.
+
+**Files fixed**: `internal/client/go/raylib/ui/render/renders.go`, `internal/client/go/raylib/ui/render/lighting.go`
+
+---
+
+### Spotlight Cone Using Cosine Comparison (No acos Needed)
+
+**Commit**: `025cc26` — feat: implement infra mode 1 spotlight ambient boost
+
+**Implementation**: The spotlight factor is computed from the dot product of the normalized camera-to-object direction and the camera forward vector, compared against cosine thresholds:
+
+```go
+const (
+    infraSpotInnerCos = float32(0.9397) // cos(20°)
+    infraSpotOuterCos = float32(0.7660) // cos(40°)
+)
+
+func spotlightFactor(objPos, cameraPos, cameraForward engine.Vector3) float32 {
+    toObj := objPos.Sub(cameraPos).Normalize()
+    cosAngle := toObj.Dot(cameraForward)
+    if cosAngle <= infraSpotOuterCos {
+        return 0.0 // outside the cone
+    }
+    if cosAngle >= infraSpotInnerCos {
+        return 1.0 // inside the hot centre
+    }
+    // Smoothstep in the penumbra band:
+    t := (cosAngle - infraSpotOuterCos) / (infraSpotInnerCos - infraSpotOuterCos)
+    return t * t * (3 - 2*t)
+}
+```
+
+**Why cosines, not angles**: `math.Acos` is expensive and unnecessary. Since `cos` is monotone-decreasing on `[0°, 180°]`, comparing `cosAngle >= innerCos` is equivalent to `angle <= innerDeg`. Store the threshold as a pre-computed cosine constant.
+
+**Smoothstep** `t*t*(3-2*t)` maps `[0,1]→[0,1]` with zero derivative at both endpoints, producing a visually smooth penumbra transition with no sudden cutoff.
+
+**Rule**: Spotlight / cone tests in shaders and CPU code should use cosine comparison against pre-computed constants, not `acos`. This avoids a transcendental function call per visible object per frame.
+
+---
+
+### Two-Phase Feature Commit: Plumbing Before Rendering
+
+**Commit**: `3f40c1b` — feat: add infra mode gRPC/REPL plumbing  
+**Commit**: `025cc26` — feat: implement infra mode 1 spotlight ambient boost
+
+**Pattern**: When a feature requires both infrastructure (proto definitions, gRPC handlers, REPL commands, key bindings, help screen text) and a visual effect, commit them as two separate atomic units:
+
+1. **Plumbing commit** — proto, gRPC service, REPL command dispatch, key binding, help screen. The app compiles and routes commands. No visual side-effects yet; all code paths terminate cleanly without rendering changes.
+2. **Rendering commit** — the renderer reads the new mode flag and produces the observable behaviour.
+
+**Benefits**:
+- The plumbing can be merged, reviewed, and tested independently of the visual work.
+- If the rendering pass runs long or hits unexpected issues, the plumbing is already in main and doesn't need to be re-landed.
+- The two commits are independently revertable.
+
+**When not to use this pattern**: If the plumbing change is trivially small (one field, one dispatch case), a single combined commit is cleaner. Reserve two-phase commits for features where the plumbing spans multiple packages (proto, gRPC, REPL, app wiring).
+
+---
 
