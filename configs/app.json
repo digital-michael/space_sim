@@ -9,5 +9,14 @@
     "mode": "native",
     "width": 0,
     "height": 0
+  },
+  "performance": {
+    "frustum_culling": true,
+    "lod_enabled": true,
+    "instanced_rendering": true,
+    "spatial_partition": true,
+    "point_rendering": false,
+    "importance_threshold": 0,
+    "use_in_place_swap": true
   }
 }
