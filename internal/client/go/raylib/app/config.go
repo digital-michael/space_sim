@@ -35,10 +35,16 @@ type RenderConfig struct {
 	Height int32      `json:"height"`
 }
 
+// PerformanceConfig holds performance options that are persisted to app.json.
+type PerformanceConfig struct {
+	LODEnabled bool `json:"lod_enabled"`
+}
+
 // AppConfig holds application-level configuration.
 type AppConfig struct {
-	Window WindowConfig `json:"window"`
-	Render RenderConfig `json:"render"`
+	Window      WindowConfig      `json:"window"`
+	Render      RenderConfig      `json:"render"`
+	Performance PerformanceConfig `json:"performance"`
 }
 
 // Config holds bootstrap options for the Space Sim application.

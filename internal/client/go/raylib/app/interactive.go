@@ -411,6 +411,7 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		}
 		if c.SetLODEnabled {
 			is.PerfOptions.LODEnabled = c.Options.LODEnabled
+			a.runtime.LODEnabled = c.Options.LODEnabled
 		}
 		if c.SetInstancedRendering {
 			is.PerfOptions.InstancedRendering = c.Options.InstancedRendering

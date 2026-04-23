@@ -529,6 +529,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						inputState.PerfOptions.FrustumCulling = !inputState.PerfOptions.FrustumCulling
 					case 1:
 						inputState.PerfOptions.LODEnabled = !inputState.PerfOptions.LODEnabled
+						app.runtime.LODEnabled = inputState.PerfOptions.LODEnabled
 					case 2:
 						inputState.PerfOptions.InstancedRendering = !inputState.PerfOptions.InstancedRendering
 					case 3:
