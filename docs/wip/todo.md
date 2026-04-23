@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-04-13
+2026-04-22
 
 ## Table of Contents
 1. How to Use This File
@@ -43,6 +43,8 @@ Planning Documents
 	F-015 Epoch-Accurate Initial Mean Anomaly ("Start From Today")
 	F-016 Wire Rendering Data Pipeline (Schema → Engine → Renderer)
 	F-017 Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
+	F-018 Object Annotations HUD (outlines, axes, orbital paths, labels)
+	F-019 Run Scripts from UI
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -285,6 +287,8 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 13 | **F-004** Procedural star field | Group 2 visual |
 | 14 | **F-005** Physical lighting from stars | Needs F-003 |
 | 15 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable. Own phase. |
+| 16 | **F-018** Object annotations HUD | High value, low risk; no engine changes; builds on existing label + render infra |
+| 17 | **F-019** Run scripts from UI | Medium priority; builds directly on REPL and existing dialog UX |
 | — | **4.7** Belt overlap/speed uniqueness | ⏸ Deferred — cosmetic only, insert whenever bandwidth allows |
 
 ---
@@ -815,6 +819,72 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 - [x] Implement Rayleigh scattering as a screen-space approximation: for each atmosphere-bearing body, draw an additive-blended disc slightly larger than the sphere, color from `AtmosphereColorHint`, scaled by `AtmosphereThicknessKm` (**done — F-017a; `drawAtmosphereGlow` in renders.go**)
 - [x] Add `NightTexturePath string` to `ObjectMetadata` and `rendering.night_texture_image` to JSON schema; blend night texture where the star is below the horizon (**done — F-017a; Earth wired to earth_nightmap.jpg**)
 - [ ] Expose `--no-shadows`, `--no-bloom`, `--no-atmosphere` CLI flags; persist in `app.json`
+
+---
+
+### F-018 — Object Annotations HUD
+
+**Value**: Overlay additional spatial information directly in the 3D view — outlines around bodies, rotational-axis lines, orbital path ellipses with direction-of-travel markers, and automatic label activation — without cluttering the main HUD or requiring a separate debug mode.
+**Status**: 📋 Not started
+**Priority**: High — high user-visible value; builds on existing label and render infrastructure; no engine changes required
+**Depends on**: F-003 (texture/render pipeline established), existing `LabelMode` and `drawObjectLabels` in renderer
+
+#### Feature Scope
+
+| Annotation | Description |
+|---|---|
+| **Body outlines** | Thin rim/silhouette line drawn around each visible planet, moon, star, dwarf planet, and belt object. Scales with apparent size; disabled for point-rendered objects. |
+| **Rotational axis** | Line segment through each body's centre aligned to the axial-tilt vector; length proportional to body radius (e.g. 3×). Visually shows obliquity and retrograde/prograde poles. |
+| **Orbital path** | Ellipse (or circle for near-circular orbits) traced in the orbital plane of each body. Computed from `SemiMajorAxis`, `Eccentricity`, and parent position at draw time. |
+| **Direction of travel** | Small arrowhead or tick marks on the orbital path tangent to the velocity vector at the current position, indicating prograde direction. |
+| **Auto-labels** | When annotations mode is activated, `LabelMode` is forced to `LabelModeAll`; restored to previous mode when annotations are toggled off. |
+
+#### Activation
+
+- Toggle key (suggested: `A` — not currently bound).
+- Annotations mode stored in `RuntimeContext` and persisted to `app.json` alongside other performance options.
+- REPL command: `annotations on` / `annotations off` (or `annotations toggle`).
+
+#### Work Items
+
+- [ ] Add `AnnotationsEnabled bool` to `RuntimeContext` and `PerformanceConfig`; persist to `app.json`
+- [ ] Add `A` key toggle in `input.go`; sync to `runtime.AnnotationsEnabled`; force `LabelMode` on/off
+- [ ] Add REPL `annotations` command and TAB completion
+- [ ] Renderer: draw body outlines as a slightly enlarged wireframe sphere pass (additive blend, thin line width) or rim-highlight shader; skip for `isPoint` objects
+- [ ] Renderer: draw rotational-axis line segment using `rl.DrawLine3D` from `buildModelTransform` tilt vector; scale to `3 × PhysicalRadius`
+- [ ] Renderer: compute and draw orbital ellipse as a polyline in world space; 64–128 segments; use parent body position as focus
+- [ ] Renderer: place direction-of-travel arrowhead at current-position tangent on the orbital ellipse
+- [ ] Add `annotations` entry to help screen in `drawHelpScreen`
+- [ ] Acceptance: annotations visible for Sol, Earth, Moon at default camera position; no frame-rate regression > 5% with annotations on
+
+---
+
+### F-019 — Run Scripts from UI
+
+**Value**: Allow the user to browse and execute REPL script files from within the running application without switching to a terminal, lowering the barrier to replaying scripted camera tours and simulation sequences.
+**Status**: 📋 Not started
+**Priority**: Medium — useful for demos and automation; builds directly on the existing REPL and `scripts/` directory
+**Depends on**: Existing REPL command dispatch (`internal/client/repl/`), existing `scripts/` directory layout, `SelectionMode` dialog infrastructure in the UI
+
+#### Feature Scope
+
+- A script-browser dialog (reuses the existing selection-dialog UX pattern) lists `.txt` script files found in the `scripts/` directory at runtime.
+- The user navigates the list with arrow keys and presses Enter to execute the selected script.
+- Script execution feeds each line through the existing REPL command parser; output is shown in the console / HUD banner.
+- A `Cmd+R` or dedicated key opens the dialog; Esc cancels without executing.
+- The REPL `run <path>` command continues to work for programmatic use.
+
+#### Work Items
+
+- [ ] Scan `scripts/` directory at session start and on dialog open; build a sorted list of `*.txt` files
+- [ ] Add `SelectionModeScripts` to the `SelectionMode` enum in `ui/input.go`
+- [ ] Add script-browser dialog render path in `renders.go` (mirrors the system-selector dialog pattern)
+- [ ] Wire key binding to open the dialog (`Cmd+R` suggested — not currently bound to an interactive action)
+- [ ] On confirm, read the selected file line-by-line and dispatch each line through the REPL command parser via `AppCmd`
+- [ ] Surface execution progress in the HUD welcome banner ("Running: solar-tour.txt…")
+- [ ] Add `run <path>` REPL command if not already present; TAB-complete script names from `scripts/`
+- [ ] Add script browser entry to help screen in `drawHelpScreen`
+- [ ] Acceptance: user can open dialog, select `solar-tour.txt`, and the camera tour executes without terminal interaction
 
 ---
 
