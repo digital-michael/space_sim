@@ -213,6 +213,15 @@ func (ls *lightingState) unload() {
 	}
 }
 
+// setAmbient updates the ambient floor uniform on the live shader.
+// Used by the infra spotlight to boost ambient per-object.
+func (ls *lightingState) setAmbient(v float32) {
+	if !ls.loaded {
+		return
+	}
+	rl.SetShaderValue(ls.shader, ls.locAmbient, []float32{v}, rl.ShaderUniformFloat)
+}
+
 // setLights uploads the current star light data to the shader uniforms.
 // objects is the full scene list (all objects, not just frustum-visible ones)
 // so that star lighting remains correct even when the star is off-screen.

@@ -65,6 +65,13 @@ type Renderer struct {
 	atmosphere       atmosphereState
 	atmoSphere       rl.Model
 	atmoSphereLoaded bool
+
+	// infraMode is the current infra ambient-light mode:
+	//   0 = off, 1 = spotlight (FOV-centre ambient boost), 2 = reserved.
+	// cameraForward is the normalised camera look direction, updated each frame
+	// via SetInfraState so the spotlight tracks the viewpoint.
+	infraMode     int
+	cameraForward engine.Vector3
 }
 
 // modelKey indexes the model cache.
@@ -457,6 +464,14 @@ func (r *Renderer) UpdateLights(objects []*engine.Object, cameraPos engine.Vecto
 	r.lighting.setLights(objects, cameraPos)
 }
 
+// SetInfraState records the current infra mode and camera forward direction.
+// Must be called each frame before any draw calls when infraMode may change.
+// cameraForward must be normalised.
+func (r *Renderer) SetInfraState(mode int, cameraForward engine.Vector3) {
+	r.infraMode = mode
+	r.cameraForward = cameraForward
+}
+
 func (r *Renderer) DrawGroundPlane() {
 	drawGroundPlane()
 }
@@ -755,7 +770,17 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 							nightTex = r.loadTexture(obj.Meta.NightTexturePath)
 						}
 						r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
+						infraF := float32(0)
+						if r.infraMode == 1 && !obj.Meta.SelfLuminous {
+							infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
+							if infraF > 0 {
+								r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
+							}
+						}
 						rl.DrawModel(model, pos, drawScale, rl.White)
+						if infraF > 0 {
+							r.lighting.setAmbient(defaultAmbient)
+						}
 						r.drawAtmosphereGlow(obj, pos)
 						drawnCount++
 						continue
@@ -767,7 +792,17 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 					transform, drawScale := buildModelTransform(obj.Meta, simTime)
 					model.Transform = transform
 					r.lighting.applyToModel(model, false, rl.Texture2D{})
+					infraF := float32(0)
+					if r.infraMode == 1 {
+						infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
+						if infraF > 0 {
+							r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
+						}
+					}
 					rl.DrawModel(model, pos, drawScale, color)
+					if infraF > 0 {
+						r.lighting.setAmbient(defaultAmbient)
+					}
 				} else {
 					rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
 				}
@@ -909,7 +944,17 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 				nightTex = r.loadTexture(obj.Meta.NightTexturePath)
 			}
 			r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
+			infraF := float32(0)
+			if r.infraMode == 1 && !obj.Meta.SelfLuminous {
+				infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
+				if infraF > 0 {
+					r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
+				}
+			}
 			rl.DrawModel(model, pos, drawScale, rl.White)
+			if infraF > 0 {
+				r.lighting.setAmbient(defaultAmbient)
+			}
 			r.drawAtmosphereGlow(obj, pos)
 			return
 		}
@@ -921,7 +966,17 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		transform, drawScale := buildModelTransform(obj.Meta, simTime)
 		model.Transform = transform
 		r.lighting.applyToModel(model, false, rl.Texture2D{})
+		infraF := float32(0)
+		if r.infraMode == 1 {
+			infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
+			if infraF > 0 {
+				r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
+			}
+		}
 		rl.DrawModel(model, pos, drawScale, color)
+		if infraF > 0 {
+			r.lighting.setAmbient(defaultAmbient)
+		}
 	} else {
 		rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
 	}
@@ -1158,6 +1213,40 @@ func applyRingLightFactor(c rl.Color, factor float32) rl.Color {
 		B: uint8(float32(c.B) * factor),
 		A: c.A,
 	}
+}
+
+// infraSpotAmbient is the ambient floor at the centre of the infra spotlight (mode 1).
+// 0.90 makes unlit sides of planets clearly visible — like a fill light.
+const infraSpotAmbient = float32(0.90)
+
+// infraSpotInnerCos = cos(20°): objects within 20° of camera centre are fully lit.
+// infraSpotOuterCos = cos(40°): objects beyond 40° off-axis receive no boost.
+const (
+	infraSpotInnerCos = float32(0.9397) // cos(20°)
+	infraSpotOuterCos = float32(0.7660) // cos(40°)
+)
+
+// spotlightFactor returns a [0,1] blend factor indicating how centred objPos is
+// in the camera view. 1 = inside the inner cone, 0 = outside the outer cone.
+// cameraForward must be normalised.
+func spotlightFactor(objPos, cameraPos, cameraForward engine.Vector3) float32 {
+	dx := objPos.X - cameraPos.X
+	dy := objPos.Y - cameraPos.Y
+	dz := objPos.Z - cameraPos.Z
+	dist := float32(math.Sqrt(float64(dx*dx + dy*dy + dz*dz)))
+	if dist < 0.001 {
+		return 1.0
+	}
+	cosAngle := (dx*cameraForward.X + dy*cameraForward.Y + dz*cameraForward.Z) / dist
+	// smoothstep from outer edge to inner edge
+	t := (cosAngle - infraSpotOuterCos) / (infraSpotInnerCos - infraSpotOuterCos)
+	if t <= 0 {
+		return 0
+	}
+	if t >= 1 {
+		return 1
+	}
+	return t * t * (3 - 2*t)
 }
 
 // drawAtmosphereGlow renders a Fresnel rim-glow atmosphere with day/night lighting.
@@ -2714,6 +2803,10 @@ func drawHelpScreen() {
 
 	rl.DrawText(modAlt+"+L", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle object labels", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText("I", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Cycle infra light (off/spotlight/-)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText(modAlt+"+M", rightCol, y, bodySize, rl.White)

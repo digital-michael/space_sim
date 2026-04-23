@@ -157,6 +157,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		// any draw calls. Uses the full state.Objects (not frustum-culled) so the
 		// sun illuminates the scene even when it is behind the camera.
 		a.renderer.UpdateLights(state.Objects, session.cameraState.Position)
+		a.renderer.SetInfraState(a.runtime.InfraMode, session.cameraState.Forward)
 
 		if session.inputState.PerfOptions.InstancedRendering {
 			renderedCount = a.renderer.DrawObjectsInstanced(objectsToRender, session.cameraState.Position, state.Time, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled, session.inputState.PerfOptions.ImportanceThreshold)
@@ -455,6 +456,9 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		if c.SetLabelMode {
 			a.runtime.LabelMode = c.LabelMode
 		}
+		if c.SetInfraMode {
+			a.runtime.InfraMode = c.InfraMode
+		}
 
 	case GetPerfCmd:
 		numWorkers := snap.State.NumWorkers
@@ -465,6 +469,7 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			HUDVisible:  a.runtime.HUDVisible,
 			HUD:         a.runtime.HUD,
 			LabelMode:   a.runtime.LabelMode,
+			InfraMode:   a.runtime.InfraMode,
 		}
 
 	// ── System ─────────────────────────────────────────────────────────────
