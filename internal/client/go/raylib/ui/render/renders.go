@@ -811,7 +811,7 @@ func buildModelTransform(meta engine.ObjectMetadata, simTime float64) (rl.Matrix
 		spin = float32(math.Mod(simTime/periodSec*360.0, 360.0)) * rl.Deg2rad
 	}
 	poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
-	rotMat := rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
+	rotMat := rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(-spin))
 
 	eqR := meta.EquatorialRadius
 	polR := meta.PolarRadius
