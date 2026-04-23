@@ -19,6 +19,12 @@ func LoadAppConfig(path string) (AppConfig, error) {
 		Render: RenderConfig{
 			Mode: RenderModeNative,
 		},
+		Performance: PerformanceConfig{
+			FrustumCulling:     true,
+			InstancedRendering: true,
+			SpatialPartition:   true,
+			UseInPlaceSwap:     true,
+		},
 	}
 
 	if path == "" {
