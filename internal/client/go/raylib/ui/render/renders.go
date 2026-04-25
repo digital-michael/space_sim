@@ -1332,12 +1332,10 @@ func (r *Renderer) DrawSky() {
 			mats := r.skyModel.GetMaterials()
 			if len(mats) > 0 {
 				mats[0].GetMap(rl.MapDiffuse).Texture = r.skyTex
-				// Explicitly pin the sky to Raylib's built-in flat (unlit) shader.
-				// This ensures the sky is always rendered at full brightness
-				// regardless of what lighting shaders are active in the scene.
-				// rl.GetShaderIdDefault() returns the ID of Raylib's default
-				// flat shader (texture * diffuse color, no lighting computation).
-				mats[0].Shader = rl.NewShader(rl.GetShaderIdDefault(), nil)
+				// LoadModelFromMesh initialises the material with Raylib's built-in
+				// default flat shader (texture * diffuse color, no lighting). We leave
+				// that shader in place — DrawSky never calls applyToModel, so the Phong
+				// star shader is never bound to the sky material.
 			}
 			// Align sphere: par_shapes north pole is +Z; rotate to world +Y (up).
 			// Scale to sky radius after rotation — order: scale then rotate.
