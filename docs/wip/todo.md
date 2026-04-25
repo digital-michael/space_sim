@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-04-22
+2026-04-24
 
 ## Table of Contents
 1. How to Use This File
@@ -524,23 +524,27 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-004 — Milky Way Skysphere Background
 
 **Value**: Replace the blank black background with a Milky Way equirectangular panorama that rotates with camera orientation (no translational parallax at solar-system scale).
-**Status**: ✅ Complete — 2026-04-24
+**Status**: 🔄 In progress — started 2026-04-24
 **Priority**: Medium — high visual quality improvement; independent of simulation state
 **Depends on**: Camera forward vector (already available via floating-origin camera)
 
 #### Implementation
 
-- Equirectangular skysphere: unit sphere scaled to 180 000 su, drawn first inside `BeginMode3D` with depth-writes and backface culling disabled, so it is always behind all scene geometry.
-- UV fix for inside-sphere viewing: `new_u = old_v, new_v = 1 - old_u` (axis-swap + V-flip, no U-flip, unlike planet models which need the extra U-flip for outside viewing).
-- Texture: `data/assets/textures/starfield_8k.jpg` — Solar System Scope `8k_stars_milky_way.jpg` (CC BY 4.0), downloaded by `scripts/download_textures.sh`.
+- Equirectangular skysphere: unit sphere scaled to 180 000 su, drawn first inside `BeginMode3D` with depth test and depth-writes disabled, so it is always behind all scene geometry.
+- Winding fix: negative X scale (`MatrixScale(-skyRadius, skyRadius, skyRadius)`) makes inner faces front-facing; no need to toggle backface culling state.
+- UV fix for inside-sphere viewing with negative-X winding flip: `new_u = 1 - old_v, new_v = 1 - old_u` (U-flip compensates for the mirroring from negative X scale).
+- Texture: `data/assets/textures/starfield_8k.jpg` — Solar System Scope `8k_stars_milky_way.jpg` (CC BY 4.0), committed to repo.
 - No-texture mode (`--no-textures`) skips the sky gracefully; black background if texture file is absent.
-- `Renderer.Close()` clears the diffuse slot before unloading the sky model to avoid double-freeing the texture (which is also tracked in `textureCache`).
+- `Renderer.Close()` clears the diffuse slot before unloading the sky model to avoid double-freeing the texture (also in `textureCache`).
 
 #### Work Items
 
 - [x] Draw as a skysphere pass before the 3D scene, using camera orientation only (floating-origin camera is always at (0,0,0) — sphere naturally rotates with camera, never translates)
 - [x] Load Milky Way equirectangular texture; fall back silently to black if absent
-- [x] UV correction for inside-sphere viewing
+- [x] UV correction for inside-sphere viewing with winding flip
+- [x] Disable depth test + depth mask around sky draw (prevents far-plane depth precision rejection)
+- [x] Negative-X winding flip to avoid unreliable DisableBackfaceCulling interaction with DrawModel
+- [ ] Sky not yet visible — UV/winding investigation ongoing (see lessons-learned #28, #29)
 - [ ] Optional: vary star brightness/color procedurally to supplement the texture (deferred)
 
 ---

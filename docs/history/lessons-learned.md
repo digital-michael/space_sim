@@ -4,7 +4,7 @@
 Capture the major implementation defects, debugging discoveries, performance findings, and follow-up recommendations uncovered while building and stabilizing the performance testing workflow.
 
 ## Last Updated
-2026-04-23
+2026-04-24
 
 ## Table of Contents
 1. Session Overview
@@ -1945,6 +1945,103 @@ func spotlightFactor(objPos, cameraPos, cameraForward engine.Vector3) float32 {
 - The two commits are independently revertable.
 
 **When not to use this pattern**: If the plumbing change is trivially small (one field, one dispatch case), a single combined commit is cleaner. Reserve two-phase commits for features where the plumbing spans multiple packages (proto, gRPC, REPL, app wiring).
+
+---
+
+## Rendering Session Lessons (April 24, 2026) [RENDERING]
+
+### 24. **Atmosphere Shader Self-Occlusion: Star Glow Invisible Due to Lambert Term** [RENDERING]
+
+**Problem**: Sol had no visible atmosphere glow even after the point-render threshold was raised so the atmosphere shader was actually being called.
+
+**Root Cause**: The atmosphere GLSL shader uses a Lambert diffuse term to suppress the glow on the night side of planets:
+```glsl
+vec3 toLight = normalize(lightPos - fragPos);
+litFactor = mix(0.08, 1.0, max(dot(norm, toLight), 0.0));
+```
+For Sol itself, `lightPos ≈ fragPos` (Sol is its own light source, positioned in the same place). This makes `toLight ≈ -norm`, so `dot(norm, toLight) ≈ -1`, and `litFactor = 0.08` — 8% brightness, effectively invisible.
+
+**Solution**: Added a `uniform int selfLuminous` to the fragment shader. When `selfLuminous == 1`, `litFactor = 1.0` unconditionally, bypassing the Lambert term. The uniform is set from the Go side using the bit-reinterpretation pattern required for Raylib's `SetShaderValue` (which takes `[]float32` even for int uniforms):
+```go
+selfLum := int32(1)
+selfLumF := *(*float32)(unsafe.Pointer(&selfLum))
+rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locSelfLuminous,
+    []float32{selfLumF}, rl.ShaderUniformInt)
+```
+
+**Rule**: Any body that is its own light source must bypass lighting terms that compute `toLight` relative to that body's position. The `selfLuminous` flag is the correct gate.
+
+---
+
+### 25. **Point-Render Threshold Missing for Stars: Atmosphere Never Called** [RENDERING]
+
+**Problem**: Sol's atmosphere glow was never rendered at any camera distance.
+
+**Root Cause**: The renderer selects between point-rendering and sphere-rendering based on a per-category threshold. Stars had no threshold entry — they fell through to `PointThresholdDefault = 200`. At any camera distance > 200 sim units (i.e., almost always), Sol was rendered as a 2D point, and `drawAtmosphereGlow` was never called.
+
+**Solution**: Added `PointThresholdStar = 1e15` to `constants.go`. Stars are effectively never point-rendered (the threshold is higher than the maximum possible camera distance in the sim), so the sphere + atmosphere path always executes.
+
+**Rule**: Every `Category*` constant must have a corresponding point-render threshold case. When adding a new category, explicitly decide whether to point-render it and at what distance — defaulting to a shared fallback silently suppresses category-specific rendering paths.
+
+---
+
+### 26. **Atmosphere Glow Sphere Oversized: atmoCap Too Large** [RENDERING]
+
+**Problem**: Sol's corona glow sphere was far larger than expected — appearing as a bright halo 1.6× Sol's radius (a noticeable ring rather than a tight corona).
+
+**Root Cause**: `atmoCap = 0.60` capped the glow fraction at 60% above body radius. Sol's `AtmosphereThicknessKm = 2,000,000` produced `frac = (2_000_000 / (696_340 × 12742)) × 4 = 11.49`, clamped to 0.60 → glow sphere 1.6× the physical radius.
+
+**Solution**: Reduced `atmoCap` from `0.60` to `0.15`. Glow sphere is now capped at 1.15× physical radius — a tight corona halo.
+
+**Rule**: The `atmoCap` constant controls the maximum atmosphere oversize fraction. It must be tuned to the expected range of `AtmosphereThicknessKm` values in the data. When atmospheric data can include extreme outliers (like a stellar corona defined in km), a small cap is necessary to prevent visually absurd results.
+
+---
+
+### 27. **rl.NewShader(id, nil) Creates a Nil-Locs Shader: SIGSEGV in DrawModel** [RENDERING]
+
+**Problem**: App crashed with SIGSEGV at address `0x30` immediately on the first `DrawModel` call for the sky sphere.
+
+**Root Cause**: `rl.NewShader(rl.GetShaderIdDefault(), nil)` creates a `Shader` struct where the `Locs` field is `nil`. Raylib's `DrawMesh` immediately dereferences `Locs[SHADER_LOC_VERTEX_POSITION]` (array index 12, byte offset `0x30`) to resolve the vertex attribute location. This is a null pointer dereference.
+
+**Why it was used**: Attempted to assign the default flat shader to the sky model's material so the sky would always be unlit.
+
+**Why it was wrong**: `rl.LoadModelFromMesh` already initialises the model's material with Raylib's built-in default flat shader, which has a fully populated `Locs` array. `rl.NewShader` with a nil locs argument does not copy the existing locs — it creates an empty (and invalid) wrapper.
+
+**Solution**: Remove the `NewShader` call entirely. Leave the material shader as initialised by `LoadModelFromMesh`.
+
+**Rule**: Never pass `nil` as the `locs` parameter to `rl.NewShader`. To use the default shader on a model material, do nothing — `LoadModelFromMesh` already provides it. `NewShader` is only appropriate when you have a freshly compiled shader with known uniform/attribute locations to populate.
+
+---
+
+### 28. **Inside-Sphere UV Mapping: Backface Culling Vs Winding Flip** [RENDERING]
+
+**Problem**: A skysphere (viewed from inside) does not render with standard backface culling enabled — inner faces are back-facing by default.
+
+**Approach 1 (attempted, unreliable)**: `DisableBackfaceCulling()` before `DrawModel`, `EnableBackfaceCulling()` after. This proved unreliable because Raylib's `DrawModel` / `DrawMesh` pipeline may re-enable culling internally or have undefined interaction with rlgl state between batches.
+
+**Approach 2 (correct)**: Flip triangle winding by using a negative scale on one axis — `MatrixScale(-skyRadius, skyRadius, skyRadius)`. With a negative X scale, all triangles that were back-facing are now front-facing. Standard culling remains enabled and operates correctly. No rlgl state manipulation required.
+
+**UV interaction**: A negative X scale mirrors the texture horizontally. Compensate by adding a U-flip in the UV remapping step (set `new_u = 1 - old_u`). The complete UV fix for an equirectangular texture on a par_shapes sphere, viewed from inside with a negative-X winding flip:
+```go
+// old: uv[0]=latitude (par_shapes), uv[1]=longitude
+// new: standard equirectangular U=longitude, V=latitude, V-flipped for OpenGL
+uv[i*2], uv[i*2+1] = 1.0-uv[i*2+1], 1.0-uv[i*2]
+// Note: U-flip (1 - longitude) compensates for negative-X winding flip.
+```
+
+**Rule**: For inside-sphere rendering, prefer winding flip via negative scale over toggling culling state. The winding approach is deterministic and does not depend on the ordering of rlgl state changes around `DrawModel`.
+
+---
+
+### 29. **Depth Precision at Far-Plane Boundary: DisableDepthTest for Sky** [RENDERING]
+
+**Problem**: A skysphere at radius 180,000 su with far plane at 200,000 su may not render because depth precision near the far plane causes nearly every fragment to fail the depth test.
+
+**Root Cause**: Non-linear depth buffer precision (z-buffer uses `1/z` distribution). At 90% of the far plane, the depth value is ~0.9999; floating-point imprecision can cause fragments to test as "behind" existing geometry or the far plane itself.
+
+**Solution**: Call `rl.DisableDepthTest()` immediately before drawing the sky sphere, and `rl.EnableDepthTest()` immediately after. Also call `rl.DisableDepthMask()` / `rl.EnableDepthMask()` around the same draw to prevent the sky from writing depth values that would occlude all scene geometry.
+
+**Rule**: Background elements drawn at or near the far plane should have depth testing disabled entirely, not just depth writes. `DisableDepthMask` prevents writing; `DisableDepthTest` prevents the draw from being rejected by existing depth values. Both are needed for a reliable background.
 
 ---
 
