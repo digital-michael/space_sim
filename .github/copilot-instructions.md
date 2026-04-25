@@ -28,10 +28,10 @@ The acknowledgment must always communicate three things:
 
 Use this message shape:
 
-**"I'm Locked-In now" + reason clause + lock-state clause**
+**"At <date time>: I'm Locked-In now" + reason clause + lock-state clause**
 
 Required variants:
-
+- all variantes start with "At ", the current date and time followed by ", "
 - New user chat:
 	- `I'm Locked-In now by user action and this locked-in context was not already loaded.`
 - Delegated or supporting context:
