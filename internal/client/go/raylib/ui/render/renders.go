@@ -1265,7 +1265,7 @@ func spotlightFactor(objPos, cameraPos, cameraForward engine.Vector3) float32 {
 //
 //	km_per_sim_unit = 12742  (calibrated to Earth: 6371 km / 0.5 sim = 12742 km/su)
 //	frac = (AtmosphereThicknessKm / (bodyRadius * km_per_sim_unit)) * 4
-//	glowRadius = bodyRadius * (1 + clamp(frac, 0.04, 0.60))
+//	glowRadius = bodyRadius * (1 + clamp(frac, 0.04, 0.15))
 func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	if obj.Meta.AtmosphereThicknessKm <= 0 || obj.Meta.AtmosphereColorHint.A == 0 {
 		return
@@ -1293,7 +1293,7 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 		kmPerSimUnit = float32(12742)
 		atmoBoost    = float32(4)    // visual boost; 100km/6371km*4 ≈ 6% for Earth
 		atmoFloor    = float32(0.04) // minimum 4% — ensures any atmosphere is visible
-		atmoCap      = float32(0.60) // maximum 60% — bounds Sol's corona to 1.6× radius
+		atmoCap      = float32(0.15) // maximum 15% — keeps Sol's corona as a tight rim halo
 	)
 	// Use the stored real-world radius when available; fall back to Earth-calibrated.
 	bodyRadiusKm := baseRadius * kmPerSimUnit
