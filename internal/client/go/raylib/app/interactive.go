@@ -104,6 +104,11 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 
 		rl.BeginMode3D(camera)
 
+		// Sky must be drawn first inside BeginMode3D — before any scene geometry —
+		// so that all foreground objects occlude it. The skysphere is centred at the
+		// floating-origin camera (0,0,0) and only rotates with the camera.
+		a.renderer.DrawSky()
+
 		objectsToRender := make([]*engine.Object, 0, len(state.Objects))
 		for _, obj := range state.Objects {
 			if obj.Visible {

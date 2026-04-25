@@ -72,6 +72,14 @@ type Renderer struct {
 	// via SetInfraState so the spotlight tracks the viewpoint.
 	infraMode     int
 	cameraForward engine.Vector3
+
+	// sky holds the Milky Way background skysphere. The sphere is centred at the
+	// floating-origin camera (always (0,0,0)), so it rotates with camera orientation
+	// but never translates — producing correct parallax-free sky behaviour.
+	skyTex         rl.Texture2D
+	skyModel       rl.Model
+	skyLoaded      bool // true once load was attempted (even if it failed)
+	skyModelLoaded bool // true if the model is ready to draw
 }
 
 // modelKey indexes the model cache.
@@ -387,6 +395,29 @@ func (r *Renderer) Close() {
 	}
 	setLayoutSize(0, 0)
 	r.lighting.unload()
+	if r.atmosphere.loaded {
+		r.atmosphere.unload()
+	}
+	if r.atmoSphereLoaded {
+		// Clear diffuse slot before unloading so Raylib does not double-free the
+		// atmosphere texture (it is not cached separately — it has no path).
+		mats := r.atmoSphere.GetMaterials()
+		if len(mats) > 0 {
+			mats[0].GetMap(rl.MapDiffuse).Texture = rl.Texture2D{}
+		}
+		rl.UnloadModel(r.atmoSphere)
+		r.atmoSphereLoaded = false
+	}
+	if r.skyModelLoaded {
+		// Clear diffuse slot — sky texture lives in textureCache and will be
+		// freed by the texture-cache loop above; avoid a double-free here.
+		mats := r.skyModel.GetMaterials()
+		if len(mats) > 0 {
+			mats[0].GetMap(rl.MapDiffuse).Texture = rl.Texture2D{}
+		}
+		rl.UnloadModel(r.skyModel)
+		r.skyModelLoaded = false
+	}
 }
 
 func (r *Renderer) BeginFrame() {
@@ -1254,6 +1285,71 @@ func spotlightFactor(objPos, cameraPos, cameraForward engine.Vector3) float32 {
 		return 1
 	}
 	return t * t * (3 - 2*t)
+}
+
+// skyTexPath is the default path to the Milky Way equirectangular panorama used
+// as the background skysphere. The file is downloaded by scripts/download_textures.sh
+// ("Downloading starfield background" step: 8k_stars_milky_way.jpg → starfield_8k.jpg).
+const skyTexPath = "data/assets/textures/starfield_8k.jpg"
+
+// skyRadius is the radius of the background skysphere in sim units. It must be
+// smaller than CameraFarPlane so the sphere is never clipped, but large enough
+// to sit well beyond any simulated body.
+const skyRadius = float32(180000.0)
+
+// DrawSky renders the Milky Way background skysphere before scene geometry.
+// Must be called inside rl.BeginMode3D and before any other 3D draw calls so
+// the sky is always occluded by foreground objects.
+//
+// The sphere is always centred at the floating-origin camera position (0,0,0),
+// so it rotates with camera orientation but never translates — producing the
+// correct parallax-free backdrop for a solar-system-scale scene.
+// If noTextures is set or the texture file is absent, DrawSky is a no-op and
+// the background remains black.
+func (r *Renderer) DrawSky() {
+	if r.noTextures {
+		return
+	}
+	if !r.skyLoaded {
+		r.skyLoaded = true
+		r.skyTex = r.loadTexture(skyTexPath)
+		if r.skyTex.ID > 0 {
+			mesh := rl.GenMeshSphere(1.0, 32, 16)
+			// UV fix for inside-sphere (sky-dome) viewing.
+			// par_shapes stores: uv[0]=latitude (0=south, 1=north),
+			//                    uv[1]=longitude (0→1 left-to-right from outside).
+			// Standard equirectangular wants U=longitude, V=1-latitude
+			// (stb_image is top-first; OpenGL V=0 is bottom, so V must be flipped).
+			// Unlike planet models (outside view, needs extra U-flip), the sky is
+			// viewed from inside — longitude direction is already correct.
+			n := int(mesh.VertexCount)
+			uv := unsafe.Slice(mesh.Texcoords, n*2)
+			for i := 0; i < n; i++ {
+				uv[i*2], uv[i*2+1] = uv[i*2+1], 1.0-uv[i*2]
+			}
+			rl.UpdateMeshBuffer(mesh, 1, unsafe.Slice((*byte)(unsafe.Pointer(mesh.Texcoords)), n*8), 0)
+			r.skyModel = rl.LoadModelFromMesh(mesh)
+			mats := r.skyModel.GetMaterials()
+			if len(mats) > 0 {
+				mats[0].GetMap(rl.MapDiffuse).Texture = r.skyTex
+			}
+			// Align sphere: par_shapes north pole is +Z; rotate to world +Y (up).
+			// Scale to sky radius after rotation — order: scale then rotate.
+			r.skyModel.Transform = rl.MatrixMultiply(
+				rl.MatrixRotateX(-90*rl.Deg2rad),
+				rl.MatrixScale(skyRadius, skyRadius, skyRadius),
+			)
+			r.skyModelLoaded = true
+		}
+	}
+	if !r.skyModelLoaded {
+		return // texture not found or failed to load
+	}
+	rl.DisableDepthMask()       // sky must never write to the depth buffer
+	rl.DisableBackfaceCulling() // we are inside the sphere; render its inner surface
+	rl.DrawModel(r.skyModel, rl.Vector3{}, 1.0, rl.White)
+	rl.EnableBackfaceCulling()
+	rl.EnableDepthMask()
 }
 
 // drawAtmosphereGlow renders a Fresnel rim-glow atmosphere with day/night lighting.

@@ -521,19 +521,27 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 
 ---
 
-### F-004 — Procedural Star Field Background
+### F-004 — Milky Way Skysphere Background
 
-**Value**: Replace the blank black background with a static star field that shifts parallax-correctly with camera orientation (rotation only; no translational parallax at solar-system scale).
-**Status**: 📋 Not started
+**Value**: Replace the blank black background with a Milky Way equirectangular panorama that rotates with camera orientation (no translational parallax at solar-system scale).
+**Status**: ✅ Complete — 2026-04-24
 **Priority**: Medium — high visual quality improvement; independent of simulation state
-**Depends on**: Camera forward vector (already available)
+**Depends on**: Camera forward vector (already available via floating-origin camera)
+
+#### Implementation
+
+- Equirectangular skysphere: unit sphere scaled to 180 000 su, drawn first inside `BeginMode3D` with depth-writes and backface culling disabled, so it is always behind all scene geometry.
+- UV fix for inside-sphere viewing: `new_u = old_v, new_v = 1 - old_u` (axis-swap + V-flip, no U-flip, unlike planet models which need the extra U-flip for outside viewing).
+- Texture: `data/assets/textures/starfield_8k.jpg` — Solar System Scope `8k_stars_milky_way.jpg` (CC BY 4.0), downloaded by `scripts/download_textures.sh`.
+- No-texture mode (`--no-textures`) skips the sky gracefully; black background if texture file is absent.
+- `Renderer.Close()` clears the diffuse slot before unloading the sky model to avoid double-freeing the texture (which is also tracked in `textureCache`).
 
 #### Work Items
 
-- [ ] Generate a deterministic set of background star positions on a unit sphere at startup (seeded RNG, configurable count)
-- [ ] Draw as a sky-box or point-sprite pass before the 3D scene, using camera orientation only (strip camera translation from the view matrix)
-- [ ] Vary brightness and color temperature by a Gaussian distribution approximating the Milky Way density band
-- [ ] Optional: load a real-star catalog (Hipparcos subset) for accurate positions
+- [x] Draw as a skysphere pass before the 3D scene, using camera orientation only (floating-origin camera is always at (0,0,0) — sphere naturally rotates with camera, never translates)
+- [x] Load Milky Way equirectangular texture; fall back silently to black if absent
+- [x] UV correction for inside-sphere viewing
+- [ ] Optional: vary star brightness/color procedurally to supplement the texture (deferred)
 
 ---
 
