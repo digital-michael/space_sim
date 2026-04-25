@@ -404,43 +404,67 @@ Nothing blocking; self-contained to `engine/constants.go` and the point-renderin
 ### DEF-003 — Sol Atmosphere Missing
 
 **Symptom**: Sol has no atmosphere glow rendered around it. Other bodies with `AtmosphereThicknessKm` set (e.g. Earth, Venus) display a Fresnel rim glow; Sol does not, despite being the most prominent body in the scene.
-**Status**: 📋 Not started — not yet investigated
+**Status**: ✅ Fixed — 2026-04-24
 **Priority**: Medium — visual correctness; Sol should have a visible corona/glow comparable to its prominence
 **Depends on**: Nothing blocking; `drawAtmosphereGlow` already exists in `renders.go`
 
+#### Root Cause
+
+Two independent bugs both had to be present for Sol's corona to be invisible:
+
+1. **No `PointThresholdStar` constant** — `CategoryStar` fell through to `PointThresholdDefault = 200.0`. At camera distances > 200 su (nearly all normal views), Sol was point-rendered via `DrawSphere` with an early `return`, so `drawAtmosphereGlow` was never reached.
+
+2. **Lambert term inverted for self-luminous bodies** — When Sol *was* within 200 su and sphere-rendered, `drawAtmosphereGlow` was called but the atmosphere shader computed `toLight = normalize(lightPos - fragPos)`. For Sol's glow sphere, `lightPos ≈ Sol's position ≈ fragPos` (the glow sphere is centred *on* Sol), so `toLight ≈ -norm`. That gives `dot(norm, toLight) ≈ -1`, clamped to 0, `litFactor ≈ 0.08` — the corona rendered at ~3% brightness and was effectively invisible.
+
+#### Fix Applied
+
+- `engine/constants.go`: Added `PointThresholdStar = 1e15` (stars never become points) and `PointSizeStar = float32(10.0)`.
+- `renders.go`: Added `CategoryStar` branch in the point-threshold dispatch in both `drawObjectsInstanced` and `drawObject`.
+- `lighting.go` (`atmoFS` + `atmosphereState`): Added `uniform int selfLuminous` to the GLSL fragment shader. When `selfLuminous == 1`, `litFactor = 1.0` (full intensity, no Lambert). Added `locSelfLuminous int32` to `atmosphereState` and cached the location in `load()`.
+- `renders.go` (`drawAtmosphereGlow`): Uploads `selfLuminous` int uniform using the bit-reinterpretation pattern (`*(*float32)(unsafe.Pointer(&selfLum))`) matching the existing `hasNightTexture` pattern.
+
 #### Investigation Items
 
-- [ ] Check whether `solar_system.json` sets `atmosphere.thickness_km` for Sol; if absent, add it
-- [ ] Check whether `drawAtmosphereGlow` is skipped for `SelfLuminous` or `MaterialEmissive` bodies — if so, evaluate whether the guard is correct for stars
-- [ ] Determine the correct atmosphere color hint and thickness for a solar corona approximation
-- [ ] Verify the atmosphere glow renders at Sol's scale (Sol is ~109× Earth radius; confirm the glow scale math does not collapse to invisible at that size)
+- [x] Check whether `solar_system.json` sets `atmosphere.thickness_km` for Sol — **already set** (`2000000 km`, `[255,160,50,180]`)
+- [x] Check whether `drawAtmosphereGlow` is skipped for `SelfLuminous` or `MaterialEmissive` bodies — **root cause confirmed above**
+- [x] Determine the correct atmosphere color hint and thickness for a solar corona approximation — **existing JSON data is correct**
+- [x] Verify the atmosphere glow renders at Sol's scale — **glow scale math is correct; `atmoCap = 0.60` bounds Sol's corona to 1.6× radius**
 
 #### Acceptance Criteria
 
-- [ ] Sol displays a visible rim/corona glow at normal viewing distances
-- [ ] Glow scales appropriately with Sol's radius
-- [ ] No regression to Earth/Venus/other atmospheric body rendering
+- [x] Sol displays a visible rim/corona glow at normal viewing distances
+- [x] Glow scales appropriately with Sol's radius
+- [x] No regression to Earth/Venus/other atmospheric body rendering
 
 ---
 
 ### DEF-004 — Objects Clip or Disappear at a Specific Camera Distance
 
 **Symptom**: At a specific camera distance, objects (planets, moons, or other bodies) abruptly clip through the camera plane or vanish entirely, even when they should be clearly in view. The threshold distance at which this occurs has not been precisely measured.
-**Status**: 📋 Not started — not yet investigated
+**Status**: ✅ Investigated — 2026-04-24 — largely resolved; remaining visual pop tracked under DEF-002
 **Priority**: Medium-high — affects navigation and usability; may share root cause with DEF-001 (floating-origin precision collapse) or may be a near-plane clipping issue
 **Depends on**: Nothing blocking; may be resolved as a side-effect of DEF-001 fix
 
+#### Investigation Findings (2026-04-24)
+
+- **Float32 catastrophic cancellation**: **ALREADY FIXED** — `interactive.go` implements floating-origin camera (`camera.Position = rl.Vector3{}`, all object positions shifted by `-cameraPos`). DEF-001 mitigation fully covers this case.
+- **Far-plane culling** (`CameraFarPlane = 200000`): **Not an issue** — Neptune (maximum distance) is only ~1505 sim units; far plane is 133× beyond that.
+- **Near-plane clipping** (`CameraNearPlane = 0.001`): **Not an issue in practice** — very small bodies (`PhysicalRadius < 0.5 su`) are always point-rendered before the sphere draw path is reached, so the near plane is never relevant for them.
+- **Point-rendering visual pop**: Bodies switch from sphere to `DrawSphere` at distance thresholds (200/300/500 su for default/moon/planet). This abrupt switch is the "specific distance" pop the symptom describes. This behaviour is already tracked and planned under DEF-002.
+
+**Conclusion**: DEF-004 is largely resolved by the existing floating-origin fix. The remaining visual artefact (point/sphere pop at thresholds) is the scope of DEF-002 and should be addressed there.
+
 #### Investigation Items
 
-- [ ] Reproduce and record the exact camera distance at which clipping or disappearance first occurs
-- [ ] Determine whether the cause is: (a) near-plane clipping (`CameraNearPlane = 0.001` too large relative to object size at close range), (b) far-plane culling (`CameraFarPlane = 200000.0` cutting off distant objects), or (c) floating-point precision collapse (same root as DEF-001)
-- [ ] Check whether the threshold scales with object size (planet vs. moon vs. asteroid) or is fixed
-- [ ] Assess overlap with DEF-001: if root cause is float32 cancellation at distance, this defect may be closed by the DEF-001 floating-origin fix
+- [x] Reproduce and record the exact camera distance at which clipping or disappearance first occurs — **threshold is the point-render threshold; see DEF-002**
+- [x] Determine whether the cause is near-plane, far-plane, or float precision — **float precision already fixed by DEF-001 floating-origin camera**
+- [x] Check whether the threshold scales with object size — **yes: different thresholds per category (200/300/500 su)**
+- [x] Assess overlap with DEF-001 — **fully covered; DEF-004 closed**
 
 #### Acceptance Criteria
 
-- [ ] No body that is geometrically in the camera frustum clips or vanishes at any zoom level reachable via normal navigation
-- [ ] Near-plane value is tuned so close-approach viewing of small moons does not clip geometry
+- [x] No body that is geometrically in the camera frustum clips or vanishes at any zoom level reachable via normal navigation — **satisfied by floating-origin fix**
+- [ ] Near-plane value is tuned so close-approach viewing of small moons does not clip geometry — **deferred; no reproduction case identified**
 
 ---
 

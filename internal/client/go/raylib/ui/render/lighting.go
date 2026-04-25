@@ -114,33 +114,43 @@ void main() {
 // atmoFS is the fragment shader for the atmosphere rim-glow effect.
 // Fresnel rim term: transparent face-on, bright at the limb.
 // Lambert sun-facing term: day side lit, night side dim (8% ambient scatter floor).
+// Self-luminous bodies (stars) bypass the Lambert term — their corona glows uniformly.
 // Output is used with BlendAddColors — alpha channel is ignored by the blend equation.
 const atmoFS = `#version 330
 in vec3 fragPos;
 in vec3 fragNormal;
-uniform vec3  lightPos;   // primary star, camera-relative world space
-uniform vec4  glowColor;  // RGB tint; alpha is an intensity weight
-uniform float glowEdge;   // Fresnel exponent (higher = narrower limb halo)
+uniform vec3  lightPos;      // primary star, camera-relative world space
+uniform vec4  glowColor;     // RGB tint; alpha is an intensity weight
+uniform float glowEdge;      // Fresnel exponent (higher = narrower limb halo)
+uniform int   selfLuminous;  // 1 if this body emits its own light (star); 0 otherwise
 out vec4 finalColor;
 void main() {
     vec3 viewDir = normalize(-fragPos);   // camera is always at origin in cam-relative space
     vec3 norm    = normalize(fragNormal);
     // Fresnel rim: 0 when facing camera, 1 at 90-degree grazing angle
     float rim = pow(max(1.0 - abs(dot(norm, viewDir)), 0.0), glowEdge);
-    // Lambert sun-facing: bright on day side, near-zero on night side
-    vec3  toLight   = normalize(lightPos - fragPos);
-    float litFactor = mix(0.08, 1.0, max(dot(norm, toLight), 0.0));
+    // Lambert sun-facing: bright on day side, near-zero on night side.
+    // Self-luminous bodies skip this — the star illuminates its own corona from
+    // within, so the glow is at full intensity all the way around the limb.
+    float litFactor;
+    if (selfLuminous == 1) {
+        litFactor = 1.0;
+    } else {
+        vec3 toLight = normalize(lightPos - fragPos);
+        litFactor = mix(0.08, 1.0, max(dot(norm, toLight), 0.0));
+    }
     finalColor = vec4(glowColor.rgb * glowColor.a * rim * litFactor, 1.0);
 }
 `
 
 // atmosphereState owns the rim-glow + day/night atmosphere shader.
 type atmosphereState struct {
-	shader       rl.Shader
-	loaded       bool
-	locLightPos  int32
-	locGlowColor int32
-	locGlowEdge  int32
+	shader          rl.Shader
+	loaded          bool
+	locLightPos     int32
+	locGlowColor    int32
+	locGlowEdge     int32
+	locSelfLuminous int32
 }
 
 // load compiles the atmosphere shader and caches uniform locations. Idempotent.
@@ -152,6 +162,7 @@ func (as *atmosphereState) load() {
 	as.locLightPos = rl.GetShaderLocation(as.shader, "lightPos")
 	as.locGlowColor = rl.GetShaderLocation(as.shader, "glowColor")
 	as.locGlowEdge = rl.GetShaderLocation(as.shader, "glowEdge")
+	as.locSelfLuminous = rl.GetShaderLocation(as.shader, "selfLuminous")
 	as.loaded = true
 }
 

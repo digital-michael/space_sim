@@ -12,6 +12,11 @@ const (
 	PointSizeDefault = float32(2.0)
 	PointSizeMoon    = float32(4.0)
 	PointSizePlanet  = float32(6.0)
+	PointSizeStar    = float32(10.0) // minimum apparent size; stars rarely point-render
+
+	// Stars never become points via the threshold — they are always drawn as
+	// full spheres so their atmosphere/corona glow is never skipped.
+	PointThresholdStar = 1e15
 
 	// LOD distance thresholds for sphere geometry quality.
 	LODVeryClose = 20.0

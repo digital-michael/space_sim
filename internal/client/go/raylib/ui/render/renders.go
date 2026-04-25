@@ -675,6 +675,9 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				pointThreshold = engine.PointThresholdPlanet
 			} else if obj.Meta.Category == engine.CategoryMoon {
 				pointThreshold = engine.PointThresholdMoon
+			} else if obj.Meta.Category == engine.CategoryStar {
+				pointThreshold = engine.PointThresholdStar
+				pointSize = engine.PointSizeStar
 			}
 
 			if distance > pointThreshold || obj.Meta.PhysicalRadius < 0.5 {
@@ -890,6 +893,8 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 			pointThreshold = engine.PointThresholdPlanet
 		} else if obj.Meta.Category == engine.CategoryMoon {
 			pointThreshold = engine.PointThresholdMoon
+		} else if obj.Meta.Category == engine.CategoryStar {
+			pointThreshold = engine.PointThresholdStar
 		}
 
 		if distance > pointThreshold || obj.Meta.PhysicalRadius < 0.5 {
@@ -899,6 +904,8 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 				pointSize = engine.PointSizePlanet
 			} else if obj.Meta.Category == engine.CategoryMoon {
 				pointSize = engine.PointSizeMoon
+			} else if obj.Meta.Category == engine.CategoryStar {
+				pointSize = engine.PointSizeStar
 			}
 
 			// Draw point using a small sphere (more visible than DrawPixel3D)
@@ -1326,6 +1333,14 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locLightPos, lightPos, rl.ShaderUniformVec3)
 	const glowEdge = float32(3.5) // Fresnel exponent: narrower > 5, broader < 3
 	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowEdge, []float32{glowEdge}, rl.ShaderUniformFloat)
+	// Self-luminous bodies (stars) illuminate their own corona from within; bypass
+	// the Lambert day/night term so the glow is at full intensity all around the limb.
+	selfLum := int32(0)
+	if obj.Meta.SelfLuminous {
+		selfLum = 1
+	}
+	selfLumF := *(*float32)(unsafe.Pointer(&selfLum))
+	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locSelfLuminous, []float32{selfLumF}, rl.ShaderUniformInt)
 
 	rl.BeginBlendMode(rl.BlendAddColors)
 	// Disable depth writes so the atmosphere sphere does not overwrite the depth
