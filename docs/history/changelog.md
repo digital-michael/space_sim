@@ -4,7 +4,7 @@
 Capture completed work after it leaves the active backlog. This is a concise delivery history, not a full commit log.
 
 ## Last Updated
-2026-04-08
+2026-04-26
 
 ## Table of Contents
 1. How to Use This File
@@ -243,4 +243,13 @@ Validation snapshot:
 - Fix CLI render flags (`--render-scale`, `--render-size`) persisting to `app.json` on exit — now captured pre-CLI and restored on persist
 - Fix time rate HUD showing animation speed instead of simulation seconds-per-second
 - Revert HiDPI coordinate queries from `GetRenderWidth/Height` to `GetScreenWidth/Height` (windowed scaling regression fix)
+
+### 3.9 Visual Rendering: Atmosphere, Sol, and Milky Way Sky (April 2026)
+
+**End Date**: 2026-04-26
+
+- **DEF-003 fixed**: Sol atmosphere glow was invisible due to two independent root causes: (1) no `PointThresholdStar` constant caused Sol to always point-render, bypassing the sphere+atmosphere path; (2) the atmosphere GLSL Lambert term evaluated `lightPos ≈ fragPos` for Sol (its own light source), giving `litFactor = 0.08` (8% brightness). Fixed by adding `PointThresholdStar = 1e15` and `uniform int selfLuminous` to the fragment shader — stars bypass the Lambert term entirely.
+- **Sol corona tuned**: `atmoCap` reduced from `0.60` → `0.15`; glow sphere now 1.15× body radius (tight corona halo) instead of 1.6×.
+- **DEF-004 closed**: Objects clipping at specific camera distance was entirely explained by the existing floating-origin fix (DEF-001). Remaining point/sphere pop tracked as DEF-002.
+- **F-004 complete**: Milky Way equirectangular skysphere background rendered via `DrawSky()`. Sphere radius 5.0 su (not 180,000 — large radius causes float32 clip-space precision loss that silently discards all triangles). Depth test + depth mask disabled during sky draw. Negative-X scale for winding flip; UV fix `new_u = 1−old_v, new_v = 1−old_u`. Texture: `data/assets/textures/starfield_8k.jpg` (8k_stars_milky_way, CC BY 4.0). Always lit at full brightness via Raylib's default flat shader.
 - Set initial tracking camera distance to star surface + 0.75 AU
