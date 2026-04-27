@@ -65,21 +65,6 @@ type Renderer struct {
 	atmosphere       atmosphereState
 	atmoSphere       rl.Model
 	atmoSphereLoaded bool
-
-	// infraMode is the current infra ambient-light mode:
-	//   0 = off, 1 = spotlight (FOV-centre ambient boost), 2 = reserved.
-	// cameraForward is the normalised camera look direction, updated each frame
-	// via SetInfraState so the spotlight tracks the viewpoint.
-	infraMode     int
-	cameraForward engine.Vector3
-
-	// sky holds the Milky Way background skysphere. The sphere is centred at the
-	// floating-origin camera (always (0,0,0)), so it rotates with camera orientation
-	// but never translates — producing correct parallax-free sky behaviour.
-	skyTex         rl.Texture2D
-	skyModel       rl.Model
-	skyLoaded      bool // true once load was attempted (even if it failed)
-	skyModelLoaded bool // true if the model is ready to draw
 }
 
 // modelKey indexes the model cache.
@@ -154,22 +139,6 @@ func (r *Renderer) getModel(path string, rings, slices int32) (rl.Model, bool) {
 	model.GetMaterials()[0].GetMap(rl.MapDiffuse).Texture = tex
 	r.modelCache[key] = model
 	return model, true
-}
-
-// getUntexturedModel returns a cached unit-sphere model with no texture bound.
-// Used to apply the Phong shader with a solid-colour tint to untextured bodies
-// (moons, dwarf planets, asteroids). The default Raylib texture for an unbound
-// MAP_DIFFUSE slot is a 1×1 white pixel, so the fragment colour becomes
-// colDiffuse × lighting — exactly the object's configured colour shaded by stars.
-func (r *Renderer) getUntexturedModel(rings, slices int32) rl.Model {
-	key := modelKey{path: "", rings: rings, slices: slices}
-	if m, ok := r.modelCache[key]; ok {
-		return m
-	}
-	mesh := rl.GenMeshSphere(1.0, int(rings), int(slices))
-	model := rl.LoadModelFromMesh(mesh)
-	r.modelCache[key] = model
-	return model
 }
 
 // loadRingImage returns a cached CPU-side image for the given ring colour-strip
@@ -395,29 +364,6 @@ func (r *Renderer) Close() {
 	}
 	setLayoutSize(0, 0)
 	r.lighting.unload()
-	if r.atmosphere.loaded {
-		r.atmosphere.unload()
-	}
-	if r.atmoSphereLoaded {
-		// Clear diffuse slot before unloading so Raylib does not double-free the
-		// atmosphere texture (it is not cached separately — it has no path).
-		mats := r.atmoSphere.GetMaterials()
-		if len(mats) > 0 {
-			mats[0].GetMap(rl.MapDiffuse).Texture = rl.Texture2D{}
-		}
-		rl.UnloadModel(r.atmoSphere)
-		r.atmoSphereLoaded = false
-	}
-	if r.skyModelLoaded {
-		// Clear diffuse slot — sky texture lives in textureCache and will be
-		// freed by the texture-cache loop above; avoid a double-free here.
-		mats := r.skyModel.GetMaterials()
-		if len(mats) > 0 {
-			mats[0].GetMap(rl.MapDiffuse).Texture = rl.Texture2D{}
-		}
-		rl.UnloadModel(r.skyModel)
-		r.skyModelLoaded = false
-	}
 }
 
 func (r *Renderer) BeginFrame() {
@@ -493,14 +439,6 @@ func (r *Renderer) UpdateLights(objects []*engine.Object, cameraPos engine.Vecto
 	}
 	r.lighting.load()
 	r.lighting.setLights(objects, cameraPos)
-}
-
-// SetInfraState records the current infra mode and camera forward direction.
-// Must be called each frame before any draw calls when infraMode may change.
-// cameraForward must be normalised.
-func (r *Renderer) SetInfraState(mode int, cameraForward engine.Vector3) {
-	r.infraMode = mode
-	r.cameraForward = cameraForward
 }
 
 func (r *Renderer) DrawGroundPlane() {
@@ -659,22 +597,8 @@ type InstanceBatch struct {
 
 // drawObjectsInstanced draws objects using batching to reduce draw calls
 func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
-	// Build a name→radius map so ring shadow computation can look up the host
-	// planet's physical radius without accessing the full object list per ring.
-	parentRadius := make(map[string]float32, len(objects))
-	for _, obj := range objects {
-		if obj.Meta.InnerRadius == 0 {
-			parentRadius[obj.Meta.Name] = obj.Meta.PhysicalRadius
-		}
-	}
-
 	// Group objects into batches by their rendering properties
 	batches := make(map[string]*InstanceBatch)
-	// Rings are collected here and drawn after all planet batches (including their
-	// atmosphere glows) to eliminate ring/atmosphere Z-fighting at the equatorial
-	// boundary — both are transparent (DisableDepthMask) and share the same depth
-	// range around the planet centre; drawing rings last gives consistent ordering.
-	var deferredRings []*engine.Object
 	drawnCount := 0
 
 	for _, obj := range objects {
@@ -683,9 +607,10 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 			continue
 		}
 
-		// Defer rings — see deferredRings comment above.
+		// Skip rings - they need individual rendering
 		if obj.Meta.InnerRadius > 0 {
-			deferredRings = append(deferredRings, obj)
+			drawObject(r, obj, cameraPos, simTime, pointRenderingEnabled, lodEnabled)
+			drawnCount++
 			continue
 		}
 
@@ -706,9 +631,6 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				pointThreshold = engine.PointThresholdPlanet
 			} else if obj.Meta.Category == engine.CategoryMoon {
 				pointThreshold = engine.PointThresholdMoon
-			} else if obj.Meta.Category == engine.CategoryStar {
-				pointThreshold = engine.PointThresholdStar
-				pointSize = engine.PointSizeStar
 			}
 
 			if distance > pointThreshold || obj.Meta.PhysicalRadius < 0.5 {
@@ -804,42 +726,14 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 							nightTex = r.loadTexture(obj.Meta.NightTexturePath)
 						}
 						r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
-						infraF := float32(0)
-						if r.infraMode == 1 && !obj.Meta.SelfLuminous {
-							infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
-							if infraF > 0 {
-								r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
-							}
-						}
 						rl.DrawModel(model, pos, drawScale, rl.White)
-						if infraF > 0 {
-							r.lighting.setAmbient(defaultAmbient)
-						}
 						r.drawAtmosphereGlow(obj, pos)
 						drawnCount++
 						continue
 					}
 				}
-				// Fallback: untextured sphere with Phong lighting when available.
-				if !r.noLighting && !obj.Meta.SelfLuminous {
-					model := r.getUntexturedModel(batch.rings, batch.slices)
-					transform, drawScale := buildModelTransform(obj.Meta, simTime)
-					model.Transform = transform
-					r.lighting.applyToModel(model, false, rl.Texture2D{})
-					infraF := float32(0)
-					if r.infraMode == 1 {
-						infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
-						if infraF > 0 {
-							r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
-						}
-					}
-					rl.DrawModel(model, pos, drawScale, color)
-					if infraF > 0 {
-						r.lighting.setAmbient(defaultAmbient)
-					}
-				} else {
-					rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
-				}
+				// Fallback: solid color sphere.
+				rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
 				r.drawAtmosphereGlow(obj, pos)
 				// Wireframe
 				if obj.Meta.Material != engine.MaterialEmissive {
@@ -850,18 +744,6 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 
 			drawnCount++
 		}
-	}
-
-	// Draw rings after all opaque bodies and their atmosphere glows.
-	for _, obj := range deferredRings {
-		pos := rl.Vector3{
-			X: obj.Anim.Position.X - cameraPos.X,
-			Y: obj.Anim.Position.Y - cameraPos.Y,
-			Z: obj.Anim.Position.Z - cameraPos.Z,
-		}
-		pr := parentRadius[obj.Meta.ParentName]
-		drawRingDisc(r, obj, pos, pr)
-		drawnCount++
 	}
 
 	return drawnCount
@@ -880,7 +762,7 @@ func buildModelTransform(meta engine.ObjectMetadata, simTime float64) (rl.Matrix
 		spin = float32(math.Mod(simTime/periodSec*360.0, 360.0)) * rl.Deg2rad
 	}
 	poleAndTilt := rl.MatrixMultiply(rl.MatrixRotateX(-90*rl.Deg2rad), rl.MatrixRotateZ(tilt))
-	rotMat := rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(-spin))
+	rotMat := rl.MatrixMultiply(poleAndTilt, rl.MatrixRotateY(spin))
 
 	eqR := meta.EquatorialRadius
 	polR := meta.PolarRadius
@@ -924,8 +806,6 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 			pointThreshold = engine.PointThresholdPlanet
 		} else if obj.Meta.Category == engine.CategoryMoon {
 			pointThreshold = engine.PointThresholdMoon
-		} else if obj.Meta.Category == engine.CategoryStar {
-			pointThreshold = engine.PointThresholdStar
 		}
 
 		if distance > pointThreshold || obj.Meta.PhysicalRadius < 0.5 {
@@ -935,19 +815,81 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 				pointSize = engine.PointSizePlanet
 			} else if obj.Meta.Category == engine.CategoryMoon {
 				pointSize = engine.PointSizeMoon
-			} else if obj.Meta.Category == engine.CategoryStar {
-				pointSize = engine.PointSizeStar
 			}
 
 			// Draw point using a small sphere (more visible than DrawPixel3D)
 			rl.DrawSphere(pos, pointSize*0.1, color)
 			return
 		}
-	} // Planetary rings are drawn after all opaque objects and their atmosphere glows
-	// (see drawObjectsInstanced). This path handles the single-object draw case
-	// (no parent radius available, so planet shadow is skipped).
+	} // Planetary rings are drawn as transparent flat discs with radial texture sampling.
+	// BlendAlpha + DisableDepthMask prevents ring geometry from occluding objects
+	// behind it while still being depth-tested against closer geometry (same lesson
+	// as the atmosphere glow fix).
 	if obj.Meta.InnerRadius > 0 {
-		drawRingDisc(r, obj, pos, 0)
+		const segments = 64   // angular resolution
+		const radialBands = 8 // radial subdivisions for texture colour sampling
+		outerRadius := float32(obj.Meta.PhysicalRadius)
+		innerRadius := float32(obj.Meta.InnerRadius)
+		ringRange := outerRadius - innerRadius
+
+		// Load CPU-side colour strip for radial sampling (nil = use fallback color).
+		var ringImg *rl.Image
+		hasTexture := !r.noTextures && obj.Meta.TexturePath != ""
+		if hasTexture {
+			ringImg = r.loadRingImage(obj.Meta.TexturePath)
+			hasTexture = ringImg != nil
+		}
+
+		rl.PushMatrix()
+		rl.Translatef(pos.X, pos.Y, pos.Z)
+		if obj.Meta.AxialTilt != 0 {
+			rl.Rotatef(obj.Meta.AxialTilt, 1, 0, 0)
+		}
+
+		rl.BeginBlendMode(rl.BlendAlpha)
+		rl.DisableDepthMask()
+
+		for band := 0; band < radialBands; band++ {
+			bandInner := innerRadius + float32(band)/float32(radialBands)*ringRange
+			bandOuter := innerRadius + float32(band+1)/float32(radialBands)*ringRange
+			bandMidU := (float32(band) + 0.5) / float32(radialBands)
+
+			segColor := color
+			if hasTexture {
+				sampled := sampleRingTexture(ringImg, bandMidU)
+				// Preserve the ring's configured alpha; use texture RGB for colour.
+				segColor = rl.Color{R: sampled.R, G: sampled.G, B: sampled.B, A: color.A}
+			}
+
+			for side := 0; side < 2; side++ {
+				for i := 0; i < segments; i++ {
+					angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
+					angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
+
+					cos1 := float32(math.Cos(float64(angle1)))
+					sin1 := float32(math.Sin(float64(angle1)))
+					cos2 := float32(math.Cos(float64(angle2)))
+					sin2 := float32(math.Sin(float64(angle2)))
+
+					p1 := rl.Vector3{X: bandOuter * cos1, Y: 0, Z: bandOuter * sin1}
+					p2 := rl.Vector3{X: bandOuter * cos2, Y: 0, Z: bandOuter * sin2}
+					p3 := rl.Vector3{X: bandInner * cos1, Y: 0, Z: bandInner * sin1}
+					p4 := rl.Vector3{X: bandInner * cos2, Y: 0, Z: bandInner * sin2}
+
+					if side == 0 {
+						rl.DrawTriangle3D(p1, p2, p3, segColor)
+						rl.DrawTriangle3D(p2, p4, p3, segColor)
+					} else {
+						rl.DrawTriangle3D(p1, p3, p2, segColor)
+						rl.DrawTriangle3D(p2, p3, p4, segColor)
+					}
+				}
+			}
+		}
+
+		rl.EnableDepthMask()
+		rl.EndBlendMode()
+		rl.PopMatrix()
 		return
 	}
 
@@ -982,42 +924,14 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 				nightTex = r.loadTexture(obj.Meta.NightTexturePath)
 			}
 			r.lighting.applyToModel(model, obj.Meta.SelfLuminous, nightTex)
-			infraF := float32(0)
-			if r.infraMode == 1 && !obj.Meta.SelfLuminous {
-				infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
-				if infraF > 0 {
-					r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
-				}
-			}
 			rl.DrawModel(model, pos, drawScale, rl.White)
-			if infraF > 0 {
-				r.lighting.setAmbient(defaultAmbient)
-			}
 			r.drawAtmosphereGlow(obj, pos)
 			return
 		}
 	}
 
-	// Fallback: untextured sphere with Phong lighting when available.
-	if !r.noLighting && !obj.Meta.SelfLuminous {
-		model := r.getUntexturedModel(rings, slices)
-		transform, drawScale := buildModelTransform(obj.Meta, simTime)
-		model.Transform = transform
-		r.lighting.applyToModel(model, false, rl.Texture2D{})
-		infraF := float32(0)
-		if r.infraMode == 1 {
-			infraF = spotlightFactor(obj.Anim.Position, cameraPos, r.cameraForward)
-			if infraF > 0 {
-				r.lighting.setAmbient(defaultAmbient + (infraSpotAmbient-defaultAmbient)*infraF)
-			}
-		}
-		rl.DrawModel(model, pos, drawScale, color)
-		if infraF > 0 {
-			r.lighting.setAmbient(defaultAmbient)
-		}
-	} else {
-		rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
-	}
+	// Fallback: solid color sphere with wireframe.
+	rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
 	r.drawAtmosphereGlow(obj, pos)
 
 	// Draw wireframe for better depth perception (skip for rings and sun)
@@ -1033,329 +947,6 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 	}
 }
 
-// drawRingDisc renders a planetary ring disc with Lambert star illumination and
-// optional smooth planet-shadow darkening.
-//
-// Illumination: ring particles scatter light diffusely; the whole disc is scaled
-// by |dot(ringNormal, toStar)| — brightest when starlight shines from above/below
-// the ring plane, dimmest (ambient floor) when edge-on. Because the Lambert factor
-// is the same for every point on the flat disc it is computed once and applied as
-// a global multiplier before per-segment shadow blending.
-//
-// Shadow: when parentRadius > 0 each segment is tested against the planet's shadow
-// cylinder with a smoothstep penumbra (see ringSegmentShadowFactor). Segments in
-// shadow are further dimmed to ringAmbient regardless of the Lambert factor.
-//
-// Pass parentRadius 0 to skip shadow computation (single-object draw path).
-//
-// Rings are drawn with BlendAlpha + DisableDepthMask so they do not occlude
-// objects behind them while still depth-testing against closer opaque geometry.
-func drawRingDisc(r *Renderer, obj *engine.Object, pos rl.Vector3, parentRadius float32) {
-	const segments = 64   // angular resolution
-	const radialBands = 8 // radial subdivisions for texture colour sampling
-
-	outerRadius := float32(obj.Meta.PhysicalRadius)
-	innerRadius := float32(obj.Meta.InnerRadius)
-	ringRange := outerRadius - innerRadius
-
-	// Load CPU-side colour strip for radial sampling (nil = use fallback color).
-	var ringImg *rl.Image
-	hasTexture := !r.noTextures && obj.Meta.TexturePath != ""
-	if hasTexture {
-		ringImg = r.loadRingImage(obj.Meta.TexturePath)
-		hasTexture = ringImg != nil
-	}
-
-	// Axial tilt (same value used in rl.Rotatef below).
-	tiltRad := float64(obj.Meta.AxialTilt) * math.Pi / 180.0
-	cos_t := float32(math.Cos(tiltRad))
-	sin_t := float32(math.Sin(tiltRad))
-
-	// Lighting: Lambert factor and shadow axis, computed once per ring.
-	// Ring normal in world space after Rx(tilt): (0, cos_t, sin_t).
-	const ringAmbient = float32(0.05)
-	var shadowAxisX, shadowAxisY, shadowAxisZ float32
-	lambertFactor := float32(1.0) // full brightness when lighting is off
-	hasLighting := !r.noLighting && r.lighting.loaded
-	hasShadow := hasLighting && parentRadius > 0
-	if hasLighting {
-		dx := r.lighting.PrimaryLightPos[0] - pos.X
-		dy := r.lighting.PrimaryLightPos[1] - pos.Y
-		dz := r.lighting.PrimaryLightPos[2] - pos.Z
-		dist := float32(math.Sqrt(float64(dx*dx + dy*dy + dz*dz)))
-		if dist > 0 {
-			toStarX := dx / dist
-			toStarY := dy / dist
-			toStarZ := dz / dist
-
-			// |dot(ringNormal, toStar)| — two-sided disc.
-			lf := cos_t*toStarY + sin_t*toStarZ
-			if lf < 0 {
-				lf = -lf
-			}
-			lambertFactor = ringAmbient + lf*(1.0-ringAmbient)
-
-			if hasShadow {
-				shadowAxisX = -toStarX
-				shadowAxisY = -toStarY
-				shadowAxisZ = -toStarZ
-			}
-		} else {
-			hasShadow = false
-		}
-	}
-
-	color := rl.Color{
-		R: obj.Meta.Color.R,
-		G: obj.Meta.Color.G,
-		B: obj.Meta.Color.B,
-		A: obj.Meta.Color.A,
-	}
-
-	rl.PushMatrix()
-	rl.Translatef(pos.X, pos.Y, pos.Z)
-	if obj.Meta.AxialTilt != 0 {
-		rl.Rotatef(obj.Meta.AxialTilt, 1, 0, 0)
-	}
-
-	rl.BeginBlendMode(rl.BlendAlpha)
-	rl.DisableDepthMask()
-
-	for band := 0; band < radialBands; band++ {
-		bandInner := innerRadius + float32(band)/float32(radialBands)*ringRange
-		bandOuter := innerRadius + float32(band+1)/float32(radialBands)*ringRange
-		bandMidU := (float32(band) + 0.5) / float32(radialBands)
-		bandMidRadius := (bandInner + bandOuter) * 0.5
-
-		baseColor := color
-		if hasTexture {
-			sampled := sampleRingTexture(ringImg, bandMidU)
-			// Preserve the ring's configured alpha; use texture RGB for colour.
-			baseColor = rl.Color{R: sampled.R, G: sampled.G, B: sampled.B, A: color.A}
-		}
-
-		for i := 0; i < segments; i++ {
-			angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
-			angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
-
-			// Start from the global Lambert factor; attenuate further in shadow.
-			litFactor := lambertFactor
-			if hasShadow {
-				midAngle := (angle1 + angle2) * 0.5
-				shadowLit := ringSegmentShadowFactor(float64(bandMidRadius), float64(midAngle),
-					tiltRad, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius)
-				if shadowLit < 1.0 {
-					// In shadow: darken to ringAmbient, smoothly blended at the penumbra.
-					inShadowFactor := ringAmbient + (1.0-ringAmbient)*shadowLit
-					if inShadowFactor < litFactor {
-						litFactor = inShadowFactor
-					}
-				}
-			}
-
-			segColor := baseColor
-			if litFactor < 1.0 {
-				segColor = applyRingLightFactor(baseColor, litFactor)
-			}
-
-			cos1 := float32(math.Cos(float64(angle1)))
-			sin1 := float32(math.Sin(float64(angle1)))
-			cos2 := float32(math.Cos(float64(angle2)))
-			sin2 := float32(math.Sin(float64(angle2)))
-
-			p1 := rl.Vector3{X: bandOuter * cos1, Y: 0, Z: bandOuter * sin1}
-			p2 := rl.Vector3{X: bandOuter * cos2, Y: 0, Z: bandOuter * sin2}
-			p3 := rl.Vector3{X: bandInner * cos1, Y: 0, Z: bandInner * sin1}
-			p4 := rl.Vector3{X: bandInner * cos2, Y: 0, Z: bandInner * sin2}
-
-			// Front face
-			rl.DrawTriangle3D(p1, p2, p3, segColor)
-			rl.DrawTriangle3D(p2, p4, p3, segColor)
-			// Back face
-			rl.DrawTriangle3D(p1, p3, p2, segColor)
-			rl.DrawTriangle3D(p2, p3, p4, segColor)
-		}
-	}
-
-	rl.EnableDepthMask()
-	rl.EndBlendMode()
-	rl.PopMatrix()
-}
-
-// ringSegmentShadowFactor returns a [0,1] light factor for a ring point at the
-// given polar coordinates (radius, angle) in the ring plane.
-//
-//	0 = fully in the planet's shadow (darkened to ringAmbient by caller)
-//	1 = fully lit
-//
-// The shadow is modelled as a cylinder of radius parentRadius aligned with
-// shadowAxis (the normalised anti-star direction in camera-relative world space).
-// A smoothstep penumbra spanning ±ringPenumbraFrac of parentRadius around the
-// cylinder edge removes the staircase artefact from the discrete segment grid.
-//
-// The ring point is transformed into world space by applying the axial tilt:
-//
-//	P = Rx(tiltRad) * (radius·cos(a), 0, radius·sin(a))
-//	  = (radius·cos(a), −radius·sin(a)·sin(tilt), radius·sin(a)·cos(tilt))
-const ringPenumbraFrac = float32(0.25) // shadow-edge transition = ±25% of planet radius
-
-func ringSegmentShadowFactor(radius, angle, tiltRad float64, shadowAxisX, shadowAxisY, shadowAxisZ, parentRadius float32) float32 {
-	cos_a := float32(math.Cos(angle))
-	sin_a := float32(math.Sin(angle))
-	cos_t := float32(math.Cos(tiltRad))
-	sin_t := float32(math.Sin(tiltRad))
-	rv := float32(radius)
-
-	px := rv * cos_a
-	py := -rv * sin_a * sin_t
-	pz := rv * sin_a * cos_t
-
-	// Project P onto the shadow axis (anti-star direction from planet centre).
-	proj := px*shadowAxisX + py*shadowAxisY + pz*shadowAxisZ
-	if proj <= 0 {
-		return 1.0 // illuminated side
-	}
-
-	// Perpendicular distance from the shadow axis.
-	perpX := px - proj*shadowAxisX
-	perpY := py - proj*shadowAxisY
-	perpZ := pz - proj*shadowAxisZ
-	perpDist := float32(math.Sqrt(float64(perpX*perpX + perpY*perpY + perpZ*perpZ)))
-
-	// Penumbra zone: innerEdge (full shadow) → outerEdge (full lit).
-	innerEdge := parentRadius * (1.0 - ringPenumbraFrac)
-	outerEdge := parentRadius * (1.0 + ringPenumbraFrac)
-
-	if perpDist >= outerEdge {
-		return 1.0 // fully lit
-	}
-	if perpDist <= innerEdge {
-		return 0.0 // fully in shadow
-	}
-	// Smooth transition across the penumbra band.
-	t := (perpDist - innerEdge) / (outerEdge - innerEdge)
-	return t * t * (3 - 2*t) // smoothstep(0,1,t)
-}
-
-// applyRingLightFactor scales the RGB channels of c by factor, leaving alpha unchanged.
-func applyRingLightFactor(c rl.Color, factor float32) rl.Color {
-	if factor >= 1.0 {
-		return c
-	}
-	if factor < 0 {
-		factor = 0
-	}
-	return rl.Color{
-		R: uint8(float32(c.R) * factor),
-		G: uint8(float32(c.G) * factor),
-		B: uint8(float32(c.B) * factor),
-		A: c.A,
-	}
-}
-
-// infraSpotAmbient is the ambient floor at the centre of the infra spotlight (mode 1).
-// 0.90 makes unlit sides of planets clearly visible — like a fill light.
-const infraSpotAmbient = float32(0.90)
-
-// infraSpotInnerCos = cos(20°): objects within 20° of camera centre are fully lit.
-// infraSpotOuterCos = cos(40°): objects beyond 40° off-axis receive no boost.
-const (
-	infraSpotInnerCos = float32(0.9397) // cos(20°)
-	infraSpotOuterCos = float32(0.7660) // cos(40°)
-)
-
-// spotlightFactor returns a [0,1] blend factor indicating how centred objPos is
-// in the camera view. 1 = inside the inner cone, 0 = outside the outer cone.
-// cameraForward must be normalised.
-func spotlightFactor(objPos, cameraPos, cameraForward engine.Vector3) float32 {
-	dx := objPos.X - cameraPos.X
-	dy := objPos.Y - cameraPos.Y
-	dz := objPos.Z - cameraPos.Z
-	dist := float32(math.Sqrt(float64(dx*dx + dy*dy + dz*dz)))
-	if dist < 0.001 {
-		return 1.0
-	}
-	cosAngle := (dx*cameraForward.X + dy*cameraForward.Y + dz*cameraForward.Z) / dist
-	// smoothstep from outer edge to inner edge
-	t := (cosAngle - infraSpotOuterCos) / (infraSpotInnerCos - infraSpotOuterCos)
-	if t <= 0 {
-		return 0
-	}
-	if t >= 1 {
-		return 1
-	}
-	return t * t * (3 - 2*t)
-}
-
-// skyTexPath is the default path to the Milky Way equirectangular panorama used
-// as the background skysphere. The file is downloaded by scripts/download_textures.sh
-// ("Downloading starfield background" step: 8k_stars_milky_way.jpg → starfield_8k.jpg).
-const skyTexPath = "data/assets/textures/starfield_8k.jpg"
-
-// skyRadius is the radius of the background skysphere in sim units. It must be
-// smaller than CameraFarPlane so the sphere is never clipped, but large enough
-// to sit well beyond any simulated body.
-const skyRadius = float32(180000.0)
-
-// DrawSky renders the Milky Way background skysphere before scene geometry.
-// Must be called inside rl.BeginMode3D and before any other 3D draw calls so
-// the sky is always occluded by foreground objects.
-//
-// The sphere is always centred at the floating-origin camera position (0,0,0),
-// so it rotates with camera orientation but never translates — producing the
-// correct parallax-free backdrop for a solar-system-scale scene.
-// If noTextures is set or the texture file is absent, DrawSky is a no-op and
-// the background remains black.
-func (r *Renderer) DrawSky() {
-	if r.noTextures {
-		return
-	}
-	if !r.skyLoaded {
-		r.skyLoaded = true
-		r.skyTex = r.loadTexture(skyTexPath)
-		if r.skyTex.ID > 0 {
-			mesh := rl.GenMeshSphere(1.0, 32, 16)
-			// UV fix for inside-sphere (sky-dome) viewing.
-			// par_shapes stores: uv[0]=latitude (0=south, 1=north),
-			//                    uv[1]=longitude (0→1 left-to-right from outside).
-			// Standard equirectangular wants U=longitude, V=1-latitude
-			// (stb_image is top-first; OpenGL V=0 is bottom, so V must be flipped).
-			// Unlike planet models (outside view, needs extra U-flip), the sky is
-			// viewed from inside — longitude direction is already correct.
-			n := int(mesh.VertexCount)
-			uv := unsafe.Slice(mesh.Texcoords, n*2)
-			for i := 0; i < n; i++ {
-				uv[i*2], uv[i*2+1] = uv[i*2+1], 1.0-uv[i*2]
-			}
-			rl.UpdateMeshBuffer(mesh, 1, unsafe.Slice((*byte)(unsafe.Pointer(mesh.Texcoords)), n*8), 0)
-			r.skyModel = rl.LoadModelFromMesh(mesh)
-			mats := r.skyModel.GetMaterials()
-			if len(mats) > 0 {
-				mats[0].GetMap(rl.MapDiffuse).Texture = r.skyTex
-				// LoadModelFromMesh initialises the material with Raylib's built-in
-				// default flat shader (texture * diffuse color, no lighting). We leave
-				// that shader in place — DrawSky never calls applyToModel, so the Phong
-				// star shader is never bound to the sky material.
-			}
-			// Align sphere: par_shapes north pole is +Z; rotate to world +Y (up).
-			// Scale to sky radius after rotation — order: scale then rotate.
-			r.skyModel.Transform = rl.MatrixMultiply(
-				rl.MatrixRotateX(-90*rl.Deg2rad),
-				rl.MatrixScale(skyRadius, skyRadius, skyRadius),
-			)
-			r.skyModelLoaded = true
-		}
-	}
-	if !r.skyModelLoaded {
-		return // texture not found or failed to load
-	}
-	rl.DisableDepthMask()       // sky must never write to the depth buffer
-	rl.DisableBackfaceCulling() // we are inside the sphere; render its inner surface
-	rl.DrawModel(r.skyModel, rl.Vector3{}, 1.0, rl.White)
-	rl.EnableBackfaceCulling()
-	rl.EnableDepthMask()
-}
-
 // drawAtmosphereGlow renders a Fresnel rim-glow atmosphere with day/night lighting.
 // Uses a custom GLSL shader (atmosphereState) that applies:
 //   - a Fresnel term: transparent face-on, bright at the limb (grazing angle)
@@ -1365,7 +956,7 @@ func (r *Renderer) DrawSky() {
 //
 //	km_per_sim_unit = 12742  (calibrated to Earth: 6371 km / 0.5 sim = 12742 km/su)
 //	frac = (AtmosphereThicknessKm / (bodyRadius * km_per_sim_unit)) * 4
-//	glowRadius = bodyRadius * (1 + clamp(frac, 0.04, 0.15))
+//	glowRadius = bodyRadius * (1 + clamp(frac, 0.04, 0.60))
 func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	if obj.Meta.AtmosphereThicknessKm <= 0 || obj.Meta.AtmosphereColorHint.A == 0 {
 		return
@@ -1393,7 +984,7 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 		kmPerSimUnit = float32(12742)
 		atmoBoost    = float32(4)    // visual boost; 100km/6371km*4 ≈ 6% for Earth
 		atmoFloor    = float32(0.04) // minimum 4% — ensures any atmosphere is visible
-		atmoCap      = float32(0.15) // maximum 15% — keeps Sol's corona as a tight rim halo
+		atmoCap      = float32(0.60) // maximum 60% — bounds Sol's corona to 1.6× radius
 	)
 	// Use the stored real-world radius when available; fall back to Earth-calibrated.
 	bodyRadiusKm := baseRadius * kmPerSimUnit
@@ -1433,14 +1024,6 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locLightPos, lightPos, rl.ShaderUniformVec3)
 	const glowEdge = float32(3.5) // Fresnel exponent: narrower > 5, broader < 3
 	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowEdge, []float32{glowEdge}, rl.ShaderUniformFloat)
-	// Self-luminous bodies (stars) illuminate their own corona from within; bypass
-	// the Lambert day/night term so the glow is at full intensity all around the limb.
-	selfLum := int32(0)
-	if obj.Meta.SelfLuminous {
-		selfLum = 1
-	}
-	selfLumF := *(*float32)(unsafe.Pointer(&selfLum))
-	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locSelfLuminous, []float32{selfLumF}, rl.ShaderUniformInt)
 
 	rl.BeginBlendMode(rl.BlendAddColors)
 	// Disable depth writes so the atmosphere sphere does not overwrite the depth
@@ -2918,10 +2501,6 @@ func drawHelpScreen() {
 
 	rl.DrawText(modAlt+"+L", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Toggle object labels", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("I", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Cycle infra light (off/spotlight/-)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText(modAlt+"+M", rightCol, y, bodySize, rl.White)

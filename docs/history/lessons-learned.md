@@ -4,7 +4,7 @@
 Capture the major implementation defects, debugging discoveries, performance findings, and follow-up recommendations uncovered while building and stabilizing the performance testing workflow.
 
 ## Last Updated
-2026-04-24
+2026-04-26
 
 ## Table of Contents
 1. Session Overview
@@ -2042,6 +2042,47 @@ uv[i*2], uv[i*2+1] = 1.0-uv[i*2+1], 1.0-uv[i*2]
 **Solution**: Call `rl.DisableDepthTest()` immediately before drawing the sky sphere, and `rl.EnableDepthTest()` immediately after. Also call `rl.DisableDepthMask()` / `rl.EnableDepthMask()` around the same draw to prevent the sky from writing depth values that would occlude all scene geometry.
 
 **Rule**: Background elements drawn at or near the far plane should have depth testing disabled entirely, not just depth writes. `DisableDepthMask` prevents writing; `DisableDepthTest` prevents the draw from being rejected by existing depth values. Both are needed for a reliable background.
+
+---
+
+### 30. **Diagnosing Silent Render Failures: Run With Captured Logs** [RENDERING]
+
+**Problem**: The sky sphere appeared to not render, but no error was emitted. Standard debugging — checking shader assignment, verifying draw-call order, toggling depth flags — produced no signal.
+
+**Discovery method**: Ran the binary briefly with stderr captured to a terminal, then killed it after a few seconds. Raylib's startup info messages showed:
+```
+INFO: FILEIO: [data/assets/textures/starfield_8k.jpg] File loaded successfully
+INFO: IMAGE: Data loaded successfully (8192x4096 | R8G8B8 | 1 mipmaps)
+INFO: TEXTURE: [ID 3] Texture loaded successfully (8192x4096 | R8G8B8 | 1 mipmaps)
+INFO: VAO: [ID 2] Mesh uploaded successfully to VRAM (GPU)
+```
+This confirmed the asset loaded and the mesh was uploaded — ruling out file, format, and GPU-upload as the cause. The problem was therefore entirely in the transform/clip stage.
+
+**Rule**: Before investigating shader or UV logic, confirm the asset and mesh actually reached the GPU. Raylib logs `TEXTURE: [ID n]` and `VAO: [ID n]` on success; absence of either line means the problem is upstream (file path, format, or allocation). Presence of both lines means the problem is downstream (transform, clipping, or culling).
+
+---
+
+### 31. **Skysphere Vertex Clipping: Large Radius Causes Silent Triangle Discard** [RENDERING]
+
+**Problem**: The Milky Way sky sphere was completely invisible despite the texture loading and VAO uploading correctly, and despite `DisableDepthTest` being in place.
+
+**Root Cause**: The camera is at the floating-origin `(0,0,0)`. With `skyRadius = 180,000`, the sphere vertices span ±180,000 on all axes. In camera view-space, roughly half the sphere vertices have negative z (they are behind the camera). OpenGL must clip those triangles at the near plane using homogeneous clip-space arithmetic. The near plane is `0.001`, so the precision ratio is:
+
+$$\frac{180{,}000}{0.001} = 1.8 \times 10^8$$
+
+`float32` has only ~7 significant decimal digits of precision. At this ratio, the homogeneous clip-space coordinates for near-plane intersection lose all precision — the computed triangle edge clamp is numerically degenerate. OpenGL discards those triangles entirely and silently produces nothing.
+
+**Solution**: Set `skyRadius = 5.0`. Since depth testing is disabled and the camera is always at the sphere's centre, any radius greater than the near plane (`> 0.001`) covers the entire field of view identically. At radius 5.0, the precision ratio is `5 / 0.001 = 5000` — comfortably within float32's range.
+
+```go
+// skyRadius = 5.0, not 180_000. Clip-space precision ratio is 5000:1 (safe).
+// Depth test is disabled for the sky draw, so size has no effect on occluusion.
+const skyRadius = float32(5.0)
+```
+
+**Rule**: Any geometry rendered with the camera at its centre (skyspheres, skyboxes, environment maps) should use a small radius — just large enough to stay outside the near plane. A radius of 1–10 sim units is always correct. Large radii (> ~1000× near plane) cause float32 homogeneous clip precision loss and silent triangle discard, regardless of depth test state.
+
+**Corollary**: This bug is completely silent. No Raylib warning, no GL error, no crash. The only symptoms are a blank background and a confirmed texture+VAO load in the logs. Any time a fullscreen background fails to appear after asset load is confirmed, suspect near-plane clip precision before blaming UVs or shaders.
 
 ---
 
