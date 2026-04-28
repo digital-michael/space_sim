@@ -4,7 +4,7 @@
 Provide the default implementation standards for LLM Agents and human contributors working in this repository. This document is ordered from highest-priority rules to lower-level design guidance so an agent can make correct tradeoffs quickly.
 
 ## Last Updated
-2026-03-26
+2026-04-27
 
 ## Table of Contents
 1. Priority Order
@@ -17,22 +17,23 @@ Provide the default implementation standards for LLM Agents and human contributo
 	3.5 Dependency Inversion Principle
 4. DRY Guidance
 5. GRASP Guidance
-6. Go Best Practices
-	6.1 Design
-	6.2 Errors
-	6.3 Concurrency
-	6.4 Data and APIs
-	6.5 Control Flow and Style
-	6.6 Testing
-	6.7 Performance
-7. JSON Data Structure Best Practices
-	7.1 Schema and Evolution
-	7.2 Naming and Types
-	7.3 Structure
-	7.4 Integrity and Validation
-	7.5 Maintainability
-8. Definition of Done
-9. Reference Material
+6. IoC — Inversion of Control
+7. Go Best Practices
+	7.1 Design
+	7.2 Errors
+	7.3 Concurrency
+	7.4 Data and APIs
+	7.5 Control Flow and Style
+	7.6 Testing
+	7.7 Performance
+8. JSON Data Structure Best Practices
+	8.1 Schema and Evolution
+	8.2 Naming and Types
+	8.3 Structure
+	8.4 Integrity and Validation
+	8.5 Maintainability
+9. Definition of Done
+10. Reference Material
 
 ## 1. Priority Order
 
@@ -110,7 +111,18 @@ Apply GRASP mainly as a design sanity check:
 - Indirection: introduce an adapter only when it genuinely decouples unstable details.
 - Protected Variations: isolate likely-to-change seams such as input handling, JSON formats, and rendering integrations.
 
-## 6. Go Best Practices
+## 6. IoC — Inversion of Control
+
+Inversion of Control means that high-level modules define what they need (through parameters, interfaces, or constructor injection) and low-level modules supply it — rather than high-level modules reaching inward to construct or locate their own dependencies.
+
+- **Inject dependencies at construction time.** Pass collaborators (e.g. a renderer, a physics engine, a clock, a logger) into a type's constructor rather than letting the type instantiate them internally. This makes wiring explicit and makes tests straightforward.
+- **Accept interfaces at boundaries, return concrete types inside.** A type that depends on a storage layer should accept an interface; the concrete implementation is wired once at the composition root (`main` or the top-level app constructor).
+- **Keep the composition root thin.** Wire dependencies in `main` or an `App` constructor. Constructors and workers should not reach into global state, call `os.Getenv`, or open files unless that is their explicit responsibility.
+- **Avoid service locators and global registries.** Passing a locator object so code can look up its own dependencies is still hidden coupling; prefer explicit injection.
+- **IoC is not a framework requirement.** In Go, constructor injection with plain structs and interfaces is sufficient. Avoid heavy DI containers unless the wiring is genuinely complex and the container earns its weight.
+- **Apply at package boundaries, not inside packages.** Within a cohesive package, direct construction is fine. IoC is most valuable where packages cross architectural lines (e.g. simulation → rendering, server → persistence).
+
+## 7. Go Best Practices
 
 ### Design
 
@@ -164,7 +176,7 @@ Apply GRASP mainly as a design sanity check:
 - Avoid micro-optimizations that make the codebase harder to evolve.
 - When performance tradeoffs are non-obvious, document the invariant or benchmark result that justifies them.
 
-## 7. JSON Data Structure Best Practices
+## 8. JSON Data Structure Best Practices
 
 ### Schema and Evolution
 
@@ -201,7 +213,7 @@ Apply GRASP mainly as a design sanity check:
 - When a JSON rule is subtle, encode it in both documentation and validation or tests.
 - Update schema docs when fields are added, removed, or repurposed.
 
-## 8. Definition of Done
+## 9. Definition of Done
 
 Work is not done until all of the following are true:
 
@@ -211,7 +223,7 @@ Work is not done until all of the following are true:
 4. New or changed behavior is documented when discovery cost would otherwise be high.
 5. Temporary work products have been removed or promoted to a proper long-lived location.
 
-## 9. Reference Material
+## 10. Reference Material
 
 - SOLID overview: https://en.wikipedia.org/wiki/SOLID
 - DRY overview: https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
