@@ -70,8 +70,15 @@ Before writing code or a plan, confirm you can answer:
 
 ## Project Tools
 
-This workspace provides an MCP `write_file` tool that replaces the built-in
-`create_file` tool, which has a confirmed bug (writes lines in reverse order).
+All project-specific MCP tools are served by `tools/write_file_server.py` and
+registered in `.vscode/mcp.json`. See [`tools/mcp.json`](../tools/mcp.json) for
+the full tool registry and [`docs/tools/write-file-mcp.md`](../docs/tools/write-file-mcp.md)
+for enable/disable/extend instructions.
+
+### `write_file`
+
+Replaces the built-in `create_file` tool, which has a confirmed bug (writes
+lines in reverse order).
 
 **When creating a new file, always use `write_file` instead of `create_file`.**
 
@@ -79,5 +86,8 @@ If `write_file` is not available (server not loaded), use the fallback pattern:
 1. `echo 'package x' > path/to/file.go` to create a minimal stub.
 2. `replace_string_in_file` to fill in the full content.
 
-See [`docs/tools/write-file-mcp.md`](../docs/tools/write-file-mcp.md) for
-enable/disable/extend instructions.
+### `get_current_datetime`
+
+Returns the real wall-clock date and time in UTC and local time. Use this tool
+whenever you need to know the current date or time — do not rely on a
+training-data cutoff or a timestamp embedded in context.

@@ -18,6 +18,7 @@
 import json
 import os
 import sys
+from datetime import datetime, timezone
 
 
 def _respond(mid, result):
@@ -37,68 +38,92 @@ def _handle(msg):
         _respond(mid, {
             "protocolVersion": "2024-11-05",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "write-file", "version": "1.0.0"},
+            "serverInfo": {"name": "write-file", "version": "1.1.0"},
         })
 
     elif method == "notifications/initialized":
         pass  # notification; no response
 
     elif method == "tools/list":
-        _respond(mid, {"tools": [{
-            "name": "write_file",
-            "description": (
-                "Write text content to a file at an absolute path, creating "
-                "parent directories as needed. Use this instead of create_file."
-            ),
-            "inputSchema": {
-                "type": "object",
-                "properties": {
-                    "path": {
-                        "type": "string",
-                        "description": "Absolute path of the file to write.",
+        _respond(mid, {"tools": [
+            {
+                "name": "write_file",
+                "description": (
+                    "Write text content to a file at an absolute path, creating "
+                    "parent directories as needed. Use this instead of create_file."
+                ),
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "description": "Absolute path of the file to write.",
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "Full text content to write to the file.",
+                        },
                     },
-                    "content": {
-                        "type": "string",
-                        "description": "Full text content to write to the file.",
-                    },
+                    "required": ["path", "content"],
                 },
-                "required": ["path", "content"],
             },
-        }]})
+            {
+                "name": "get_current_datetime",
+                "description": (
+                    "Return the current date and time in both UTC and local time. "
+                    "Use this whenever you need the real current date/time instead "
+                    "of relying on a training-data cutoff or context timestamp."
+                ),
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": [],
+                },
+            },
+        ]})
 
     elif method == "tools/call":
         name = msg.get("params", {}).get("name", "")
         args = msg.get("params", {}).get("arguments", {})
 
-        if name != "write_file":
+        if name == "write_file":
+            path = args.get("path", "").strip()
+            content = args.get("content", "")
+
+            if not os.path.isabs(path):
+                _respond(mid, {
+                    "content": [{"type": "text",
+                                 "text": f"Error: path must be absolute, got: {path!r}"}],
+                    "isError": True,
+                })
+                return
+
+            try:
+                parent = os.path.dirname(path)
+                if parent:
+                    os.makedirs(parent, exist_ok=True)
+                with open(path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                _respond(mid, {
+                    "content": [{"type": "text", "text": f"Written: {path}"}],
+                })
+            except OSError as exc:
+                _respond(mid, {
+                    "content": [{"type": "text", "text": f"Error: {exc}"}],
+                    "isError": True,
+                })
+
+        elif name == "get_current_datetime":
+            now_utc = datetime.now(timezone.utc)
+            now_local = datetime.now().astimezone()
+            text = (
+                f"UTC:   {now_utc.strftime('%Y-%m-%d %H:%M:%S %Z')}\n"
+                f"Local: {now_local.strftime('%Y-%m-%d %H:%M:%S %Z%z')}"
+            )
+            _respond(mid, {"content": [{"type": "text", "text": text}]})
+
+        else:
             _error(mid, -32601, f"Unknown tool: {name}")
-            return
-
-        path = args.get("path", "").strip()
-        content = args.get("content", "")
-
-        if not os.path.isabs(path):
-            _respond(mid, {
-                "content": [{"type": "text",
-                             "text": f"Error: path must be absolute, got: {path!r}"}],
-                "isError": True,
-            })
-            return
-
-        try:
-            parent = os.path.dirname(path)
-            if parent:
-                os.makedirs(parent, exist_ok=True)
-            with open(path, "w", encoding="utf-8") as f:
-                f.write(content)
-            _respond(mid, {
-                "content": [{"type": "text", "text": f"Written: {path}"}],
-            })
-        except OSError as exc:
-            _respond(mid, {
-                "content": [{"type": "text", "text": f"Error: {exc}"}],
-                "isError": True,
-            })
 
     elif mid is not None:
         # Unknown method with an id — reply with method-not-found.

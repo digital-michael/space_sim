@@ -1,17 +1,19 @@
-# write_file MCP Tool
+# write-file MCP Server
 
 ## Purpose
 
 The VS Code Copilot agent has a built-in `create_file` tool that writes file
 content in reverse line order and strips newlines between lines. Any multi-line
 file it creates is syntactically invalid. This MCP server replaces it with a
-`write_file` tool that writes correctly.
+`write_file` tool that writes correctly. It also exposes a `get_current_datetime`
+tool so the agent can retrieve the real wall-clock time at any point.
 
 ## Files
 
 | File | Role |
 |------|------|
 | `tools/write_file_server.py` | The MCP server. A single-file, zero-dependency Python 3 script. |
+| `tools/mcp.json` | Human/machine-readable registry of every tool exposed by this server. |
 | `.vscode/mcp.json` | Tells VS Code how to launch the server. |
 
 ## How to Enable
@@ -46,8 +48,9 @@ Add new tools inside `_handle()` in `write_file_server.py`:
 1. Add a new entry to the `tools/list` response array (name + inputSchema).
 2. Add a matching `elif name == "your_tool_name":` branch in the
    `tools/call` handler.
+3. Update `tools/mcp.json` to document the new tool.
 
-No changes to `mcp.json` are needed — the server is already registered.
+No changes to `.vscode/mcp.json` are needed — the server is already registered.
 
 ## Protocol Notes
 
@@ -55,13 +58,24 @@ No changes to `mcp.json` are needed — the server is already registered.
   process on demand; no persistent daemon is needed.
 - **Protocol version**: `2024-11-05` (MCP spec).
 - **Dependencies**: none. The script uses only Python 3 stdlib (`json`, `os`,
-  `sys`). Python 3.8+ is sufficient.
+  `sys`, `datetime`). Python 3.8+ is sufficient.
 
-## Input
+## Tools
+
+### `write_file`
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `path` | string | yes | Absolute path of the file to write. |
 | `content` | string | yes | Full text content. Existing files are overwritten. |
 
-The tool returns an error if `path` is not absolute.
+Returns an error if `path` is not absolute.
+
+### `get_current_datetime`
+
+No parameters. Returns the current date and time in both UTC and local time:
+
+```
+UTC:   2026-04-27 20:30:37 UTC
+Local: 2026-04-27 16:30:37 EDT-0400
+```
