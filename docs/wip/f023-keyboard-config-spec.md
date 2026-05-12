@@ -289,7 +289,7 @@ in `todo.md`) should be cleaned up before or during Phase 1 of this feature. Add
 | File | Action | Notes |
 |------|--------|-------|
 | `internal/client/go/raylib/input/actions.go` | **Create** | `InputAction` enum (all §3 vocabulary); `String()` stringer |
-| `internal/client/go/raylib/input/keymap.go` | **Create** | `Binding`, `KeyMap`, `Profile` types; `IsDown()`, `IsPressed()`, `JustReleased()` |
+| `internal/client/go/raylib/input/keymap.go` | **Create** | `Binding`, `KeyMap`, `Profile` types; `IsDown()`, `IsPressed()`, `JustReleased()`; **`DrainQueue()` called once per frame via `rl.GetKeyPressed()` to capture short-tap events that `IsKeyPressed` misses under load** |
 | `internal/client/go/raylib/input/loader.go` | **Create** | Load stock profile from `data/profiles/`; merge `configs/keybindings.json` overrides |
 | `internal/client/go/raylib/input/conflict.go` | **Create** | Conflict detection; returns `ConflictError` with human-readable description |
 | `internal/client/go/raylib/input/actions_test.go` | **Create** | Enum stability regression; `String()` round-trip |
@@ -335,6 +335,8 @@ Work items:
 - [ ] Implement config merger: applies `configs/keybindings.json` overrides
 - [ ] Conflict detection with clear error messages
 - [ ] Refactor `handleInput()` to use `KeyMap.IsDown()` / `IsPressed()`
+- [ ] Implement `KeyMap.DrainQueue()`: drain `rl.GetKeyPressed()` into a per-frame pressed-set at the **top** of `handleInput()`, before any action checks — eliminates missed short-tap events when the sim loop is slow (fixes input latency under load; see TD-002)
+- [ ] `IsPressed(action)` checks the drained set, not `rl.IsKeyPressed`; `IsDown(action)` still delegates to `rl.IsKeyDown`
 - [ ] REPL: `config reload keybindings`; `help keys` to print active bindings
 - [ ] Unit tests: conflict detection, override merge, key name parsing
 

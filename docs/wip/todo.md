@@ -66,6 +66,7 @@ Planning Documents
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
+	TD-002 Decouple Sim Tick from Render/Input Loop
 9. Related Docs
 
 ## 1. How to Use This File
@@ -294,6 +295,8 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 2 | **F-001** Camera collision prevention | 30-min fix; affects every session; pull forward from Group 1 |
 | 3 | **DEF-001** Floating-origin exploration + fix | Touches same render sites as F-003/F-004/F-005; fix before visual work to avoid double-rewrite |
 | 4 | **TD-001** Collapse handleInput param lists | Clean up before Group 5 network work adds more code around it |
+| 4a | **F-023 Phase 1** `DrainQueue()` mitigation | Partial fix for input latency under load; ships with keyboard config refactor |
+| 4b | **TD-002** Decouple sim tick from render/input loop | Full fix for input latency; also the architectural pattern F-010 headless split needs |
 | 5 | **F-010** Multi-machine split (headless server + client) | Network foundation |
 | 6 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
 | 7 | **F-008** Artifact object type | Content foundation for F-009 |
@@ -337,6 +340,45 @@ func updateCameraState(session *runtimeSession, runtime *RuntimeContext, dt floa
 - `render` package functions (`DrawHUD`, `DrawObjectLabels`) stay as explicit params — the render package cannot import `app`, so no cross-package context struct.
 - Do not merge `runtimeSession` and `RuntimeContext` — they have different lifetimes (session is discarded on system reload; RuntimeContext persists).
 - Do not add a "god context" that combines engine state, camera, input, and settings — violates SRP and Information Expert (GRASP).
+
+---
+
+### TD-002 — Decouple Sim Tick from Render/Input Loop
+
+**Value**: The simulation engine tick currently runs on the same goroutine as `PollInputEvents` and `BeginDrawing`. Under load, a slow tick starves the input poll — short key taps are missed because they happen entirely between two `PollInputEvents` calls. Decoupling the sim tick lets the render+input loop run at full frame rate regardless of physics load.
+
+**Status**: 📋 Not started
+**Priority**: Medium-high — directly causes the input latency symptom (key tap dropped under load); also a prerequisite architectural pattern for F-010 headless split
+**Depends on**: TD-001 (cleaner call sites before restructuring the loop). F-023 Phase 1 `DrainQueue()` is a partial mitigation shipped earlier; TD-002 is the full fix.
+
+#### Symptom
+When the simulation is under load (many bodies, N-body enabled, dense asteroid belts), keyboard input is unresponsive unless a key is held — short taps are silently dropped.
+
+#### Root cause
+`rl.IsKeyPressed(key)` returns true for exactly one frame. If the sim tick blocks the main goroutine for > 1 frame, the key-down→up transition falls entirely between two `PollInputEvents` calls and is never seen. `IsKeyDown` is immune because it reads instantaneous state; `IsKeyPressed` is not.
+
+#### Partial mitigation (F-023 Phase 1 — ship first)
+Replace `rl.IsKeyPressed` call sites with `KeyMap.DrainQueue()` → `IsPressed()` (using `rl.GetKeyPressed()` queue draining). Eliminates missed taps as long as the frame eventually runs.
+
+#### Full fix (TD-002)
+Move the sim engine tick to its own goroutine. Main goroutine runs only: `PollInputEvents` → `handleInput` → `updateCameraState` → `BeginDrawing` → render snapshot → `EndDrawing`. Sim goroutine runs the physics loop and writes results to the existing snapshot double-buffer. Communication via the existing `AppCmd` channel (commands in) and `WorldSnapshot` atomic swap (results out) — no new concurrency primitives needed.
+
+#### Constraints
+- Raylib `PollInputEvents`, `BeginDrawing`, `EndDrawing`, and all `Draw*` calls **must** remain on the main OS thread (GLFW/macOS requirement). Do not move rendering to a goroutine.
+- The sim goroutine must not import `internal/client` — preserves architectural boundary from `agent-readme.md` §3.
+- Double-buffer safety rules from `lessons-learned-double-buffering.md` apply: sim goroutine writes to back buffer; render goroutine reads from front; atomic swap between ticks.
+
+#### Work items
+- [ ] Audit `interactive.go`: identify which calls are render-thread-only vs. sim-only vs. shared
+- [ ] Extract sim tick into `runSimLoop(ctx context.Context, app *App, cmds <-chan AppCmd)`
+- [ ] Wire snapshot atomic swap: sim writes `back`, main loop swaps and reads `front` each frame
+- [ ] Verify race detector passes under `-race` with concurrent sim + render
+- [ ] Measure: input latency before/after (target: short taps reliably registered even at 10 fps sim rate)
+
+#### Acceptance criteria
+- Single key tap registers correctly even when sim tick takes > 100 ms ✓
+- Race detector passes ✓
+- Rendering frame rate is not coupled to sim tick rate ✓
 
 ## 5. Defects
 

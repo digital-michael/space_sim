@@ -255,6 +255,10 @@ F-013 ──► DEF-001 (float64 positions inform floating-origin fix)
 
 TD-001 ──► F-010 ──► F-011     (clean code, then split, then auth)
         └──► F-007 ──► F-006   (key config, then 6-DOF nav)
+TD-001 ──► TD-002              (clean loop structure before goroutine split)
+F-023 Phase 1 ──► TD-002       (DrainQueue partial fix ships first; TD-002 is the full fix)
+TD-001 ──► TD-002              (clean loop structure before goroutine split)
+F-023 Phase 1 ──► TD-002       (DrainQueue partial fix ships first; TD-002 is the full fix)
 
 F-008 ──► F-009                (artifact type before collision events)
 
