@@ -29,6 +29,14 @@ Track active and future work for Space Sim in one operational backlog. Keep this
 
 Planning Documents
 	[f013-nbody-plan.md](f013-nbody-plan.md) — F-013 implementation plan (phases, algorithms, validation)
+	[f020-multi-client-spec.md](f020-multi-client-spec.md) — F-020 multi-client gRPC session layer spec
+	[f021-physical-marker-spec.md](f021-physical-marker-spec.md) — F-021 client physical marker spec
+	[f022-client-movement-spec.md](f022-client-movement-spec.md) — F-022 client locomotion and physics spec
+	[f023-keyboard-config-spec.md](f023-keyboard-config-spec.md) — F-023 keyboard configuration spec
+	[f024-multiplayer-hud-spec.md](f024-multiplayer-hud-spec.md) — F-024 multiplayer HUD enhancements spec
+	[f025-ship-comms-spec.md](f025-ship-comms-spec.md) — F-025 ship-to-ship communications spec
+	[f026-audio-events-spec.md](f026-audio-events-spec.md) — F-026 audio events spec
+	[f027-collision-damage-spec.md](f027-collision-damage-spec.md) — F-027 ship collision detection and damage spec
 	F-002 REPL: track <object> and track stop ✅
 	F-003 Texture/Bitmap Rendering
 	F-004 Procedural Star Field Background
@@ -47,6 +55,14 @@ Planning Documents
 	F-017 Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
 	F-018 Object Annotations HUD (outlines, axes, orbital paths, labels)
 	F-019 Run Scripts from UI
+	F-020 Multi-Client gRPC Session Layer
+	F-021 Client Physical Marker
+	F-022 Client Locomotion and Physics
+	F-023 Keyboard Configuration
+	F-024 Multiplayer HUD Enhancements
+	F-025 Ship-to-Ship Communications
+	F-026 Audio Events
+	F-027 Ship Collision Detection and Damage
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -282,8 +298,8 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 6 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
 | 7 | **F-008** Artifact object type | Content foundation for F-009 |
 | 8 | **F-009** Object-object collision/proximity | Needs F-008 for full value |
-| 9 | **F-007** User-configurable key bindings | Group 3; do after TD-001 reduces handleInput complexity |
-| 10 | **F-006** XYZ keyboard nav + mouse facing | Benefits from F-007 |
+| 9 | **F-007** User-configurable key bindings → **superseded by F-023** | F-023 is the full spec for this; see F-007 entry for annotation |
+| 10 | **F-006** XYZ keyboard nav + mouse facing → **deferred until F-023 Phase 1** | F-023 Phase 3 covers mouse-delta; do F-023 first |
 | 11 | **F-002** REPL track / track stop | Remaining Group 1 quick win |
 | 12 | **F-003** Textures on planets/moons | Group 2 visual; floating-origin fix (DEF-001) already done |
 | 13 | **F-004** Procedural star field | Group 2 visual |
@@ -570,10 +586,12 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 
 ### F-006 — XYZ Keyboard Navigation + Mouse Facing
 
+> **Note**: The keyboard binding architecture for this feature is now specified in **F-023**. Implement F-023 Phase 1 first; XYZ navigation bindings are added as part of F-023 Phase 3 (mouse delta input).
+
 **Value**: Provide an explicit 6-DOF free-fly mode (X/Y/Z translate via keyboard, yaw/pitch via mouse) as an alternative to the current relative WASD scheme. Useful for precise positioning and scripted camera work.
-**Status**: 📋 Not started
+**Status**: 📋 Not started — deferred until F-023 Phase 1 ships
 **Priority**: Medium
-**Depends on**: F-007 (key remapping) is a prerequisite only if the new bindings would conflict; can ship with hardcoded defaults first
+**Depends on**: F-023 Phase 1 (keyboard binding system); F-007 scope subsumed by F-023
 
 #### Work Items
 
@@ -585,18 +603,12 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 
 ### F-007 — User-Configurable Key Bindings
 
-**Value**: Allow players to remap any action to a different key without recompiling. Required for accessibility and non-QWERTY layouts.
-**Status**: 📋 Not started
-**Priority**: Medium — unblocks F-006 without conflict; architectural change touches `input.go`
-**Depends on**: Nothing; but complete TD-001 first to reduce `handleInput` complexity before restructuring it further
+> **Note**: This feature is fully specified and superseded by **F-023**. F-023 delivers everything F-007 described (action enum, JSON config, override merge, conflict detection, REPL help overlay) plus hardware profiles and hot-reload. Implement F-023 instead of F-007.
 
-#### Work Items
-
-- [ ] Define an action enum covering all current hard-coded key uses in `input.go`
-- [ ] Load a key-binding map from a config file (JSON, same pattern as `app.json`)
-- [ ] Replace `rl.IsKeyPressed(rl.KeyX)` call sites with action-lookup helper
-- [ ] Provide a default binding file; allow user overrides via a `keybindings.json` in the config directory
-- [ ] REPL / HUD: display current binding for each action in the help overlay
+**Value**: Allow players to remap any action to a different key without recompiling.
+**Status**: 📋 Superseded by F-023
+**Priority**: N/A — see F-023
+**Depends on**: N/A
 
 ---
 
@@ -971,7 +983,126 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 
 ---
 
-## 9. Related Docs
+### F-020 — Multi-Client gRPC Session Layer
+
+**Value**: Allow up to 100 concurrent REPL clients to connect to a single `space-sim-grpc` process. Each client has a stable session identity (name, role, color, UUID), and the server tracks all sessions in a registry. Conflict resolution policy defined. IAAM integration reserved as a future slot.
+**Status**: 📋 Not started
+**Priority**: High — foundational for all multiplayer features; F-021 through F-024 depend on it
+**Depends on**: Phase 6 gRPC transport (complete)
+**Spec**: [f020-multi-client-spec.md](f020-multi-client-spec.md)
+
+#### Phases
+- Phase 1: Session registry + identity + proto (`SessionService` RPCs, color palette, `list sessions` REPL)
+- Phase 2: Position and POV streaming (`WorldSnapshot` carries client sessions; marker hook)
+- Phase 3: Admin controls + conflict policy enforcement
+- Phase 4: IAAM slot (reserved; no work until F-011)
+
+---
+
+### F-021 — Client Physical Marker
+
+**Value**: Give every connected client session a visible physical presence in the simulated world. Three-phase escalation: blinking sphere → IQM model → full textured model. Correct scale (human-sized ship, not planet-sized). LOD rules for planetary distances.
+**Status**: 📋 Not started
+**Priority**: High — makes multiplayer presence visible
+**Depends on**: F-020 Phase 2 (position streaming)
+**Spec**: [f021-physical-marker-spec.md](f021-physical-marker-spec.md)
+
+#### Phases
+- Phase 1: Blinking sphere in player color; label overlay; screen-space minimum size
+- Phase 2: Primitive IQM model tinted by player color (depends on F-008 or standalone)
+- Phase 3: Stock + custom textured models from server catalog
+
+---
+
+### F-022 — Client Locomotion and Physics
+
+**Value**: Connected clients can navigate the world using four movement types (drift, thrusters, impulse, superluminal). Client ships respond to gravity from all named bodies (requires F-013). NPC clients are server-driven.
+**Status**: 📋 Not started
+**Priority**: High — required for a playable multi-client experience
+**Depends on**: F-020 Phase 1; F-013 for gravity (Phase 2 only)
+**Spec**: [f022-client-movement-spec.md](f022-client-movement-spec.md)
+
+#### Phases
+- Phase 1: Kinematic movement (no gravity); all four movement types; `MovementService` proto
+- Phase 2: Gravity integration (leapfrog N-body receive pass); requires F-013
+- Phase 3: NPC automation (server-driven routine locomotion)
+
+---
+
+### F-023 — Keyboard Configuration
+
+**Value**: Replace hardcoded key constants with a hardware-profile-aware, fully user-remappable binding system. Stock profiles for laptop, full keyboard, mouse+keyboard, and numpad. Hot-reload from `configs/keybindings.json`. Conflict detection at load time. Fulfills F-006 and F-007.
+**Status**: 📋 Not started
+**Priority**: High — required for F-022 movement controls; also cleans up TD-001 surface
+**Depends on**: TD-001 (recommended cleanup before this); no hard blockers
+**Spec**: [f023-keyboard-config-spec.md](f023-keyboard-config-spec.md)
+
+#### Phases
+- Phase 1: `InputAction` enum; `KeyMap`; laptop + mouse-keyboard profiles; `handleInput` refactor
+- Phase 2: Full keyboard + numpad profiles
+- Phase 3: Mouse integration (mouse-delta camera, scroll-wheel zoom)
+
+---
+
+### F-024 — Multiplayer HUD Enhancements
+
+**Value**: HUD additions for multi-client awareness: own-client status panel, session list (Tab overlay), compass indicators for off-screen clients, proximity alert, admin session panel.
+**Status**: 📋 Not started
+**Priority**: Medium — enhances multiplayer UX; not blocking for core functionality
+**Depends on**: F-020 Phase 2 (client sessions in WorldSnapshot); F-023 Phase 1 (toggle bindings)
+**Spec**: [f024-multiplayer-hud-spec.md](f024-multiplayer-hud-spec.md)
+
+#### Phases
+- Phase 1: Own-client status panel + session list (Tab overlay)
+- Phase 2: Compass indicators + proximity alert
+- Phase 3: Admin session panel with kick action
+
+---
+
+### F-025 — Ship-to-Ship Communications
+
+**Value**: Real-time in-game text messaging between connected client sessions: direct messages, broadcast, emotes, system events (join/leave/damage). Persistent comms log in HUD.
+**Status**: 📋 Not started
+**Priority**: Medium
+**Depends on**: F-020 Phase 2 (SessionStream must exist)
+**Spec**: [f025-ship-comms-spec.md](f025-ship-comms-spec.md)
+
+#### Phases
+- Phase 1: Text messaging (DM + broadcast) + system events + HUD comms log
+- Phase 2: Emotes + admin mute/unmute
+- Phase 3: Audio (reserved; out of scope until separately designed)
+
+---
+
+### F-026 — Audio Events
+
+**Value**: Raylib-backed audio cue system for 10 game events (thruster, impulse, warp, damage, collision, proximity alert, join, leave, message received, system notification). Fully client-side; configurable; silent no-op when disabled.
+**Status**: 📋 Not started
+**Priority**: Medium — enhances immersion; fully independent of server logic
+**Depends on**: None for Phase 1 (thruster + impulse + warp sounds); F-020 Phase 2 for Phase 2 (join/leave); F-027 Phase 1 for Phase 3 (collision/damage audio)
+**Spec**: [f026-audio-events-spec.md](f026-audio-events-spec.md)
+
+#### Phases
+- Phase 1: AudioManager infrastructure + thruster / impulse / warp sounds
+- Phase 2: Proximity / join / leave / message-received audio
+- Phase 3: Collision / damage / warp audio cues
+
+---
+
+### F-027 — Ship Collision Detection and Damage
+
+**Value**: Bounding-sphere collision detection between client ships; DamageRating model; ImpactEvent broadcast to all clients; respawn on lethal damage. Camera is constrained to never enter an object.
+**Status**: 📋 Not started
+**Priority**: Medium — adds gameplay consequence to movement; depends on movement system
+**Depends on**: F-020 Phase 1 (session registry for DamageRating field); F-022 Phase 1 (kinematic movement for velocity-based impact energy)
+**Spec**: [f027-collision-damage-spec.md](f027-collision-damage-spec.md)
+
+#### Phases
+- Phase 1: Broad-phase + narrow-phase bounding sphere detection; DamageRating update; ImpactEvent broadcast
+- Phase 2: Respawn logic; visual hit indicator in HUD
+- Phase 3: BVH broad-phase acceleration (deferred until > 50 active clients)
+
+---
 
 - [docs/standards/agent-readme.md](../standards/agent-readme.md): architecture, package map, boundaries.
 - [docs/standards/coding-standards.md](../standards/coding-standards.md): implementation standards and Definition of Done.

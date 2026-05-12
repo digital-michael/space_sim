@@ -259,7 +259,50 @@ TD-001 ──► F-010 ──► F-011     (clean code, then split, then auth)
 F-008 ──► F-009                (artifact type before collision events)
 
 F-010 + F-011 + F-013 ──► F-012  (all stable before federated compute)
+
+F-020 ──► F-021 (marker needs session registry + position)
+F-020 ──► F-022 Phase 1 (movement needs session registry)
+F-013 ──► F-022 Phase 2 (gravity requires N-body engine)
+F-023 ──► F-022 (movement inputs via configurable bindings)
+F-020 + F-023 ──► F-024 (HUD reads sessions; uses toggle bindings)
+F-020 Phase 2 ──► F-025 Phase 1 (messaging needs SessionStream)
+F-020 Phase 2 + F-025 Phase 1 ──► F-026 Phase 2 (audio needs join/leave/message events)
+F-022 Phase 1 ──► F-027 Phase 1 (collision needs position + velocity tracking)
+F-027 Phase 1 ──► F-026 Phase 3 (damage audio needs ImpactEvent)
 ```
+
+---
+
+## 6. Multi-Client Feature Group
+
+These features together deliver a playable multi-client experience against the existing
+`space-sim-grpc` Option A binary. They are independent of F-010/F-011 and can be
+sequenced after the visual group.
+
+| Feature | Value | Spec |
+|---------|-------|------|
+| F-020 Multi-Client gRPC Session Layer | Session registry, identity, 100-client cap | [f020-multi-client-spec.md](f020-multi-client-spec.md) |
+| F-021 Client Physical Marker | Visible in-world presence (sphere → IQM → textured) | [f021-physical-marker-spec.md](f021-physical-marker-spec.md) |
+| F-022 Client Locomotion and Physics | Drift / thrusters / impulse / superluminal; gravity | [f022-client-movement-spec.md](f022-client-movement-spec.md) |
+| F-023 Keyboard Configuration | Hardware profiles; remappable; hot-reload (fulfills F-006, F-007) | [f023-keyboard-config-spec.md](f023-keyboard-config-spec.md) |
+| F-024 Multiplayer HUD Enhancements | Session list, compass, proximity alert, admin panel | [f024-multiplayer-hud-spec.md](f024-multiplayer-hud-spec.md) |
+| F-025 Ship-to-Ship Communications | Text DM + broadcast via SessionStream; emotes; comms HUD log | [f025-ship-comms-spec.md](f025-ship-comms-spec.md) |
+| F-026 Audio Events | Raylib audio cues for 10 game events; client-only | [f026-audio-events-spec.md](f026-audio-events-spec.md) |
+| F-027 Ship Collision Detection and Damage | Bounding-sphere impact; DamageRating; ImpactEvent broadcast | [f027-collision-damage-spec.md](f027-collision-damage-spec.md) |
+
+Recommended sequencing within the group:
+1. F-023 Phase 1 (bindings refactor — unblocks everything; cleans TD-001 in the process)
+2. F-020 Phase 1 (session registry + proto)
+3. F-022 Phase 1 (kinematic movement via new bindings)
+4. F-020 Phase 2 (position streaming — unlocks marker placement, comms, audio)
+5. F-021 Phase 1 (blinking sphere, needs F-020 Phase 2)
+6. F-025 Phase 1 (text messaging, needs F-020 Phase 2 SessionStream)
+7. F-026 Phase 1 (audio infrastructure — independent; can run in parallel with steps 3–6)
+8. F-024 Phase 1 (session list + own-client status, needs F-020 Phase 2 + F-023 Phase 1)
+9. F-027 Phase 1 (collision detection, needs F-022 Phase 1 + F-020 Phase 1)
+10. F-026 Phase 2 (proximity/join/leave audio, needs F-020 Phase 2 + F-025 Phase 1)
+11. F-026 Phase 3 (collision/damage audio, needs F-027 Phase 1)
+12. F-021 Phase 2 / F-022 Phase 2 / F-024 Phase 2 — parallel
 
 ---
 
@@ -273,4 +316,11 @@ F-010 + F-011 + F-013 ──► F-012  (all stable before federated compute)
 | [docs/history/changelog.md](../history/changelog.md) | Completed work archive | Active |
 | [docs/history/lessons-learned.md](../history/lessons-learned.md) | Anti-patterns and root-cause notes | Active |
 | [docs/standards/agent-readme.md](../standards/agent-readme.md) | Repository map, package ownership, architectural boundaries | Active |
-| [docs/standards/coding-standards.md](../standards/coding-standards.md) | Engineering rules, Definition of Done | Active |
+| [docs/wip/f020-multi-client-spec.md](f020-multi-client-spec.md) | Multi-client session layer spec | Active |
+| [docs/wip/f021-physical-marker-spec.md](f021-physical-marker-spec.md) | Client physical marker spec | Active |
+| [docs/wip/f022-client-movement-spec.md](f022-client-movement-spec.md) | Client locomotion and physics spec | Active |
+| [docs/wip/f023-keyboard-config-spec.md](f023-keyboard-config-spec.md) | Keyboard configuration spec | Active |
+| [docs/wip/f024-multiplayer-hud-spec.md](f024-multiplayer-hud-spec.md) | Multiplayer HUD enhancements spec | Active |
+| [docs/wip/f025-ship-comms-spec.md](f025-ship-comms-spec.md) | Ship-to-ship communications spec | Active |
+| [docs/wip/f026-audio-events-spec.md](f026-audio-events-spec.md) | Audio events spec | Active |
+| [docs/wip/f027-collision-damage-spec.md](f027-collision-damage-spec.md) | Ship collision detection and damage spec | Active |
