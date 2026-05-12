@@ -103,7 +103,9 @@ func (a *App) Run(ctx context.Context) error {
 	log.Println("=== Application Starting ===")
 	log.Printf("Performance mode: %v\n", a.cfg.PerformanceMode)
 
-	a.initWindow()
+	if err := a.initWindow(); err != nil {
+		return err
+	}
 	defer a.closeWindow()
 	a.syncRenderState()
 

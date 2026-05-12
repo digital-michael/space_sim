@@ -1,6 +1,7 @@
 package app
 
 import (
+	"errors"
 	"log"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
@@ -8,7 +9,7 @@ import (
 
 const appWindowTitle = "Space Sim Smoke Test - Solar System"
 
-func (a *App) initWindow() {
+func (a *App) initWindow() error {
 	flags := uint32(rl.FlagWindowHighdpi)
 	if a.runtime.Resizable {
 		flags |= rl.FlagWindowResizable
@@ -19,6 +20,9 @@ func (a *App) initWindow() {
 	rl.SetConfigFlags(flags)
 
 	rl.InitWindow(a.runtime.ScreenWidth, a.runtime.ScreenHeight, appWindowTitle)
+	if !rl.IsWindowReady() {
+		return errors.New("window initialization failed: graphics context unavailable (check display or GPU driver)")
+	}
 	if a.runtime.Fullscreen {
 		a.toggleFullscreen()
 	}
@@ -30,6 +34,7 @@ func (a *App) initWindow() {
 	}
 
 	a.syncWindowState()
+	return nil
 }
 
 // toggleFullscreen switches between windowed and fullscreen modes using the
