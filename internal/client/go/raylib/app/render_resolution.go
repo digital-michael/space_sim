@@ -31,8 +31,14 @@ func (a *App) desiredRenderSize() (int32, int32) {
 		return defaultScreenWidth, defaultScreenHeight
 	}
 
-	width := int32(rl.GetScreenWidth())
-	height := int32(rl.GetScreenHeight())
+	// GetRenderWidth/Height (CORE.Window.render.width/height) correctly reflects
+	// the actual framebuffer size in both windowed and fullscreen modes.
+	// GetScreenWidth/Height (CORE.Window.screen.width/height) is intentionally
+	// NOT updated in fullscreen — raylib's WindowSizeCallback skips that update
+	// when IsWindowFullscreen() is true — so it would return the pre-fullscreen
+	// windowed size for the entire fullscreen session.
+	width := int32(rl.GetRenderWidth())
+	height := int32(rl.GetRenderHeight())
 	if width > 0 && height > 0 {
 		return width, height
 	}

@@ -2,7 +2,7 @@
   "window": {
     "width": 774,
     "height": 575,
-    "fullscreen": true,
+    "fullscreen": false,
     "resizable": true
   },
   "render": {
