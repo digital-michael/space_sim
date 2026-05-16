@@ -48,9 +48,10 @@ type PerformanceConfig struct {
 
 // AppConfig holds application-level configuration.
 type AppConfig struct {
-	Window      WindowConfig      `json:"window"`
-	Render      RenderConfig      `json:"render"`
-	Performance PerformanceConfig `json:"performance"`
+	Window          WindowConfig      `json:"window"`
+	Render          RenderConfig      `json:"render"`
+	Performance     PerformanceConfig `json:"performance"`
+	KeybindingsPath string            `json:"keybindings_path,omitempty"`
 }
 
 // Config holds bootstrap options for the Space Sim application.
@@ -120,10 +121,13 @@ func ParseRenderSize(s string) (int32, int32, error) {
 }
 
 // keybindingsPath returns the effective path for the keybindings config file.
-// It falls back to defaultKeybindingsPath when KeybindingsPath is empty.
+// Priority: CLI flag > app config saved preference > factory default.
 func (cfg Config) keybindingsPath() string {
 	if cfg.KeybindingsPath != "" {
 		return cfg.KeybindingsPath
+	}
+	if cfg.AppConfig.KeybindingsPath != "" {
+		return cfg.AppConfig.KeybindingsPath
 	}
 	return defaultKeybindingsPath
 }

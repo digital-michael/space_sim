@@ -126,6 +126,34 @@ func AllActions() []InputAction {
 	return actions
 }
 
+// OrderedActions returns all defined actions in a logical display order for the
+// keybinding editor UI. Every action appears exactly once; the order groups
+// related actions so the list reads naturally from top to bottom.
+func OrderedActions() []InputAction {
+	return []InputAction{
+		// Application
+		ActionUISettings, ActionUIFullscreen,
+		// Simulation
+		ActionSimSpeedIncrease, ActionSimSpeedDecrease, ActionSimPauseToggle,
+		ActionSimTrackNext, ActionSimTrackStop,
+		// HUD
+		ActionHUDToggle, ActionHUDClientList,
+		// REPL overlay
+		ActionReplOpen, ActionReplClose, ActionReplHistoryPrev, ActionReplHistoryNext,
+		// Camera
+		ActionCameraPitchUp, ActionCameraPitchDown,
+		ActionCameraYawLeft, ActionCameraYawRight,
+		ActionCameraRollLeft, ActionCameraRollRight,
+		ActionCameraZoomIn, ActionCameraZoomOut,
+		ActionCameraReset, ActionCameraToggleFreeFly,
+		// Movement / locomotion
+		ActionThrustForward, ActionThrustBackward,
+		ActionThrustLeft, ActionThrustRight,
+		ActionThrustUp, ActionThrustDown,
+		ActionBrake, ActionDriftToggle,
+	}
+}
+
 // isReplContext reports whether an action belongs to the REPL input context.
 // REPL-context actions are only evaluated when the REPL overlay is open;
 // they are never in conflict with world-context actions even if the same key

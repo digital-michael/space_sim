@@ -46,10 +46,23 @@ func NewPerformanceOptions() *PerformanceOptions {
 
 // SettingsState holds all unified settings dialog UI state.
 type SettingsState struct {
-	ActiveTab   int                // 0=Controls, 1=Display, 2=Performance, 3=Configuration
+	ActiveTab   int                // 0=System, 1=Display, 2=Performance, 3=Controls
 	SelectedRow int                // focused interactive row within the active tab
 	HUD         HUDState           // Display tab: per-category HUD visibility
-	Perf        PerformanceOptions // Performance + Configuration tabs: live options
+	Perf        PerformanceOptions // Performance tab: live options
+
+	// Controls tab — keybinding editor state.
+	KeybindingsPath          string   // active keybindings file path (display + save target)
+	KeybindCapture           int      // -1 = not capturing; ≥0 = InputAction index being rebound
+	KeybindCapturePendingMod int32    // nonzero: modifier pressed, waiting for second key
+	KeybindConflict          string   // non-empty = conflict message from last capture attempt
+	KeybindsDirty            bool     // true when bindings changed but not yet saved
+	AvailableFiles           []string // keybinding files scanned from configs/ for the Load picker
+	FilePickerIdx            int      // selected index in AvailableFiles
+	KeybindScroll            int      // reserved: scroll offset (unused in two-column layout)
+	SaveAsPath               string   // destination path for Save As
+	SaveAsEditing            bool     // true while inline path editor is active
+	SaveAsPathPrev           string   // SaveAsPath snapshot taken when editing begins (for ESC cancel)
 }
 
 // InputState holds current user input state for object selection and navigation.

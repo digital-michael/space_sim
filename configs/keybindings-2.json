@@ -4,7 +4,7 @@
   "overrides": [
     {
       "action": "camera.pitch_up",
-      "key": "LEFT_SHIFT",
+      "key": "UP",
       "mods": []
     },
     {
@@ -75,7 +75,9 @@
     {
       "action": "move.thrust_up",
       "key": "SPACE",
-      "mods": []
+      "mods": [
+        "SHIFT"
+      ]
     },
     {
       "action": "move.thrust_down",

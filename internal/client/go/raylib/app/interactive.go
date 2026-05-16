@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/input"
 	spatial "github.com/digital-michael/space_sim/internal/client/go/raylib/spatial"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	"github.com/digital-michael/space_sim/internal/protocol"
@@ -176,7 +177,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			a.renderer.DrawZoomIndicator(zoomIndicator)
 		}
 		if a.runtime.SettingsVisible {
-			a.renderer.DrawSettingsDialog(&a.runtime.Settings)
+			a.renderer.DrawSettingsDialog(&a.runtime.Settings, a.keyMap.Load())
 		}
 		if a.runtime.RecordingActive {
 			a.renderer.DrawRecordingIndicator(a.runtime.RecordingPaused)
@@ -555,6 +556,41 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 				a.syncRenderState()
 			}
 		}
+
+	// ── Keybindings ─────────────────────────────────────────────────────────
+
+	case ReloadKeymapCmd:
+		newKm, err := input.LoadKeyMap(defaultProfilesDir, c.Path)
+		if err != nil {
+			log.Printf("ReloadKeymapCmd: %v", err)
+			return
+		}
+		a.keyMap.Store(newKm)
+		a.runtime.KeybindingsPath = c.Path
+		a.runtime.Settings.KeybindingsPath = c.Path
+		a.runtime.Settings.SaveAsPath = c.Path
+		a.runtime.Settings.KeybindsDirty = false
+		a.runtime.Settings.AvailableFiles = nil
+		a.cfg.AppConfig.KeybindingsPath = c.Path
+
+	case SaveKeybindingsCmd:
+		km := a.keyMap.Load()
+		if err := input.WriteKeybindingsFile(c.Path, km, "laptop"); err != nil {
+			log.Printf("SaveKeybindingsCmd: %v", err)
+			return
+		}
+		a.runtime.KeybindingsPath = c.Path
+		a.runtime.Settings.KeybindingsPath = c.Path
+		a.runtime.Settings.KeybindsDirty = false
+		a.cfg.AppConfig.KeybindingsPath = c.Path
+
+	case ScanKeybindFilesCmd:
+		files, err := input.ScanKeybindingsDir(c.Dir)
+		if err != nil {
+			log.Printf("ScanKeybindFilesCmd: %v", err)
+			files = nil
+		}
+		c.RespCh <- files
 	}
 }
 

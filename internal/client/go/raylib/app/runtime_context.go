@@ -39,6 +39,11 @@ type RuntimeContext struct {
 	// at shutdown via AppConfigSnapshot and restored at startup.
 	PerfConfig PerformanceConfig
 
+	// KeybindingsPath is the path of the currently loaded keybindings file.
+	// Updated when the user loads a different file in the Configuration tab.
+	// Persisted to ~/space-sim.json via AppConfigSnapshot.
+	KeybindingsPath string
+
 	// protectWindowedSize is set for one frame when exiting fullscreen on
 	// macOS/X11 to prevent syncWindowState from clobbering WindowedWidth/Height
 	// before SetWindowSize's resize event is reflected in GetRenderWidth.
@@ -83,6 +88,7 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 				ImportanceThreshold: cfg.Performance.ImportanceThreshold,
 				UseInPlaceSwap:      cfg.Performance.UseInPlaceSwap,
 			},
+			KeybindCapture: -1,
 		},
 		MouseModeEnabled: true,
 		LabelMode:        ui.LabelModeOff,
@@ -150,6 +156,7 @@ func (ctx *RuntimeContext) AppConfigSnapshot() AppConfig {
 			Width:  ctx.RenderWidth,
 			Height: ctx.RenderHeight,
 		},
-		Performance: ctx.PerfConfig,
+		Performance:     ctx.PerfConfig,
+		KeybindingsPath: ctx.KeybindingsPath,
 	}
 }

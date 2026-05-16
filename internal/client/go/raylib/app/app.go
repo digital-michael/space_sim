@@ -82,6 +82,12 @@ func New(cfg Config) (*App, error) {
 		savedRenderConfig: savedRender,
 	}
 	app.keyMap.Store(km)
+	// Set the effective keybindings path (CLI flag > saved preference > default)
+	// and propagate it into the settings dialog state.
+	effectivePath := cfg.keybindingsPath()
+	app.runtime.KeybindingsPath = effectivePath
+	app.runtime.Settings.KeybindingsPath = effectivePath
+	app.runtime.Settings.SaveAsPath = effectivePath
 	return app, nil
 }
 

@@ -204,6 +204,21 @@ type OrbitCmd struct {
 	Orbits         float64
 }
 
+// ── Keybinding commands ───────────────────────────────────────────────────────
+
+// ReloadKeymapCmd loads a new keybindings file and replaces the live KeyMap.
+type ReloadKeymapCmd struct{ Path string }
+
+// SaveKeybindingsCmd saves the current live KeyMap to the given file path.
+type SaveKeybindingsCmd struct{ Path string }
+
+// ScanKeybindFilesCmd scans the given directory for *.json files and sends
+// the result on RespCh.
+type ScanKeybindFilesCmd struct {
+	Dir    string
+	RespCh chan<- []string
+}
+
 // ── marker interface implementations ─────────────────────────────────────────
 
 func (WindowSizeCmd) isAppCmd()       {}
@@ -224,6 +239,9 @@ func (LoadSystemCmd) isAppCmd()       {}
 func (GetActiveSystemCmd) isAppCmd()  {}
 func (SetHUDCmd) isAppCmd()           {}
 func (OrbitCmd) isAppCmd()            {}
+func (ReloadKeymapCmd) isAppCmd()     {}
+func (SaveKeybindingsCmd) isAppCmd()  {}
+func (ScanKeybindFilesCmd) isAppCmd() {}
 func (RecordStartCmd) isAppCmd()      {}
 func (RecordPauseCmd) isAppCmd()      {}
 func (RecordStopCmd) isAppCmd()       {}

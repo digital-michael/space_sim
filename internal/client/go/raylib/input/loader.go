@@ -11,15 +11,15 @@ import (
 
 // profileJSON is the on-disk shape of a stock profile (e.g. data/profiles/laptop.json).
 type profileJSON struct {
-	Version  int              `json:"version"`
-	Name     string           `json:"name"`
+	Version  int                `json:"version"`
+	Name     string             `json:"name"`
 	Bindings []bindingEntryJSON `json:"bindings"`
 }
 
 // keybindingsJSON is the on-disk shape of configs/keybindings.json.
 type keybindingsJSON struct {
-	Version     int              `json:"version"`
-	BaseProfile string           `json:"base_profile"`
+	Version     int                `json:"version"`
+	BaseProfile string             `json:"base_profile"`
 	Overrides   []bindingEntryJSON `json:"overrides"`
 }
 
@@ -202,4 +202,69 @@ func parseMods(mods []string) (ModSet, error) {
 		}
 	}
 	return ms, nil
+}
+
+// modsToStrings converts a ModSet to the string slice representation used in
+// JSON files (e.g. ["SHIFT", "CTRL"]).
+func modsToStrings(mods ModSet) []string {
+	if mods == 0 {
+		return []string{}
+	}
+	var result []string
+	if mods&ModShift != 0 {
+		result = append(result, "SHIFT")
+	}
+	if mods&ModCtrl != 0 {
+		result = append(result, "CTRL")
+	}
+	if mods&ModAlt != 0 {
+		result = append(result, "ALT")
+	}
+	return result
+}
+
+// WriteKeybindingsFile serialises the current live KeyMap as a keybindings
+// override file at path, using baseProfile as the base profile name.
+// Parent directories are created as needed. The write is atomic on platforms
+// that support os.Rename (POSIX, Windows 10+).
+func WriteKeybindingsFile(path string, km *KeyMap, baseProfile string) error {
+	entries := make([]bindingEntryJSON, 0, int(actionCount)-1)
+	for a := ActionCameraPitchUp; a < actionCount; a++ {
+		key := km.bindings[a].key
+		if key == 0 {
+			continue // unbound — skip
+		}
+		entries = append(entries, bindingEntryJSON{
+			Action: a.String(),
+			Key:    KeyName(key),
+			Mods:   modsToStrings(km.bindings[a].mods),
+		})
+	}
+	out := keybindingsJSON{
+		Version:     1,
+		BaseProfile: baseProfile,
+		Overrides:   entries,
+	}
+	data, err := json.MarshalIndent(out, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshalling keybindings: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		return fmt.Errorf("creating keybindings directory: %w", err)
+	}
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, data, 0644); err != nil {
+		return fmt.Errorf("writing keybindings temp file: %w", err)
+	}
+	return os.Rename(tmp, path)
+}
+
+// ScanKeybindingsDir returns the paths of all *.json files in dir.
+// Returns nil (not an error) when the directory does not exist.
+func ScanKeybindingsDir(dir string) ([]string, error) {
+	matches, err := filepath.Glob(filepath.Join(dir, "*.json"))
+	if err != nil {
+		return nil, fmt.Errorf("scanning keybindings dir %q: %w", dir, err)
+	}
+	return matches, nil
 }

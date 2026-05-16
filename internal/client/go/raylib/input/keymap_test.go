@@ -14,11 +14,11 @@ func TestParseKeyNameKnown(t *testing.T) {
 		name string
 		want int32
 	}{
-		{"W", 87},         // KeyW = ASCII 'W'
-		{"ESCAPE", 256},   // rl.KeyEscape
-		{"SPACE", 32},     // rl.KeySpace
-		{"UP", 265},       // rl.KeyUp
-		{"KP_8", 328},     // rl.KeyKp8
+		{"W", 87},       // KeyW = ASCII 'W'
+		{"ESCAPE", 256}, // rl.KeyEscape
+		{"SPACE", 32},   // rl.KeySpace
+		{"UP", 265},     // rl.KeyUp
+		{"KP_8", 328},   // rl.KeyKp8
 	}
 	for _, tc := range cases {
 		code, ok := ParseKeyName(tc.name)
@@ -228,4 +228,186 @@ func isConflictError(err error, out **ConflictError) bool {
 		return true
 	}
 	return false
+}
+
+// ─── KeyName (reverse lookup) ─────────────────────────────────────────────────
+
+func TestKeyNameRoundTrip(t *testing.T) {
+	for name, want := range keyNames {
+		code, ok := ParseKeyName(name)
+		if !ok {
+			t.Errorf("ParseKeyName(%q) = false", name)
+			continue
+		}
+		got := KeyName(code)
+		// The reverse map keeps the first name per code; just check code→name→code.
+		parsed, ok2 := ParseKeyName(got)
+		if !ok2 {
+			t.Errorf("KeyName(%d)=%q: ParseKeyName returned false", code, got)
+			continue
+		}
+		if parsed != want {
+			t.Errorf("KeyName round-trip for %q: code %d → %q → %d, want %d", name, code, got, parsed, want)
+		}
+	}
+}
+
+func TestKeyNameUnknownCode(t *testing.T) {
+	got := KeyName(0)
+	if got != "UNKNOWN" {
+		t.Errorf("KeyName(0) = %q, want UNKNOWN", got)
+	}
+}
+
+// ─── SetBinding / ConflictFor ─────────────────────────────────────────────────
+
+func TestSetBindingAndBoundKey(t *testing.T) {
+	km := newKeyMap()
+	key, ok := ParseKeyName("G")
+	if !ok {
+		t.Fatal("ParseKeyName(G) failed")
+	}
+	km.SetBinding(ActionCameraReset, key, 0)
+	if got := km.BoundKey(ActionCameraReset); got != key {
+		t.Errorf("BoundKey after SetBinding = %d, want %d", got, key)
+	}
+	if got := km.BoundMods(ActionCameraReset); got != 0 {
+		t.Errorf("BoundMods after SetBinding = %d, want 0", got)
+	}
+}
+
+func TestSetBindingIgnoresActionNone(t *testing.T) {
+	km := newKeyMap()
+	key, _ := ParseKeyName("G")
+	km.SetBinding(ActionNone, key, 0) // should be a no-op
+	if got := km.BoundKey(ActionNone); got != 0 {
+		t.Errorf("BoundKey(ActionNone) after SetBinding = %d, want 0", got)
+	}
+}
+
+func TestConflictFor_DetectsConflict(t *testing.T) {
+	km := newKeyMap()
+	key, _ := ParseKeyName("G")
+	km.SetBinding(ActionCameraReset, key, 0)
+
+	conflict, ok := km.ConflictFor(key, 0, ActionCameraYawLeft)
+	if !ok {
+		t.Fatal("ConflictFor: expected conflict, got none")
+	}
+	if conflict != ActionCameraReset {
+		t.Errorf("ConflictFor = %v, want ActionCameraReset", conflict)
+	}
+}
+
+func TestConflictFor_ExcludesExcept(t *testing.T) {
+	km := newKeyMap()
+	key, _ := ParseKeyName("G")
+	km.SetBinding(ActionCameraReset, key, 0)
+
+	// Rebinding ActionCameraReset to the same key — must not self-conflict.
+	_, ok := km.ConflictFor(key, 0, ActionCameraReset)
+	if ok {
+		t.Error("ConflictFor should not report self-conflict when except matches")
+	}
+}
+
+func TestConflictFor_NoConflictOnModsDifference(t *testing.T) {
+	km := newKeyMap()
+	key, _ := ParseKeyName("W")
+	km.SetBinding(ActionThrustForward, key, 0)
+
+	// Same key, different mods — no conflict.
+	_, ok := km.ConflictFor(key, ModShift, ActionCameraYawLeft)
+	if ok {
+		t.Error("ConflictFor: different mods should not be a conflict")
+	}
+}
+
+// ─── WriteKeybindingsFile round-trip ─────────────────────────────────────────
+
+func TestWriteKeybindingsFile_RoundTrip(t *testing.T) {
+	dir := laptopProfileDir(t)
+	out := filepath.Join(t.TempDir(), "test_keybindings.json")
+
+	// Load the default keymap.
+	km, err := LoadKeyMap(dir, filepath.Join(t.TempDir(), "nonexistent.json"))
+	if err != nil {
+		t.Fatalf("LoadKeyMap: %v", err)
+	}
+
+	// Write it.
+	if err := WriteKeybindingsFile(out, km, "laptop"); err != nil {
+		t.Fatalf("WriteKeybindingsFile: %v", err)
+	}
+
+	// Load it back.
+	km2, err := LoadKeyMap(dir, out)
+	if err != nil {
+		t.Fatalf("LoadKeyMap (round-trip): %v", err)
+	}
+
+	// All bindings must match.
+	for a := ActionCameraPitchUp; a < actionCount; a++ {
+		if km.BoundKey(a) != km2.BoundKey(a) {
+			t.Errorf("action %v key mismatch: original=%d, roundtrip=%d", a, km.BoundKey(a), km2.BoundKey(a))
+		}
+		if km.BoundMods(a) != km2.BoundMods(a) {
+			t.Errorf("action %v mods mismatch: original=%d, roundtrip=%d", a, km.BoundMods(a), km2.BoundMods(a))
+		}
+	}
+}
+
+func TestWriteKeybindingsFile_ModifiedBinding(t *testing.T) {
+	dir := laptopProfileDir(t)
+	out := filepath.Join(t.TempDir(), "modified.json")
+
+	km, err := LoadKeyMap(dir, filepath.Join(t.TempDir(), "nonexistent.json"))
+	if err != nil {
+		t.Fatalf("LoadKeyMap: %v", err)
+	}
+
+	// Rebind ActionCameraReset from R to G.
+	newKey, _ := ParseKeyName("G")
+	km.SetBinding(ActionCameraReset, newKey, 0)
+
+	if err := WriteKeybindingsFile(out, km, "laptop"); err != nil {
+		t.Fatalf("WriteKeybindingsFile: %v", err)
+	}
+
+	km2, err := LoadKeyMap(dir, out)
+	if err != nil {
+		t.Fatalf("LoadKeyMap (modified): %v", err)
+	}
+
+	if got := km2.BoundKey(ActionCameraReset); got != newKey {
+		t.Errorf("after round-trip: ActionCameraReset = %d, want %d (G)", got, newKey)
+	}
+}
+
+// ─── ScanKeybindingsDir ───────────────────────────────────────────────────────
+
+func TestScanKeybindingsDir_EmptyDir(t *testing.T) {
+	dir := t.TempDir()
+	files, err := ScanKeybindingsDir(dir)
+	if err != nil {
+		t.Fatalf("ScanKeybindingsDir error: %v", err)
+	}
+	if len(files) != 0 {
+		t.Errorf("expected 0 files, got %d", len(files))
+	}
+}
+
+func TestScanKeybindingsDir_FindsJsonFiles(t *testing.T) {
+	dir := t.TempDir()
+	_ = os.WriteFile(filepath.Join(dir, "a.json"), []byte("{}"), 0644)
+	_ = os.WriteFile(filepath.Join(dir, "b.json"), []byte("{}"), 0644)
+	_ = os.WriteFile(filepath.Join(dir, "notes.txt"), []byte(""), 0644)
+
+	files, err := ScanKeybindingsDir(dir)
+	if err != nil {
+		t.Fatalf("ScanKeybindingsDir error: %v", err)
+	}
+	if len(files) != 2 {
+		t.Errorf("expected 2 .json files, got %d: %v", len(files), files)
+	}
 }

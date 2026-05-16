@@ -121,3 +121,41 @@ func (km *KeyMap) BoundMods(action InputAction) ModSet {
 	}
 	return km.bindings[action].mods
 }
+
+// SetBinding replaces the binding for action without conflict checking.
+// Call ConflictFor first to detect conflicts before committing.
+func (km *KeyMap) SetBinding(action InputAction, key int32, mods ModSet) {
+	if action == ActionNone || action >= actionCount {
+		return
+	}
+	km.bindings[action] = binding{key: key, mods: mods}
+}
+
+// ConflictFor returns the first world-context action already bound to
+// (key, mods), excluding except. Returns (ActionNone, false) when no
+// conflict exists. REPL-context actions are always excluded from conflict
+// checks because they operate in a separate input context.
+func (km *KeyMap) ConflictFor(key int32, mods ModSet, except InputAction) (InputAction, bool) {
+	for a := ActionCameraPitchUp; a < actionCount; a++ {
+		if a == except {
+			continue
+		}
+		if isReplContext(a) {
+			continue
+		}
+		b := km.bindings[a]
+		if b.key == key && b.mods == mods {
+			return a, true
+		}
+	}
+	return ActionNone, false
+}
+
+// AnyPressed returns the first key code captured by the most recent
+// DrainQueue call, and true. Returns (0, false) if no key was pressed.
+func (km *KeyMap) AnyPressed() (int32, bool) {
+	for k := range km.pressed {
+		return k, true
+	}
+	return 0, false
+}

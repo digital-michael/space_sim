@@ -386,7 +386,19 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 	}
 	if km.IsPressed(input.ActionSimTrackStop) {
 		if a.runtime.SettingsVisible {
-			a.runtime.SettingsVisible = false
+			// Exit sub-states (file picker → capture → save-as editing) before closing dialog.
+			if a.runtime.Settings.AvailableFiles != nil {
+				a.runtime.Settings.AvailableFiles = nil
+			} else if a.runtime.Settings.KeybindCapture >= 0 {
+				a.runtime.Settings.KeybindCapture = -1
+				a.runtime.Settings.KeybindConflict = ""
+				a.runtime.Settings.KeybindCapturePendingMod = 0
+			} else if a.runtime.Settings.SaveAsEditing {
+				a.runtime.Settings.SaveAsPath = a.runtime.Settings.SaveAsPathPrev
+				a.runtime.Settings.SaveAsEditing = false
+			} else {
+				a.runtime.SettingsVisible = false
+			}
 			return false
 		} else if session.inputState.SelectionActive {
 			session.inputState.CancelSelection()
@@ -404,18 +416,160 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 
 	// Settings dialog keyboard navigation (only when dialog is open, takes priority over main window)
 	if a.runtime.SettingsVisible {
+		// Capture mode: intercept the next key press for rebinding an action.
+		if a.runtime.Settings.KeybindCapture >= 0 {
+			action := input.InputAction(a.runtime.Settings.KeybindCapture)
+			pendingMod := a.runtime.Settings.KeybindCapturePendingMod
+
+			if pendingMod != 0 {
+				// A modifier was pressed; waiting for a second key or mod release.
+				key, pressed := km.AnyPressed()
+				if pressed && key == int32(rl.KeyEscape) {
+					// Cancel
+					a.runtime.Settings.KeybindCapture = -1
+					a.runtime.Settings.KeybindConflict = ""
+					a.runtime.Settings.KeybindCapturePendingMod = 0
+				} else if pressed && !isModifierKey(key) {
+					// Second (non-modifier) key: bind with live mod set.
+					mods := liveModSet()
+					conflictAction, hasConflict := km.ConflictFor(key, mods, action)
+					if hasConflict {
+						a.runtime.Settings.KeybindConflict = "Conflict: key bound to " + conflictAction.String()
+					} else {
+						km.SetBinding(action, key, mods)
+						a.runtime.Settings.KeybindConflict = ""
+						a.runtime.Settings.KeybindsDirty = true
+					}
+					a.runtime.Settings.KeybindCapture = -1
+					a.runtime.Settings.KeybindCapturePendingMod = 0
+				} else if !anyModifierDown() {
+					// All modifiers released without a second key: bind to the modifier key itself.
+					conflictAction, hasConflict := km.ConflictFor(pendingMod, 0, action)
+					if hasConflict {
+						a.runtime.Settings.KeybindConflict = "Conflict: key bound to " + conflictAction.String()
+					} else {
+						km.SetBinding(action, pendingMod, 0)
+						a.runtime.Settings.KeybindConflict = ""
+						a.runtime.Settings.KeybindsDirty = true
+					}
+					a.runtime.Settings.KeybindCapture = -1
+					a.runtime.Settings.KeybindCapturePendingMod = 0
+				}
+				return false // all input suspended during capture
+			}
+
+			// No pending modifier: wait for first key press.
+			key, pressed := km.AnyPressed()
+			if pressed {
+				if key == int32(rl.KeyEscape) {
+					a.runtime.Settings.KeybindCapture = -1
+					a.runtime.Settings.KeybindConflict = ""
+				} else if isModifierKey(key) {
+					// Modifier pressed first: enter pending-mod state.
+					a.runtime.Settings.KeybindCapturePendingMod = key
+				} else {
+					// Direct non-modifier key.
+					conflictAction, hasConflict := km.ConflictFor(key, 0, action)
+					if hasConflict {
+						a.runtime.Settings.KeybindConflict = "Conflict: key bound to " + conflictAction.String()
+						a.runtime.Settings.KeybindCapture = -1
+					} else {
+						km.SetBinding(action, key, 0)
+						a.runtime.Settings.KeybindConflict = ""
+						a.runtime.Settings.KeybindsDirty = true
+						a.runtime.Settings.KeybindCapture = -1
+					}
+				}
+			}
+			return false // all other input suspended during capture
+		}
+
+		// Save-As inline path editor: captures text input for the destination path.
+		if a.runtime.Settings.SaveAsEditing {
+			for {
+				ch := rl.GetCharPressed()
+				if ch == 0 {
+					break
+				}
+				if ch >= 32 && ch < 127 {
+					a.runtime.Settings.SaveAsPath += string(rune(ch))
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyBackspace) && len(a.runtime.Settings.SaveAsPath) > 0 {
+				runes := []rune(a.runtime.Settings.SaveAsPath)
+				a.runtime.Settings.SaveAsPath = string(runes[:len(runes)-1])
+			}
+			if rl.IsKeyPressed(rl.KeyEnter) {
+				if a.runtime.Settings.SaveAsPath != "" {
+					if err := input.WriteKeybindingsFile(a.runtime.Settings.SaveAsPath, km, "laptop"); err == nil {
+						a.runtime.KeybindingsPath = a.runtime.Settings.SaveAsPath
+						a.runtime.Settings.KeybindingsPath = a.runtime.Settings.SaveAsPath
+						a.runtime.Settings.KeybindsDirty = false
+						a.cfg.AppConfig.KeybindingsPath = a.runtime.Settings.SaveAsPath
+					}
+				}
+				a.runtime.Settings.SaveAsEditing = false
+			}
+			return false // all input suspended during path editing
+		}
+
+		// File picker overlay: UP/DOWN/L/R navigates, ENTER loads, ESC dismisses.
+		if a.runtime.Settings.AvailableFiles != nil {
+			if rl.IsKeyPressed(rl.KeyEscape) {
+				a.runtime.Settings.AvailableFiles = nil
+				return false
+			}
+			maxIdx := len(a.runtime.Settings.AvailableFiles) - 1
+			if rl.IsKeyPressed(rl.KeyUp) && a.runtime.Settings.FilePickerIdx > 0 {
+				a.runtime.Settings.FilePickerIdx--
+			}
+			if rl.IsKeyPressed(rl.KeyDown) && a.runtime.Settings.FilePickerIdx < maxIdx {
+				a.runtime.Settings.FilePickerIdx++
+			}
+			if rl.IsKeyPressed(rl.KeyLeft) {
+				if a.runtime.Settings.FilePickerIdx > 0 {
+					a.runtime.Settings.FilePickerIdx--
+				} else {
+					a.runtime.Settings.FilePickerIdx = maxIdx
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyRight) {
+				if a.runtime.Settings.FilePickerIdx < maxIdx {
+					a.runtime.Settings.FilePickerIdx++
+				} else {
+					a.runtime.Settings.FilePickerIdx = 0
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyEnter) || rl.IsKeyPressed(rl.KeySpace) {
+				sel := a.runtime.Settings.AvailableFiles[a.runtime.Settings.FilePickerIdx]
+				newKm, err := input.LoadKeyMap(defaultProfilesDir, sel)
+				if err == nil {
+					a.keyMap.Store(newKm)
+					km = newKm
+					a.runtime.KeybindingsPath = sel
+					a.runtime.Settings.KeybindingsPath = sel
+					a.runtime.Settings.SaveAsPath = sel
+					a.runtime.Settings.KeybindsDirty = false
+					a.cfg.AppConfig.KeybindingsPath = sel
+				}
+				a.runtime.Settings.AvailableFiles = nil
+			}
+			return false
+		}
+
 		// Tab / Shift+Tab: switch active tab
 		if rl.IsKeyPressed(rl.KeyTab) {
 			if shiftHeld {
-				a.runtime.Settings.ActiveTab = (a.runtime.Settings.ActiveTab + 4) % 5
+				a.runtime.Settings.ActiveTab = (a.runtime.Settings.ActiveTab + 3) % 4
 			} else {
-				a.runtime.Settings.ActiveTab = (a.runtime.Settings.ActiveTab + 1) % 5
+				a.runtime.Settings.ActiveTab = (a.runtime.Settings.ActiveTab + 1) % 4
 			}
 			a.runtime.Settings.SelectedRow = 0
 		}
 		// Up/Down: navigate rows within current tab
-		tabRowMax := [5]int{0, 0, 2, 4, 1}    // max interactive row index per tab (System/Controls: static)
-		if a.runtime.Settings.ActiveTab > 1 { // System and Controls tabs have no row selection
+		// Tab 2 (Performance): 7 rows (0-6); Tab 3 (Controls): Load + SaveAs + 31 actions (0-32)
+		tabRowMax := [4]int{0, 2, 6, 32}
+		if a.runtime.Settings.ActiveTab > 0 { // System tab has no row selection
 			if rl.IsKeyPressed(rl.KeyUp) && a.runtime.Settings.SelectedRow > 0 {
 				a.runtime.Settings.SelectedRow--
 			}
@@ -426,7 +580,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		// Space/Enter: toggle selected option
 		if rl.IsKeyPressed(rl.KeySpace) || rl.IsKeyPressed(rl.KeyEnter) {
 			switch a.runtime.Settings.ActiveTab {
-			case 2: // Display tab — HUD flags
+			case 1: // Display tab — HUD flags
 				switch a.runtime.Settings.SelectedRow {
 				case 0:
 					a.runtime.Settings.HUD.Debug = !a.runtime.Settings.HUD.Debug
@@ -438,7 +592,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 					a.runtime.Settings.HUD.Help = !a.runtime.Settings.HUD.Help
 					a.runtime.HUD.Help = a.runtime.Settings.HUD.Help
 				}
-			case 3: // Performance tab — perf flags
+			case 2: // Performance tab — 5 toggles + ImportanceThreshold (row 5) + UseInPlaceSwap (row 6)
 				switch a.runtime.Settings.SelectedRow {
 				case 0:
 					a.runtime.Settings.Perf.FrustumCulling = !a.runtime.Settings.Perf.FrustumCulling
@@ -460,10 +614,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 					a.runtime.Settings.Perf.PointRendering = !a.runtime.Settings.Perf.PointRendering
 					a.runtime.PerfConfig.PointRendering = a.runtime.Settings.Perf.PointRendering
 					session.inputState.PerfOptions.PointRendering = a.runtime.Settings.Perf.PointRendering
-				}
-			case 4: // Configuration tab
-				switch a.runtime.Settings.SelectedRow {
-				case 1: // UseInPlaceSwap
+				case 6: // UseInPlaceSwap (row 5 = ImportanceThreshold, no Enter action there)
 					a.runtime.Settings.Perf.UseInPlaceSwap = !a.runtime.Settings.Perf.UseInPlaceSwap
 					a.runtime.PerfConfig.UseInPlaceSwap = a.runtime.Settings.Perf.UseInPlaceSwap
 					session.inputState.PerfOptions.UseInPlaceSwap = a.runtime.Settings.Perf.UseInPlaceSwap
@@ -473,10 +624,29 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 						session.sim.GetState().DisableInPlaceSwap()
 					}
 				}
+			case 3: // Controls tab — keybinding editor
+				switch a.runtime.Settings.SelectedRow {
+				case 0: // Load: scan configs/ and open file picker
+					files, _ := input.ScanKeybindingsDir("configs")
+					if len(files) > 0 {
+						a.runtime.Settings.AvailableFiles = files
+						a.runtime.Settings.FilePickerIdx = 0
+					}
+				case 1: // Save As: begin inline path editing
+					a.runtime.Settings.SaveAsPathPrev = a.runtime.Settings.SaveAsPath
+					a.runtime.Settings.SaveAsEditing = true
+				default: // Rows 2..32 = keybinding rows for actions 0..30 in OrderedActions()
+					actionIdx := a.runtime.Settings.SelectedRow - 2
+					allActions := input.OrderedActions()
+					if actionIdx >= 0 && actionIdx < len(allActions) {
+						a.runtime.Settings.KeybindCapture = int(allActions[actionIdx])
+						a.runtime.Settings.KeybindConflict = ""
+					}
+				}
 			}
 		}
-		// Left/Right: adjust ImportanceThreshold (Configuration tab, row 0 only)
-		if a.runtime.Settings.ActiveTab == 4 && a.runtime.Settings.SelectedRow == 0 {
+		// Left/Right: adjust ImportanceThreshold (Performance tab, row 5)
+		if a.runtime.Settings.ActiveTab == 2 && a.runtime.Settings.SelectedRow == 5 {
 			thresholds := []int{0, 5, 10, 15, 30, 40, 50, 60, 70, 80, 90}
 			current := a.runtime.Settings.Perf.ImportanceThreshold
 			if rl.IsKeyPressed(rl.KeyLeft) {
@@ -1003,4 +1173,33 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 	}
 
 	return wheelMove // Return zoom indicator value
+}
+
+// isModifierKey reports whether key is a shift, ctrl, or alt key code.
+func isModifierKey(key int32) bool {
+	return key == int32(rl.KeyLeftShift) || key == int32(rl.KeyRightShift) ||
+		key == int32(rl.KeyLeftControl) || key == int32(rl.KeyRightControl) ||
+		key == int32(rl.KeyLeftAlt) || key == int32(rl.KeyRightAlt)
+}
+
+// liveModSet returns the currently-held modifier keys as an input.ModSet.
+func liveModSet() input.ModSet {
+	var mods input.ModSet
+	if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
+		mods |= input.ModShift
+	}
+	if rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl) {
+		mods |= input.ModCtrl
+	}
+	if rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt) {
+		mods |= input.ModAlt
+	}
+	return mods
+}
+
+// anyModifierDown reports whether any shift/ctrl/alt key is currently held.
+func anyModifierDown() bool {
+	return rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) ||
+		rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl) ||
+		rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt)
 }

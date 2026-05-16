@@ -50,14 +50,14 @@ var keyNames = map[string]int32{
 	"F9": rl.KeyF9, "F10": rl.KeyF10, "F11": rl.KeyF11, "F12": rl.KeyF12,
 
 	// Modifier keys
-	"LEFT_SHIFT":   rl.KeyLeftShift,
-	"LEFT_CONTROL": rl.KeyLeftControl,
-	"LEFT_ALT":     rl.KeyLeftAlt,
-	"LEFT_SUPER":   rl.KeyLeftSuper,
-	"RIGHT_SHIFT":  rl.KeyRightShift,
+	"LEFT_SHIFT":    rl.KeyLeftShift,
+	"LEFT_CONTROL":  rl.KeyLeftControl,
+	"LEFT_ALT":      rl.KeyLeftAlt,
+	"LEFT_SUPER":    rl.KeyLeftSuper,
+	"RIGHT_SHIFT":   rl.KeyRightShift,
 	"RIGHT_CONTROL": rl.KeyRightControl,
-	"RIGHT_ALT":    rl.KeyRightAlt,
-	"RIGHT_SUPER":  rl.KeyRightSuper,
+	"RIGHT_ALT":     rl.KeyRightAlt,
+	"RIGHT_SUPER":   rl.KeyRightSuper,
 
 	// Punctuation / symbols
 	"SEMICOLON":     rl.KeySemicolon,
@@ -97,6 +97,28 @@ var keyNames = map[string]int32{
 func ParseKeyName(name string) (int32, bool) {
 	code, ok := keyNames[name]
 	return code, ok
+}
+
+// keyCodeToName is the reverse of keyNames, built at init.
+// When multiple names map to the same code, the first one encountered wins.
+var keyCodeToName map[int32]string
+
+func init() {
+	keyCodeToName = make(map[int32]string, len(keyNames))
+	for name, code := range keyNames {
+		if _, exists := keyCodeToName[code]; !exists {
+			keyCodeToName[code] = name
+		}
+	}
+}
+
+// KeyName returns the canonical name string for a Raylib key code,
+// or "UNKNOWN" if the code is not in the vocabulary.
+func KeyName(code int32) string {
+	if name, ok := keyCodeToName[code]; ok {
+		return name
+	}
+	return "UNKNOWN"
 }
 
 // KeyNameOf returns the canonical string name for a Raylib key code, or an
