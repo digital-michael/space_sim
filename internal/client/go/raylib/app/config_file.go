@@ -7,6 +7,16 @@ import (
 	"path/filepath"
 )
 
+// DefaultAppConfigPathFor returns the user-local config path ~/appName.json.
+// Falls back to "configs/appName.json" if the home directory cannot be determined.
+func DefaultAppConfigPathFor(appName string) string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return filepath.Join("configs", appName+".json")
+	}
+	return filepath.Join(home, appName+".json")
+}
+
 // LoadAppConfig loads persisted app/window config. Missing files fall back to defaults.
 func LoadAppConfig(path string) (AppConfig, error) {
 	cfg := AppConfig{
@@ -28,7 +38,7 @@ func LoadAppConfig(path string) (AppConfig, error) {
 	}
 
 	if path == "" {
-		path = DefaultAppConfigPath
+		path = DefaultAppConfigPathFor(defaultAppName)
 	}
 
 	data, err := os.ReadFile(path)
@@ -70,7 +80,7 @@ func LoadAppConfig(path string) (AppConfig, error) {
 // SaveAppConfig persists the current app/window config to disk atomically.
 func SaveAppConfig(path string, cfg AppConfig) error {
 	if path == "" {
-		path = DefaultAppConfigPath
+		path = DefaultAppConfigPathFor(defaultAppName)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {

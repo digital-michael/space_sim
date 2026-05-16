@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 	"sync/atomic"
+	"time"
 
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/input"
 	render "github.com/digital-michael/space_sim/internal/client/go/raylib/ui/render"
 	"github.com/digital-michael/space_sim/internal/protocol"
 	worldpkg "github.com/digital-michael/space_sim/internal/sim/world"
@@ -14,6 +16,17 @@ import (
 
 // appCmdBufSize is the number of AppCmds that can be queued without blocking.
 const appCmdBufSize = 32
+
+// Default paths for keybindings configuration.
+const (
+	defaultProfilesDir       = "data/profiles"
+	defaultKeybindingsPath   = "configs/keybindings.json"
+	keybindingsWatchInterval = 2 * time.Second
+)
+
+// newTicker is a thin wrapper so tests can substitute a faster ticker.
+// Production code always calls time.NewTicker directly.
+var newTicker = time.NewTicker
 
 // App owns the Space Sim application's runtime orchestration.
 type App struct {
@@ -23,6 +36,10 @@ type App struct {
 	broadcaster *protocol.Broadcaster
 	worldPtr    atomic.Pointer[worldpkg.World]
 	recorder    *videoRecorder
+
+	// keyMap is the active input binding table. Swapped atomically on hot-reload;
+	// safe to read from any goroutine.
+	keyMap atomic.Pointer[input.KeyMap]
 
 	// cmdCh is the main-thread command gate. gRPC handler goroutines send
 	// AppCmds here; the interactive loop drains it each frame (non-blocking).
@@ -51,14 +68,21 @@ func New(cfg Config) (*App, error) {
 		return nil, err
 	}
 
-	return &App{
+	km, err := input.LoadKeyMap(defaultProfilesDir, cfg.keybindingsPath())
+	if err != nil {
+		return nil, fmt.Errorf("keybindings: %w", err)
+	}
+
+	app := &App{
 		cfg:               cfg,
 		runtime:           NewRuntimeContext(cfg.AppConfig),
 		renderer:          render.New(cfg.NoTextures, cfg.NoLighting),
 		broadcaster:       &protocol.Broadcaster{},
 		cmdCh:             make(chan AppCmd, appCmdBufSize),
 		savedRenderConfig: savedRender,
-	}, nil
+	}
+	app.keyMap.Store(km)
+	return app, nil
 }
 
 // SendCmd enqueues an AppCmd for execution on the OS main thread.
@@ -127,5 +151,40 @@ func (a *App) Run(ctx context.Context) error {
 		return nil
 	}
 
+	a.startKeybindingsWatcher(ctx, defaultProfilesDir, a.cfg.keybindingsPath())
 	return a.runInteractive(ctx, session)
+}
+
+// startKeybindingsWatcher polls configs/keybindings.json every 2 seconds and
+// atomically replaces the active KeyMap when the file's modification time
+// changes. This satisfies the hot-reload requirement without gRPC plumbing.
+func (a *App) startKeybindingsWatcher(ctx context.Context, profilesDir, configPath string) {
+	go func() {
+		var lastMod int64 // Unix nanoseconds of last seen modtime; 0 = not yet read
+		ticker := newTicker(keybindingsWatchInterval)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				info, err := os.Stat(configPath)
+				if err != nil {
+					continue // file absent or unreadable — no change
+				}
+				modNs := info.ModTime().UnixNano()
+				if modNs == lastMod {
+					continue
+				}
+				km, err := input.LoadKeyMap(profilesDir, configPath)
+				if err != nil {
+					log.Printf("keybindings reload error: %v", err)
+					continue
+				}
+				a.keyMap.Store(km)
+				lastMod = modNs
+				log.Printf("keybindings reloaded from %s", configPath)
+			}
+		}
+	}()
 }

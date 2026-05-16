@@ -6,85 +6,51 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/digital-michael/space_sim/internal/client/go/raylib/input"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
-	sim "github.com/digital-michael/space_sim/internal/sim/world"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
-// handleInput processes keyboard input for camera modes and object selection
-func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, navigationOrder []engine.ObjectCategory, asteroidDataset engine.AsteroidDataset, hudVisible bool, helpVisible bool, hudDialogVisible *bool, labelMode *ui.LabelMode, mouseModeEnabled bool, debugEnabled bool) (bool, engine.AsteroidDataset, bool, bool, bool) {
-	selectionDialogOpen := inputState.MainWindowInputSuspended()
-	mainWindowInputSuspended := selectionDialogOpen || helpVisible || *hudDialogVisible
+// handleInput processes keyboard input for camera modes and object selection.
+func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState) bool {
+	km := a.keyMap.Load()
+	km.DrainQueue()
+
+	selectionDialogOpen := session.inputState.MainWindowInputSuspended()
+	mainWindowInputSuspended := selectionDialogOpen || a.runtime.SettingsVisible
 	altHeld := rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt)
 	superHeld := rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)
 	reservedModifierHeld := altHeld || superHeld
 	shiftHeld := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
 
-	// ?: Toggle help screen. Help behaves like a modal overlay.
-	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeySlash) && shiftHeld && !altHeld && !superHeld {
-		helpVisible = !helpVisible
-		return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
-	}
-
 	// Cmd+S: Open the runtime system selector.
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyS) && superHeld && !altHeld {
-		app.openSystemSelector(inputState)
-		return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
-	}
-
-	// Opt+H: Toggle HUD settings dialog. Opens/closes the per-category overlay.
-	// When opening while in mouse-camera mode, cursor is restored so checkboxes are clickable.
-	if !selectionDialogOpen && rl.IsKeyPressed(rl.KeyH) && altHeld && !superHeld {
-		*hudDialogVisible = !*hudDialogVisible
-		if *hudDialogVisible && mouseModeEnabled {
-			mouseModeEnabled = false
-			rl.EnableCursor()
-		}
-	}
-
-	// HUD dialog keyboard navigation (only when dialog is open)
-	const hudDialogMaxRow = 2 // rows 0-2 are interactive; row 3 (Player) is greyed
-	if *hudDialogVisible {
-		if rl.IsKeyPressed(rl.KeyUp) && app.runtime.HUDDialogRow > 0 {
-			app.runtime.HUDDialogRow--
-		}
-		if rl.IsKeyPressed(rl.KeyDown) && app.runtime.HUDDialogRow < hudDialogMaxRow {
-			app.runtime.HUDDialogRow++
-		}
-		if rl.IsKeyPressed(rl.KeySpace) || rl.IsKeyPressed(rl.KeyEnter) {
-			switch app.runtime.HUDDialogRow {
-			case 0:
-				app.runtime.HUD.Debug = !app.runtime.HUD.Debug
-			case 1:
-				app.runtime.HUD.Info = !app.runtime.HUD.Info
-			case 2:
-				app.runtime.HUD.Help = !app.runtime.HUD.Help
-			}
-		}
+		a.openSystemSelector(session.inputState)
+		return false
 	}
 
 	// Opt+L: Cycle label mode (off → on → nearest → off)
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyL) && altHeld && !superHeld {
-		switch *labelMode {
+		switch a.runtime.LabelMode {
 		case ui.LabelModeOff:
-			*labelMode = ui.LabelModeOn
+			a.runtime.LabelMode = ui.LabelModeOn
 		case ui.LabelModeOn:
-			*labelMode = ui.LabelModeNearest
+			a.runtime.LabelMode = ui.LabelModeNearest
 		default:
-			*labelMode = ui.LabelModeOff
+			a.runtime.LabelMode = ui.LabelModeOff
 		}
 	}
 
 	// I: Cycle infra ambient-light mode (0=off → 1=spotlight → 2=reserved → 0)
 	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyI) {
-		app.runtime.InfraMode = (app.runtime.InfraMode + 1) % 3
+		a.runtime.InfraMode = (a.runtime.InfraMode + 1) % 3
 	}
 
 	// Opt+M: Toggle mouse mode (camera control vs UI cursor)
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyM) && altHeld && !superHeld {
-		mouseModeEnabled = !mouseModeEnabled
-		if mouseModeEnabled {
+		a.runtime.MouseModeEnabled = !a.runtime.MouseModeEnabled
+		if a.runtime.MouseModeEnabled {
 			rl.DisableCursor()
 		} else {
 			rl.EnableCursor()
@@ -93,17 +59,17 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 
 	// Opt+F: Toggle fullscreen with proper display resolution handling
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyF) && altHeld && !superHeld {
-		app.toggleFullscreen()
+		a.toggleFullscreen()
 	}
 
 	// Opt+Q: Quit application
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyQ) && altHeld && !superHeld {
-		return true, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+		return true
 	}
 
 	// Cmd+< and Cmd+>: Decrease/increase time scale (Cmd+Shift+, and Cmd+Shift+.)
 	if !mainWindowInputSuspended && superHeld && shiftHeld && !altHeld && rl.IsKeyPressed(rl.KeyComma) {
-		back := sim.GetState().GetBack()
+		back := session.sim.GetState().GetBack()
 		// Time rates: paused, real-time, 1 hour/sec, 1 day/sec, 1 week/sec, 1 month/sec, 1 year/sec
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
 		timeLabels := []string{"PAUSED", "real-time", "1 hr/sec", "1 day/sec", "1 week/sec", "1 month/sec", "1 year/sec"}
@@ -131,7 +97,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 		}
 	}
 	if !mainWindowInputSuspended && superHeld && shiftHeld && !altHeld && rl.IsKeyPressed(rl.KeyPeriod) {
-		back := sim.GetState().GetBack()
+		back := session.sim.GetState().GetBack()
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
 		timeLabels := []string{"PAUSED", "real-time", "1 hr/sec", "1 day/sec", "1 week/sec", "1 month/sec", "1 year/sec"}
 
@@ -160,15 +126,15 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 
 	// Opt+= / Opt+-: Increase/decrease asteroid dataset
 	if !mainWindowInputSuspended && altHeld && !superHeld && (rl.IsKeyPressed(rl.KeyEqual) || rl.IsKeyPressed(rl.KeyKpAdd)) {
-		if asteroidDataset < 3 {
-			asteroidDataset++
-			sim.SetAsteroidDataset(asteroidDataset)
+		if a.runtime.AsteroidDataset < 3 {
+			a.runtime.AsteroidDataset++
+			session.sim.SetAsteroidDataset(a.runtime.AsteroidDataset)
 		}
 	}
 	if !mainWindowInputSuspended && altHeld && !superHeld && (rl.IsKeyPressed(rl.KeyMinus) || rl.IsKeyPressed(rl.KeyKpSubtract)) {
-		if asteroidDataset > 0 {
-			asteroidDataset--
-			sim.SetAsteroidDataset(asteroidDataset)
+		if a.runtime.AsteroidDataset > 0 {
+			a.runtime.AsteroidDataset--
+			session.sim.SetAsteroidDataset(a.runtime.AsteroidDataset)
 		}
 	}
 
@@ -176,45 +142,40 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 	// Controls the physics tick rate — how many sim ticks fire per real second (0%–100%)
 	if !mainWindowInputSuspended && altHeld && !superHeld && rl.IsKeyPressed(rl.KeyComma) {
 		// Decrease anim speed
-		currentSpeed := sim.GetSpeed()
+		currentSpeed := session.sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
 		for i := len(speedSteps) - 1; i >= 0; i-- {
 			if currentSpeed > speedSteps[i] {
-				sim.SetSpeed(speedSteps[i])
+				session.sim.SetSpeed(speedSteps[i])
 				break
 			}
 		}
 	}
 	if !mainWindowInputSuspended && altHeld && !superHeld && rl.IsKeyPressed(rl.KeyPeriod) {
 		// Increase anim speed
-		currentSpeed := sim.GetSpeed()
+		currentSpeed := session.sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
 		for i := 0; i < len(speedSteps); i++ {
 			if currentSpeed < speedSteps[i] {
-				sim.SetSpeed(speedSteps[i])
+				session.sim.SetSpeed(speedSteps[i])
 				break
 			}
 		}
 	}
 
-	// Opt+P: Performance options dialog
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyP) && altHeld && !superHeld {
-		inputState.StartSelection(ui.SelectionModePerformance)
-	}
-
 	// Opt+R: Start/stop recording. Opt+Shift+R: Pause/resume recording.
 	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyR) && altHeld && !superHeld {
 		if !shiftHeld {
-			if app.runtime.RecordingActive {
-				app.stopRecording()
+			if a.runtime.RecordingActive {
+				a.stopRecording()
 			} else {
-				app.startRecording("")
+				a.startRecording("")
 			}
 		} else {
 			// Opt+Shift+R: toggle pause
-			if app.runtime.RecordingActive {
-				app.runtime.RecordingPaused = !app.runtime.RecordingPaused
-				if app.runtime.RecordingPaused {
+			if a.runtime.RecordingActive {
+				a.runtime.RecordingPaused = !a.runtime.RecordingPaused
+				if a.runtime.RecordingPaused {
 					fmt.Println("[REC] Paused")
 				} else {
 					fmt.Println("[REC] Resumed")
@@ -225,33 +186,33 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 
 	// C: Center view - behavior depends on mode
 	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyC) {
-		if cameraState.Mode == ui.CameraModeFree {
+		if session.cameraState.Mode == ui.CameraModeFree {
 			// Free-fly mode: center camera view on origin (sun)
-			toOrigin := engine.Vector3{X: 0, Y: 0, Z: 0}.Sub(cameraState.Position)
+			toOrigin := engine.Vector3{X: 0, Y: 0, Z: 0}.Sub(session.cameraState.Position)
 			if toOrigin.Length() > 0.1 {
-				cameraState.Forward = toOrigin.Normalize()
+				session.cameraState.Forward = toOrigin.Normalize()
 				// Update yaw and pitch from forward vector
-				cameraState.Yaw = math.Atan2(float64(cameraState.Forward.X), float64(cameraState.Forward.Z))
-				cameraState.Pitch = math.Asin(float64(cameraState.Forward.Y))
+				session.cameraState.Yaw = math.Atan2(float64(session.cameraState.Forward.X), float64(session.cameraState.Forward.Z))
+				session.cameraState.Pitch = math.Asin(float64(session.cameraState.Forward.Y))
 			}
-		} else if cameraState.Mode == ui.CameraModeTracking {
+		} else if session.cameraState.Mode == ui.CameraModeTracking {
 			// Tracking mode: reset zoom to 24% auto-zoom distance
-			if cameraState.TrackTargetIndex >= 0 && cameraState.TrackTargetIndex < len(state.Objects) {
-				targetObj := state.Objects[cameraState.TrackTargetIndex]
-				cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.24)
+			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
+				targetObj := state.Objects[session.cameraState.TrackTargetIndex]
+				session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.24)
 			}
 		}
 	}
 
 	// F key: Drill down to closest child (Forward in hierarchy)
 	// B key: Move up to parent (Back in hierarchy)
-	if cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended && !reservedModifierHeld {
+	if session.cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended && !reservedModifierHeld {
 		if rl.IsKeyPressed(rl.KeyF) {
-			if cameraState.TrackTargetIndex >= 0 && cameraState.TrackTargetIndex < len(state.Objects) {
-				currentObj := state.Objects[cameraState.TrackTargetIndex]
+			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
+				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
 
 				// F: Drill down to closest child
-				if debugEnabled {
+				if a.cfg.Debug {
 					fmt.Printf("[DEBUG] F key: Drilling down from %s\n", currentObj.Meta.Name)
 				}
 				// Find all visible children (objects whose ParentName == current object's Name)
@@ -287,7 +248,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					}
 				}
 
-				if debugEnabled {
+				if a.cfg.Debug {
 					fmt.Printf("[DEBUG] Found %d children\n", len(children))
 				}
 				// Sort children by distance (closest first)
@@ -298,52 +259,52 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 
 					// Track the closest child
 					closestChild := state.Objects[children[0].index]
-					if debugEnabled {
+					if a.cfg.Debug {
 						fmt.Printf("[DEBUG] Tracking closest child: %s\n", closestChild.Meta.Name)
 					}
-					cameraState.StartTracking(children[0].index)
-					cameraState.TrackDistance = ui.CalculateAutoZoomDistance(closestChild.Meta.PhysicalRadius, 0.24)
+					session.cameraState.StartTracking(children[0].index)
+					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(closestChild.Meta.PhysicalRadius, 0.24)
 				}
 			}
 		}
 
 		if rl.IsKeyPressed(rl.KeyB) {
-			if cameraState.TrackTargetIndex >= 0 && cameraState.TrackTargetIndex < len(state.Objects) {
-				currentObj := state.Objects[cameraState.TrackTargetIndex]
+			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
+				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
 
 				// B: Move up to parent
-				if debugEnabled {
+				if a.cfg.Debug {
 					fmt.Printf("[DEBUG] B key: Moving to parent of %s\n", currentObj.Meta.Name)
 				}
 				if currentObj.Meta.ParentName != "" {
 					// Find parent object by name
 					for i, obj := range state.Objects {
 						if obj.Meta.Name == currentObj.Meta.ParentName {
-							if debugEnabled {
+							if a.cfg.Debug {
 								fmt.Printf("[DEBUG] Found parent: %s\n", obj.Meta.Name)
 							}
-							cameraState.StartTracking(i)
-							cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
+							session.cameraState.StartTracking(i)
+							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
 							break
 						}
 					}
 				} else if currentObj.Meta.SemiMajorAxis > 0 || currentObj.Meta.OrbitRadius > 0 {
 					// No explicit parent but is orbiting - find the star
-					if debugEnabled {
+					if a.cfg.Debug {
 						fmt.Printf("[DEBUG] No explicit parent, looking for central star\n")
 					}
 					for i, obj := range state.Objects {
 						if obj.Meta.Category == engine.CategoryStar {
-							if debugEnabled {
+							if a.cfg.Debug {
 								fmt.Printf("[DEBUG] Found central star: %s\n", obj.Meta.Name)
 							}
-							cameraState.StartTracking(i)
-							cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
+							session.cameraState.StartTracking(i)
+							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
 							break
 						}
 					}
 				} else {
-					if debugEnabled {
+					if a.cfg.Debug {
 						fmt.Printf("[DEBUG] No parent for %s (already at star)\n", currentObj.Meta.Name)
 					}
 				}
@@ -352,16 +313,16 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 	}
 
 	// TAB / Shift+TAB: Cycle through siblings when tracking (objects with same parent and category)
-	if cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended && !reservedModifierHeld {
+	if session.cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended && !reservedModifierHeld {
 		isShiftPressed := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
 
 		if rl.IsKeyPressed(rl.KeyTab) {
-			if debugEnabled {
+			if a.cfg.Debug {
 				fmt.Printf("[DEBUG] TAB pressed - Shift: %v\n", isShiftPressed)
 			}
 
-			if cameraState.TrackTargetIndex >= 0 && cameraState.TrackTargetIndex < len(state.Objects) {
-				currentObj := state.Objects[cameraState.TrackTargetIndex]
+			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
+				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
 
 				// TAB: Cycle through siblings (same parent, same category)
 				siblings := []int{}
@@ -378,7 +339,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 					// Find current object in siblings list
 					currentPos := -1
 					for i, idx := range siblings {
-						if idx == cameraState.TrackTargetIndex {
+						if idx == session.cameraState.TrackTargetIndex {
 							currentPos = i
 							break
 						}
@@ -403,309 +364,316 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						nextIndex := siblings[nextPos]
 						// Start tracking the next sibling with auto-zoom
 						nextObj := state.Objects[nextIndex]
-						cameraState.StartTracking(nextIndex)
-						cameraState.TrackDistance = ui.CalculateAutoZoomDistance(nextObj.Meta.PhysicalRadius, 0.24)
+						session.cameraState.StartTracking(nextIndex)
+						session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(nextObj.Meta.PhysicalRadius, 0.24)
 					}
 				}
 			}
 		}
 	}
 
-	// ESC: Cancel selection, exit tracking, or exit mouse mode (priority order)
-	if rl.IsKeyPressed(rl.KeyEscape) {
-		if helpVisible {
-			helpVisible = false
-			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
-		} else if *hudDialogVisible {
-			*hudDialogVisible = false
-			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
-		} else if inputState.SelectionActive {
-			inputState.CancelSelection()
-			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
-		} else if cameraState.Mode == ui.CameraModeTracking {
-			cameraState.StopTracking()
-			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
-		} else if mouseModeEnabled {
-			// Exit mouse mode, enable cursor
-			mouseModeEnabled = false
+	// ESC / sim.track_stop: Cancel selection, exit tracking, or exit mouse mode (priority order).
+	// Also handles F11 (ui.fullscreen) and F1 (ui.settings) as keymap-driven actions.
+	if km.IsPressed(input.ActionUIFullscreen) {
+		a.toggleFullscreen()
+	}
+	if km.IsPressed(input.ActionUISettings) {
+		a.runtime.SettingsVisible = !a.runtime.SettingsVisible
+		if a.runtime.SettingsVisible && a.runtime.MouseModeEnabled {
+			a.runtime.MouseModeEnabled = false
 			rl.EnableCursor()
-			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+		}
+	}
+	if km.IsPressed(input.ActionSimTrackStop) {
+		if a.runtime.SettingsVisible {
+			a.runtime.SettingsVisible = false
+			return false
+		} else if session.inputState.SelectionActive {
+			session.inputState.CancelSelection()
+			return false
+		} else if session.cameraState.Mode == ui.CameraModeTracking {
+			session.cameraState.StopTracking()
+			return false
+		} else if a.runtime.MouseModeEnabled {
+			// Exit mouse mode, enable cursor
+			a.runtime.MouseModeEnabled = false
+			rl.EnableCursor()
+			return false
 		}
 	}
 
+	// Settings dialog keyboard navigation (only when dialog is open, takes priority over main window)
+	if a.runtime.SettingsVisible {
+		// Tab / Shift+Tab: switch active tab
+		if rl.IsKeyPressed(rl.KeyTab) {
+			if shiftHeld {
+				a.runtime.Settings.ActiveTab = (a.runtime.Settings.ActiveTab + 4) % 5
+			} else {
+				a.runtime.Settings.ActiveTab = (a.runtime.Settings.ActiveTab + 1) % 5
+			}
+			a.runtime.Settings.SelectedRow = 0
+		}
+		// Up/Down: navigate rows within current tab
+		tabRowMax := [5]int{0, 0, 2, 4, 1}    // max interactive row index per tab (System/Controls: static)
+		if a.runtime.Settings.ActiveTab > 1 { // System and Controls tabs have no row selection
+			if rl.IsKeyPressed(rl.KeyUp) && a.runtime.Settings.SelectedRow > 0 {
+				a.runtime.Settings.SelectedRow--
+			}
+			if rl.IsKeyPressed(rl.KeyDown) && a.runtime.Settings.SelectedRow < tabRowMax[a.runtime.Settings.ActiveTab] {
+				a.runtime.Settings.SelectedRow++
+			}
+		}
+		// Space/Enter: toggle selected option
+		if rl.IsKeyPressed(rl.KeySpace) || rl.IsKeyPressed(rl.KeyEnter) {
+			switch a.runtime.Settings.ActiveTab {
+			case 2: // Display tab — HUD flags
+				switch a.runtime.Settings.SelectedRow {
+				case 0:
+					a.runtime.Settings.HUD.Debug = !a.runtime.Settings.HUD.Debug
+					a.runtime.HUD.Debug = a.runtime.Settings.HUD.Debug
+				case 1:
+					a.runtime.Settings.HUD.Info = !a.runtime.Settings.HUD.Info
+					a.runtime.HUD.Info = a.runtime.Settings.HUD.Info
+				case 2:
+					a.runtime.Settings.HUD.Help = !a.runtime.Settings.HUD.Help
+					a.runtime.HUD.Help = a.runtime.Settings.HUD.Help
+				}
+			case 3: // Performance tab — perf flags
+				switch a.runtime.Settings.SelectedRow {
+				case 0:
+					a.runtime.Settings.Perf.FrustumCulling = !a.runtime.Settings.Perf.FrustumCulling
+					a.runtime.PerfConfig.FrustumCulling = a.runtime.Settings.Perf.FrustumCulling
+					session.inputState.PerfOptions.FrustumCulling = a.runtime.Settings.Perf.FrustumCulling
+				case 1:
+					a.runtime.Settings.Perf.LODEnabled = !a.runtime.Settings.Perf.LODEnabled
+					a.runtime.PerfConfig.LODEnabled = a.runtime.Settings.Perf.LODEnabled
+					session.inputState.PerfOptions.LODEnabled = a.runtime.Settings.Perf.LODEnabled
+				case 2:
+					a.runtime.Settings.Perf.InstancedRendering = !a.runtime.Settings.Perf.InstancedRendering
+					a.runtime.PerfConfig.InstancedRendering = a.runtime.Settings.Perf.InstancedRendering
+					session.inputState.PerfOptions.InstancedRendering = a.runtime.Settings.Perf.InstancedRendering
+				case 3:
+					a.runtime.Settings.Perf.SpatialPartition = !a.runtime.Settings.Perf.SpatialPartition
+					a.runtime.PerfConfig.SpatialPartition = a.runtime.Settings.Perf.SpatialPartition
+					session.inputState.PerfOptions.SpatialPartition = a.runtime.Settings.Perf.SpatialPartition
+				case 4:
+					a.runtime.Settings.Perf.PointRendering = !a.runtime.Settings.Perf.PointRendering
+					a.runtime.PerfConfig.PointRendering = a.runtime.Settings.Perf.PointRendering
+					session.inputState.PerfOptions.PointRendering = a.runtime.Settings.Perf.PointRendering
+				}
+			case 4: // Configuration tab
+				switch a.runtime.Settings.SelectedRow {
+				case 1: // UseInPlaceSwap
+					a.runtime.Settings.Perf.UseInPlaceSwap = !a.runtime.Settings.Perf.UseInPlaceSwap
+					a.runtime.PerfConfig.UseInPlaceSwap = a.runtime.Settings.Perf.UseInPlaceSwap
+					session.inputState.PerfOptions.UseInPlaceSwap = a.runtime.Settings.Perf.UseInPlaceSwap
+					if a.runtime.Settings.Perf.UseInPlaceSwap {
+						session.sim.GetState().EnableInPlaceSwap()
+					} else {
+						session.sim.GetState().DisableInPlaceSwap()
+					}
+				}
+			}
+		}
+		// Left/Right: adjust ImportanceThreshold (Configuration tab, row 0 only)
+		if a.runtime.Settings.ActiveTab == 4 && a.runtime.Settings.SelectedRow == 0 {
+			thresholds := []int{0, 5, 10, 15, 30, 40, 50, 60, 70, 80, 90}
+			current := a.runtime.Settings.Perf.ImportanceThreshold
+			if rl.IsKeyPressed(rl.KeyLeft) {
+				for i := len(thresholds) - 1; i >= 0; i-- {
+					if current > thresholds[i] {
+						a.runtime.Settings.Perf.ImportanceThreshold = thresholds[i]
+						break
+					}
+				}
+				if current <= thresholds[0] {
+					a.runtime.Settings.Perf.ImportanceThreshold = thresholds[len(thresholds)-1]
+				}
+				a.runtime.PerfConfig.ImportanceThreshold = a.runtime.Settings.Perf.ImportanceThreshold
+				session.inputState.PerfOptions.ImportanceThreshold = a.runtime.Settings.Perf.ImportanceThreshold
+			}
+			if rl.IsKeyPressed(rl.KeyRight) {
+				for i := 0; i < len(thresholds); i++ {
+					if current < thresholds[i] {
+						a.runtime.Settings.Perf.ImportanceThreshold = thresholds[i]
+						break
+					}
+				}
+				if current >= thresholds[len(thresholds)-1] {
+					a.runtime.Settings.Perf.ImportanceThreshold = thresholds[0]
+				}
+				a.runtime.PerfConfig.ImportanceThreshold = a.runtime.Settings.Perf.ImportanceThreshold
+				session.inputState.PerfOptions.ImportanceThreshold = a.runtime.Settings.Perf.ImportanceThreshold
+			}
+		}
+		return false
+	}
+
 	// Object selection mode
-	if inputState.SelectionActive {
-		if inputState.SelectionMode == ui.SelectionModeSystemSelector {
-			maxIndex := len(inputState.SystemOptions) - 1
+	if session.inputState.SelectionActive {
+		if session.inputState.SelectionMode == ui.SelectionModeSystemSelector {
+			maxIndex := len(session.inputState.SystemOptions) - 1
 			pageSize := 10
 
 			if rl.IsKeyPressed(rl.KeyUp) {
-				inputState.SelectPrevious()
-				if inputState.SelectedIndex < inputState.ScrollOffset {
-					inputState.ScrollOffset = inputState.SelectedIndex
+				session.inputState.SelectPrevious()
+				if session.inputState.SelectedIndex < session.inputState.ScrollOffset {
+					session.inputState.ScrollOffset = session.inputState.SelectedIndex
 				}
 			}
 			if rl.IsKeyPressed(rl.KeyDown) {
-				inputState.SelectNext(maxIndex)
-				if inputState.SelectedIndex >= inputState.ScrollOffset+pageSize {
-					inputState.ScrollOffset = inputState.SelectedIndex - pageSize + 1
+				session.inputState.SelectNext(maxIndex)
+				if session.inputState.SelectedIndex >= session.inputState.ScrollOffset+pageSize {
+					session.inputState.ScrollOffset = session.inputState.SelectedIndex - pageSize + 1
 				}
 			}
 			if rl.IsKeyPressed(rl.KeyPageUp) {
-				inputState.SelectedIndex -= pageSize
-				if inputState.SelectedIndex < 0 {
-					inputState.SelectedIndex = 0
+				session.inputState.SelectedIndex -= pageSize
+				if session.inputState.SelectedIndex < 0 {
+					session.inputState.SelectedIndex = 0
 				}
-				inputState.ScrollOffset = inputState.SelectedIndex
+				session.inputState.ScrollOffset = session.inputState.SelectedIndex
 			}
 			if rl.IsKeyPressed(rl.KeyPageDown) {
-				inputState.SelectedIndex += pageSize
-				if inputState.SelectedIndex > maxIndex {
-					inputState.SelectedIndex = maxIndex
+				session.inputState.SelectedIndex += pageSize
+				if session.inputState.SelectedIndex > maxIndex {
+					session.inputState.SelectedIndex = maxIndex
 				}
-				if inputState.SelectedIndex >= inputState.ScrollOffset+pageSize {
-					inputState.ScrollOffset = inputState.SelectedIndex - pageSize + 1
+				if session.inputState.SelectedIndex >= session.inputState.ScrollOffset+pageSize {
+					session.inputState.ScrollOffset = session.inputState.SelectedIndex - pageSize + 1
 				}
 			}
 			if rl.IsKeyPressed(rl.KeyHome) {
 				if maxIndex >= 0 {
-					inputState.SelectedIndex = 0
+					session.inputState.SelectedIndex = 0
 				}
-				inputState.ScrollOffset = 0
+				session.inputState.ScrollOffset = 0
 			}
 			if rl.IsKeyPressed(rl.KeyEnd) {
-				inputState.SelectedIndex = maxIndex
-				inputState.ScrollOffset = maxIndex - pageSize + 1
-				if inputState.ScrollOffset < 0 {
-					inputState.ScrollOffset = 0
+				session.inputState.SelectedIndex = maxIndex
+				session.inputState.ScrollOffset = maxIndex - pageSize + 1
+				if session.inputState.ScrollOffset < 0 {
+					session.inputState.ScrollOffset = 0
 				}
 			}
 			if rl.IsKeyPressed(rl.KeyEnter) {
-				inputState.ConfirmSystemSelection()
+				session.inputState.ConfirmSystemSelection()
 			}
 
-			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+			return false
 		}
 
-		// Performance options mode
-		if inputState.SelectionMode == ui.SelectionModePerformance {
-			// Left/Right to switch tabs (except when adjusting Importance Threshold)
-			isAdjustingThreshold := inputState.PerformanceTab == 1 && inputState.SelectedIndex == 0
-			if rl.IsKeyPressed(rl.KeyLeft) && !isAdjustingThreshold {
-				if inputState.PerformanceTab == 1 {
-					inputState.PerformanceTab = 0
-					inputState.SelectedIndex = 0
-				}
-			}
-			if rl.IsKeyPressed(rl.KeyRight) && !isAdjustingThreshold {
-				if inputState.PerformanceTab == 0 {
-					inputState.PerformanceTab = 1
-					inputState.SelectedIndex = 0
-				}
-			}
-
-			// Up/Down to navigate options
-			if rl.IsKeyPressed(rl.KeyUp) {
-				if inputState.SelectedIndex > 0 {
-					inputState.SelectedIndex--
-				}
-			}
-			if rl.IsKeyPressed(rl.KeyDown) {
-				maxIndex := 4 // Performance tab has 5 options (0-4)
-				if inputState.PerformanceTab == 1 {
-					maxIndex = 1 // Configuration tab has 2 options (0-1)
-				}
-				if inputState.SelectedIndex < maxIndex {
-					inputState.SelectedIndex++
-				}
-			}
-
-			// Space to toggle selected option
-			if rl.IsKeyPressed(rl.KeySpace) {
-				if inputState.PerformanceTab == 0 {
-					// Performance tab toggles
-					switch inputState.SelectedIndex {
-					case 0:
-						inputState.PerfOptions.FrustumCulling = !inputState.PerfOptions.FrustumCulling
-						app.runtime.PerfConfig.FrustumCulling = inputState.PerfOptions.FrustumCulling
-					case 1:
-						inputState.PerfOptions.LODEnabled = !inputState.PerfOptions.LODEnabled
-						app.runtime.PerfConfig.LODEnabled = inputState.PerfOptions.LODEnabled
-					case 2:
-						inputState.PerfOptions.InstancedRendering = !inputState.PerfOptions.InstancedRendering
-						app.runtime.PerfConfig.InstancedRendering = inputState.PerfOptions.InstancedRendering
-					case 3:
-						inputState.PerfOptions.SpatialPartition = !inputState.PerfOptions.SpatialPartition
-						app.runtime.PerfConfig.SpatialPartition = inputState.PerfOptions.SpatialPartition
-					case 4:
-						inputState.PerfOptions.PointRendering = !inputState.PerfOptions.PointRendering
-						app.runtime.PerfConfig.PointRendering = inputState.PerfOptions.PointRendering
-					}
-				} else {
-					// Configuration tab toggles
-					switch inputState.SelectedIndex {
-					case 1:
-						inputState.PerfOptions.UseInPlaceSwap = !inputState.PerfOptions.UseInPlaceSwap
-						app.runtime.PerfConfig.UseInPlaceSwap = inputState.PerfOptions.UseInPlaceSwap
-						// Apply the change to simulation
-						if inputState.PerfOptions.UseInPlaceSwap {
-							sim.GetState().EnableInPlaceSwap()
-							fmt.Println("✓ Enabled in-place swap (zero-allocation mode)")
-						} else {
-							sim.GetState().DisableInPlaceSwap()
-							fmt.Println("✓ Disabled in-place swap (dynamic allocation mode)")
-						}
-					}
-				}
-			}
-
-			// Left/Right to adjust importance threshold (only on Configuration tab, option 0)
-			if inputState.PerformanceTab == 1 && inputState.SelectedIndex == 0 {
-				if rl.IsKeyPressed(rl.KeyLeft) {
-					// Cycle through: 0, 5, 10, 15, 30, 40, 50, 60, 70, 80, 90
-					thresholds := []int{0, 5, 10, 15, 30, 40, 50, 60, 70, 80, 90}
-					current := inputState.PerfOptions.ImportanceThreshold
-					for i := len(thresholds) - 1; i >= 0; i-- {
-						if current > thresholds[i] {
-							inputState.PerfOptions.ImportanceThreshold = thresholds[i]
-							break
-						}
-					}
-					if current <= thresholds[0] {
-						inputState.PerfOptions.ImportanceThreshold = thresholds[len(thresholds)-1]
-					}
-					app.runtime.PerfConfig.ImportanceThreshold = inputState.PerfOptions.ImportanceThreshold
-				}
-				if rl.IsKeyPressed(rl.KeyRight) {
-					// Cycle through: 0, 5, 10, 15, 30, 40, 50, 60, 70, 80, 90
-					thresholds := []int{0, 5, 10, 15, 30, 40, 50, 60, 70, 80, 90}
-					current := inputState.PerfOptions.ImportanceThreshold
-					for i := 0; i < len(thresholds); i++ {
-						if current < thresholds[i] {
-							inputState.PerfOptions.ImportanceThreshold = thresholds[i]
-							break
-						}
-					}
-					if current >= thresholds[len(thresholds)-1] {
-						inputState.PerfOptions.ImportanceThreshold = thresholds[0]
-					}
-					app.runtime.PerfConfig.ImportanceThreshold = inputState.PerfOptions.ImportanceThreshold
-				}
-			}
-			return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
-		}
-
-		// Text input for filtering (for Jump/Track modes only, not Performance)
-		if inputState.SelectionMode != ui.SelectionModePerformance {
+		// Text input for filtering
+		{
 			// Capture character input
 			char := rl.GetCharPressed()
 			for char > 0 {
 				// Add printable characters to filter text
 				if char >= 32 && char <= 126 {
-					inputState.FilterText += string(rune(char))
+					session.inputState.FilterText += string(rune(char))
 					// Rebuild filtered list with new filter
-					inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
-					inputState.SelectedIndex = 0
-					inputState.ScrollOffset = 0 // Reset scroll when filtering
+					session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)
+					session.inputState.SelectedIndex = 0
+					session.inputState.ScrollOffset = 0 // Reset scroll when filtering
 				}
 				char = rl.GetCharPressed()
 			}
 
 			// Backspace to delete characters
-			if rl.IsKeyPressed(rl.KeyBackspace) && len(inputState.FilterText) > 0 {
-				inputState.FilterText = inputState.FilterText[:len(inputState.FilterText)-1]
+			if rl.IsKeyPressed(rl.KeyBackspace) && len(session.inputState.FilterText) > 0 {
+				session.inputState.FilterText = session.inputState.FilterText[:len(session.inputState.FilterText)-1]
 				// Rebuild filtered list
-				inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
-				if inputState.SelectedIndex >= len(inputState.FilteredIndices) {
-					inputState.SelectedIndex = 0
+				session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)
+				if session.inputState.SelectedIndex >= len(session.inputState.FilteredIndices) {
+					session.inputState.SelectedIndex = 0
 				}
-				inputState.ScrollOffset = 0 // Reset scroll when filtering
+				session.inputState.ScrollOffset = 0 // Reset scroll when filtering
 			}
 		}
 
 		// Left/Right arrow keys for category cycling
 		if rl.IsKeyPressed(rl.KeyLeft) {
-			inputState.CycleCategoryBack(navigationOrder)
-			inputState.FilterText = ""  // Clear filter when changing category
-			inputState.ScrollOffset = 0 // Reset scroll position
+			session.inputState.CycleCategoryBack(session.navigationOrder)
+			session.inputState.FilterText = ""  // Clear filter when changing category
+			session.inputState.ScrollOffset = 0 // Reset scroll position
 			// Rebuild filtered list
-			inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
-			if inputState.SelectedIndex >= len(inputState.FilteredIndices) {
-				inputState.SelectedIndex = 0
+			session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)
+			if session.inputState.SelectedIndex >= len(session.inputState.FilteredIndices) {
+				session.inputState.SelectedIndex = 0
 			}
 		}
 		if rl.IsKeyPressed(rl.KeyRight) {
-			inputState.CycleCategory(navigationOrder)
-			inputState.FilterText = ""  // Clear filter when changing category
-			inputState.ScrollOffset = 0 // Reset scroll position
+			session.inputState.CycleCategory(session.navigationOrder)
+			session.inputState.FilterText = ""  // Clear filter when changing category
+			session.inputState.ScrollOffset = 0 // Reset scroll position
 			// Rebuild filtered list
-			inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
-			if inputState.SelectedIndex >= len(inputState.FilteredIndices) {
-				inputState.SelectedIndex = 0
+			session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)
+			if session.inputState.SelectedIndex >= len(session.inputState.FilteredIndices) {
+				session.inputState.SelectedIndex = 0
 			}
 		}
 		// Up/Down arrow keys for selection within category
 		if rl.IsKeyPressed(rl.KeyUp) {
-			inputState.SelectPrevious()
+			session.inputState.SelectPrevious()
 			// Auto-scroll to keep selection visible
-			if inputState.SelectedIndex < inputState.ScrollOffset {
-				inputState.ScrollOffset = inputState.SelectedIndex
+			if session.inputState.SelectedIndex < session.inputState.ScrollOffset {
+				session.inputState.ScrollOffset = session.inputState.SelectedIndex
 			}
 		}
 		if rl.IsKeyPressed(rl.KeyDown) {
-			inputState.SelectNext(len(inputState.FilteredIndices) - 1)
+			session.inputState.SelectNext(len(session.inputState.FilteredIndices) - 1)
 			// Auto-scroll to keep selection visible.
 			// Replicates drawSelectionUI panel calculation: 40% of screen width, clamped [400,700], square.
 			// Fixed header height is 155px (startY=145 + bottom-pad=10); lineHeight=30.
 			visibleItems := selectionDialogVisibleItems()
-			if inputState.SelectedIndex >= inputState.ScrollOffset+visibleItems {
-				inputState.ScrollOffset = inputState.SelectedIndex - visibleItems + 1
+			if session.inputState.SelectedIndex >= session.inputState.ScrollOffset+visibleItems {
+				session.inputState.ScrollOffset = session.inputState.SelectedIndex - visibleItems + 1
 			}
 		}
 		// Page Up/Down for faster navigation
 		if rl.IsKeyPressed(rl.KeyPageUp) {
 			visibleItems := selectionDialogVisibleItems()
 
-			inputState.SelectedIndex -= visibleItems
-			if inputState.SelectedIndex < 0 {
-				inputState.SelectedIndex = 0
+			session.inputState.SelectedIndex -= visibleItems
+			if session.inputState.SelectedIndex < 0 {
+				session.inputState.SelectedIndex = 0
 			}
-			inputState.ScrollOffset = inputState.SelectedIndex
+			session.inputState.ScrollOffset = session.inputState.SelectedIndex
 		}
 		if rl.IsKeyPressed(rl.KeyPageDown) {
 			visibleItems := selectionDialogVisibleItems()
-			maxIndex := len(inputState.FilteredIndices) - 1
+			maxIndex := len(session.inputState.FilteredIndices) - 1
 
-			inputState.SelectedIndex += visibleItems
-			if inputState.SelectedIndex > maxIndex {
-				inputState.SelectedIndex = maxIndex
+			session.inputState.SelectedIndex += visibleItems
+			if session.inputState.SelectedIndex > maxIndex {
+				session.inputState.SelectedIndex = maxIndex
 			}
 			// Auto-scroll to keep selection visible
-			if inputState.SelectedIndex >= inputState.ScrollOffset+visibleItems {
-				inputState.ScrollOffset = inputState.SelectedIndex - visibleItems + 1
+			if session.inputState.SelectedIndex >= session.inputState.ScrollOffset+visibleItems {
+				session.inputState.ScrollOffset = session.inputState.SelectedIndex - visibleItems + 1
 			}
 		}
 		// Home/End for jumping to start/end
 		if rl.IsKeyPressed(rl.KeyHome) {
-			inputState.SelectedIndex = 0
-			inputState.ScrollOffset = 0
+			session.inputState.SelectedIndex = 0
+			session.inputState.ScrollOffset = 0
 		}
 		if rl.IsKeyPressed(rl.KeyEnd) {
-			maxIndex := len(inputState.FilteredIndices) - 1
-			inputState.SelectedIndex = maxIndex
+			maxIndex := len(session.inputState.FilteredIndices) - 1
+			session.inputState.SelectedIndex = maxIndex
 			// Scroll to show last item
 			visibleItems := selectionDialogVisibleItems()
-			inputState.ScrollOffset = maxIndex - visibleItems + 1
-			if inputState.ScrollOffset < 0 {
-				inputState.ScrollOffset = 0
+			session.inputState.ScrollOffset = maxIndex - visibleItems + 1
+			if session.inputState.ScrollOffset < 0 {
+				session.inputState.ScrollOffset = 0
 			}
 		}
 		// Enter to confirm
 		if rl.IsKeyPressed(rl.KeyEnter) {
-			selectedIndex, mode := inputState.ConfirmSelection()
+			selectedIndex, mode := session.inputState.ConfirmSelection()
 			// Map from filtered index to actual object index
-			if selectedIndex >= 0 && selectedIndex < len(inputState.FilteredIndices) {
-				actualIndex := inputState.FilteredIndices[selectedIndex]
+			if selectedIndex >= 0 && selectedIndex < len(session.inputState.FilteredIndices) {
+				actualIndex := session.inputState.FilteredIndices[selectedIndex]
 
 				// Handle virtual belt indices - select random object from belt
 				if actualIndex == -1 {
@@ -720,7 +688,7 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						actualIndex = asteroidIndices[rl.GetRandomValue(0, int32(len(asteroidIndices)-1))]
 					} else {
 						// No visible asteroids, cancel
-						return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+						return false
 					}
 				} else if actualIndex == -2 {
 					// Kuiper Belt - find a random KBO
@@ -734,53 +702,54 @@ func handleInput(app *App, sim *sim.World, cameraState *ui.CameraState, inputSta
 						actualIndex = kboIndices[rl.GetRandomValue(0, int32(len(kboIndices)-1))]
 					} else {
 						// No visible KBOs, cancel
-						return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+						return false
 					}
 				}
 
 				targetObj := state.Objects[actualIndex]
 				if mode == ui.SelectionModeJump {
 					// Jump to object with good viewing distance (5x radius)
-					cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, float64(targetObj.Meta.PhysicalRadius)*5.0)
+					session.cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, float64(targetObj.Meta.PhysicalRadius)*5.0)
 				} else if mode == ui.SelectionModeTrack {
-					cameraState.StartTracking(actualIndex)
-					cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.24)
+					session.cameraState.StartTracking(actualIndex)
+					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.24)
 				} else if mode == ui.SelectionModeTrackEquatorial {
 					// Start tracking from surface view - closer zoom (40% of screen height)
-					cameraState.StartTrackingEquatorial(actualIndex)
-					cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
+					session.cameraState.StartTrackingEquatorial(actualIndex)
+					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
 				}
 			}
 		}
-		return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled // Don't process other keys during selection
+		return false // Don't process other keys during selection
 	}
 
 	// J: Jump to object (free-fly mode only)
-	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyJ) && cameraState.Mode == ui.CameraModeFree {
-		inputState.StartSelection(ui.SelectionModeJump)
-		inputState.FilterText = ""
-		inputState.ScrollOffset = 0
-		inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
+	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyJ) && session.cameraState.Mode == ui.CameraModeFree {
+		session.inputState.StartSelection(ui.SelectionModeJump)
+		session.inputState.FilterText = ""
+		session.inputState.ScrollOffset = 0
+		session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)
 	}
 
-	// T: Open the tracking dialog with the default tracking mode.
-	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyT) && (cameraState.Mode == ui.CameraModeFree || cameraState.Mode == ui.CameraModeTracking) {
-		inputState.StartSelection(ui.SelectionModeTrack)
-		inputState.FilterText = ""
-		inputState.ScrollOffset = 0
-		inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, inputState.SelectedCategory, inputState.FilterText)
+	// T / sim.track_next: Open the tracking dialog with the default tracking mode.
+	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && km.IsPressed(input.ActionSimTrackNext) && (session.cameraState.Mode == ui.CameraModeFree || session.cameraState.Mode == ui.CameraModeTracking) {
+		session.inputState.StartSelection(ui.SelectionModeTrack)
+		session.inputState.FilterText = ""
+		session.inputState.ScrollOffset = 0
+		session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)
 	}
 
-	return false, asteroidDataset, hudVisible, helpVisible, mouseModeEnabled
+	return false
 }
 
 // updateCameraState updates camera position and orientation based on mode
-func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, state *engine.SimulationState, dt, speed, sensitivity float32, mouseModeEnabled bool, helpVisible bool, hudDialogVisible bool) float32 {
-	mainWindowInputSuspended := inputState.MainWindowInputSuspended() || helpVisible || hudDialogVisible
+func (a *App) updateCameraState(session *runtimeSession, state *engine.SimulationState, dt float32) float32 {
+	km := a.keyMap.Load()
+	mainWindowInputSuspended := session.inputState.MainWindowInputSuspended() || a.runtime.SettingsVisible
 
 	// Mouse look (only active when mouse mode is enabled)
 	var mouseDelta rl.Vector2
-	if mouseModeEnabled && !mainWindowInputSuspended {
+	if a.runtime.MouseModeEnabled && !mainWindowInputSuspended {
 		mouseDelta = rl.GetMouseDelta()
 	}
 
@@ -793,243 +762,243 @@ func updateCameraState(cameraState *ui.CameraState, inputState *ui.InputState, s
 
 	if wheelMove != 0 {
 		// Two-finger scroll zoom: move camera forward/backward along view direction
-		zoomSpeed = wheelMove * speed * 0.5 // Reduced from 2.0 to 0.5 (1/4 speed)
+		zoomSpeed = wheelMove * a.runtime.CameraSpeed * 0.5 // Reduced from 2.0 to 0.5 (1/4 speed)
 
-		switch cameraState.Mode {
+		switch session.cameraState.Mode {
 		case ui.CameraModeTracking:
 			// In tracking mode, adjust distance from target
-			cameraState.TrackDistance -= float64(zoomSpeed * 10.0)
+			session.cameraState.TrackDistance -= float64(zoomSpeed * 10.0)
 			// Clamp to reasonable values
-			if cameraState.TrackDistance < engine.CameraTrackDistMin {
-				cameraState.TrackDistance = engine.CameraTrackDistMin
+			if session.cameraState.TrackDistance < engine.CameraTrackDistMin {
+				session.cameraState.TrackDistance = engine.CameraTrackDistMin
 			}
-			if cameraState.TrackDistance > engine.CameraTrackDistMax {
-				cameraState.TrackDistance = engine.CameraTrackDistMax
+			if session.cameraState.TrackDistance > engine.CameraTrackDistMax {
+				session.cameraState.TrackDistance = engine.CameraTrackDistMax
 			}
 
 		case ui.CameraModeFree, ui.CameraModeJumping:
 			// In free/jumping mode, move camera along forward direction
-			cameraState.Position = cameraState.Position.Add(cameraState.Forward.Scale(zoomSpeed * 10.0))
+			session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Forward.Scale(zoomSpeed * 10.0))
 		}
 	}
 
 	// Arrow keys for movement in the system plane (active in all modes)
-	arrowSpeed := speed * dt // Same base speed as WASD
+	arrowSpeed := a.runtime.CameraSpeed * dt // Same base speed as WASD
 	if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
 		arrowSpeed *= 2.0 // Consistent 2x speed boost
 	}
 
 	// Update based on camera mode
-	switch cameraState.Mode {
+	switch session.cameraState.Mode {
 	case ui.CameraModeJumping:
-		cameraState.UpdateJump(float64(dt))
+		session.cameraState.UpdateJump(float64(dt))
 
 		// Jump just arrived — center on the target body (track it) so it
 		// is immediately visible on screen at the correct zoom distance.
 		// Running UpdateTracking in the same frame avoids a one-frame snap.
-		if cameraState.Mode == ui.CameraModeFree {
-			cameraState.StartTracking(cameraState.JumpTargetIndex)
-			cameraState.TrackDistance = cameraState.JumpTargetViewDist
-			cameraState.TrackOffset = engine.Vector3{}
-			cameraState.UpdateTracking(state) // center now, not next frame
+		if session.cameraState.Mode == ui.CameraModeFree {
+			session.cameraState.StartTracking(session.cameraState.JumpTargetIndex)
+			session.cameraState.TrackDistance = session.cameraState.JumpTargetViewDist
+			session.cameraState.TrackOffset = engine.Vector3{}
+			session.cameraState.UpdateTracking(state) // center now, not next frame
 			// Apply any orbit that was queued while the jump was in flight.
-			if cameraState.PendingOrbitSpeed != 0 {
-				cameraState.OrbitSpeed = cameraState.PendingOrbitSpeed
-				cameraState.OrbitRadiansRemaining = cameraState.PendingOrbitRadians
-				cameraState.PendingOrbitSpeed = 0
-				cameraState.PendingOrbitRadians = 0
+			if session.cameraState.PendingOrbitSpeed != 0 {
+				session.cameraState.OrbitSpeed = session.cameraState.PendingOrbitSpeed
+				session.cameraState.OrbitRadiansRemaining = session.cameraState.PendingOrbitRadians
+				session.cameraState.PendingOrbitSpeed = 0
+				session.cameraState.PendingOrbitRadians = 0
 			}
-			cameraState.JumpDwellRemaining = cameraState.JumpCurrentDwell
+			session.cameraState.JumpDwellRemaining = session.cameraState.JumpCurrentDwell
 			// No dwell: immediately pop the next hop if queued.
-			if cameraState.JumpDwellRemaining <= 0 && len(cameraState.JumpQueue) > 0 {
-				next := cameraState.JumpQueue[0]
-				cameraState.JumpQueue = cameraState.JumpQueue[1:]
-				cameraState.JumpCurrentDwell = next.DwellSeconds
-				cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
+			if session.cameraState.JumpDwellRemaining <= 0 && len(session.cameraState.JumpQueue) > 0 {
+				next := session.cameraState.JumpQueue[0]
+				session.cameraState.JumpQueue = session.cameraState.JumpQueue[1:]
+				session.cameraState.JumpCurrentDwell = next.DwellSeconds
+				session.cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
 			}
 		}
 
 		if !mainWindowInputSuspended {
 			// Mouse changes camera facing in jumping mode
-			cameraState.Yaw -= float64(mouseDelta.X * sensitivity)
-			cameraState.Pitch -= float64(mouseDelta.Y * sensitivity)
+			session.cameraState.Yaw -= float64(mouseDelta.X * a.runtime.MouseSensitivity)
+			session.cameraState.Pitch -= float64(mouseDelta.Y * a.runtime.MouseSensitivity)
 
 			// Clamp pitch
-			if cameraState.Pitch > 1.5 {
-				cameraState.Pitch = 1.5
+			if session.cameraState.Pitch > 1.5 {
+				session.cameraState.Pitch = 1.5
 			}
-			if cameraState.Pitch < -1.5 {
-				cameraState.Pitch = -1.5
+			if session.cameraState.Pitch < -1.5 {
+				session.cameraState.Pitch = -1.5
 			}
 
-			cameraState.UpdateForwardFromAngles()
+			session.cameraState.UpdateForwardFromAngles()
 		}
 
 		if !mainWindowInputSuspended {
 			// Arrow keys move camera position in jumping mode
-			if rl.IsKeyDown(rl.KeyUp) {
-				cameraState.Position.Y += arrowSpeed
+			if km.IsDown(input.ActionCameraPitchUp) {
+				session.cameraState.Position.Y += arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyDown) {
-				cameraState.Position.Y -= arrowSpeed
+			if km.IsDown(input.ActionCameraPitchDown) {
+				session.cameraState.Position.Y -= arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyLeft) {
-				cameraState.Position.X -= arrowSpeed
+			if km.IsDown(input.ActionCameraYawLeft) {
+				session.cameraState.Position.X -= arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyRight) {
-				cameraState.Position.X += arrowSpeed
+			if km.IsDown(input.ActionCameraYawRight) {
+				session.cameraState.Position.X += arrowSpeed
 			}
 		}
 
 	case ui.CameraModeTracking:
 		// Tick dwell countdown for multi-hop jump sequences.
-		if cameraState.JumpDwellRemaining > 0 {
-			cameraState.JumpDwellRemaining -= float64(dt)
-			if cameraState.JumpDwellRemaining <= 0 && len(cameraState.JumpQueue) > 0 {
-				next := cameraState.JumpQueue[0]
-				cameraState.JumpQueue = cameraState.JumpQueue[1:]
-				cameraState.JumpCurrentDwell = next.DwellSeconds
-				cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
+		if session.cameraState.JumpDwellRemaining > 0 {
+			session.cameraState.JumpDwellRemaining -= float64(dt)
+			if session.cameraState.JumpDwellRemaining <= 0 && len(session.cameraState.JumpQueue) > 0 {
+				next := session.cameraState.JumpQueue[0]
+				session.cameraState.JumpQueue = session.cameraState.JumpQueue[1:]
+				session.cameraState.JumpCurrentDwell = next.DwellSeconds
+				session.cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
 			}
 		}
 
 		// Tick orbit animation.
-		if cameraState.OrbitSpeed != 0 && cameraState.OrbitRadiansRemaining > 0 {
-			delta := cameraState.OrbitSpeed * float64(dt)
-			cameraState.TrackYaw += delta
-			cameraState.OrbitRadiansRemaining -= math.Abs(delta)
-			if cameraState.OrbitRadiansRemaining <= 0 {
-				cameraState.OrbitSpeed = 0
+		if session.cameraState.OrbitSpeed != 0 && session.cameraState.OrbitRadiansRemaining > 0 {
+			delta := session.cameraState.OrbitSpeed * float64(dt)
+			session.cameraState.TrackYaw += delta
+			session.cameraState.OrbitRadiansRemaining -= math.Abs(delta)
+			if session.cameraState.OrbitRadiansRemaining <= 0 {
+				session.cameraState.OrbitSpeed = 0
 			}
 		}
 
 		// Keep automatic tracking updates active, but suspend user input while a dialog is open.
 		if !mainWindowInputSuspended && (mouseDelta.X != 0 || mouseDelta.Y != 0) {
-			cameraState.AdjustTrackAngles(
-				-float64(mouseDelta.X*sensitivity*0.5),
-				float64(-mouseDelta.Y*sensitivity*0.5),
+			session.cameraState.AdjustTrackAngles(
+				-float64(mouseDelta.X*a.runtime.MouseSensitivity*0.5),
+				float64(-mouseDelta.Y*a.runtime.MouseSensitivity*0.5),
 			)
 		}
 
-		cameraState.UpdateTracking(state)
+		session.cameraState.UpdateTracking(state)
 
 		// WASD controls for camera offset in tracking mode
-		moveSpeed := speed * dt // Same base speed as free-fly mode
+		moveSpeed := a.runtime.CameraSpeed * dt // Same base speed as free-fly mode
 		if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
 			moveSpeed *= 2.0 // Consistent 2x speed boost
 		}
 
 		// Get camera-relative directions
-		right := cameraState.GetRight()
+		right := session.cameraState.GetRight()
 
 		if !mainWindowInputSuspended {
-			if rl.IsKeyDown(rl.KeyW) {
+			if km.IsDown(input.ActionThrustForward) {
 				// Move forward (closer to target)
-				cameraState.TrackOffset = cameraState.TrackOffset.Add(cameraState.Forward.Scale(moveSpeed))
+				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Add(session.cameraState.Forward.Scale(moveSpeed))
 			}
-			if rl.IsKeyDown(rl.KeyS) {
+			if km.IsDown(input.ActionThrustBackward) {
 				// Move backward (away from target)
-				cameraState.TrackOffset = cameraState.TrackOffset.Sub(cameraState.Forward.Scale(moveSpeed))
+				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Sub(session.cameraState.Forward.Scale(moveSpeed))
 			}
-			if rl.IsKeyDown(rl.KeyA) {
+			if km.IsDown(input.ActionThrustLeft) {
 				// Pan left
-				cameraState.TrackOffset = cameraState.TrackOffset.Sub(right.Scale(moveSpeed))
+				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Sub(right.Scale(moveSpeed))
 			}
-			if rl.IsKeyDown(rl.KeyD) {
+			if km.IsDown(input.ActionThrustRight) {
 				// Pan right
-				cameraState.TrackOffset = cameraState.TrackOffset.Add(right.Scale(moveSpeed))
+				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Add(right.Scale(moveSpeed))
 			}
 
 			// Space for up (camera-relative) - DISABLED FOR TESTING
 			// if rl.IsKeyDown(rl.KeySpace) {
-			// 	cameraState.TrackOffset = cameraState.TrackOffset.Add(cameraState.Up.Scale(moveSpeed))
+			// 	session.cameraState.TrackOffset = session.cameraState.TrackOffset.Add(session.cameraState.Up.Scale(moveSpeed))
 			// }
 
 			// Arrow keys modify offset in tracking mode
-			if rl.IsKeyDown(rl.KeyUp) {
-				cameraState.TrackOffset.Y += arrowSpeed
+			if km.IsDown(input.ActionCameraPitchUp) {
+				session.cameraState.TrackOffset.Y += arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyDown) {
-				cameraState.TrackOffset.Y -= arrowSpeed
+			if km.IsDown(input.ActionCameraPitchDown) {
+				session.cameraState.TrackOffset.Y -= arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyLeft) {
-				cameraState.TrackOffset.X -= arrowSpeed
+			if km.IsDown(input.ActionCameraYawLeft) {
+				session.cameraState.TrackOffset.X -= arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyRight) {
-				cameraState.TrackOffset.X += arrowSpeed
+			if km.IsDown(input.ActionCameraYawRight) {
+				session.cameraState.TrackOffset.X += arrowSpeed
 			}
 
-			// R key to reset offset
-			if rl.IsKeyPressed(rl.KeyR) {
-				cameraState.TrackOffset = engine.Vector3{X: 0, Y: 0, Z: 0}
+			// camera.reset: reset offset
+			if km.IsPressed(input.ActionCameraReset) {
+				session.cameraState.TrackOffset = engine.Vector3{X: 0, Y: 0, Z: 0}
 			}
 		}
 
 	case ui.CameraModeFree:
 		if !mainWindowInputSuspended {
 			// Mouse look
-			cameraState.Yaw -= float64(mouseDelta.X * sensitivity)
-			cameraState.Pitch -= float64(mouseDelta.Y * sensitivity)
+			session.cameraState.Yaw -= float64(mouseDelta.X * a.runtime.MouseSensitivity)
+			session.cameraState.Pitch -= float64(mouseDelta.Y * a.runtime.MouseSensitivity)
 
 			// Clamp pitch
-			if cameraState.Pitch > 1.5 {
-				cameraState.Pitch = 1.5
+			if session.cameraState.Pitch > 1.5 {
+				session.cameraState.Pitch = 1.5
 			}
-			if cameraState.Pitch < -1.5 {
-				cameraState.Pitch = -1.5
+			if session.cameraState.Pitch < -1.5 {
+				session.cameraState.Pitch = -1.5
 			}
 
 			// Update forward vector
-			cameraState.UpdateForwardFromAngles()
+			session.cameraState.UpdateForwardFromAngles()
 		}
 
 		// WASD movement with Shift for 2x speed
-		moveSpeed := speed * dt
+		moveSpeed := a.runtime.CameraSpeed * dt
 		if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
 			moveSpeed *= 2.0 // Consistent 2x speed boost
 		}
-		right := cameraState.GetRight()
+		right := session.cameraState.GetRight()
 
 		if !mainWindowInputSuspended {
-			if rl.IsKeyDown(rl.KeyW) {
-				cameraState.Position = cameraState.Position.Add(cameraState.Forward.Scale(moveSpeed))
+			if km.IsDown(input.ActionThrustForward) {
+				session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Forward.Scale(moveSpeed))
 			}
-			if rl.IsKeyDown(rl.KeyS) {
-				cameraState.Position = cameraState.Position.Sub(cameraState.Forward.Scale(moveSpeed))
+			if km.IsDown(input.ActionThrustBackward) {
+				session.cameraState.Position = session.cameraState.Position.Sub(session.cameraState.Forward.Scale(moveSpeed))
 			}
-			if rl.IsKeyDown(rl.KeyA) {
-				cameraState.Position = cameraState.Position.Sub(right.Scale(moveSpeed))
+			if km.IsDown(input.ActionThrustLeft) {
+				session.cameraState.Position = session.cameraState.Position.Sub(right.Scale(moveSpeed))
 			}
-			if rl.IsKeyDown(rl.KeyD) {
-				cameraState.Position = cameraState.Position.Add(right.Scale(moveSpeed))
+			if km.IsDown(input.ActionThrustRight) {
+				session.cameraState.Position = session.cameraState.Position.Add(right.Scale(moveSpeed))
 			}
 
 			// Space for up, Ctrl for down (Shift used for speed) - DISABLED FOR TESTING
 			// if rl.IsKeyDown(rl.KeySpace) {
-			// 	cameraState.Position.Y += moveSpeed
+			// 	session.cameraState.Position.Y += moveSpeed
 			// }
 			// if rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl) {
-			// 	cameraState.Position.Y -= moveSpeed
+			// 	session.cameraState.Position.Y -= moveSpeed
 			// }
 
 			// Arrow keys move camera position in free-fly mode
-			if rl.IsKeyDown(rl.KeyUp) {
-				cameraState.Position.Y += arrowSpeed
+			if km.IsDown(input.ActionCameraPitchUp) {
+				session.cameraState.Position.Y += arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyDown) {
-				cameraState.Position.Y -= arrowSpeed
+			if km.IsDown(input.ActionCameraPitchDown) {
+				session.cameraState.Position.Y -= arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyLeft) {
-				cameraState.Position.X -= arrowSpeed
+			if km.IsDown(input.ActionCameraYawLeft) {
+				session.cameraState.Position.X -= arrowSpeed
 			}
-			if rl.IsKeyDown(rl.KeyRight) {
-				cameraState.Position.X += arrowSpeed
+			if km.IsDown(input.ActionCameraYawRight) {
+				session.cameraState.Position.X += arrowSpeed
 			}
 		}
 		// Apply persistent velocity drift (set via gRPC NavigationService).
 		// Zero velocity has no effect; this is per-frame AU/s integration.
-		if cameraState.Velocity.X != 0 || cameraState.Velocity.Y != 0 || cameraState.Velocity.Z != 0 {
-			cameraState.Position = cameraState.Position.Add(cameraState.Velocity.Scale(dt))
+		if session.cameraState.Velocity.X != 0 || session.cameraState.Velocity.Y != 0 || session.cameraState.Velocity.Z != 0 {
+			session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Velocity.Scale(dt))
 		}
 	}
 

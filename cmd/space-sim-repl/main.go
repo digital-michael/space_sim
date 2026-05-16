@@ -22,6 +22,7 @@ import (
 )
 
 func main() {
+	const appName = "space-sim" //nolint:unused // reserved for future config/logging use
 	addr := flag.String("addr", "http://localhost:9090", "space-sim-grpc server address")
 	script := flag.String("script", "", "path to a script file to replay (one command per line)")
 	flag.Parse()

@@ -5,7 +5,6 @@ import (
 	"log"
 	"math"
 	"os"
-	"runtime"
 
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -82,6 +81,10 @@ func (a *App) toggleFullscreen() {
 				rl.SetWindowSize(int(monitorWidth), int(monitorHeight))
 			}
 		}
+		// Guard against syncWindowState clobbering WindowedWidth/Height on the
+		// first frame after ToggleFullscreen, when IsWindowFullscreen may still
+		// report false while GetRenderWidth already reflects the monitor size.
+		a.runtime.protectWindowedSize = true
 		rl.ToggleFullscreen()
 		// On Wayland, xdg_toplevel_set_fullscreen is sent asynchronously.
 		// The compositor responds with xdg_toplevel_configure + xdg_surface_configure
@@ -123,6 +126,10 @@ func (a *App) toggleFullscreen() {
 			if windowedHeight <= 0 {
 				windowedHeight = defaultScreenHeight
 			}
+			// Guard against syncWindowState clobbering WindowedWidth/Height on
+			// the next frame while GetRenderWidth may still reflect the monitor
+			// size before SetWindowSize's resize event is committed by the OS.
+			a.runtime.protectWindowedSize = true
 			rl.SetWindowSize(int(windowedWidth), int(windowedHeight))
 			monitor := rl.GetCurrentMonitor()
 			monitorWidth := rl.GetMonitorWidth(monitor)
@@ -151,19 +158,28 @@ func (a *App) syncWindowState() {
 	// correctly updated via SetupViewport on every resize, including fullscreen.
 	w := int32(rl.GetRenderWidth())
 	h := int32(rl.GetRenderHeight())
-	// On Linux, GetRenderWidth/Height may return physical (framebuffer) pixels on
-	// HiDPI displays. Divide by the content scale to recover logical pixels.
-	// On macOS/Windows, raylib already returns logical pixels; skip the division.
-	if runtime.GOOS == "linux" {
-		dpi := rl.GetWindowScaleDPI()
-		if sx := float64(dpi.X); sx > 1 {
-			w = int32(math.Round(float64(w) / sx))
-		}
-		if sy := float64(dpi.Y); sy > 1 {
-			h = int32(math.Round(float64(h) / sy))
-		}
-	}
+	// Divide by the window content scale to convert physical (HiDPI) framebuffer
+	// pixels to logical pixels. GetRenderWidth returns physical pixels on every
+	// platform with a HiDPI window (macOS Retina, Linux HiDPI, Windows DPI-aware).
+	// SetWindowSize and all config values use logical pixels; without this
+	// conversion WindowedWidth doubles on each fullscreen round-trip on Retina.
+	dpi := rl.GetWindowScaleDPI()
+	w, h = scaledDimensions(w, h, float64(dpi.X), float64(dpi.Y))
 	a.runtime.SyncWindowState(w, h, rl.IsWindowFullscreen())
+}
+
+// scaledDimensions converts physical (HiDPI) pixel dimensions to logical pixels
+// by dividing by the window content scale. scaleX and scaleY come from
+// rl.GetWindowScaleDPI(). On standard 1× displays the scale is 1.0 and the
+// values pass through unchanged.
+func scaledDimensions(w, h int32, scaleX, scaleY float64) (int32, int32) {
+	if scaleX > 1 {
+		w = int32(math.Round(float64(w) / scaleX))
+	}
+	if scaleY > 1 {
+		h = int32(math.Round(float64(h) / scaleY))
+	}
+	return w, h
 }
 
 func (a *App) persistWindowConfig() {

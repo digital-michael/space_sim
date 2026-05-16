@@ -6,11 +6,11 @@ import (
 )
 
 const (
-	DefaultAppConfigPath = "configs/app.json"
-	defaultScreenWidth   = 1280
-	defaultScreenHeight  = 720
-	defaultTargetFPS     = 60
-	defaultSimHz         = 60.0
+	defaultScreenWidth  = 1280
+	defaultScreenHeight = 720
+	defaultTargetFPS    = 60
+	defaultSimHz        = 60.0
+	defaultAppName      = "space-sim"
 )
 
 type RenderMode string
@@ -93,6 +93,10 @@ type Config struct {
 	// Reset restores app.json to factory defaults and exits.
 	Reset bool
 
+	// KeybindingsPath overrides the default configs/keybindings.json path.
+	// When empty, defaultKeybindingsPath is used.
+	KeybindingsPath string
+
 	// CLIRenderOverride is true when RenderScale or RenderSize forced a
 	// transient render config change. Suppresses persisting the render
 	// section to app.json so CLI experiments don't soil saved config.
@@ -113,6 +117,15 @@ func ParseRenderSize(s string) (int32, int32, error) {
 		return 0, 0, fmt.Errorf("render-size: invalid height %q", parts[1])
 	}
 	return w, h, nil
+}
+
+// keybindingsPath returns the effective path for the keybindings config file.
+// It falls back to defaultKeybindingsPath when KeybindingsPath is empty.
+func (cfg Config) keybindingsPath() string {
+	if cfg.KeybindingsPath != "" {
+		return cfg.KeybindingsPath
+	}
+	return defaultKeybindingsPath
 }
 
 // WithDefaults returns cfg with default values filled in.
@@ -165,7 +178,7 @@ func (cfg Config) WithDefaults() Config {
 		}
 	}
 	if cfg.AppConfigPath == "" {
-		cfg.AppConfigPath = DefaultAppConfigPath
+		cfg.AppConfigPath = DefaultAppConfigPathFor(defaultAppName)
 	}
 	if cfg.PerformanceMode {
 		if cfg.Profile == "" {

@@ -51,23 +51,8 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			session.debugTracker.CheckVisibility(state.Objects, "after Snapshot()")
 		}
 
-		shouldQuit, a.runtime.AsteroidDataset, a.runtime.HUDVisible, a.runtime.HelpVisible, a.runtime.MouseModeEnabled = handleInput(
-			a,
-			session.sim,
-			session.cameraState,
-			session.inputState,
-			state,
-			session.navigationOrder,
-			a.runtime.AsteroidDataset,
-			a.runtime.HUDVisible,
-			a.runtime.HelpVisible,
-			&a.runtime.HUDDialogVisible,
-			&a.runtime.LabelMode,
-			a.runtime.MouseModeEnabled,
-			a.cfg.Debug,
-		)
-
-		zoomIndicator := updateCameraState(session.cameraState, session.inputState, state, dt, a.runtime.CameraSpeed, a.runtime.MouseSensitivity, a.runtime.MouseModeEnabled, a.runtime.HelpVisible, a.runtime.HUDDialogVisible)
+		shouldQuit = a.handleInput(session, state)
+		zoomIndicator := a.updateCameraState(session, state, dt)
 
 		renderWidth := a.runtime.RenderWidth
 		renderHeight := a.runtime.RenderHeight
@@ -118,9 +103,9 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			}
 		}
 
-		if session.inputState.PerfOptions.FrustumCulling {
+		if a.runtime.PerfConfig.FrustumCulling {
 			preCullCount := len(objectsToRender)
-			if session.inputState.PerfOptions.SpatialPartition {
+			if a.runtime.PerfConfig.SpatialPartition {
 				objectsToRender = spatial.SpatialFrustumCull(objectsToRender, worldCam)
 			} else {
 				objectsToRender = spatial.FrustumCullObjects(objectsToRender, worldCam)
@@ -138,7 +123,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 							}
 						}
 						if !found {
-							if session.inputState.PerfOptions.SpatialPartition {
+							if a.runtime.PerfConfig.SpatialPartition {
 								session.debugTracker.LogRenderDecision(obj, true, "spatial frustum culling")
 							} else {
 								session.debugTracker.LogRenderDecision(obj, true, "frustum culling")
@@ -152,7 +137,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		inViewCount := len(objectsToRender)
 		eligibleInViewCount := 0
 		for _, obj := range objectsToRender {
-			if obj.Meta.Importance >= session.inputState.PerfOptions.ImportanceThreshold {
+			if obj.Meta.Importance >= a.runtime.PerfConfig.ImportanceThreshold {
 				eligibleInViewCount++
 			}
 		}
@@ -164,14 +149,14 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		a.renderer.UpdateLights(state.Objects, session.cameraState.Position)
 		a.renderer.SetInfraState(a.runtime.InfraMode, session.cameraState.Forward)
 
-		if session.inputState.PerfOptions.InstancedRendering {
-			renderedCount = a.renderer.DrawObjectsInstanced(objectsToRender, session.cameraState.Position, state.Time, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled, session.inputState.PerfOptions.ImportanceThreshold)
+		if a.runtime.PerfConfig.InstancedRendering {
+			renderedCount = a.renderer.DrawObjectsInstanced(objectsToRender, session.cameraState.Position, state.Time, a.runtime.PerfConfig.PointRendering, a.runtime.PerfConfig.LODEnabled, a.runtime.PerfConfig.ImportanceThreshold)
 		} else {
 			for _, obj := range objectsToRender {
-				if obj.Meta.Importance < session.inputState.PerfOptions.ImportanceThreshold {
+				if obj.Meta.Importance < a.runtime.PerfConfig.ImportanceThreshold {
 					continue
 				}
-				a.renderer.DrawObject(obj, session.cameraState.Position, state.Time, session.inputState.PerfOptions.PointRendering, session.inputState.PerfOptions.LODEnabled)
+				a.renderer.DrawObject(obj, session.cameraState.Position, state.Time, a.runtime.PerfConfig.PointRendering, a.runtime.PerfConfig.LODEnabled)
 				renderedCount++
 			}
 		}
@@ -190,11 +175,8 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		if zoomIndicator != 0 {
 			a.renderer.DrawZoomIndicator(zoomIndicator)
 		}
-		if a.runtime.HelpVisible {
-			a.renderer.DrawHelpScreen()
-		}
-		if a.runtime.HUDDialogVisible {
-			a.runtime.HUD = a.renderer.DrawHUDDialog(a.runtime.HUD, a.runtime.HUDDialogRow)
+		if a.runtime.SettingsVisible {
+			a.renderer.DrawSettingsDialog(&a.runtime.Settings)
 		}
 		if a.runtime.RecordingActive {
 			a.renderer.DrawRecordingIndicator(a.runtime.RecordingPaused)
@@ -238,7 +220,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			a.cfg.SystemConfig = pendingSystemPath
 			session = newSession
 			a.worldPtr.Store(newSession.sim)
-			a.runtime.HelpVisible = false
+			a.runtime.SettingsVisible = false
 			systemName := readSystemDisplayName(pendingSystemPath)
 			if systemName == "" {
 				systemName = filepath.Base(pendingSystemPath)
@@ -414,30 +396,37 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		if c.SetFrustumCulling {
 			is.PerfOptions.FrustumCulling = c.Options.FrustumCulling
 			a.runtime.PerfConfig.FrustumCulling = c.Options.FrustumCulling
+			a.runtime.Settings.Perf.FrustumCulling = c.Options.FrustumCulling
 		}
 		if c.SetLODEnabled {
 			is.PerfOptions.LODEnabled = c.Options.LODEnabled
 			a.runtime.PerfConfig.LODEnabled = c.Options.LODEnabled
+			a.runtime.Settings.Perf.LODEnabled = c.Options.LODEnabled
 		}
 		if c.SetInstancedRendering {
 			is.PerfOptions.InstancedRendering = c.Options.InstancedRendering
 			a.runtime.PerfConfig.InstancedRendering = c.Options.InstancedRendering
+			a.runtime.Settings.Perf.InstancedRendering = c.Options.InstancedRendering
 		}
 		if c.SetSpatialPartition {
 			is.PerfOptions.SpatialPartition = c.Options.SpatialPartition
 			a.runtime.PerfConfig.SpatialPartition = c.Options.SpatialPartition
+			a.runtime.Settings.Perf.SpatialPartition = c.Options.SpatialPartition
 		}
 		if c.SetPointRendering {
 			is.PerfOptions.PointRendering = c.Options.PointRendering
 			a.runtime.PerfConfig.PointRendering = c.Options.PointRendering
+			a.runtime.Settings.Perf.PointRendering = c.Options.PointRendering
 		}
 		if c.SetImportanceThreshold {
 			is.PerfOptions.ImportanceThreshold = c.Options.ImportanceThreshold
 			a.runtime.PerfConfig.ImportanceThreshold = c.Options.ImportanceThreshold
+			a.runtime.Settings.Perf.ImportanceThreshold = c.Options.ImportanceThreshold
 		}
 		if c.SetUseInPlaceSwap {
 			is.PerfOptions.UseInPlaceSwap = c.Options.UseInPlaceSwap
 			a.runtime.PerfConfig.UseInPlaceSwap = c.Options.UseInPlaceSwap
+			a.runtime.Settings.Perf.UseInPlaceSwap = c.Options.UseInPlaceSwap
 			if c.Options.UseInPlaceSwap {
 				session.sim.GetState().EnableInPlaceSwap()
 			} else {

@@ -10,7 +10,6 @@ const (
 	SelectionModeJump
 	SelectionModeTrack
 	SelectionModeTrackEquatorial
-	SelectionModePerformance
 	SelectionModeSystemSelector
 )
 
@@ -45,6 +44,14 @@ func NewPerformanceOptions() *PerformanceOptions {
 	}
 }
 
+// SettingsState holds all unified settings dialog UI state.
+type SettingsState struct {
+	ActiveTab   int                // 0=Controls, 1=Display, 2=Performance, 3=Configuration
+	SelectedRow int                // focused interactive row within the active tab
+	HUD         HUDState           // Display tab: per-category HUD visibility
+	Perf        PerformanceOptions // Performance + Configuration tabs: live options
+}
+
 // InputState holds current user input state for object selection and navigation.
 type InputState struct {
 	SelectionActive     bool
@@ -53,7 +60,6 @@ type InputState struct {
 	SelectedCategory    engine.ObjectCategory
 	FilteredIndices     []int
 	PerfOptions         *PerformanceOptions
-	PerformanceTab      int
 	FilterText          string
 	ScrollOffset        int
 	DistanceCache       map[int]string
@@ -73,7 +79,6 @@ func NewInputState(firstCategory engine.ObjectCategory) *InputState {
 		SelectedCategory: firstCategory,
 		FilteredIndices:  make([]int, 0),
 		PerfOptions:      NewPerformanceOptions(),
-		PerformanceTab:   0,
 		FilterText:       "",
 		ScrollOffset:     0,
 		DistanceCache:    make(map[int]string),

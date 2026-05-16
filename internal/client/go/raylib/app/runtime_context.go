@@ -19,13 +19,12 @@ type RuntimeContext struct {
 	Fullscreen        bool
 	Resizable         bool
 	AsteroidDataset   engine.AsteroidDataset
-	HUDVisible        bool        // master switch — false hides all HUD categories
-	HUD               ui.HUDState // per-category visibility (only consulted when HUDVisible is true)
-	HUDDialogVisible  bool        // Opt+H toggle for the HUD settings overlay
-	HUDDialogRow      int         // keyboard-selected row in HUD dialog (0-2)
-	HelpVisible       bool
-	RecordingActive   bool // true while recording to video
-	RecordingPaused   bool // true while recording is paused (freeze-frame)
+	HUDVisible        bool             // master switch — false hides all HUD categories
+	HUD               ui.HUDState      // per-category visibility (only consulted when HUDVisible is true)
+	SettingsVisible   bool             // F1 toggle for the unified settings dialog
+	Settings          ui.SettingsState // unified settings dialog UI state
+	RecordingActive   bool             // true while recording to video
+	RecordingPaused   bool             // true while recording is paused (freeze-frame)
 	MouseModeEnabled  bool
 	LabelMode         ui.LabelMode
 	CameraSpeed       float32
@@ -39,6 +38,11 @@ type RuntimeContext struct {
 	// PerfConfig mirrors the active PerformanceOptions so they can be persisted
 	// at shutdown via AppConfigSnapshot and restored at startup.
 	PerfConfig PerformanceConfig
+
+	// protectWindowedSize is set for one frame when exiting fullscreen on
+	// macOS/X11 to prevent syncWindowState from clobbering WindowedWidth/Height
+	// before SetWindowSize's resize event is reflected in GetRenderWidth.
+	protectWindowedSize bool
 }
 
 // NewRuntimeContext creates the initial runtime state from app config.
@@ -53,21 +57,33 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 	}
 
 	return &RuntimeContext{
-		ScreenWidth:      width,
-		ScreenHeight:     height,
-		WindowedWidth:    width,
-		WindowedHeight:   height,
-		RenderWidth:      cfg.Render.Width,
-		RenderHeight:     cfg.Render.Height,
-		RenderMode:       cfg.Render.Mode,
-		Fullscreen:       cfg.Window.Fullscreen,
-		Resizable:        cfg.Window.Resizable,
-		AsteroidDataset:  engine.AsteroidDatasetSmall,
-		HUDVisible:       true,
-		HUD:              ui.AllOnHUD(),
-		HUDDialogVisible: false,
-		HUDDialogRow:     0,
-		HelpVisible:      false,
+		ScreenWidth:     width,
+		ScreenHeight:    height,
+		WindowedWidth:   width,
+		WindowedHeight:  height,
+		RenderWidth:     cfg.Render.Width,
+		RenderHeight:    cfg.Render.Height,
+		RenderMode:      cfg.Render.Mode,
+		Fullscreen:      cfg.Window.Fullscreen,
+		Resizable:       cfg.Window.Resizable,
+		AsteroidDataset: engine.AsteroidDatasetSmall,
+		HUDVisible:      true,
+		HUD:             ui.AllOnHUD(),
+		SettingsVisible: false,
+		Settings: ui.SettingsState{
+			ActiveTab:   0,
+			SelectedRow: 0,
+			HUD:         ui.AllOnHUD(),
+			Perf: ui.PerformanceOptions{
+				FrustumCulling:      cfg.Performance.FrustumCulling,
+				LODEnabled:          cfg.Performance.LODEnabled,
+				InstancedRendering:  cfg.Performance.InstancedRendering,
+				SpatialPartition:    cfg.Performance.SpatialPartition,
+				PointRendering:      cfg.Performance.PointRendering,
+				ImportanceThreshold: cfg.Performance.ImportanceThreshold,
+				UseInPlaceSwap:      cfg.Performance.UseInPlaceSwap,
+			},
+		},
 		MouseModeEnabled: true,
 		LabelMode:        ui.LabelModeOff,
 		CameraSpeed:      10.0,
@@ -94,8 +110,15 @@ func (ctx *RuntimeContext) SyncWindowState(width, height int32, fullscreen bool)
 	ctx.ScreenHeight = height
 	ctx.Fullscreen = fullscreen
 	if !fullscreen {
-		ctx.WindowedWidth = width
-		ctx.WindowedHeight = height
+		if ctx.protectWindowedSize {
+			// Consume the one-frame guard set during fullscreen exit.
+			// GetRenderWidth may still reflect the monitor size while the
+			// OS processes the SetWindowSize call asynchronously.
+			ctx.protectWindowedSize = false
+		} else {
+			ctx.WindowedWidth = width
+			ctx.WindowedHeight = height
+		}
 	}
 }
 

@@ -42,13 +42,15 @@ Mutually exclusive with --render-scale.`
 	noTextures := flag.Bool("no-textures", false, "disable diffuse texture rendering; use solid colors (enabled by default)")
 	simSpeed := flag.Float64("sim-speed", 3600, "simulated seconds per real second (1=real-time, 3600=1 sim-hour/sec, 86400=1 sim-day/sec, 604800=1 sim-week/sec)")
 	reset := flag.Bool("reset", false, "restore app.json to factory defaults and exit")
+	keybindings := flag.String("keybindings", "", "path to a custom keybindings JSON file (default: configs/keybindings.json)")
 	flag.Parse()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
 	// ── Load app config ───────────────────────────────────────────────────
-	appConfigPath := rayapp.DefaultAppConfigPath
+	const appName = "space-sim"
+	appConfigPath := rayapp.DefaultAppConfigPathFor(appName)
 	appConfig, err := rayapp.LoadAppConfig(appConfigPath)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error loading app config %s: %v\n", appConfigPath, err)
@@ -66,13 +68,14 @@ Mutually exclusive with --render-scale.`
 	}
 
 	cfg := rayapp.Config{
-		AppConfigPath: appConfigPath,
-		AppConfig:     appConfig,
-		RenderScale:   *renderScale,
-		RenderSize:    *renderSize,
-		NoMSAA:        *noMSAA,
-		NoTextures:    *noTextures,
-		SimTimeScale:  *simSpeed,
+		AppConfigPath:   appConfigPath,
+		AppConfig:       appConfig,
+		RenderScale:     *renderScale,
+		RenderSize:      *renderSize,
+		NoMSAA:          *noMSAA,
+		NoTextures:      *noTextures,
+		SimTimeScale:    *simSpeed,
+		KeybindingsPath: *keybindings,
 	}
 
 	// ── Build application (creates world internally) ───────────────────────

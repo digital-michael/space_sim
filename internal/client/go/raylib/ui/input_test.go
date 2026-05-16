@@ -28,9 +28,6 @@ func TestNewInputStateDefaults(t *testing.T) {
 	if inp.PerfOptions == nil {
 		t.Error("PerfOptions should be initialised (not nil)")
 	}
-	if inp.PerformanceTab != 0 {
-		t.Errorf("PerformanceTab = %d, want 0", inp.PerformanceTab)
-	}
 	if inp.FilterText != "" {
 		t.Errorf("FilterText = %q, want empty string", inp.FilterText)
 	}
@@ -249,8 +246,7 @@ func TestSelectionModeValues(t *testing.T) {
 		{"SelectionModeJump", SelectionModeJump, 1},
 		{"SelectionModeTrack", SelectionModeTrack, 2},
 		{"SelectionModeTrackEquatorial", SelectionModeTrackEquatorial, 3},
-		{"SelectionModePerformance", SelectionModePerformance, 4},
-		{"SelectionModeSystemSelector", SelectionModeSystemSelector, 5},
+		{"SelectionModeSystemSelector", SelectionModeSystemSelector, 4},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

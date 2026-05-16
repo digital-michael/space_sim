@@ -321,8 +321,8 @@ func uiScale() float32 {
 	if scale < 0.85 {
 		return 0.85
 	}
-	if scale > 1.35 {
-		return 1.35
+	if scale > 2.0 {
+		return 2.0
 	}
 	return scale
 }
@@ -556,93 +556,384 @@ func (r *Renderer) DrawRecordingIndicator(paused bool) {
 	rl.DrawText(label, x, y, fontSize, dotColor)
 }
 
-func (r *Renderer) DrawHelpScreen() {
-	drawHelpScreen()
+// DrawSettingsDialog draws the unified 4-tab settings dialog.
+func (r *Renderer) DrawSettingsDialog(state *ui.SettingsState) {
+	drawSettingsDialog(state)
 }
 
-// DrawHUDDialog draws the Ctrl+H HUD category settings overlay and returns
-// the updated HUDState based on any checkbox clicks this frame.
-func (r *Renderer) DrawHUDDialog(current ui.HUDState, selectedRow int) ui.HUDState {
-	return drawHUDDialog(current, selectedRow)
-}
-
-// drawHUDDialog draws a small checkbox panel and processes mouse clicks to
-// toggle per-category HUD visibility. Returns the new state.
-func drawHUDDialog(current ui.HUDState, selectedRow int) ui.HUDState {
+// drawSettingsDialog draws a wide modal panel with four tabs:
+// Controls, Display, Performance, Configuration.
+func drawSettingsDialog(state *ui.SettingsState) {
 	sw := int32(currentScreenWidth())
 	sh := int32(currentScreenHeight())
 
-	panelW := scaledInt32(280)
-	panelH := scaledInt32(210)
-	panelX := (sw - panelW) / 2
-	panelY := (sh - panelH) / 2
+	// Panel geometry — 70% width like the old help screen
+	bgWidth := sw * 70 / 100
+	if bgWidth < scaledInt32(800) {
+		bgWidth = scaledInt32(800)
+	}
+	if bgWidth > scaledInt32(1400) {
+		bgWidth = scaledInt32(1400)
+	}
+	bgHeight := sh * 78 / 100
+	if bgHeight < scaledInt32(600) {
+		bgHeight = scaledInt32(600)
+	}
+	if bgHeight > scaledInt32(1000) {
+		bgHeight = scaledInt32(1000)
+	}
+	bgX := (sw - bgWidth) / 2
+	bgY := (sh - bgHeight) / 2
 
-	// Background panel
-	rl.DrawRectangle(panelX, panelY, panelW, panelH, rl.Color{R: 20, G: 20, B: 30, A: 230})
-	rl.DrawRectangleLines(panelX, panelY, panelW, panelH, rl.Color{R: 100, G: 100, B: 180, A: 255})
+	// Background
+	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 230})
+	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
 
+	titleFont := scaledInt32(26)
+	tabFont := scaledInt32(17)
+	hintFont := scaledInt32(15)
+
+	// Title
+	titleText := "SETTINGS"
+	titleX := bgX + (bgWidth-rl.MeasureText(titleText, titleFont))/2
+	rl.DrawText(titleText, titleX, bgY+scaledInt32(10), titleFont, rl.White)
+
+	// Tab bar
+	tabNames := [5]string{"System", "Controls", "Display", "Performance", "Configuration"}
+	tabCount := int32(5)
+	tabPad := scaledInt32(10)
+	tabHeight := scaledInt32(32)
+	tabWidth := (bgWidth - tabPad*2) / tabCount
+	tabY := bgY + scaledInt32(44)
+	for i := int32(0); i < tabCount; i++ {
+		tx := bgX + tabPad + i*tabWidth
+		tabColor := rl.Color{R: 50, G: 50, B: 50, A: 255}
+		textColor := rl.LightGray
+		if int(i) == state.ActiveTab {
+			tabColor = rl.Color{R: 60, G: 100, B: 160, A: 255}
+			textColor = rl.White
+		}
+		rl.DrawRectangle(tx, tabY, tabWidth-scaledInt32(4), tabHeight, tabColor)
+		rl.DrawRectangleLines(tx, tabY, tabWidth-scaledInt32(4), tabHeight, rl.Gray)
+		label := tabNames[i]
+		lw := rl.MeasureText(label, tabFont)
+		rl.DrawText(label, tx+(tabWidth-scaledInt32(4)-int32(lw))/2, tabY+scaledInt32(8), tabFont, textColor)
+	}
+
+	// Content area starts below tabs
+	contentY := tabY + tabHeight + scaledInt32(10)
+	contentH := bgHeight - (contentY - bgY) - scaledInt32(36) // leave room for hint bar
+
+	switch state.ActiveTab {
+	case 0:
+		drawSettingsSystemTab(bgX, contentY, bgWidth, contentH)
+	case 1:
+		drawSettingsControlsTab(bgX, contentY, bgWidth, contentH)
+	case 2:
+		drawSettingsDisplayTab(state, bgX, contentY, bgWidth, contentH)
+	case 3:
+		drawSettingsPerfTab(state, bgX, contentY, bgWidth, contentH)
+	case 4:
+		drawSettingsConfigTab(state, bgX, contentY, bgWidth, contentH)
+	}
+
+	// Hint bar at bottom
+	hintY := bgY + bgHeight - scaledInt32(28)
+	hint := "TAB/SHIFT+TAB: switch tab  UP/DOWN: select  SPACE: toggle  LEFT/RIGHT: adjust  ESC: close"
+	hintX := bgX + (bgWidth-rl.MeasureText(hint, hintFont))/2
+	rl.DrawText(hint, hintX, hintY, hintFont, rl.Gray)
+}
+
+// drawSettingsSystemTab renders navigation, system shortcuts, dialog controls,
+// and camera mode reference (tab 0).
+func drawSettingsSystemTab(bgX, startY, bgWidth, _ int32) {
+	margin := scaledInt32(20)
+	valueGap := scaledInt32(180)
+	lineHeight := scaledInt32(26)
+	headerSize := scaledInt32(20)
+	bodySize := scaledInt32(16)
+
+	leftCol := bgX + margin
+	rightCol := bgX + bgWidth/2 + margin
+	y := startY
+
+	// Left column: Navigation + Camera modes
+	rl.DrawText("NAVIGATION", leftCol, y, headerSize, rl.Yellow)
+	y += lineHeight + 4
+	navEntries := [][2]string{
+		{"C", "Center view on Sun / Reset zoom"},
+		{"J", "Open jump dialog"},
+		{"T", "Open track dialog"},
+		{"TAB", "Next sibling (when tracking)"},
+		{"Shift+TAB", "Previous sibling (tracking)"},
+		{"F", "Forward to child (tracking)"},
+		{"B", "Back to parent (tracking)"},
+		{"R", "Reset camera offset"},
+		{"ESC", "Exit tracking/mouse mode"},
+		{modAlt + "+Q", "Quit application"},
+	}
+	for _, e := range navEntries {
+		rl.DrawText(e[0], leftCol, y, bodySize, rl.White)
+		rl.DrawText(e[1], leftCol+valueGap, y, bodySize, rl.LightGray)
+		y += lineHeight
+	}
+	y += 8
+	rl.DrawText("CAMERA MODES", leftCol, y, headerSize, rl.Yellow)
+	y += lineHeight + 4
+	modeEntries := [][2]string{
+		{"Free-Fly", "Full manual control"},
+		{"Jumping", "Animated fly-to"},
+		{"Tracking", "Follow target object"},
+	}
+	for _, e := range modeEntries {
+		rl.DrawText(e[0], leftCol, y, bodySize, rl.Lime)
+		rl.DrawText(e[1], leftCol+valueGap, y, bodySize, rl.LightGray)
+		y += lineHeight
+	}
+
+	// Right column: System & Display + Dialog Controls
+	y = startY
+	rl.DrawText("SYSTEM & DISPLAY", rightCol, y, headerSize, rl.Yellow)
+	y += lineHeight + 4
+	sysEntries := [][2]string{
+		{"F1", "Open/close settings"},
+		{modAlt + "+L", "Toggle object labels"},
+		{modAlt + "+M", "Toggle mouse mode"},
+		{modAlt + "+F", "Toggle fullscreen"},
+		{modAlt + "+-  /  " + modAlt + "+=", "Asteroids (200->24K)"},
+		{modSuper + "+<  /  " + modSuper + "+>", "Time scale (PAUSED->1yr/sec)"},
+		{modAlt + "+,  /  " + modAlt + "+.", "Anim speed (0%->100% of 60Hz)"},
+		{modAlt + "+R", "Start/stop recording"},
+		{modAlt + "+Shift+R", "Pause/resume recording"},
+	}
+	for _, e := range sysEntries {
+		rl.DrawText(e[0], rightCol, y, bodySize, rl.White)
+		rl.DrawText(e[1], rightCol+valueGap, y, bodySize, rl.LightGray)
+		y += lineHeight
+	}
+	y += 8
+	rl.DrawText("DIALOG CONTROLS", rightCol, y, headerSize, rl.Yellow)
+	y += lineHeight + 4
+	dlgEntries := [][2]string{
+		{"Up / Down", "Navigate list / settings rows"},
+		{"Left / Right", "Change category / adjust value"},
+		{"Enter", "Confirm selection"},
+		{"Space", "Toggle option"},
+		{"ESC", "Close active dialog"},
+		{"Modal", "Dialogs suspend main controls"},
+	}
+	for _, e := range dlgEntries {
+		rl.DrawText(e[0], rightCol, y, bodySize, rl.White)
+		rl.DrawText(e[1], rightCol+valueGap, y, bodySize, rl.LightGray)
+		y += lineHeight
+	}
+}
+
+// drawSettingsControlsTab renders POV movement controls reference (tab 1).
+func drawSettingsControlsTab(bgX, startY, bgWidth, _ int32) {
+	margin := scaledInt32(20)
+	valueGap := scaledInt32(180)
+	lineHeight := scaledInt32(26)
+	headerSize := scaledInt32(20)
+	bodySize := scaledInt32(16)
+
+	leftCol := bgX + margin
+	y := startY
+
+	rl.DrawText("CAMERA CONTROLS", leftCol, y, headerSize, rl.Yellow)
+	y += lineHeight + 4
+	entries := [][2]string{
+		{"Mouse Move", "Look around"},
+		{"Mouse Wheel", "Zoom / adjust tracking distance"},
+		{"W / S", "Move forward/backward"},
+		{"A / D", "Strafe left/right"},
+		{"Shift", "Hold for 2x speed boost"},
+		{"Arrow Keys", "Move in system plane"},
+	}
+	for _, e := range entries {
+		rl.DrawText(e[0], leftCol, y, bodySize, rl.White)
+		rl.DrawText(e[1], leftCol+valueGap, y, bodySize, rl.LightGray)
+		y += lineHeight
+	}
+	_ = bgWidth
+}
+
+// drawSettingsDisplayTab renders HUD visibility checkboxes (tab 2).
+func drawSettingsDisplayTab(state *ui.SettingsState, bgX, startY, bgWidth, _ int32) {
+	pad := scaledInt32(20)
+	rowFont := scaledInt32(18)
 	titleFont := scaledInt32(20)
-	rowFont := scaledInt32(17)
-	pad := scaledInt32(16)
-	boxSize := scaledInt32(14)
-	titleY := panelY + pad
-	rl.DrawText("HUD DISPLAYS", panelX+pad, titleY, titleFont, rl.White)
+	boxSize := scaledInt32(18)
+	rowSpacing := scaledInt32(40)
+	arrowFont := scaledInt32(20)
 
-	rowSpacing := scaledInt32(34)
-	rows := []struct {
+	rl.DrawText("HUD DISPLAYS", bgX+pad, startY, titleFont, rl.White)
+
+	type hudRow struct {
 		label string
 		val   *bool
-	}{
-		{"Debug  (stats, screen info)", &current.Debug},
-		{"Info   (tracking, selection)", &current.Info},
-		{"Help   (hint bar)", &current.Help},
-		{"Player (reserved)", nil}, // greyed out — not yet implemented
+	}
+	rows := []hudRow{
+		{"Debug  (stats, screen info)", &state.HUD.Debug},
+		{"Info   (tracking, selection)", &state.HUD.Info},
+		{"Help   (hint bar)", &state.HUD.Help},
+		{"Player (reserved)", nil},
 	}
 
 	mouse := renderMousePosition()
 	clicked := rl.IsMouseButtonPressed(rl.MouseButtonLeft)
 
 	for i, row := range rows {
-		rowY := titleY + scaledInt32(36) + int32(i)*rowSpacing
-		boxX := panelX + pad
-		boxColor := rl.Color{R: 80, G: 80, B: 80, A: 255}
+		rowY := startY + scaledInt32(36) + int32(i)*rowSpacing
+		boxX := bgX + pad
 		labelColor := rl.Color{R: 160, G: 160, B: 160, A: 255}
+		boxColor := rl.Color{R: 60, G: 60, B: 60, A: 255}
 
-		// Keyboard selection highlight
-		if i == selectedRow && row.val != nil {
-			rl.DrawRectangle(panelX+2, rowY-2, panelW-4, boxSize+4, rl.Color{R: 60, G: 60, B: 100, A: 120})
+		// Keyboard cursor
+		if i == state.SelectedRow && row.val != nil {
+			rl.DrawText(">", boxX-scaledInt32(16), rowY, arrowFont, rl.Yellow)
+			rl.DrawRectangle(bgX+2, rowY-2, bgWidth-4, boxSize+4, rl.Color{R: 50, G: 100, B: 150, A: 80})
 		}
 
 		if row.val != nil {
 			labelColor = rl.White
 			if *row.val {
 				boxColor = rl.Green
-			} else {
-				boxColor = rl.Color{R: 60, G: 60, B: 60, A: 255}
 			}
-			// Hit test
+			// Mouse hit test
 			hitX := float32(boxX) - 2
 			hitY := float32(rowY) - 2
-			hitW := float32(boxSize+4) + float32(scaledInt32(180))
+			hitW := float32(boxSize+4) + float32(scaledInt32(200))
 			hitH := float32(boxSize + 4)
-			if clicked &&
-				mouse.X >= hitX && mouse.X < hitX+hitW &&
-				mouse.Y >= hitY && mouse.Y < hitY+hitH {
+			if clicked && mouse.X >= hitX && mouse.X < hitX+hitW && mouse.Y >= hitY && mouse.Y < hitY+hitH {
 				*row.val = !*row.val
 			}
 		}
 
 		rl.DrawRectangle(boxX, rowY, boxSize, boxSize, boxColor)
 		rl.DrawRectangleLines(boxX, rowY, boxSize, boxSize, rl.White)
-		rl.DrawText(row.label, boxX+boxSize+scaledInt32(8), rowY, rowFont, labelColor)
+		if row.val != nil && *row.val {
+			rl.DrawText("X", boxX+scaledInt32(2), rowY, scaledInt32(16), rl.Green)
+		}
+		rl.DrawText(row.label, boxX+boxSize+scaledInt32(10), rowY, rowFont, labelColor)
+	}
+}
+
+// drawSettingsPerfTab renders performance toggle checkboxes (tab 3).
+func drawSettingsPerfTab(state *ui.SettingsState, bgX, startY, bgWidth, _ int32) {
+	pad := scaledInt32(20)
+	optionFont := scaledInt32(18)
+	descFont := scaledInt32(14)
+	checkSize := scaledInt32(22)
+	lineHeight := scaledInt32(58)
+	arrowFont := scaledInt32(20)
+
+	type perfOpt struct {
+		name string
+		desc string
+		val  *bool
+	}
+	opts := []perfOpt{
+		{"Frustum Culling", "Cull objects outside camera view", &state.Perf.FrustumCulling},
+		{"Level of Detail", "Use simpler models for distant objects", &state.Perf.LODEnabled},
+		{"Instanced Rendering", "Batch objects by rendering properties", &state.Perf.InstancedRendering},
+		{"Spatial Partitioning", "Use grid-based spatial culling", &state.Perf.SpatialPartition},
+		{"Point Rendering", "Render distant objects as points", &state.Perf.PointRendering},
 	}
 
-	// Close hint
-	hintY := panelY + panelH - scaledInt32(30)
-	hintFont := scaledInt32(14)
-	rl.DrawText(modAlt+"+H to close", panelX+pad, hintY, hintFont, rl.Gray)
+	for i, opt := range opts {
+		y := startY + int32(i)*lineHeight
+		checkX := bgX + pad + scaledInt32(16)
+		checkY := y + scaledInt32(6)
 
-	return current
+		if i == state.SelectedRow {
+			rl.DrawText(">", bgX+pad, y+scaledInt32(6), arrowFont, rl.Yellow)
+			rl.DrawRectangle(bgX+2, y-2, bgWidth-4, lineHeight-4, rl.Color{R: 50, G: 100, B: 150, A: 80})
+		}
+
+		boxColor := rl.Color{R: 40, G: 40, B: 40, A: 255}
+		rl.DrawRectangle(checkX, checkY, checkSize, checkSize, boxColor)
+		rl.DrawRectangleLines(checkX, checkY, checkSize, checkSize, rl.White)
+		if *opt.val {
+			rl.DrawText("X", checkX+scaledInt32(4), checkY+scaledInt32(1), scaledInt32(20), rl.Green)
+		}
+		rl.DrawText(opt.name, checkX+checkSize+scaledInt32(10), checkY, optionFont, rl.White)
+		rl.DrawText(opt.desc, checkX+checkSize+scaledInt32(10), checkY+scaledInt32(22), descFont, rl.Gray)
+	}
+}
+
+// drawSettingsConfigTab renders ImportanceThreshold and UseInPlaceSwap (tab 4).
+func drawSettingsConfigTab(state *ui.SettingsState, bgX, startY, bgWidth, _ int32) {
+	pad := scaledInt32(20)
+	optionFont := scaledInt32(18)
+	descFont := scaledInt32(14)
+	checkSize := scaledInt32(22)
+	lineHeight := scaledInt32(58)
+	arrowFont := scaledInt32(20)
+
+	// Row 0: Importance Threshold
+	{
+		y := startY
+		checkX := bgX + pad + scaledInt32(16)
+		checkY := y + scaledInt32(6)
+		if state.SelectedRow == 0 {
+			rl.DrawText(">", bgX+pad, y+scaledInt32(6), arrowFont, rl.Yellow)
+			rl.DrawRectangle(bgX+2, y-2, bgWidth-4, lineHeight-4, rl.Color{R: 50, G: 100, B: 150, A: 80})
+		}
+		rl.DrawText("Importance Threshold", checkX, checkY, optionFont, rl.White)
+		thresholdDesc := importanceThresholdLabel(state.Perf.ImportanceThreshold)
+		rl.DrawText(fmt.Sprintf("Value: %s", thresholdDesc), checkX, checkY+scaledInt32(22), descFont, rl.Gray)
+		rl.DrawText("LEFT/RIGHT: adjust", checkX+scaledInt32(300), checkY+scaledInt32(22), descFont, rl.LightGray)
+	}
+
+	// Row 1: UseInPlaceSwap
+	{
+		y := startY + lineHeight
+		checkX := bgX + pad + scaledInt32(16)
+		checkY := y + scaledInt32(6)
+		if state.SelectedRow == 1 {
+			rl.DrawText(">", bgX+pad, y+scaledInt32(6), arrowFont, rl.Yellow)
+			rl.DrawRectangle(bgX+2, y-2, bgWidth-4, lineHeight-4, rl.Color{R: 50, G: 100, B: 150, A: 80})
+		}
+		boxColor := rl.Color{R: 40, G: 40, B: 40, A: 255}
+		rl.DrawRectangle(checkX, checkY, checkSize, checkSize, boxColor)
+		rl.DrawRectangleLines(checkX, checkY, checkSize, checkSize, rl.White)
+		if state.Perf.UseInPlaceSwap {
+			rl.DrawText("X", checkX+scaledInt32(4), checkY+scaledInt32(1), scaledInt32(20), rl.Green)
+		}
+		rl.DrawText("Zero-Allocation In-Place Swap", checkX+checkSize+scaledInt32(10), checkY, optionFont, rl.White)
+		rl.DrawText("Eliminates buffer allocations (disables dynamic adds)", checkX+checkSize+scaledInt32(10), checkY+scaledInt32(22), descFont, rl.Gray)
+	}
+}
+
+// importanceThresholdLabel returns a human-readable label for a threshold value.
+func importanceThresholdLabel(v int) string {
+	switch v {
+	case 0:
+		return "0 (All objects)"
+	case 5:
+		return "5 (Hide tiny asteroids)"
+	case 10:
+		return "10 (Hide medium asteroids)"
+	case 15:
+		return "15 (Hide all asteroids)"
+	case 30:
+		return "30 (Hide rings)"
+	case 40:
+		return "40 (Hide small moons)"
+	case 50:
+		return "50 (Hide dwarf planets)"
+	case 60:
+		return "60 (Hide large moons)"
+	case 70:
+		return "70 (Hide ice giants)"
+	case 80:
+		return "80 (Hide rocky planets)"
+	case 90:
+		return "90 (Hide gas giants)"
+	default:
+		return fmt.Sprintf("%d", v)
+	}
 }
 
 // InstanceBatch represents a group of objects with the same rendering properties
@@ -2175,12 +2466,6 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		return
 	}
 
-	// Check if we're in performance mode
-	if inputState.SelectionMode == ui.SelectionModePerformance {
-		drawPerformanceUI(inputState)
-		return
-	}
-
 	// Semi-transparent background - responsive to screen size
 	sw := int32(currentScreenWidth())
 	sh := int32(currentScreenHeight())
@@ -2608,408 +2893,4 @@ func filterObjectsByCategoryAndText(objects []*engine.Object, category engine.Ob
 		}
 	}
 	return indices
-}
-
-// drawPerformanceUI draws the performance options menu with tabs
-func drawPerformanceUI(inputState *ui.InputState) {
-	// Semi-transparent background - responsive to screen size
-	sw := int32(currentScreenWidth())
-	sh := int32(currentScreenHeight())
-	titleFont := scaledInt32(24)
-	hintFont := scaledInt32(12)
-	tabFont := scaledInt32(18)
-	optionFont := scaledInt32(18)
-	optionDescFont := scaledInt32(12)
-	arrowFont := scaledInt32(20)
-	statsFont := scaledInt32(14)
-	// Panel is 40% of screen width, clamped to reasonable bounds (400-700)
-	bgWidth := sw * 40 / 100
-	if bgWidth < scaledInt32(400) {
-		bgWidth = scaledInt32(400)
-	}
-	if bgWidth > scaledInt32(700) {
-		bgWidth = scaledInt32(700)
-	}
-	// Panel height matches width for square aspect
-	bgHeight := bgWidth
-	// Center on screen
-	bgX := (sw - bgWidth) / 2
-	bgY := (sh - bgHeight) / 2
-	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 200})
-	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
-
-	// Title
-	titleText := "PERFORMANCE & CONFIGURATION"
-	titleWidth := rl.MeasureText(titleText, titleFont)
-	titleX := bgX + (bgWidth-int32(titleWidth))/2
-	rl.DrawText(titleText, titleX, bgY+scaledInt32(10), titleFont, rl.White)
-	rl.DrawText("UP/DOWN: select, SPACE: toggle, LEFT/RIGHT: tab/adjust, ESC: close", bgX+scaledInt32(20), bgY+scaledInt32(40), hintFont, rl.LightGray)
-
-	// Draw tabs - divide panel width evenly between 2 tabs
-	tabWidth := (bgWidth - scaledInt32(20)) / 2 // 20 pixels margin
-	if tabWidth < scaledInt32(120) {
-		tabWidth = scaledInt32(120)
-	}
-	tabHeight := scaledInt32(35)
-	tabY := bgY + scaledInt32(65)
-
-	// Performance tab
-	perfTabColor := rl.Color{R: 50, G: 50, B: 50, A: 255}
-	if inputState.PerformanceTab == 0 {
-		perfTabColor = rl.Color{R: 80, G: 120, B: 160, A: 255}
-	}
-	rl.DrawRectangle(bgX+scaledInt32(10), tabY, tabWidth, tabHeight, perfTabColor)
-	rl.DrawRectangleLines(bgX+scaledInt32(10), tabY, tabWidth, tabHeight, rl.White)
-	perfText := "Performance"
-	perfWidth := rl.MeasureText(perfText, tabFont)
-	perfX := bgX + scaledInt32(10) + (tabWidth-int32(perfWidth))/2
-	rl.DrawText(perfText, perfX, tabY+scaledInt32(8), tabFont, rl.White)
-
-	// Configuration tab
-	confTabColor := rl.Color{R: 50, G: 50, B: 50, A: 255}
-	if inputState.PerformanceTab == 1 {
-		confTabColor = rl.Color{R: 80, G: 120, B: 160, A: 255}
-	}
-	rl.DrawRectangle(bgX+scaledInt32(10)+tabWidth+scaledInt32(10), tabY, tabWidth, tabHeight, confTabColor)
-	rl.DrawRectangleLines(bgX+scaledInt32(10)+tabWidth+scaledInt32(10), tabY, tabWidth, tabHeight, rl.White)
-	confText := "Configuration"
-	confWidth := rl.MeasureText(confText, tabFont)
-	confX := bgX + scaledInt32(10) + tabWidth + scaledInt32(10) + (tabWidth-int32(confWidth))/2
-	rl.DrawText(confText, confX, tabY+scaledInt32(8), tabFont, rl.White)
-
-	startY := tabY + tabHeight + scaledInt32(20)
-	lineHeight := scaledInt32(60)
-
-	if inputState.PerformanceTab == 0 {
-		// Performance tab options
-		options := []struct {
-			name    string
-			desc    string
-			enabled *bool
-		}{
-			{"Frustum Culling", "Cull objects outside camera view", &inputState.PerfOptions.FrustumCulling},
-			{"Level of Detail", "Use simpler models for distant objects", &inputState.PerfOptions.LODEnabled},
-			{"Instanced Rendering", "Batch objects by rendering properties", &inputState.PerfOptions.InstancedRendering},
-			{"Spatial Partitioning", "Use grid-based spatial culling", &inputState.PerfOptions.SpatialPartition},
-			{"Point Rendering", "Render distant objects as points", &inputState.PerfOptions.PointRendering},
-		}
-
-		for i, opt := range options {
-			y := startY + int32(i)*lineHeight
-
-			// Highlight selected
-			if i == inputState.SelectedIndex {
-				rl.DrawRectangle(bgX+scaledInt32(5), y-scaledInt32(2), bgWidth-scaledInt32(10), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
-				rl.DrawText(">", bgX+scaledInt32(15), y+scaledInt32(10), arrowFont, rl.Yellow)
-			}
-
-			// Checkbox
-			checkX := bgX + scaledInt32(40)
-			checkY := y + scaledInt32(8)
-			checkSize := scaledInt32(24)
-			rl.DrawRectangle(checkX, checkY, checkSize, checkSize, rl.Color{R: 40, G: 40, B: 40, A: 255})
-			rl.DrawRectangleLines(checkX, checkY, checkSize, checkSize, rl.White)
-
-			if *opt.enabled {
-				rl.DrawText("X", checkX+scaledInt32(5), checkY+scaledInt32(2), arrowFont, rl.Green)
-			}
-
-			// Option name and description
-			rl.DrawText(opt.name, checkX+scaledInt32(35), checkY, optionFont, rl.White)
-			rl.DrawText(opt.desc, checkX+scaledInt32(35), checkY+scaledInt32(22), optionDescFont, rl.Gray)
-		}
-
-		// Stats
-		statsY := bgY + bgHeight - scaledInt32(40)
-		culledText := "Objects will be culled based on selected optimizations"
-		rl.DrawText(culledText, bgX+scaledInt32(50), statsY, statsFont, rl.LightGray)
-	} else {
-		// Configuration tab options
-		// Option 0: Importance Threshold
-		y := startY
-
-		// Highlight selected
-		if 0 == inputState.SelectedIndex {
-			rl.DrawRectangle(bgX+scaledInt32(5), y-scaledInt32(2), bgWidth-scaledInt32(10), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
-			rl.DrawText(">", bgX+scaledInt32(15), y+scaledInt32(10), arrowFont, rl.Yellow)
-		}
-
-		checkX := bgX + scaledInt32(40)
-		checkY := y + scaledInt32(8)
-		rl.DrawText("Importance Threshold", checkX, checkY, optionFont, rl.White)
-
-		// Value and description
-		thresholdDesc := ""
-		switch inputState.PerfOptions.ImportanceThreshold {
-		case 0:
-			thresholdDesc = "0 (All objects)"
-		case 5:
-			thresholdDesc = "5 (Hide tiny asteroids)"
-		case 10:
-			thresholdDesc = "10 (Hide medium asteroids)"
-		case 15:
-			thresholdDesc = "15 (Hide all asteroids)"
-		case 30:
-			thresholdDesc = "30 (Hide rings)"
-		case 40:
-			thresholdDesc = "40 (Hide small moons)"
-		case 50:
-			thresholdDesc = "50 (Hide dwarf planets)"
-		case 60:
-			thresholdDesc = "60 (Hide large moons)"
-		case 70:
-			thresholdDesc = "70 (Hide ice giants)"
-		case 80:
-			thresholdDesc = "80 (Hide rocky planets)"
-		case 90:
-			thresholdDesc = "90 (Hide gas giants)"
-		default:
-			thresholdDesc = fmt.Sprintf("%d", inputState.PerfOptions.ImportanceThreshold)
-		}
-
-		rl.DrawText(fmt.Sprintf("Value: %s", thresholdDesc), checkX, checkY+scaledInt32(22), optionDescFont, rl.Gray)
-		rl.DrawText("LEFT/RIGHT: adjust", checkX+scaledInt32(250), checkY+scaledInt32(22), optionDescFont, rl.LightGray)
-
-		// Option 1: Zero-Allocation In-Place Swap
-		y = startY + lineHeight
-
-		// Highlight selected
-		if 1 == inputState.SelectedIndex {
-			rl.DrawRectangle(bgX+scaledInt32(5), y-scaledInt32(2), bgWidth-scaledInt32(10), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
-			rl.DrawText(">", bgX+scaledInt32(15), y+scaledInt32(10), arrowFont, rl.Yellow)
-		}
-
-		checkY = y + scaledInt32(8)
-		checkSize := scaledInt32(24)
-		rl.DrawRectangle(checkX, checkY, checkSize, checkSize, rl.Color{R: 40, G: 40, B: 40, A: 255})
-		rl.DrawRectangleLines(checkX, checkY, checkSize, checkSize, rl.White)
-
-		if inputState.PerfOptions.UseInPlaceSwap {
-			rl.DrawText("X", checkX+scaledInt32(5), checkY+scaledInt32(2), arrowFont, rl.Green)
-		}
-
-		rl.DrawText("Zero-Allocation In-Place Swap", checkX+scaledInt32(35), checkY, optionFont, rl.White)
-		rl.DrawText("Eliminates buffer allocations (disables dynamic adds)", checkX+scaledInt32(35), checkY+scaledInt32(22), optionDescFont, rl.Gray)
-
-		// Stats
-		statsY := bgY + bgHeight - scaledInt32(40)
-		rl.DrawText("Configuration affects memory usage and performance", bgX+scaledInt32(50), statsY, statsFont, rl.LightGray)
-	}
-}
-
-// drawHelpScreen displays comprehensive keyboard and mouse controls
-func drawHelpScreen() {
-	sw := int32(currentScreenWidth())
-	sh := int32(currentScreenHeight())
-	bgWidth := sw * 70 / 100
-	if bgWidth < scaledInt32(800) {
-		bgWidth = scaledInt32(800)
-	}
-	if bgWidth > scaledInt32(1400) {
-		bgWidth = scaledInt32(1400)
-	}
-	bgHeight := sh * 78 / 100
-	if bgHeight < scaledInt32(600) {
-		bgHeight = scaledInt32(600)
-	}
-	if bgHeight > scaledInt32(1000) {
-		bgHeight = scaledInt32(1000)
-	}
-	margin := scaledInt32(20)
-	valueGap := scaledInt32(150)
-	lineHeight := scaledInt32(25)
-	titleSize := scaledInt32(28)
-	headerSize := scaledInt32(20)
-	bodySize := scaledInt32(16)
-	hintSize := scaledInt32(16)
-
-	bgX := int32(currentScreenWidth()/2) - bgWidth/2
-	bgY := int32(currentScreenHeight()/2) - bgHeight/2
-	leftCol := bgX + margin
-	rightCol := bgX + bgWidth/2 + margin
-
-	// Semi-transparent background
-	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 230})
-	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
-
-	// Title
-	titleText := "KEYBOARD & MOUSE CONTROLS"
-	titleX := bgX + (bgWidth-rl.MeasureText(titleText, titleSize))/2
-	rl.DrawText(titleText, titleX, bgY+10, titleSize, rl.White)
-	hintText := "Press ? or ESC to close"
-	hintX := bgX + (bgWidth-rl.MeasureText(hintText, hintSize))/2
-	rl.DrawText(hintText, hintX, bgY+45, hintSize, rl.Gray)
-
-	y := bgY + 80
-
-	// Left column - Camera Controls
-	rl.DrawText("CAMERA CONTROLS", leftCol, y, headerSize, rl.Yellow)
-	y += lineHeight + 5
-
-	rl.DrawText("Mouse Move", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Look around", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Mouse Wheel", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Zoom / adjust tracking distance", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("W / S", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Move forward/backward", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("A / D", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Strafe left/right", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Shift", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Hold for 2x speed boost", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Arrow Keys", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Move in system plane", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight + 10
-
-	// Navigation
-	rl.DrawText("NAVIGATION", leftCol, y, headerSize, rl.Yellow)
-	y += lineHeight + 5
-
-	rl.DrawText("C", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Center view on Sun / Reset zoom", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("J", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Open jump dialog", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("T", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Open track dialog", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("TAB", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Next sibling (when tracking)", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Shift+TAB", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Previous sibling (tracking)", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("F", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Forward to child (tracking)", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("B", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Back to parent (tracking)", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("R", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Reset camera offset", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("ESC", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Exit tracking/mouse mode", leftCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+Q", leftCol, y, bodySize, rl.White)
-	rl.DrawText("Quit application", leftCol+valueGap, y, bodySize, rl.LightGray)
-
-	// Right column - Display & Options
-	y = bgY + 80
-	rl.DrawText("SYSTEM & DISPLAY", rightCol, y, headerSize, rl.Yellow)
-	y += lineHeight + 5
-
-	rl.DrawText(modAlt+"+H", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Toggle HUD", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+L", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Toggle object labels", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("I", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Cycle infra light (off/spotlight/-)", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+M", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Toggle mouse mode", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+F", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Toggle fullscreen", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+-  /  "+modAlt+"+=", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Asteroids (200->24K)", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modSuper+"+<  /  "+modSuper+"+>", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Time scale (PAUSED->1yr/sec)", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+,  /  "+modAlt+"+.", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Anim speed (0%->100% of 60Hz)", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+P", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Open performance dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modSuper+"+S", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Open runtime system selector", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+R", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Start/stop recording", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText(modAlt+"+Shift+R", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Pause/resume recording", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("?", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Open help dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight + 10
-
-	// Dialog controls
-	rl.DrawText("DIALOG CONTROLS", rightCol, y, headerSize, rl.Yellow)
-	y += lineHeight + 5
-
-	rl.DrawText("Up / Down", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Navigate list", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Left / Right", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Change category", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Enter", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Confirm selection", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Space", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Toggle option (perf menu)", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("ESC", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Close help or active dialog", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Modal", rightCol, y, bodySize, rl.White)
-	rl.DrawText("Dialogs suspend main controls", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight + 10
-
-	// Camera Modes
-	rl.DrawText("CAMERA MODES", rightCol, y, headerSize, rl.Yellow)
-	y += lineHeight + 5
-
-	rl.DrawText("Free-Fly", rightCol, y, bodySize, rl.Lime)
-	rl.DrawText("Full manual control", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Jumping", rightCol, y, bodySize, rl.Lime)
-	rl.DrawText("Animated fly-to", rightCol+valueGap, y, bodySize, rl.LightGray)
-	y += lineHeight
-
-	rl.DrawText("Tracking", rightCol, y, bodySize, rl.Lime)
-	rl.DrawText("Follow target object", rightCol+valueGap, y, bodySize, rl.LightGray)
 }
