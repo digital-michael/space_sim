@@ -63,6 +63,11 @@ Planning Documents
 	F-025 Ship-to-Ship Communications
 	F-026 Audio Events
 	F-027 Ship Collision Detection and Damage
+	F-028 Input Config as Reusable UI Component
+	F-029 Enhanced Sol Corona / Active Atmosphere
+	F-030 Solar Weather Events (Flares, CMEs, Particle Storms)
+	F-031 Asteroid Visual Classification by Mass
+	F-032 ⚠️ Integrate Keybindings into All Simulator Commands (HIGH PRIORITY)
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -1143,6 +1148,109 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 - Phase 1: Broad-phase + narrow-phase bounding sphere detection; DamageRating update; ImpactEvent broadcast
 - Phase 2: Respawn logic; visual hit indicator in HUD
 - Phase 3: BVH broad-phase acceleration (deferred until > 50 active clients)
+
+---
+
+### F-028 — Input Config as Reusable UI Component
+
+**Value**: The Controls tab currently renders keyboard (and eventually mouse) config as ad-hoc draw calls inside the settings dialog. Extract it into a self-contained component so the same editor can be embedded in other contexts (standalone overlay, onboarding wizard, etc.) and so Mouse config can plug in as a parallel section without duplicating layout code.
+**Status**: 📋 Not started
+**Priority**: Medium — architectural cleanup; prerequisite for a clean Mouse config section (see F-029 area and the current "not yet configurable" placeholder in the Controls tab)
+**Depends on**: F-023 (keyboard binding system in place); Mouse config scope TBD
+
+#### Notes
+
+- "Component" means an isolated render function + matching state struct, callable from any dialog tab without access to the full `SettingsState`.
+- Keyboard and Mouse sections should be independently embeddable (either can be omitted if the platform has no mouse or keyboard).
+- The two-column keybinding list, group headers, Load/Save rows, inline path editor, and file picker overlay are all candidates for extraction.
+- Mouse sensitivity, invert-Y, and button mapping are the expected Mouse config fields (scope not yet defined).
+
+---
+
+### F-029 — Enhanced Sol Corona / Active Atmosphere
+
+**Value**: Sol's current corona is a static Fresnel glow. A real star has a visually dynamic corona — brightness variation, limb darkening, granulation texture, and animated rim effects. Making Sol feel "alive" significantly raises scene quality and believability.
+**Status**: 📋 Not started
+**Priority**: Medium — visual quality; builds on the existing `drawAtmosphereGlow` + `selfLuminous` shader path (DEF-003 fix)
+**Depends on**: DEF-003 fixed (✅ complete); F-017 for full PBR/bloom integration (optional)
+
+#### Notes
+
+- Animated corona: time-driven noise in the atmosphere fragment shader (simplex or value noise offsetting the `litFactor` rim).
+- Limb darkening: the photosphere center is brighter than the edge — add a `centerBrightness` falloff to the existing `litFactor` calculation.
+- Granulation: subtle animated surface texture driven by a time-varying noise function on the sphere surface (not a texture — procedural).
+- Separate from solar weather events (F-030); this feature is the ambient "active star" baseline look.
+
+---
+
+### F-030 — Solar Weather Events (Flares, CMEs, Charged Particle Storms)
+
+**Value**: Discrete, timed solar events add dynamic interest and open gameplay hooks (communication interference, shield stress, navigation hazards). Three event types are scoped: solar flares (bright, brief arc on the limb), coronal mass ejections (expanding plasma shell), and charged particle storms (volumetric particle field propagating outward from Sol).
+**Status**: 📋 Not started
+**Priority**: Low-medium — high visual impact; depends on a particle/event system that does not yet exist
+**Depends on**: F-029 (active corona baseline); F-026 (audio events for accompanying sounds); event queue for scheduling and broadcast
+
+#### Event Types
+
+| Type | Visual | Duration | Gameplay Hook |
+|------|--------|----------|---------------|
+| Solar flare | Bright arc / jet erupting from limb | 30–120 s | Brief light burst, potential comms disruption HUD flash |
+| Coronal mass ejection (CME) | Expanding translucent plasma sphere from Sol surface | 5–30 min sim time | Hits objects in path; ImpactEvent hook for shield stress |
+| Charged particle storm | Volumetric particle field expanding at solar wind speed | Hours of sim time | Persistent HUD degradation overlay while storm is active |
+
+#### Notes
+
+- Events are driven by the simulation clock (not real time) so time-scaling affects duration and propagation.
+- CME propagation speed: ~500–3000 km/s real; mapped proportionally to sim units.
+- Particle storm: rendered as a sparse billboard particle field; no physics collision, purely visual + HUD trigger.
+- All three types should publish through `protocol.Broadcaster` so gRPC clients can observe and react.
+
+---
+
+### F-031 — Asteroid Visual Classification by Mass
+
+**Value**: All asteroids currently render as spheres regardless of size. Real asteroids below dwarf-planet mass are irregularly shaped rubble piles; only the largest approach hydrostatic equilibrium (roughly spherical). Differentiating visually by mass makes the belt feel physically accurate and adds scene richness.
+**Status**: 📋 Not started
+**Priority**: Low — visual quality; requires irregular mesh generation or procedural deformation
+**Depends on**: F-008 (artifact/non-sphere mesh pipeline) for the irregular mesh path; F-003 (texture pipeline) for rocky surface textures
+
+#### Classification Rules (proposed)
+
+| Mass threshold | Shape | Rendering |
+|----------------|-------|-----------|
+| ≥ dwarf planet mass (~5×10²⁰ kg) | Semi-spherical — oblate or slightly irregular sphere | Sphere with slight pole flattening and surface bump map |
+| < dwarf planet mass | Irregular rocky body — polyhedra assembled from 1–N element "chunks" | Procedural low-poly mesh; element composition drives color/texture |
+
+#### Notes
+
+- "Element composition" means visual material properties (silicate = grey-brown, metallic = reflective silver, carbonaceous = dark matte) not atomic simulation.
+- Low-poly irregular mesh: generate by starting with an icosphere and displacing vertices with low-frequency noise scaled to object radius; seed from object GUID for determinism.
+- Element chunks: 1–4 material regions per object; region boundaries are Voronoi-partitioned on the mesh.
+- Mass threshold constant should live in `engine/constants.go` next to `PointThresholdStar` and similar.
+- At extreme distances (point-render threshold) all asteroids fall back to a colored point regardless of shape class.
+
+---
+
+### F-032 — Integrate Keybindings into All Simulator Commands ⚠️ HIGH PRIORITY
+
+**Value**: The `InputAction` enum and `KeyMap` type exist and the Controls tab lets users save custom bindings, but the simulator's input handler still reads raw `rl.KeyXxx` constants directly in many places instead of routing through `KeyMap.IsPressed(action)`. Until this wiring is complete, user-configured bindings have no effect on actual simulator behaviour. This is the critical last step that makes the entire keybinding system functional end-to-end.
+**Status**: 📋 Not started
+**Priority**: 🔴 High — keybinding configuration is user-visible but silently non-functional until this lands; also required before mouse binding work can be meaningful
+**Depends on**: F-023 UI complete (Controls tab, KeyMap load/save); no other hard blockers
+
+#### Scope
+
+- Audit `internal/client/go/raylib/app/input.go` and all input call sites for raw `rl.IsKeyPressed` / `rl.IsKeyDown` calls that correspond to a defined `InputAction`.
+- Replace each with the equivalent `km.IsPressed(action)` or `km.IsDown(action)` call so the binding comes from the loaded `KeyMap`.
+- Mouse bindings: once keyboard wiring is complete, define mouse `InputAction` values (look-axis, zoom scroll, button clicks) and route them through the same `KeyMap` dispatch path.
+- Verify: rebinding an action in the Controls tab and saving should immediately change which key triggers that action in the running simulator (no restart required).
+
+#### Acceptance Criteria
+
+- No `rl.IsKeyPressed` / `rl.IsKeyDown` call in the app input handler references a key that also has an `InputAction` mapping.
+- All 28 actions in `OrderedActions()` are wired; each can be rebound and the new binding takes effect within the same session.
+- Mouse look-axis and scroll-zoom route through `KeyMap` (or a parallel `MouseMap`) rather than hardcoded axis reads.
+- `go test ./...` passes; race detector clean.
 
 ---
 
