@@ -60,6 +60,7 @@ Do not reload the locked-in context unnecessarily. If the required lock-in docum
 
 Before writing code or a plan, confirm you can answer:
 
+0. **Branch check** — run `git branch` and apply the Branch Check Rule in `guidance.md §11.1`. If the current branch is `main`/`master` or a newer related branch exists, prompt the user before proceeding.
 1. Which package(s) does this change touch, and do those packages own the behavior being changed?
 2. Does this change respect the architectural boundaries in `agent-readme.md`?
 3. Does a lessons-learned entry warn against this approach?

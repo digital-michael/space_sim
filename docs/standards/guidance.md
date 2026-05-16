@@ -215,14 +215,31 @@ Performance guidance in this repository means:
 
 Unless the user explicitly requests otherwise, agents should:
 
-1. inspect the relevant code, docs, data, and tests first;
-2. create a defined, refined, and finalized plan;
-3. implement in phases;
-4. test between phases;
-5. perform final validation after all phases;
-6. update docs when needed;
-7. ask for approval at meaningful checkpoints when the workflow or task calls for it;
-8. keep temporary artifacts under control;
-9. avoid broad, unrelated cleanup during focused work.
+1. **check the current git branch at the start of every work session** — see rule 11.1 below;
+2. inspect the relevant code, docs, data, and tests first;
+3. create a defined, refined, and finalized plan;
+4. implement in phases;
+5. test between phases;
+6. perform final validation after all phases;
+7. update docs when needed;
+8. ask for approval at meaningful checkpoints when the workflow or task calls for it;
+9. keep temporary artifacts under control;
+10. avoid broad, unrelated cleanup during focused work.
 
 This document is intended to improve LLM Agent and human interaction by making expectations explicit, repeatable, and easy to follow.
+
+### 11.1 Branch Check Rule
+
+At the start of every work session, before reading any files or forming a plan, run `git branch` (or equivalent) to identify the current branch. Then apply the following logic:
+
+1. **If the current branch is `main` or `master`** and the work being requested is non-trivial (anything beyond a single-file typo fix), alert the user and ask whether a feature branch should be created or checked out before proceeding.
+
+2. **If a newer branch exists** (i.e., a branch whose name or description appears related to the work being requested, and whose tip commit is more recent than the current branch's common ancestor), prompt the user:
+   > "There is a branch `<branch-name>` that may be related to this work. Should we switch to it before starting?"
+   Do not switch automatically. Wait for the user's explicit answer before proceeding.
+
+3. **If the current branch already matches the work** (its name or recent commits clearly correspond to the feature or fix being requested), note the branch in the acknowledgment and continue without prompting.
+
+4. **If no branch concern exists**, proceed silently — do not add noise about the branch when everything looks correct.
+
+**How to determine relatedness**: compare the branch name and the last 1–3 commit subjects on that branch against the work item name, feature number (F-NNN), or keywords in the user's request. A fuzzy match on 2 or more meaningful words is sufficient to trigger the prompt.
