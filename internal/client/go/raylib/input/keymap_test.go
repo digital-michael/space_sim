@@ -415,3 +415,322 @@ func TestScanKeybindingsDir_FindsJsonFiles(t *testing.T) {
 		t.Errorf("expected 2 .json files, got %d: %v", len(files), files)
 	}
 }
+
+// ─── Phase A: OrderedActions ─────────────────────────────────────────────────
+
+func TestOrderedActionsCount(t *testing.T) {
+	// actionCount = 49, so we expect 48 actions (ActionNone excluded).
+	want := int(actionCount) - 1
+	got := OrderedActions()
+	if len(got) != want {
+		t.Errorf("OrderedActions len = %d, want %d", len(got), want)
+	}
+}
+
+func TestOrderedActionsNoDuplicates(t *testing.T) {
+	seen := make(map[InputAction]bool)
+	for _, a := range OrderedActions() {
+		if seen[a] {
+			t.Errorf("action %v appears more than once in OrderedActions", a)
+		}
+		seen[a] = true
+	}
+}
+
+func TestOrderedActionsNoActionNone(t *testing.T) {
+	for _, a := range OrderedActions() {
+		if a == ActionNone {
+			t.Error("OrderedActions must not contain ActionNone")
+		}
+	}
+}
+
+func TestOrderedActionsContainsAllActions(t *testing.T) {
+	ordered := make(map[InputAction]bool)
+	for _, a := range OrderedActions() {
+		ordered[a] = true
+	}
+	for a := ActionCameraPitchUp; a < actionCount; a++ {
+		if !ordered[a] {
+			t.Errorf("action %v (val %d) missing from OrderedActions", a, a)
+		}
+	}
+}
+
+// ─── Phase A: renamed and new action constants ────────────────────────────────
+
+func TestTimescaleActionsExistWithCorrectNames(t *testing.T) {
+	cases := []struct {
+		action InputAction
+		name   string
+		val    InputAction
+	}{
+		{ActionSimTimescaleIncrease, "sim.timescale_increase", 19},
+		{ActionSimTimescaleDecrease, "sim.timescale_decrease", 20},
+	}
+	for _, tc := range cases {
+		if tc.action != tc.val {
+			t.Errorf("%s value = %d, want %d", tc.name, tc.action, tc.val)
+		}
+		if got := tc.action.String(); got != tc.name {
+			t.Errorf("String() = %q, want %q", got, tc.name)
+		}
+		parsed, ok := ParseAction(tc.name)
+		if !ok {
+			t.Errorf("ParseAction(%q) returned false", tc.name)
+		} else if parsed != tc.action {
+			t.Errorf("ParseAction(%q) = %d, want %d", tc.name, parsed, tc.action)
+		}
+	}
+}
+
+func TestOldSimSpeedNamesDoNotExist(t *testing.T) {
+	for _, name := range []string{"sim.speed_increase", "sim.speed_decrease"} {
+		if _, ok := ParseAction(name); ok {
+			t.Errorf("ParseAction(%q): old name must not exist after rename", name)
+		}
+	}
+}
+
+func TestPhaseANewActionConstants(t *testing.T) {
+	cases := []struct {
+		action InputAction
+		name   string
+		val    InputAction
+	}{
+		{ActionSimTickSpeedIncrease, "sim.tick_speed_increase", 32},
+		{ActionSimTickSpeedDecrease, "sim.tick_speed_decrease", 33},
+		{ActionSimDatasetIncrease, "sim.dataset_increase", 34},
+		{ActionSimDatasetDecrease, "sim.dataset_decrease", 35},
+		{ActionUISystemSelector, "ui.system_selector", 36},
+		{ActionUILabelCycle, "ui.label_cycle", 37},
+		{ActionUIInfraCycle, "ui.infra_cycle", 38},
+		{ActionUIMouseModeToggle, "ui.mouse_mode_toggle", 39},
+		{ActionUIQuit, "ui.quit", 40},
+		{ActionUIRecordToggle, "ui.record_toggle", 41},
+		{ActionUIRecordPause, "ui.record_pause", 42},
+		{ActionCameraCenter, "camera.center", 43},
+		{ActionNavChildNext, "nav.child_next", 44},
+		{ActionNavParent, "nav.parent", 45},
+		{ActionNavSiblingNext, "nav.sibling_next", 46},
+		{ActionNavSiblingPrev, "nav.sibling_prev", 47},
+		{ActionNavJump, "nav.jump", 48},
+	}
+	for _, tc := range cases {
+		if tc.action != tc.val {
+			t.Errorf("constant value: %s = %d, want %d", tc.name, tc.action, tc.val)
+		}
+		if got := tc.action.String(); got != tc.name {
+			t.Errorf("String(): %s got %q", tc.name, got)
+		}
+		parsed, ok := ParseAction(tc.name)
+		if !ok {
+			t.Errorf("ParseAction(%q) returned false", tc.name)
+		} else if parsed != tc.action {
+			t.Errorf("ParseAction(%q) = %d, want %d", tc.name, parsed, tc.action)
+		}
+	}
+}
+
+func TestActionStringUnknown(t *testing.T) {
+	if got := InputAction(999).String(); got != "unknown" {
+		t.Errorf("InputAction(999).String() = %q, want \"unknown\"", got)
+	}
+}
+
+// ─── Phase A: ModSuper ────────────────────────────────────────────────────────
+
+func TestParseModsWithSuper(t *testing.T) {
+	ms, err := parseMods([]string{"SUPER", "SHIFT"})
+	if err != nil {
+		t.Fatalf("parseMods(SUPER, SHIFT) error: %v", err)
+	}
+	if ms != ModSuper|ModShift {
+		t.Errorf("parseMods(SUPER,SHIFT) = %d, want %d", ms, ModSuper|ModShift)
+	}
+}
+
+func TestParseModsSuperAllFour(t *testing.T) {
+	ms, err := parseMods([]string{"SHIFT", "CTRL", "ALT", "SUPER"})
+	if err != nil {
+		t.Fatalf("parseMods all four error: %v", err)
+	}
+	if ms != ModShift|ModCtrl|ModAlt|ModSuper {
+		t.Errorf("parseMods all four = %d, want %d", ms, ModShift|ModCtrl|ModAlt|ModSuper)
+	}
+}
+
+func TestModsToStringsSuperRoundTrip(t *testing.T) {
+	cases := []ModSet{
+		ModSuper,
+		ModSuper | ModShift,
+		ModSuper | ModAlt,
+		ModShift | ModCtrl | ModAlt | ModSuper,
+	}
+	for _, want := range cases {
+		strs := modsToStrings(want)
+		got, err := parseMods(strs)
+		if err != nil {
+			t.Errorf("parseMods(%v) error: %v", strs, err)
+			continue
+		}
+		if got != want {
+			t.Errorf("modsToStrings→parseMods round-trip: input=%d, got=%d", want, got)
+		}
+	}
+}
+
+func TestModsToStringsContainsSuper(t *testing.T) {
+	strs := modsToStrings(ModSuper)
+	if len(strs) != 1 || strs[0] != "SUPER" {
+		t.Errorf("modsToStrings(ModSuper) = %v, want [SUPER]", strs)
+	}
+}
+
+// ─── Phase A: BACKSLASH key ───────────────────────────────────────────────────
+
+func TestParseKeyNameBackslash(t *testing.T) {
+	code, ok := ParseKeyName("BACKSLASH")
+	if !ok {
+		t.Fatal("ParseKeyName(BACKSLASH) returned false — key used in stock profiles")
+	}
+	if code == 0 {
+		t.Error("ParseKeyName(BACKSLASH) returned code 0")
+	}
+	// Round-trip: the code must map back to a known name.
+	if KeyName(code) == "UNKNOWN" {
+		t.Errorf("KeyName(%d) = UNKNOWN — reverse lookup broken for BACKSLASH", code)
+	}
+}
+
+// ─── Phase A: BoundMods with ModSuper ────────────────────────────────────────
+
+func TestBoundModsWithSuper(t *testing.T) {
+	km := newKeyMap()
+	key, _ := ParseKeyName("S")
+	km.SetBinding(ActionUISystemSelector, key, ModSuper)
+	if got := km.BoundMods(ActionUISystemSelector); got != ModSuper {
+		t.Errorf("BoundMods(UISystemSelector) = %d, want ModSuper (%d)", got, ModSuper)
+	}
+}
+
+func TestBoundModsOutOfRange(t *testing.T) {
+	km := newKeyMap()
+	if got := km.BoundMods(ActionNone); got != 0 {
+		t.Errorf("BoundMods(ActionNone) = %d, want 0", got)
+	}
+	if got := km.BoundMods(InputAction(999)); got != 0 {
+		t.Errorf("BoundMods(999) = %d, want 0", got)
+	}
+}
+
+// ─── Phase A: ConflictError.Error ────────────────────────────────────────────
+
+func TestConflictErrorMessageNoMods(t *testing.T) {
+	e := &ConflictError{Key: "W", Mods: nil, Action1: "a.one", Action2: "a.two"}
+	msg := e.Error()
+	if !strings.Contains(msg, "W") || !strings.Contains(msg, "a.one") || !strings.Contains(msg, "a.two") {
+		t.Errorf("ConflictError.Error() missing expected content: %q", msg)
+	}
+}
+
+func TestConflictErrorMessageWithMods(t *testing.T) {
+	e := &ConflictError{Key: "S", Mods: []string{"SUPER"}, Action1: "ui.system_selector", Action2: "other"}
+	msg := e.Error()
+	if !strings.Contains(msg, "SUPER") || !strings.Contains(msg, "S") {
+		t.Errorf("ConflictError.Error() with mods = %q, expected SUPER+S", msg)
+	}
+}
+
+// ─── Phase A: AllKeyNames / KeyNameOf ────────────────────────────────────────
+
+func TestAllKeyNamesContainsBackslash(t *testing.T) {
+	names := AllKeyNames()
+	if len(names) == 0 {
+		t.Fatal("AllKeyNames() returned empty slice")
+	}
+	found := false
+	for _, n := range names {
+		if n == "BACKSLASH" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("AllKeyNames() does not contain BACKSLASH")
+	}
+}
+
+func TestAllKeyNamesMatchesParseKeyName(t *testing.T) {
+	for _, name := range AllKeyNames() {
+		if _, ok := ParseKeyName(name); !ok {
+			t.Errorf("AllKeyNames() returned %q but ParseKeyName rejected it", name)
+		}
+	}
+}
+
+func TestKeyNameOfBackslash(t *testing.T) {
+	code, ok := ParseKeyName("BACKSLASH")
+	if !ok {
+		t.Fatal("ParseKeyName(BACKSLASH) false")
+	}
+	got := KeyNameOf(code)
+	if got == "" {
+		t.Errorf("KeyNameOf(%d) = empty, want non-empty", code)
+	}
+}
+
+// ─── Phase A: LoadKeyMap branches ────────────────────────────────────────────
+
+func TestLoadKeyMapVersionMismatch(t *testing.T) {
+	dir := laptopProfileDir(t)
+	cfg := writeKeybindings(t, `{"version":2,"base_profile":"laptop","overrides":[]}`)
+	_, err := LoadKeyMap(dir, cfg)
+	if err == nil {
+		t.Fatal("expected error for version mismatch, got nil")
+	}
+	if !strings.Contains(err.Error(), "version") {
+		t.Errorf("error %q should mention version", err.Error())
+	}
+}
+
+func TestLoadKeyMapSuperBindingIntegration(t *testing.T) {
+	// The stock laptop profile binds ui.system_selector to S+SUPER.
+	// Verify that after loading, BoundMods returns ModSuper.
+	dir := laptopProfileDir(t)
+	km, err := LoadKeyMap(dir, filepath.Join(t.TempDir(), "nonexistent.json"))
+	if err != nil {
+		t.Fatalf("LoadKeyMap error: %v", err)
+	}
+	mods := km.BoundMods(ActionUISystemSelector)
+	if mods&ModSuper == 0 {
+		t.Errorf("BoundMods(UISystemSelector) = %d, expected ModSuper bit set", mods)
+	}
+	key := km.BoundKey(ActionUISystemSelector)
+	sKey, _ := ParseKeyName("S")
+	if key != sKey {
+		t.Errorf("BoundKey(UISystemSelector) = %d, want S (%d)", key, sKey)
+	}
+}
+
+func TestLoadKeyMapSuperBindingRoundTrip(t *testing.T) {
+	dir := laptopProfileDir(t)
+	out := filepath.Join(t.TempDir(), "super_roundtrip.json")
+
+	km, err := LoadKeyMap(dir, filepath.Join(t.TempDir(), "nonexistent.json"))
+	if err != nil {
+		t.Fatalf("LoadKeyMap: %v", err)
+	}
+	if err := WriteKeybindingsFile(out, km, "laptop"); err != nil {
+		t.Fatalf("WriteKeybindingsFile: %v", err)
+	}
+	km2, err := LoadKeyMap(dir, out)
+	if err != nil {
+		t.Fatalf("LoadKeyMap (round-trip): %v", err)
+	}
+	if km.BoundMods(ActionUISystemSelector) != km2.BoundMods(ActionUISystemSelector) {
+		t.Errorf("ModSuper round-trip failed: original=%d roundtrip=%d",
+			km.BoundMods(ActionUISystemSelector), km2.BoundMods(ActionUISystemSelector))
+	}
+}
+
