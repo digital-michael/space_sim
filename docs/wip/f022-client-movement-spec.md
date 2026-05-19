@@ -11,10 +11,11 @@ Read this alongside:
 - [`docs/wip/f020-multi-client-spec.md`](f020-multi-client-spec.md) — session registry and position ownership
 - [`docs/wip/f013-nbody-plan.md`](f013-nbody-plan.md) — gravity engine; required for realistic gravity
 - [`docs/wip/f023-keyboard-config-spec.md`](f023-keyboard-config-spec.md) — control bindings that drive movement
-- [`docs/wip/f021-physical-marker-spec.md`](f021-physical-marker-spec.md) — marker follows position
+- [`docs/wip/f021-physical-marker-spec.md`](f021-physical-marker-spec.md) — marker follows position; renders ship 3D model
+- [`docs/wip/f033-ship-definition-spec.md`](f033-ship-definition-spec.md) — ship capability ratings that constrain movement; replaces the minimal ShipProfile in §6
 
 ## Last Updated
-2026-05-11
+2026-05-18
 
 ## Status
 📋 Not started
@@ -178,6 +179,11 @@ NPC automation profiles (patrol, orbit, intercept) are deferred to a follow-on s
 
 ## 6. Client Ship Profile
 
+**Note**: The minimal profile below is the Phase 1 stub. It will be **superseded by
+`ShipInstance` from F-033** (Ship Definition) once that feature lands. F-033 defines full
+engine stages, turning rating, power budget, and damage state. F-022 Phase 1 uses
+the stub; F-022 Phase 2+ reads from `ShipInstance`.
+
 Each client session carries a `ShipProfile` with physics-relevant parameters.
 Default values ship in `configs/app.json`; clients may customize within server-defined limits.
 
@@ -202,6 +208,107 @@ Default values ship in `configs/app.json`; clients may customize within server-d
 Note on thrust scale: realistic chemical thrusters for a 1,000 kg ship produce ~10,000 N
 (0.01 × 10⁶ m/s² → 0.01 m/s² acceleration). The default is intentionally heroic to make
 cross-system travel tractable. Realistic profiles can be offered via named presets.
+
+**F-033 migration path**: When F-033 Phase 1 lands, `ShipProfile` fields in `configs/app.json`
+are replaced by a ship catalog lookup keyed by `default_ship_id`. The `mass_kg` and
+`max_speed_sim_units` fields are read from `ShipDefinition`. The `thrust_force_n` field
+becomes the active engine stage's `accel_max_ms2 * mass_kg`. Turning rate is read from
+`ShipDefinition.turning.rate_deg_per_s` scaled by power availability.
+
+---
+
+## 9. Player as Ship
+
+This section defines the Player Point-of-View (POV) as a first-person instantiation of a
+ship definition. It is the integration contract between F-022, F-033, F-023, and F-021.
+
+### 9.1 Concept
+
+The camera's viewpoint IS the ship's cockpit. When the player moves the camera (yaw, pitch,
+roll), they are rotating the ship's facing vector. When the player applies thrust, they
+are firing the ship's engines in the direction the ship's nose points. The player cannot
+decouple camera orientation from ship facing (first-person only; no chase-cam in Phase 1).
+
+### 9.2 Ship instance ownership
+
+Every PLAYER-role session owns exactly one `ShipInstance` (F-033). The instance is assigned
+by the server at `RegisterClient` (F-020). The `ShipInstance` determines:
+
+| Property | Source | Effect |
+|----------|--------|--------|
+| Thrust acceleration | `ActiveStage.accel_max_ms2 × mass_kg` | Max velocity delta per frame |
+| Turn rate | `turning.rate_deg_per_s × power_fraction` | Max camera rotation per frame |
+| Speed cap | `max_speed_sim_units_per_s` | Server-enforced hard cap |
+| Power budget | `available_w - baseline_draw - active_engine_draw` | Overload degrades engine + turn |
+| Damage | `engine_integrity × power_integrity` | Scales all capability ratings |
+
+### 9.3 Input → ship → physics pipeline
+
+```
+[F-023 KeyMap]
+  move.thrust_* / camera.yaw / camera.pitch / camera.roll
+          ↓
+[F-022 Movement Handler]
+  1. Read active ShipInstance.ActiveStage for thrust_force_n
+  2. Clamp dt*accel to stage max
+  3. Apply engine_integrity multiplier
+  4. Resolve power budget; apply overload policy if negative
+  5. Apply velocity delta via kinematic integration
+          ↓
+[Server Session Registry]
+  Position updated; broadcast in next WorldSnapshot
+          ↓
+[F-021 Physical Marker]
+  3D model rendered at new position with FacingVector applied
+```
+
+### 9.4 Camera orientation is ship facing
+
+`session.cameraState.Forward` (the camera's forward unit vector) is mirrored as
+`ShipInstance.FacingVector`. On every input frame:
+
+```
+ShipInstance.FacingVector = session.cameraState.Forward
+```
+
+Thrust is applied along `FacingVector`. Strafe is the cross product of `FacingVector` and
+the world up vector. Up/down thrust is along the ship's local up axis.
+
+### 9.5 Camera modes and ship
+
+| Camera mode | Ship behavior |
+|-------------|---------------|
+| Free-fly | Ship moves, camera IS the ship; turning keys rotate ship |
+| Tracking | Ship is stationary; camera orbits the tracked body; ship facing does not update |
+| Jumping | Ship is stationary; camera interpolates to target; ship facing frozen |
+
+When the player exits tracking mode (ESC / `sim.track_stop`) and returns to free-fly, the
+ship resumes its pre-tracking position and velocity unchanged.
+
+### 9.6 Damage and power as movement limiters
+
+Damage from F-027 collisions writes directly to `ShipInstance.HullIntegrity`,
+`EngineIntegrity`, and `PowerIntegrity`. The movement handler reads these each frame:
+
+- If `EngineIntegrity < 0.2`: all thrust disabled; drift mode forced.
+- If `PowerIntegrity < 0.5`: engine stage limited to Stage 1.
+- If `HullIntegrity == 0.0`: session disconnected; respawn flow triggered (Phase 2+).
+
+### 9.7 Phases
+
+**Phase 1 (within F-033 Phase 1 / F-022 Phase 1)**:
+- `FacingVector` updated from camera state each frame
+- Thrust applied along facing vector at `thrust_force_n` from stub `ShipProfile`
+- No power budget calculation (F-033 Phase 1 delivers the capability data)
+
+**Phase 2 (after F-033 Phase 1)**:
+- Replace stub `ShipProfile` with `ShipInstance` from F-033 catalog
+- Apply engine stage ratings, power budget, and damage multipliers
+- Turn rate limited by `turning.rate_deg_per_s × power_fraction`
+
+**Phase 3 (after F-033 Phase 3)**:
+- Engine stage cycling via `move.engine_stage_up/down` keybindings
+- Power HUD shows budget bar, stage label, integrity indicators
 
 ---
 

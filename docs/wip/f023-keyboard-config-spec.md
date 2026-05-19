@@ -12,12 +12,18 @@ Read this alongside:
 - [`docs/standards/coding-standards.md`](../standards/coding-standards.md)
 - [`docs/wip/f022-client-movement-spec.md`](f022-client-movement-spec.md) — movement commands driven by these bindings
 - [`docs/wip/f024-multiplayer-hud-spec.md`](f024-multiplayer-hud-spec.md) — HUD toggle bindings
+- [`docs/wip/f033-ship-definition-spec.md`](f033-ship-definition-spec.md) — engine stage actions (`move.engine_stage_up/down`) defined here
+
+Related:
+- **F-032** in `todo.md` — integration gate: all hardcoded `rl.IsKeyPressed`/`IsKeyDown` sites in `input.go` must be converted to vocabulary actions. §3 is the exhaustive action list; F-032 tracks the conversion work item.
 
 ## Last Updated
-2026-05-11
+2026-05-18
 
 ## Status
-📋 Not started
+🔄 In Progress — Phase 1 partial
+
+The `internal/client/go/raylib/input/` package exists with `actions.go`, `keymap.go`, and `loader.go` implemented. Four actions are wired (`ui.settings`, `ui.fullscreen`, `sim.track_next`, `sim.track_stop`). All remaining hardcoded keys are tracked in **F-032** and must be converted before Phase 1 is complete.
 
 ---
 
@@ -81,20 +87,34 @@ for what can be bound; adding a binding for an undefined action is a config erro
 
 | Action | Default (laptop) | Description |
 |--------|-----------------|-------------|
-| `sim.speed_increase` | `PERIOD` (`.`) | Increase simulation time scale |
-| `sim.speed_decrease` | `COMMA` (`,`) | Decrease simulation time scale |
+| `sim.timescale_increase` | `CMD+SHIFT+PERIOD` | Step simulation time scale up (real-time → 1 yr/sec) |
+| `sim.timescale_decrease` | `CMD+SHIFT+COMMA` | Step simulation time scale down |
+| `sim.tick_speed_increase` | `ALT+PERIOD` | Increase physics tick rate (0 → 100%) |
+| `sim.tick_speed_decrease` | `ALT+COMMA` | Decrease physics tick rate |
 | `sim.pause_toggle` | `P` | Pause / unpause simulation |
 | `sim.track_next` | `T` | Cycle track target forward |
 | `sim.track_stop` | `ESCAPE` | Stop tracking |
+| `sim.dataset_increase` | `ALT+EQUAL` | Increase asteroid belt dataset level (0-3) |
+| `sim.dataset_decrease` | `ALT+MINUS` | Decrease asteroid belt dataset level |
+
+**Note**: `sim.timescale` controls simulated seconds per real second (SecondsPerSecond); `sim.tick_speed` controls how frequently the physics engine ticks per real second. They are independent.
 
 ### 3.4 UI and HUD actions
 
 | Action | Default (laptop) | Description |
 |--------|-----------------|-------------|
 | `hud.toggle` | `H` | Show / hide full HUD |
-| `hud.client_list` | `TAB` | Show / hide client session list overlay |
+| `hud.client_list` | — | Show / hide client session list overlay |
 | `hud.help` | `F1` | Show / hide help overlay |
 | `ui.fullscreen` | `F11` | Toggle fullscreen |
+| `ui.settings` | `F1` | Open / close settings dialog |
+| `ui.system_selector` | `CMD+S` | Open the system selector dialog |
+| `ui.mouse_mode_toggle` | `ALT+M` | Toggle mouse-look mode (cursor hidden / captured) |
+| `ui.label_cycle` | `ALT+L` | Cycle label display mode: off → all → nearest → off |
+| `ui.infra_cycle` | `I` | Cycle infrastructure ambient-light mode (off → spotlight → reserved) |
+| `ui.record_toggle` | `ALT+R` | Start or stop screen recording |
+| `ui.record_pause` | `ALT+SHIFT+R` | Pause or resume an active recording |
+| `ui.quit` | `ALT+Q` | Quit the application |
 
 ### 3.5 REPL actions
 
@@ -104,6 +124,33 @@ for what can be bound; adding a binding for an undefined action is a config erro
 | `repl.close` | `ESCAPE` | Close REPL input |
 | `repl.history_prev` | `UP` (in REPL context) | Previous REPL history entry |
 | `repl.history_next` | `DOWN` (in REPL context) | Next REPL history entry |
+
+### 3.6 Navigation actions
+
+Navigation actions operate on the camera/tracking system. Most are mode-conditional (only
+active in tracking mode or free-fly mode as noted).
+
+| Action | Default (laptop) | Mode | Description |
+|--------|-----------------|------|-------------|
+| `nav.jump` | `J` | Free-fly | Open jump-to-object dialog |
+| `nav.system_selector` | `CMD+S` (alias for `ui.system_selector`) | Any | Open system selector |
+| `nav.child_next` | `F` | Tracking | Drill down to closest child body in orbital hierarchy |
+| `nav.parent` | `B` | Tracking | Move up to parent body in orbital hierarchy |
+| `nav.sibling_next` | `TAB` | Tracking | Cycle to next sibling body (same parent, same category) |
+| `nav.sibling_prev` | `SHIFT+TAB` | Tracking | Cycle to previous sibling body |
+| `camera.center` | `C` | Any | Free-fly: point camera at origin. Tracking: reset zoom to auto-zoom distance |
+
+**Note**: `nav.child_next` and `camera.toggle_free_fly` both default to `F`. The `camera.toggle_free_fly` action switches *mode* from tracking to free-fly; `nav.child_next` only fires while *in* tracking mode. Context separation avoids the conflict: `F` in tracking mode → `nav.child_next`; `F` in free-fly mode → `camera.toggle_free_fly`.
+
+### 3.7 Engine stage actions (F-033)
+
+These actions are defined in this vocabulary but only take effect once F-033 Phase 3
+(Engine Stage Selection) is implemented.
+
+| Action | Default (laptop) | Description |
+|--------|-----------------|-------------|
+| `move.engine_stage_up` | `SHIFT+W` or `PAGE_UP` | Advance to the next higher engine stage |
+| `move.engine_stage_down` | `SHIFT+S` or `PAGE_DOWN` | Drop to the next lower engine stage |
 
 ---
 
@@ -325,23 +372,29 @@ in `todo.md`) should be cleaned up before or during Phase 1 of this feature. Add
 **Architectural layer**: Raylib client input layer (new package `internal/client/go/raylib/input/`), Raylib app layer (`internal/client/go/raylib/app/`), REPL client.
 **Prerequisites**: TD-001 resolved (`handleInput` param consolidation) before or during this phase.
 
+**Current state**: `input` package created; `actions.go`, `keymap.go`, `loader.go` exist. Four actions are wired in `input.go` (`ui.settings`, `ui.fullscreen`, `sim.track_next`, `sim.track_stop`). F-032 tracks the remaining conversion.
+
 **Value**: All current keyboard interactions work via named bindings; users can override
 from `configs/keybindings.json`.
 
 Work items:
-- [ ] Define `InputAction` enum (all §3 actions)
-- [ ] Define `Binding`, `KeyMap`, `Profile` types in `internal/client/go/raylib/input/` (new package)
-- [ ] Implement profile loader: reads `data/profiles/` stock profiles (committed JSON)
-- [ ] Implement config merger: applies `configs/keybindings.json` overrides
-- [ ] Conflict detection with clear error messages
-- [ ] Refactor `handleInput()` to use `KeyMap.IsDown()` / `IsPressed()`
-- [ ] Implement `KeyMap.DrainQueue()`: drain `rl.GetKeyPressed()` into a per-frame pressed-set at the **top** of `handleInput()`, before any action checks — eliminates missed short-tap events when the sim loop is slow (fixes input latency under load; see TD-002)
-- [ ] `IsPressed(action)` checks the drained set, not `rl.IsKeyPressed`; `IsDown(action)` still delegates to `rl.IsKeyDown`
+- [x] Define `InputAction` enum (initial set — §3.1, §3.2, §3.3 partial, §3.4 partial, §3.5)
+- [x] Define `Binding`, `KeyMap`, `Profile` types in `internal/client/go/raylib/input/`
+- [x] Implement profile loader: reads `data/profiles/` stock profiles
+- [x] Implement config merger: applies `configs/keybindings.json` overrides
+- [x] Conflict detection with clear error messages
+- [x] `KeyMap.DrainQueue()` implemented: drains `rl.GetKeyPressed()` into per-frame pressed-set
+- [ ] **F-032 — Gap closure**: Convert all remaining hardcoded `rl.IsKeyPressed`/`rl.IsKeyDown` sites in `input.go` to vocabulary actions; extend `actions.go` with the §3.3/§3.4/§3.6 additions above
+- [ ] Expand `actions.go` with new §3.3 actions: `sim.timescale_increase/decrease`, `sim.tick_speed_increase/decrease`, `sim.dataset_increase/decrease`
+- [ ] Add §3.4 additions: `ui.system_selector`, `ui.mouse_mode_toggle`, `ui.label_cycle`, `ui.infra_cycle`, `ui.record_toggle`, `ui.record_pause`, `ui.quit`
+- [ ] Add §3.6 navigation actions: `nav.jump`, `nav.child_next`, `nav.parent`, `nav.sibling_next`, `nav.sibling_prev`, `camera.center`
+- [ ] Update stock profile JSON files to include new action defaults
 - [ ] REPL: `config reload keybindings`; `help keys` to print active bindings
-- [ ] Unit tests: conflict detection, override merge, key name parsing
+- [ ] Unit tests: enum stability for new constants; conflict detection roundtrip
 
 Acceptance criteria:
 - All existing keyboard behaviors work identically after refactor ✓
+- No `rl.IsKeyPressed`/`rl.IsKeyDown` calls in `handleInput` outside of UI overlay subsections ✓
 - Invalid key name in `configs/keybindings.json` prints error on load and exits ✓
 - Hard conflict in overrides prints error on load and exits ✓
 - `config reload keybindings` applies changes at runtime ✓

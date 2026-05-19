@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-04-26
+2026-05-18
 
 ## Table of Contents
 1. How to Use This File
@@ -37,6 +37,7 @@ Planning Documents
 	[f025-ship-comms-spec.md](f025-ship-comms-spec.md) — F-025 ship-to-ship communications spec
 	[f026-audio-events-spec.md](f026-audio-events-spec.md) — F-026 audio events spec
 	[f027-collision-damage-spec.md](f027-collision-damage-spec.md) — F-027 ship collision detection and damage spec
+	[f033-ship-definition-spec.md](f033-ship-definition-spec.md) — F-033 ship definition and catalog spec
 	F-002 REPL: track <object> and track stop ✅
 	F-003 Texture/Bitmap Rendering
 	F-004 Procedural Star Field Background
@@ -58,7 +59,7 @@ Planning Documents
 	F-020 Multi-Client gRPC Session Layer
 	F-021 Client Physical Marker
 	F-022 Client Locomotion and Physics
-	F-023 Keyboard Configuration
+	F-023 Keyboard Configuration 🔄 In Progress (Phase 1 partial)
 	F-024 Multiplayer HUD Enhancements
 	F-025 Ship-to-Ship Communications
 	F-026 Audio Events
@@ -68,6 +69,7 @@ Planning Documents
 	F-030 Solar Weather Events (Flares, CMEs, Particle Storms)
 	F-031 Asteroid Visual Classification by Mass
 	F-032 ⚠️ Integrate Keybindings into All Simulator Commands (HIGH PRIORITY)
+	F-033 Ship Definition (Externally-Loaded Ship Catalog)
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -300,21 +302,27 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 2 | **F-001** Camera collision prevention | 30-min fix; affects every session; pull forward from Group 1 |
 | 3 | **DEF-001** Floating-origin exploration + fix | Touches same render sites as F-003/F-004/F-005; fix before visual work to avoid double-rewrite |
 | 4 | **TD-001** Collapse handleInput param lists | Clean up before Group 5 network work adds more code around it |
-| 4a | **F-023 Phase 1** `DrainQueue()` mitigation | Partial fix for input latency under load; ships with keyboard config refactor |
-| 4b | **TD-002** Decouple sim tick from render/input loop | Full fix for input latency; also the architectural pattern F-010 headless split needs |
-| 5 | **F-010** Multi-machine split (headless server + client) | Network foundation |
-| 6 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
-| 7 | **F-008** Artifact object type | Content foundation for F-009 |
-| 8 | **F-009** Object-object collision/proximity | Needs F-008 for full value |
-| 9 | **F-007** User-configurable key bindings → **superseded by F-023** | F-023 is the full spec for this; see F-007 entry for annotation |
-| 10 | **F-006** XYZ keyboard nav + mouse facing → **deferred until F-023 Phase 1** | F-023 Phase 3 covers mouse-delta; do F-023 first |
-| 11 | **F-002** REPL track / track stop | Remaining Group 1 quick win |
-| 12 | **F-003** Textures on planets/moons | Group 2 visual; floating-origin fix (DEF-001) already done |
-| 13 | **F-004** Procedural star field | Group 2 visual |
-| 14 | **F-005** Physical lighting from stars | Needs F-003 |
-| 15 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable. Own phase. |
-| 16 | **F-018** Object annotations HUD | High value, low risk; no engine changes; builds on existing label + render infra |
-| 17 | **F-019** Run scripts from UI | Medium priority; builds directly on REPL and existing dialog UX |
+| 4a | **F-023 Phase 1 complete** `DrainQueue()` + all actions wired (F-032) | Keyboard config is user-visible but non-functional until F-032 closes; do this as one unit |
+| 4b | **F-032** Close keybinding vocabulary gaps | Runs in parallel with / immediately after F-023 Phase 1; no new infrastructure needed |
+| 4c | **TD-002** Decouple sim tick from render/input loop | Full fix for input latency; also the architectural pattern F-010 headless split needs |
+| 5 | **F-020 Phase 1** Multi-client session registry | Foundation for F-022, F-033, and F-021 |
+| 5a | **F-033 Phase 1** Ship definition + catalog + instance | Provides capability ratings for F-022 Day 1; starts immediately after F-020 Phase 1 |
+| 5b | **F-021 Phase 1** Player physical marker | Visual identity; can be done in parallel with F-033 Phase 1 |
+| 6 | **F-022 Phase 1** Kinematic movement | Thrusters + warp + drift without gravity; uses F-033 ShipInstance ratings |
+| 6a | **F-022 §9** Player-as-Ship wiring | Camera forward → FacingVector; thrust along facing; turn rate from ShipInstance |
+| 7 | **F-010** Multi-machine split (headless server + client) | Network foundation |
+| 8 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
+| 9 | **F-008** Artifact object type | Content foundation for F-009 |
+| 10 | **F-009** Object-object collision/proximity | Needs F-008 for full value |
+| 11 | **F-033 Phase 2** Ship 3D model integration | Needs F-021 Phase 2 IQM pipeline; runs after F-008/F-009 unblocked visual track |
+| 12 | **F-033 Phase 3** Engine stage + power HUD | Needs F-033 Phase 1 and F-023 full wiring |
+| 13 | **F-006** XYZ keyboard nav + mouse facing → **deferred until F-023 Phase 1** | F-023 Phase 3 covers mouse-delta; do F-023 first |
+| 14 | **F-003** Textures on planets/moons | Group 2 visual; floating-origin fix (DEF-001) already done |
+| 15 | **F-004** Procedural star field | Group 2 visual |
+| 16 | **F-005** Physical lighting from stars | Needs F-003 |
+| 17 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable. Own phase. |
+| 18 | **F-018** Object annotations HUD | High value, low risk; no engine changes; builds on existing label + render infra |
+| 19 | **F-019** Run scripts from UI | Medium priority; builds directly on REPL and existing dialog UX |
 | — | **4.7** Belt overlap/speed uniqueness | ⏸ Deferred — cosmetic only, insert whenever bandwidth allows |
 
 ---
@@ -390,9 +398,8 @@ Move the sim engine tick to its own goroutine. Main goroutine runs only: `PollIn
 ### DEF-001 — Floating-Point Precision Collapse at Extreme Camera Distances
 
 **Symptom**: When zooming far out from the solar system and looking back, the visual scene begins to contract as if boxed in and shrinking. Worsens with distance.
-**Status**: 📋 Not started — short technical exploration needed before full fix is scoped
-**Priority**: Medium-high — affects every recording and demo session; fix touches render call sites that F-003/F-004/F-005 also touch. Doing this before Group 2 visual work avoids rewriting those sites twice.
-**Depends on**: Nothing blocking; self-contained to the render path
+**Status**: ✅ Fixed — floating-origin camera implemented in `interactive.go`. Camera `Position` is always `rl.Vector3{}` (zero); all object draw positions are shifted by `-cameraPos` before being passed to Raylib. GPU always operates near `(0,0,0)`.
+**Note**: Exploration items below are closed by the implementation; no further action needed.
 
 #### Root Cause
 
@@ -1233,24 +1240,80 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 
 ### F-032 — Integrate Keybindings into All Simulator Commands ⚠️ HIGH PRIORITY
 
-**Value**: The `InputAction` enum and `KeyMap` type exist and the Controls tab lets users save custom bindings, but the simulator's input handler still reads raw `rl.KeyXxx` constants directly in many places instead of routing through `KeyMap.IsPressed(action)`. Until this wiring is complete, user-configured bindings have no effect on actual simulator behaviour. This is the critical last step that makes the entire keybinding system functional end-to-end.
+**Value**: The `InputAction` enum and `KeyMap` type exist and the Controls tab lets users save custom bindings, but `input.go` still reads raw `rl.KeyXxx` constants for most actions instead of routing through `KeyMap.IsPressed(action)`. Until this wiring is complete, user-configured bindings have no effect on actual simulator behaviour. This is the critical last step that makes the entire keybinding system functional end-to-end.
 **Status**: 📋 Not started
-**Priority**: 🔴 High — keybinding configuration is user-visible but silently non-functional until this lands; also required before mouse binding work can be meaningful
-**Depends on**: F-023 UI complete (Controls tab, KeyMap load/save); no other hard blockers
+**Priority**: 🔴 High — keybinding configuration is user-visible but silently non-functional; blocks meaningful mouse binding work
+**Depends on**: F-023 Phase 1 partial (input package exists; vocabulary needs expansion per F-023 §3 update 2026-05-18)
 
 #### Scope
 
-- Audit `internal/client/go/raylib/app/input.go` and all input call sites for raw `rl.IsKeyPressed` / `rl.IsKeyDown` calls that correspond to a defined `InputAction`.
-- Replace each with the equivalent `km.IsPressed(action)` or `km.IsDown(action)` call so the binding comes from the loaded `KeyMap`.
-- Mouse bindings: once keyboard wiring is complete, define mouse `InputAction` values (look-axis, zoom scroll, button clicks) and route them through the same `KeyMap` dispatch path.
-- Verify: rebinding an action in the Controls tab and saving should immediately change which key triggers that action in the running simulator (no restart required).
+The F-023 §3 audit (2026-05-18) identified the following **hardcoded actions not yet in the vocabulary**. All must be added to `actions.go` and wired before F-032 is complete:
+
+| Category | Action name | Current hardcode | `input.go` line region |
+|----------|-------------|------------------|------------------------|
+| UI | `ui.system_selector` | `Cmd+S` | ~line 30 |
+| UI | `ui.label_cycle` | `Opt+L` | ~line 40 |
+| UI | `ui.infra_cycle` | `I` | ~line 48 |
+| UI | `ui.mouse_mode_toggle` | `Opt+M` | ~line 55 |
+| UI | `ui.quit` | `Opt+Q` | ~line 64 |
+| Sim | `sim.timescale_increase` | `Cmd+Shift+.` | ~line 70 |
+| Sim | `sim.timescale_decrease` | `Cmd+Shift+,` | ~line 70 |
+| Sim | `sim.tick_speed_increase` | `Opt+.` | ~line 155 |
+| Sim | `sim.tick_speed_decrease` | `Opt+,` | ~line 155 |
+| Sim | `sim.dataset_increase` | `Opt+=` | ~line 125 |
+| Sim | `sim.dataset_decrease` | `Opt+-` | ~line 130 |
+| UI | `ui.record_toggle` | `Opt+R` | ~line 165 |
+| UI | `ui.record_pause` | `Opt+Shift+R` | ~line 165 |
+| Nav | `camera.center` | `C` | ~line 180 |
+| Nav | `nav.child_next` | `F` (tracking only) | ~line 205 |
+| Nav | `nav.parent` | `B` (tracking only) | ~line 240 |
+| Nav | `nav.sibling_next` | `TAB` (tracking only) | ~line 315 |
+| Nav | `nav.sibling_prev` | `Shift+TAB` (tracking only) | ~line 315 |
+| Nav | `nav.jump` | `J` (free-fly only) | ~line 895 |
+| Move | `move.engine_stage_up` | (not yet in code) | F-033 Phase 3 |
+| Move | `move.engine_stage_down` | (not yet in code) | F-033 Phase 3 |
+
+Also rename `sim.speed_increase/decrease` → `sim.timescale_increase/decrease` (spec clarification 2026-05-18; the existing constants 19 and 20 should be kept but aliased or the names updated with a sentinel bump).
+
+#### Work Items
+- [ ] Extend `actions.go`: add all new action constants from the table above
+- [ ] Update `actionNames` map with dot-notation names
+- [ ] Update stock profile JSON files in `data/profiles/` with default keys for each new action
+- [ ] Wire each site in `input.go`: replace raw `rl.IsKeyPressed`/`rl.IsKeyDown` with `km.IsPressed(action)`/`km.IsDown(action)`
+- [ ] Update `OrderedActions()` to include all new constants (Controls tab shows them)
+- [ ] Mouse look-axis and scroll-zoom routed through `KeyMap` or parallel `MouseMap`
+- [ ] `go test ./...` passes; race detector clean
 
 #### Acceptance Criteria
 
-- No `rl.IsKeyPressed` / `rl.IsKeyDown` call in the app input handler references a key that also has an `InputAction` mapping.
-- All 28 actions in `OrderedActions()` are wired; each can be rebound and the new binding takes effect within the same session.
-- Mouse look-axis and scroll-zoom route through `KeyMap` (or a parallel `MouseMap`) rather than hardcoded axis reads.
-- `go test ./...` passes; race detector clean.
+- No `rl.IsKeyPressed` / `rl.IsKeyDown` call in `handleInput` / `updateCameraState` references a key that has an `InputAction` mapping ✓
+- All actions in `OrderedActions()` are wired; each can be rebound in the Controls tab and the new binding takes effect within the same session (hot-reload) ✓
+- Mouse look-axis and scroll-zoom route through `KeyMap` ✓
+- `go test ./...` passes; race detector clean ✓
+
+---
+
+### F-033 — Ship Definition (Externally-Loaded Ship Catalog)
+
+**Value**: Every player session has a named ship with rated capabilities (thrust stages, turning, power budget, damage state, transponder identity). All ship definitions are loaded from `data/ships/*.json` — no ship data is hardcoded. Ship ratings constrain F-022 movement physics from the start.
+**Status**: 📋 Not started
+**Priority**: Medium-high — blocks F-022 Player-as-Ship integration and F-033 Phase 3 engine stage HUD
+**Depends on**: F-020 Phase 1 (session registry); F-021 Phase 2 (IQM model render pipeline) for Phase 2 model integration
+
+Full spec: [`docs/wip/f033-ship-definition-spec.md`](f033-ship-definition-spec.md)
+
+**Summary of phases**:
+- Phase 1: `ShipDefinition` + `ShipCatalog` + `ShipInstance`; transponder assignment; three bundled ship files; session registry gains `ShipInstance` field
+- Phase 2: 3D model asset integration with F-021 IQM render pipeline
+- Phase 3: Engine stage cycling keybindings + power HUD panel
+
+**Key relationships**:
+- F-022 §6 ShipProfile → superseded by `ShipInstance` (F-033 Phase 1)
+- F-022 §9 Player-as-Ship → integration contract (see that section for pipeline diagram)
+- F-021 Phase 3 model catalog → ship model path plugs in here
+- F-023 `move.engine_stage_up/down` vocabulary entries defined for use in Phase 3
+- F-027 damage writes to `ShipInstance.HullIntegrity`, `EngineIntegrity`, `PowerIntegrity`
+- F-020 `RegisterClientRequest` gains `ship_id`; response gains `transponder_id`
 
 ---
 
