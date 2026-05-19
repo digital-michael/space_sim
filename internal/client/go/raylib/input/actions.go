@@ -35,11 +35,11 @@ const (
 	ActionDriftToggle    InputAction = 18
 
 	// Simulation control
-	ActionSimSpeedIncrease InputAction = 19
-	ActionSimSpeedDecrease InputAction = 20
-	ActionSimPauseToggle   InputAction = 21
-	ActionSimTrackNext     InputAction = 22
-	ActionSimTrackStop     InputAction = 23
+	ActionSimTimescaleIncrease InputAction = 19
+	ActionSimTimescaleDecrease InputAction = 20
+	ActionSimPauseToggle       InputAction = 21
+	ActionSimTrackNext         InputAction = 22
+	ActionSimTrackStop         InputAction = 23
 
 	// UI and HUD
 	ActionHUDToggle     InputAction = 24
@@ -53,8 +53,35 @@ const (
 	ActionReplHistoryPrev InputAction = 30
 	ActionReplHistoryNext InputAction = 31
 
+	// Simulation tick speed (physics tick rate; separate from time scale)
+	ActionSimTickSpeedIncrease InputAction = 32
+	ActionSimTickSpeedDecrease InputAction = 33
+
+	// Simulation dataset size
+	ActionSimDatasetIncrease InputAction = 34
+	ActionSimDatasetDecrease InputAction = 35
+
+	// UI actions
+	ActionUISystemSelector  InputAction = 36
+	ActionUILabelCycle      InputAction = 37
+	ActionUIInfraCycle      InputAction = 38
+	ActionUIMouseModeToggle InputAction = 39
+	ActionUIQuit            InputAction = 40
+	ActionUIRecordToggle    InputAction = 41
+	ActionUIRecordPause     InputAction = 42
+
+	// Camera positional actions
+	ActionCameraCenter InputAction = 43
+
+	// Navigation (hierarchy traversal; only active in tracking mode)
+	ActionNavChildNext   InputAction = 44
+	ActionNavParent      InputAction = 45
+	ActionNavSiblingNext InputAction = 46
+	ActionNavSiblingPrev InputAction = 47
+	ActionNavJump        InputAction = 48
+
 	// sentinel — must equal last constant + 1
-	actionCount InputAction = 32
+	actionCount InputAction = 49
 )
 
 // actionNames maps each action to its dot-notation vocabulary name.
@@ -77,8 +104,8 @@ var actionNames = map[InputAction]string{
 	ActionThrustDown:          "move.thrust_down",
 	ActionBrake:               "move.brake",
 	ActionDriftToggle:         "move.drift_toggle",
-	ActionSimSpeedIncrease:    "sim.speed_increase",
-	ActionSimSpeedDecrease:    "sim.speed_decrease",
+	ActionSimTimescaleIncrease: "sim.timescale_increase",
+	ActionSimTimescaleDecrease: "sim.timescale_decrease",
 	ActionSimPauseToggle:      "sim.pause_toggle",
 	ActionSimTrackNext:        "sim.track_next",
 	ActionSimTrackStop:        "sim.track_stop",
@@ -90,6 +117,27 @@ var actionNames = map[InputAction]string{
 	ActionReplClose:           "repl.close",
 	ActionReplHistoryPrev:     "repl.history_prev",
 	ActionReplHistoryNext:     "repl.history_next",
+
+	ActionSimTickSpeedIncrease: "sim.tick_speed_increase",
+	ActionSimTickSpeedDecrease: "sim.tick_speed_decrease",
+	ActionSimDatasetIncrease:   "sim.dataset_increase",
+	ActionSimDatasetDecrease:   "sim.dataset_decrease",
+
+	ActionUISystemSelector:  "ui.system_selector",
+	ActionUILabelCycle:      "ui.label_cycle",
+	ActionUIInfraCycle:      "ui.infra_cycle",
+	ActionUIMouseModeToggle: "ui.mouse_mode_toggle",
+	ActionUIQuit:            "ui.quit",
+	ActionUIRecordToggle:    "ui.record_toggle",
+	ActionUIRecordPause:     "ui.record_pause",
+
+	ActionCameraCenter: "camera.center",
+
+	ActionNavChildNext:   "nav.child_next",
+	ActionNavParent:      "nav.parent",
+	ActionNavSiblingNext: "nav.sibling_next",
+	ActionNavSiblingPrev: "nav.sibling_prev",
+	ActionNavJump:        "nav.jump",
 }
 
 // nameActions is the reverse of actionNames, built at init.
@@ -133,9 +181,14 @@ func OrderedActions() []InputAction {
 	return []InputAction{
 		// Application
 		ActionUISettings, ActionUIFullscreen,
+		ActionUISystemSelector, ActionUILabelCycle, ActionUIInfraCycle,
+		ActionUIMouseModeToggle, ActionUIQuit,
+		ActionUIRecordToggle, ActionUIRecordPause,
 		// Simulation
-		ActionSimSpeedIncrease, ActionSimSpeedDecrease, ActionSimPauseToggle,
-		ActionSimTrackNext, ActionSimTrackStop,
+		ActionSimTimescaleIncrease, ActionSimTimescaleDecrease,
+		ActionSimTickSpeedIncrease, ActionSimTickSpeedDecrease,
+		ActionSimDatasetIncrease, ActionSimDatasetDecrease,
+		ActionSimPauseToggle, ActionSimTrackNext, ActionSimTrackStop,
 		// HUD
 		ActionHUDToggle, ActionHUDClientList,
 		// REPL overlay
@@ -145,7 +198,11 @@ func OrderedActions() []InputAction {
 		ActionCameraYawLeft, ActionCameraYawRight,
 		ActionCameraRollLeft, ActionCameraRollRight,
 		ActionCameraZoomIn, ActionCameraZoomOut,
-		ActionCameraReset, ActionCameraToggleFreeFly,
+		ActionCameraReset, ActionCameraToggleFreeFly, ActionCameraCenter,
+		// Navigation (tracking-mode hierarchy)
+		ActionNavChildNext, ActionNavParent,
+		ActionNavSiblingNext, ActionNavSiblingPrev,
+		ActionNavJump,
 		// Movement / locomotion
 		ActionThrustForward, ActionThrustBackward,
 		ActionThrustLeft, ActionThrustRight,

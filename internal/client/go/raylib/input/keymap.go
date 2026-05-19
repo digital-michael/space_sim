@@ -9,6 +9,7 @@ const (
 	ModShift ModSet = 1 << iota
 	ModCtrl
 	ModAlt
+	ModSuper
 )
 
 // binding associates a Raylib key code and optional modifier set with an action.
@@ -100,6 +101,11 @@ func (km *KeyMap) modsHeld(mods ModSet) bool {
 	}
 	if mods&ModAlt != 0 {
 		if !rl.IsKeyDown(rl.KeyLeftAlt) && !rl.IsKeyDown(rl.KeyRightAlt) {
+			return false
+		}
+	}
+	if mods&ModSuper != 0 {
+		if !rl.IsKeyDown(rl.KeyLeftSuper) && !rl.IsKeyDown(rl.KeyRightSuper) {
 			return false
 		}
 	}

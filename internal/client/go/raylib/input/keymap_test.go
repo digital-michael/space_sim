@@ -63,8 +63,12 @@ func TestParseModsAll(t *testing.T) {
 
 func TestParseModsUnknown(t *testing.T) {
 	_, err := parseMods([]string{"SUPER"})
+	if err != nil {
+		t.Errorf("parseMods(SUPER) expected no error, got: %v", err)
+	}
+	_, err = parseMods([]string{"INVALID"})
 	if err == nil {
-		t.Error("parseMods(SUPER) expected error, got nil")
+		t.Error("parseMods(INVALID) expected error, got nil")
 	}
 }
 

@@ -197,8 +197,10 @@ func parseMods(mods []string) (ModSet, error) {
 			ms |= ModCtrl
 		case "ALT":
 			ms |= ModAlt
+		case "SUPER":
+			ms |= ModSuper
 		default:
-			return 0, fmt.Errorf("unknown modifier %q (valid: SHIFT, CTRL, ALT)", m)
+			return 0, fmt.Errorf("unknown modifier %q (valid: SHIFT, CTRL, ALT, SUPER)", m)
 		}
 	}
 	return ms, nil
@@ -219,6 +221,9 @@ func modsToStrings(mods ModSet) []string {
 	}
 	if mods&ModAlt != 0 {
 		result = append(result, "ALT")
+	}
+	if mods&ModSuper != 0 {
+		result = append(result, "SUPER")
 	}
 	return result
 }

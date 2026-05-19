@@ -19,19 +19,16 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 
 	selectionDialogOpen := session.inputState.MainWindowInputSuspended()
 	mainWindowInputSuspended := selectionDialogOpen || a.runtime.SettingsVisible
-	altHeld := rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt)
-	superHeld := rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper)
-	reservedModifierHeld := altHeld || superHeld
 	shiftHeld := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
 
-	// Cmd+S: Open the runtime system selector.
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyS) && superHeld && !altHeld {
+	// ui.system_selector: Open the runtime system selector.
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionUISystemSelector) {
 		a.openSystemSelector(session.inputState)
 		return false
 	}
 
-	// Opt+L: Cycle label mode (off → on → nearest → off)
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyL) && altHeld && !superHeld {
+	// ui.label_cycle: Cycle label mode (off → on → nearest → off)
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionUILabelCycle) {
 		switch a.runtime.LabelMode {
 		case ui.LabelModeOff:
 			a.runtime.LabelMode = ui.LabelModeOn
@@ -42,13 +39,13 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 	}
 
-	// I: Cycle infra ambient-light mode (0=off → 1=spotlight → 2=reserved → 0)
-	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyI) {
+	// ui.infra_cycle: Cycle infra ambient-light mode
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionUIInfraCycle) {
 		a.runtime.InfraMode = (a.runtime.InfraMode + 1) % 3
 	}
 
-	// Opt+M: Toggle mouse mode (camera control vs UI cursor)
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyM) && altHeld && !superHeld {
+	// ui.mouse_mode_toggle: Toggle mouse mode (camera control vs UI cursor)
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionUIMouseModeToggle) {
 		a.runtime.MouseModeEnabled = !a.runtime.MouseModeEnabled
 		if a.runtime.MouseModeEnabled {
 			rl.DisableCursor()
@@ -57,18 +54,13 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 	}
 
-	// Opt+F: Toggle fullscreen with proper display resolution handling
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyF) && altHeld && !superHeld {
-		a.toggleFullscreen()
-	}
-
-	// Opt+Q: Quit application
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyQ) && altHeld && !superHeld {
+	// ui.quit: Quit application
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionUIQuit) {
 		return true
 	}
 
-	// Cmd+< and Cmd+>: Decrease/increase time scale (Cmd+Shift+, and Cmd+Shift+.)
-	if !mainWindowInputSuspended && superHeld && shiftHeld && !altHeld && rl.IsKeyPressed(rl.KeyComma) {
+	// sim.timescale_decrease / sim.timescale_increase: Step through time rates
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTimescaleDecrease) {
 		back := session.sim.GetState().GetBack()
 		// Time rates: paused, real-time, 1 hour/sec, 1 day/sec, 1 week/sec, 1 month/sec, 1 year/sec
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
@@ -96,7 +88,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 			}
 		}
 	}
-	if !mainWindowInputSuspended && superHeld && shiftHeld && !altHeld && rl.IsKeyPressed(rl.KeyPeriod) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTimescaleIncrease) {
 		back := session.sim.GetState().GetBack()
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
 		timeLabels := []string{"PAUSED", "real-time", "1 hr/sec", "1 day/sec", "1 week/sec", "1 month/sec", "1 year/sec"}
@@ -124,23 +116,23 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 	}
 
-	// Opt+= / Opt+-: Increase/decrease asteroid dataset
-	if !mainWindowInputSuspended && altHeld && !superHeld && (rl.IsKeyPressed(rl.KeyEqual) || rl.IsKeyPressed(rl.KeyKpAdd)) {
+	// sim.dataset_increase / sim.dataset_decrease: Increase/decrease asteroid dataset
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimDatasetIncrease) {
 		if a.runtime.AsteroidDataset < 3 {
 			a.runtime.AsteroidDataset++
 			session.sim.SetAsteroidDataset(a.runtime.AsteroidDataset)
 		}
 	}
-	if !mainWindowInputSuspended && altHeld && !superHeld && (rl.IsKeyPressed(rl.KeyMinus) || rl.IsKeyPressed(rl.KeyKpSubtract)) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimDatasetDecrease) {
 		if a.runtime.AsteroidDataset > 0 {
 			a.runtime.AsteroidDataset--
 			session.sim.SetAsteroidDataset(a.runtime.AsteroidDataset)
 		}
 	}
 
-	// Opt+, and Opt+.: Decrease/increase animation speed (≤ / ≥ on Mac)
-	// Controls the physics tick rate — how many sim ticks fire per real second (0%–100%)
-	if !mainWindowInputSuspended && altHeld && !superHeld && rl.IsKeyPressed(rl.KeyComma) {
+	// sim.tick_speed_decrease / sim.tick_speed_increase: Physics tick rate
+	// Controls how many sim ticks fire per real second (0%–100%)
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTickSpeedDecrease) {
 		// Decrease anim speed
 		currentSpeed := session.sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
@@ -151,8 +143,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 			}
 		}
 	}
-	if !mainWindowInputSuspended && altHeld && !superHeld && rl.IsKeyPressed(rl.KeyPeriod) {
-		// Increase anim speed
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTickSpeedIncrease) {
 		currentSpeed := session.sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
 		for i := 0; i < len(speedSteps); i++ {
@@ -163,29 +154,27 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 	}
 
-	// Opt+R: Start/stop recording. Opt+Shift+R: Pause/resume recording.
-	if !mainWindowInputSuspended && rl.IsKeyPressed(rl.KeyR) && altHeld && !superHeld {
-		if !shiftHeld {
-			if a.runtime.RecordingActive {
-				a.stopRecording()
-			} else {
-				a.startRecording("")
-			}
+	// ui.record_toggle / ui.record_pause
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionUIRecordToggle) {
+		if a.runtime.RecordingActive {
+			a.stopRecording()
 		} else {
-			// Opt+Shift+R: toggle pause
-			if a.runtime.RecordingActive {
-				a.runtime.RecordingPaused = !a.runtime.RecordingPaused
-				if a.runtime.RecordingPaused {
-					fmt.Println("[REC] Paused")
-				} else {
-					fmt.Println("[REC] Resumed")
-				}
+			a.startRecording("")
+		}
+	}
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionUIRecordPause) {
+		if a.runtime.RecordingActive {
+			a.runtime.RecordingPaused = !a.runtime.RecordingPaused
+			if a.runtime.RecordingPaused {
+				fmt.Println("[REC] Paused")
+			} else {
+				fmt.Println("[REC] Resumed")
 			}
 		}
 	}
 
-	// C: Center view - behavior depends on mode
-	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyC) {
+	// camera.center: Center view (free-fly: face origin; tracking: reset zoom)
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionCameraCenter) {
 		if session.cameraState.Mode == ui.CameraModeFree {
 			// Free-fly mode: center camera view on origin (sun)
 			toOrigin := engine.Vector3{X: 0, Y: 0, Z: 0}.Sub(session.cameraState.Position)
@@ -204,10 +193,9 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 	}
 
-	// F key: Drill down to closest child (Forward in hierarchy)
-	// B key: Move up to parent (Back in hierarchy)
-	if session.cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended && !reservedModifierHeld {
-		if rl.IsKeyPressed(rl.KeyF) {
+	// nav.child_next / nav.parent: Drill into child or move to parent in hierarchy
+	if session.cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended {
+		if km.IsPressed(input.ActionNavChildNext) {
 			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
 				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
 
@@ -268,7 +256,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 			}
 		}
 
-		if rl.IsKeyPressed(rl.KeyB) {
+		if km.IsPressed(input.ActionNavParent) {
 			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
 				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
 
@@ -312,13 +300,14 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 	}
 
-	// TAB / Shift+TAB: Cycle through siblings when tracking (objects with same parent and category)
-	if session.cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended && !reservedModifierHeld {
-		isShiftPressed := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
+	// nav.sibling_next / nav.sibling_prev: Cycle through siblings when tracking
+	if session.cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended {
+		siblingForward := km.IsPressed(input.ActionNavSiblingNext)
+		siblingBack := km.IsPressed(input.ActionNavSiblingPrev)
 
-		if rl.IsKeyPressed(rl.KeyTab) {
+		if siblingForward || siblingBack {
 			if a.cfg.Debug {
-				fmt.Printf("[DEBUG] TAB pressed - Shift: %v\n", isShiftPressed)
+				fmt.Printf("[DEBUG] sibling nav: forward=%v back=%v\n", siblingForward, siblingBack)
 			}
 
 			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
@@ -347,7 +336,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 
 					if currentPos >= 0 {
 						var nextPos int
-						if isShiftPressed {
+							if siblingBack {
 							// Shift+TAB: go backwards
 							nextPos = currentPos - 1
 							if nextPos < 0 {
@@ -567,8 +556,8 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 			a.runtime.Settings.SelectedRow = 0
 		}
 		// Up/Down: navigate rows within current tab
-		// Tab 2 (Performance): 7 rows (0-6); Tab 3 (Controls): Load + SaveAs + 31 actions (0-32)
-		tabRowMax := [4]int{0, 2, 6, 32}
+		// Tab 2 (Performance): 7 rows (0-6); Tab 3 (Controls): Load + SaveAs + 48 actions (0-49)
+		tabRowMax := [4]int{0, 2, 6, 49}
 		if a.runtime.Settings.ActiveTab > 0 { // System tab has no row selection
 			if rl.IsKeyPressed(rl.KeyUp) && a.runtime.Settings.SelectedRow > 0 {
 				a.runtime.Settings.SelectedRow--
@@ -635,7 +624,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 				case 1: // Save As: begin inline path editing
 					a.runtime.Settings.SaveAsPathPrev = a.runtime.Settings.SaveAsPath
 					a.runtime.Settings.SaveAsEditing = true
-				default: // Rows 2..32 = keybinding rows for actions 0..30 in OrderedActions()
+				default: // Rows 2..49 = keybinding rows for actions 0..47 in OrderedActions()
 					actionIdx := a.runtime.Settings.SelectedRow - 2
 					allActions := input.OrderedActions()
 					if actionIdx >= 0 && actionIdx < len(allActions) {
@@ -893,8 +882,8 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		return false // Don't process other keys during selection
 	}
 
-	// J: Jump to object (free-fly mode only)
-	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && rl.IsKeyPressed(rl.KeyJ) && session.cameraState.Mode == ui.CameraModeFree {
+	// nav.jump: Jump to object (free-fly mode only)
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionNavJump) && session.cameraState.Mode == ui.CameraModeFree {
 		session.inputState.StartSelection(ui.SelectionModeJump)
 		session.inputState.FilterText = ""
 		session.inputState.ScrollOffset = 0
@@ -902,7 +891,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 	}
 
 	// T / sim.track_next: Open the tracking dialog with the default tracking mode.
-	if !mainWindowInputSuspended && !reservedModifierHeld && !shiftHeld && km.IsPressed(input.ActionSimTrackNext) && (session.cameraState.Mode == ui.CameraModeFree || session.cameraState.Mode == ui.CameraModeTracking) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTrackNext) && (session.cameraState.Mode == ui.CameraModeFree || session.cameraState.Mode == ui.CameraModeTracking) {
 		session.inputState.StartSelection(ui.SelectionModeTrack)
 		session.inputState.FilterText = ""
 		session.inputState.ScrollOffset = 0
