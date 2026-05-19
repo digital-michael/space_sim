@@ -85,7 +85,7 @@ Items are ordered by the agreed priority sequence. Dependencies are noted per it
 | Phase | Steps | Focus | Status |
 |-------|-------|-------|--------|
 | Pre-A | 1, 2, 3 | N-body foundation, camera fix, floating origin | 1 done (DEF-001 ✅); 1+2 pending |
-| A | 4 | Input cleanup + keybinding gap closure (TD-001 + F-032) | 📋 Not started |
+| A | 4 | Input cleanup + keybinding gap closure (TD-001 + F-032) | ✅ Complete |
 | B | 4a | Ship definition catalog (F-033 Phase 1) | 📋 Not started |
 | C | 4b | Kinematic movement + player as ship (F-022 Phase 1 + §9) | 📋 Not started |
 | D | 4c | Player physical marker (F-021 Phase 1) | 📋 Not started |
@@ -126,9 +126,7 @@ Key decisions to make during design:
 
 ### Step 4 — TD-001 + F-032: Input Cleanup + Keybinding Gap Closure
 **Phase**: A — Input Completeness
-**Status**: 📋 Not started  
-**Independent**: Yes — internal refactor + action wiring, no new visible behavior  
-**Why together**: TD-001 cleans `handleInput` from 14 params to 3 before F-032 replaces every hardcoded `rl.IsKeyPressed` call in the same function. Doing F-032 on a 14-param function and then cleaning it with TD-001 means touching the same lines twice. Combine into one pass.
+**Status**: ✅ Complete (commit 43577bc)
 
 **TD-001 target shape**:
 ```go
