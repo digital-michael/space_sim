@@ -336,7 +336,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 
 					if currentPos >= 0 {
 						var nextPos int
-							if siblingBack {
+						if siblingBack {
 							// Shift+TAB: go backwards
 							nextPos = currentPos - 1
 							if nextPos < 0 {

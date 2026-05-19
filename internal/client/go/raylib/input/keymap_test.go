@@ -733,4 +733,3 @@ func TestLoadKeyMapSuperBindingRoundTrip(t *testing.T) {
 			km.BoundMods(ActionUISystemSelector), km2.BoundMods(ActionUISystemSelector))
 	}
 }
-
