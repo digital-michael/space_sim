@@ -1,0 +1,58 @@
+{
+  "$schema": "https://space-sim/schemas/ship/v1",
+  "version": 1,
+  "id": "explorer_x1",
+  "name": "Explorer X1",
+  "description": "A balanced long-range survey vessel. Comfortable turning, solid main drive, and superluminal authorization for deep-space missions.",
+  "class": "medium",
+
+  "model": {
+    "path": "data/assets/models/explorer_x1.iqm",
+    "texture": "data/assets/models/explorer_x1.png",
+    "scale": 1.0
+  },
+
+  "identification": {
+    "transponder_prefix": "EX",
+    "registry": "Sol Exploration Corps"
+  },
+
+  "engine_stages": [
+    {
+      "stage": 1,
+      "label": "Maneuvering",
+      "accel_min_ms2": 0.0,
+      "accel_max_ms2": 6.0e4,
+      "power_draw_w": 7.0e8
+    },
+    {
+      "stage": 2,
+      "label": "Cruise Drive",
+      "accel_min_ms2": 6.0e4,
+      "accel_max_ms2": 2.5e7,
+      "power_draw_w": 5.5e9
+    },
+    {
+      "stage": 3,
+      "label": "Long-Range Drive",
+      "accel_min_ms2": 2.5e7,
+      "accel_max_ms2": 8.0e7,
+      "power_draw_w": 1.0e10
+    }
+  ],
+
+  "turning": {
+    "rate_deg_per_s": 55.0,
+    "power_draw_w": 1.5e8
+  },
+
+  "power": {
+    "available_w": 1.2e10,
+    "system_draw_baseline_w": 4.0e8,
+    "overload_policy": "degrade_non_critical"
+  },
+
+  "mass_kg": 95000.0,
+  "max_speed_sim_units_per_s": 5.0,
+  "superluminal_allowed": true
+}

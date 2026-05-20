@@ -1,0 +1,58 @@
+{
+  "$schema": "https://space-sim/schemas/ship/v1",
+  "version": 1,
+  "id": "freighter_t1",
+  "name": "Freighter T1",
+  "description": "A heavy-duty bulk transport. Sluggish turning and moderate acceleration, but a powerful main drive for long hauls.",
+  "class": "medium",
+
+  "model": {
+    "path": "data/assets/models/freighter_t1.iqm",
+    "texture": "data/assets/models/freighter_t1.png",
+    "scale": 1.0
+  },
+
+  "identification": {
+    "transponder_prefix": "FT",
+    "registry": "Sol Freight Cooperative"
+  },
+
+  "engine_stages": [
+    {
+      "stage": 1,
+      "label": "Docking Thrusters",
+      "accel_min_ms2": 0.0,
+      "accel_max_ms2": 2.0e4,
+      "power_draw_w": 8.0e8
+    },
+    {
+      "stage": 2,
+      "label": "Transit Drive",
+      "accel_min_ms2": 2.0e4,
+      "accel_max_ms2": 8.0e6,
+      "power_draw_w": 6.0e9
+    },
+    {
+      "stage": 3,
+      "label": "Heavy Haul Drive",
+      "accel_min_ms2": 8.0e6,
+      "accel_max_ms2": 3.0e7,
+      "power_draw_w": 1.2e10
+    }
+  ],
+
+  "turning": {
+    "rate_deg_per_s": 20.0,
+    "power_draw_w": 3.0e8
+  },
+
+  "power": {
+    "available_w": 1.5e10,
+    "system_draw_baseline_w": 6.0e8,
+    "overload_policy": "hard_cut"
+  },
+
+  "mass_kg": 850000.0,
+  "max_speed_sim_units_per_s": 3.0,
+  "superluminal_allowed": false
+}

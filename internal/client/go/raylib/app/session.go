@@ -3,8 +3,10 @@ package app
 import (
 	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
+	"github.com/digital-michael/space_sim/internal/server/ship"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	sim "github.com/digital-michael/space_sim/internal/sim/world"
 )
@@ -15,6 +17,7 @@ type runtimeSession struct {
 	inputState      *ui.InputState
 	debugTracker    *DebugTracker
 	navigationOrder []engine.ObjectCategory
+	ship            *ship.ShipInstance
 }
 
 func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSession, err error) {
@@ -101,5 +104,40 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 		inputState:      inputState,
 		debugTracker:    debugTracker,
 		navigationOrder: navigationOrder,
+		ship:            loadDefaultShip(a.cfg),
 	}, nil
+}
+
+// loadDefaultShip loads the ship catalog from the directory adjacent to the
+// app config file and returns a ShipInstance for the default ship. If the
+// catalog cannot be loaded or is empty, it returns nil (the session runs
+// without a ship; F-022 movement will be a no-op).
+func loadDefaultShip(cfg Config) *ship.ShipInstance {
+	// Locate data/ships/ relative to the config file directory, or fall back
+	// to a path relative to the working directory.
+	baseDir := "."
+	if cfg.AppConfigPath != "" {
+		baseDir = filepath.Dir(cfg.AppConfigPath)
+	}
+	shipsDir := filepath.Join(baseDir, "data", "ships")
+
+	defaultID := cfg.AppConfig.DefaultShipID
+	if defaultID == "" {
+		defaultID = "scout_mk1"
+	}
+
+	cat, err := ship.LoadCatalog(shipsDir, defaultID)
+	if err != nil {
+		log.Printf("ship catalog: load error: %v (running without ship)", err)
+		return nil
+	}
+	def := cat.Default()
+	if def == nil {
+		log.Printf("ship catalog: empty catalog at %s (running without ship)", shipsDir)
+		return nil
+	}
+
+	inst := ship.NewInstance(def, "local-session", "Player")
+	log.Printf("ship: assigned %s (%s) transponder %s", def.Name, def.ID, inst.TransponderID)
+	return inst
 }

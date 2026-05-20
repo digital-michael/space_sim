@@ -1,0 +1,51 @@
+{
+  "$schema": "https://space-sim/schemas/ship/v1",
+  "version": 1,
+  "id": "scout_mk1",
+  "name": "Scout Mk I",
+  "description": "A nimble single-seat scout ship. Fast turning, modest thrust. Standard survey and reconnaissance vessel.",
+  "class": "light",
+
+  "model": {
+    "path": "data/assets/models/scout_mk1.iqm",
+    "texture": "data/assets/models/scout_mk1.png",
+    "scale": 1.0
+  },
+
+  "identification": {
+    "transponder_prefix": "SC",
+    "registry": "Sol Frontier Authority"
+  },
+
+  "engine_stages": [
+    {
+      "stage": 1,
+      "label": "Maneuvering",
+      "accel_min_ms2": 0.0,
+      "accel_max_ms2": 1.0e5,
+      "power_draw_w": 5.0e8
+    },
+    {
+      "stage": 2,
+      "label": "Main Drive",
+      "accel_min_ms2": 1.0e5,
+      "accel_max_ms2": 5.0e7,
+      "power_draw_w": 4.0e9
+    }
+  ],
+
+  "turning": {
+    "rate_deg_per_s": 90.0,
+    "power_draw_w": 1.0e8
+  },
+
+  "power": {
+    "available_w": 5.0e9,
+    "system_draw_baseline_w": 2.0e8,
+    "overload_policy": "degrade_non_critical"
+  },
+
+  "mass_kg": 12000.0,
+  "max_speed_sim_units_per_s": 5.0,
+  "superluminal_allowed": true
+}

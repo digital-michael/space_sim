@@ -52,6 +52,7 @@ type AppConfig struct {
 	Render          RenderConfig      `json:"render"`
 	Performance     PerformanceConfig `json:"performance"`
 	KeybindingsPath string            `json:"keybindings_path,omitempty"`
+	DefaultShipID   string            `json:"default_ship_id,omitempty"`
 }
 
 // Config holds bootstrap options for the Space Sim application.
