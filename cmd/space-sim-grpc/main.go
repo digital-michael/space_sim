@@ -104,6 +104,7 @@ Mutually exclusive with --render-scale.`
 	perfHandler := grpcserver.NewPerformanceHandler(application.SendCmd)
 	shutdownHandler := grpcserver.NewShutdownHandler(stop)
 	recordingHandler := grpcserver.NewRecordingHandler(application.SendCmd)
+	configHandler := grpcserver.NewConfigHandler(application.SendCmd)
 
 	srv := grpcserver.New(grpcserver.DefaultServerConfig(), grpcserver.Handlers{
 		Simulation:  simHandler,
@@ -115,6 +116,7 @@ Mutually exclusive with --render-scale.`
 		Performance: perfHandler,
 		Shutdown:    shutdownHandler,
 		Recording:   recordingHandler,
+		Config:      configHandler,
 	})
 
 	srvDone := make(chan error, 1)

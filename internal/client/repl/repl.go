@@ -37,6 +37,7 @@ type REPL struct {
 	perfClient  spacesimv1connect.PerformanceServiceClient
 	sdClient    spacesimv1connect.ShutdownServiceClient
 	recClient   spacesimv1connect.RecordingServiceClient
+	cfgClient   spacesimv1connect.ConfigServiceClient
 	out         io.Writer
 	lastSpeed   float32           // restored by resume; updated by setspeed / pause
 	bodyNames   []string          // cached body names for TAB completion; nil = not yet fetched
@@ -59,6 +60,7 @@ func New(addr string, opts ...connect.ClientOption) *REPL {
 		perfClient:  spacesimv1connect.NewPerformanceServiceClient(http.DefaultClient, addr, opts...),
 		sdClient:    spacesimv1connect.NewShutdownServiceClient(http.DefaultClient, addr, opts...),
 		recClient:   spacesimv1connect.NewRecordingServiceClient(http.DefaultClient, addr, opts...),
+		cfgClient:   spacesimv1connect.NewConfigServiceClient(http.DefaultClient, addr, opts...),
 		out:         os.Stdout,
 		lastSpeed:   1.0,
 		vars:        make(map[string]string),
@@ -1327,6 +1329,30 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			return false, fmt.Errorf("record delete: %w", err)
 		}
 		r.printf("deleted %s\n", resolved)
+
+	// ── Config ───────────────────────────────────────────────────────────────
+
+	case commands.ConfigReloadKeybindings:
+		resp, err := r.cfgClient.ReloadKeybindings(ctx, connect.NewRequest(&v1.ReloadKeybindingsRequest{Version: 1}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("ok  config reload keybindings  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+
+	case commands.HelpKeys:
+		resp, err := r.cfgClient.GetKeybindings(ctx, connect.NewRequest(&v1.GetKeybindingsRequest{Version: 1}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("%-40s  %-20s  %s\n", "ACTION", "KEY", "MODS")
+		r.printf("%s\n", strings.Repeat("-", 70))
+		for _, b := range resp.Msg.Bindings {
+			mods := strings.Join(b.Mods, "+")
+			if mods == "" {
+				mods = "-"
+			}
+			r.printf("%-40s  %-20s  %s\n", b.Action, b.Key, mods)
+		}
 	}
 	return false, nil
 }

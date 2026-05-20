@@ -44,6 +44,10 @@ type RuntimeContext struct {
 	// Persisted to ~/space-sim.json via AppConfigSnapshot.
 	KeybindingsPath string
 
+	// PauseRestoreRate is the SecondsPerSecond value to restore when unpausing
+	// via sim.pause_toggle. Zero means "use 1.0 (real-time)".
+	PauseRestoreRate float32
+
 	// protectWindowedSize is set for one frame when exiting fullscreen on
 	// macOS/X11 to prevent syncWindowState from clobbering WindowedWidth/Height
 	// before SetWindowSize's resize event is reflected in GetRenderWidth.

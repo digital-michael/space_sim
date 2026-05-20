@@ -403,6 +403,43 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 	}
 
+	// hud.toggle: Show / hide full HUD.
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionHUDToggle) {
+		a.runtime.HUDVisible = !a.runtime.HUDVisible
+	}
+
+	// hud.client_list: Show / hide client session list overlay.
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionHUDClientList) {
+		a.runtime.HUD.Player = !a.runtime.HUD.Player
+	}
+
+	// sim.pause_toggle: Pause / unpause simulation (SecondsPerSecond toggle).
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimPauseToggle) {
+		back := session.sim.GetState().GetBack()
+		if back.SecondsPerSecond == 0 {
+			if a.runtime.PauseRestoreRate == 0 {
+				a.runtime.PauseRestoreRate = 1.0
+			}
+			back.SecondsPerSecond = a.runtime.PauseRestoreRate
+			fmt.Println("Simulation resumed")
+		} else {
+			a.runtime.PauseRestoreRate = back.SecondsPerSecond
+			back.SecondsPerSecond = 0
+			fmt.Println("Simulation paused")
+		}
+	}
+
+	// camera.toggle_free_fly: Switch between tracking and free-fly mode.
+	// Only active in free-fly mode; F in tracking mode fires nav.child_next instead.
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionCameraToggleFreeFly) &&
+		session.cameraState.Mode == ui.CameraModeFree {
+		if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
+			obj := state.Objects[session.cameraState.TrackTargetIndex]
+			session.cameraState.StartTracking(session.cameraState.TrackTargetIndex)
+			session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
+		}
+	}
+
 	// Settings dialog keyboard navigation (only when dialog is open, takes priority over main window)
 	if a.runtime.SettingsVisible {
 		// Capture mode: intercept the next key press for rebinding an action.
@@ -941,6 +978,34 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 		}
 	}
 
+	// Keyboard zoom (camera.zoom_in / camera.zoom_out): step-zoom via keys.
+	// Mirrors the mouse-wheel path but at a fixed rate per frame.
+	if !mainWindowInputSuspended {
+		keyZoomSpeed := a.runtime.CameraSpeed * dt * 5.0
+		if km.IsDown(input.ActionCameraZoomIn) {
+			switch session.cameraState.Mode {
+			case ui.CameraModeTracking:
+				session.cameraState.TrackDistance -= float64(keyZoomSpeed * 10.0)
+				if session.cameraState.TrackDistance < engine.CameraTrackDistMin {
+					session.cameraState.TrackDistance = engine.CameraTrackDistMin
+				}
+			case ui.CameraModeFree, ui.CameraModeJumping:
+				session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Forward.Scale(keyZoomSpeed * 10.0))
+			}
+		}
+		if km.IsDown(input.ActionCameraZoomOut) {
+			switch session.cameraState.Mode {
+			case ui.CameraModeTracking:
+				session.cameraState.TrackDistance += float64(keyZoomSpeed * 10.0)
+				if session.cameraState.TrackDistance > engine.CameraTrackDistMax {
+					session.cameraState.TrackDistance = engine.CameraTrackDistMax
+				}
+			case ui.CameraModeFree, ui.CameraModeJumping:
+				session.cameraState.Position = session.cameraState.Position.Sub(session.cameraState.Forward.Scale(keyZoomSpeed * 10.0))
+			}
+		}
+	}
+
 	// Arrow keys for movement in the system plane (active in all modes)
 	arrowSpeed := a.runtime.CameraSpeed * dt // Same base speed as WASD
 	if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
@@ -1126,8 +1191,24 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 				// Acceleration is in m/s²; convert to sim_units/s² for integration.
 				accelSimUnits := session.ship.EffectiveAccelMaxMS2() / engine.MetersPerSimUnit
 
-				// Build thrust intent from held keys.
+				// move.brake: zero velocity immediately.
+				if km.IsPressed(input.ActionBrake) {
+					session.ship.Velocity = [3]float64{}
+				}
+
+				// move.drift_toggle: suppress thrust when enabled.
+				if km.IsPressed(input.ActionDriftToggle) {
+					session.driftMode = !session.driftMode
+					if session.driftMode {
+						fmt.Println("Drift mode ON")
+					} else {
+						fmt.Println("Drift mode OFF")
+					}
+				}
+
+				// Build thrust intent from held keys (suppressed in drift mode).
 				var ax, ay, az float64
+				if !session.driftMode {
 				if km.IsDown(input.ActionThrustForward) {
 					ax += float64(session.cameraState.Forward.X) * accelSimUnits
 					ay += float64(session.cameraState.Forward.Y) * accelSimUnits
@@ -1158,6 +1239,7 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 					ay -= float64(session.cameraState.Up.Y) * accelSimUnits
 					az -= float64(session.cameraState.Up.Z) * accelSimUnits
 				}
+				} // end !driftMode
 
 				// velocity += accel * dt
 				dtF := float64(dt)

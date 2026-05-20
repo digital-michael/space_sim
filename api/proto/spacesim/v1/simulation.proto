@@ -530,3 +530,35 @@ message StopRecordingResponse {
   uint32     version = 1;
   CommandAck ack     = 2;
 }
+
+// ─── ConfigService ───────────────────────────────────────────────────────────
+//
+// Runtime configuration operations (keybindings hot-reload, key binding query).
+
+service ConfigService {
+  // ReloadKeybindings re-reads configs/keybindings.json and hot-swaps the
+  // active KeyMap without restarting the app.
+  rpc ReloadKeybindings(ReloadKeybindingsRequest) returns (ReloadKeybindingsResponse);
+
+  // GetKeybindings returns the full active key binding table (profile + overrides).
+  rpc GetKeybindings(GetKeybindingsRequest) returns (GetKeybindingsResponse);
+}
+
+message ReloadKeybindingsRequest  { uint32 version = 1; }
+message ReloadKeybindingsResponse {
+  uint32     version = 1;
+  CommandAck ack     = 2;
+}
+
+message GetKeybindingsRequest { uint32 version = 1; }
+message GetKeybindingsResponse {
+  uint32              version  = 1;
+  repeated KeyBinding bindings = 2;
+}
+
+// KeyBinding describes one active input action → key assignment.
+message KeyBinding {
+  string          action = 1; // vocabulary name e.g. "move.thrust_forward"
+  string          key    = 2; // Raylib key name e.g. "W"
+  repeated string mods   = 3; // modifier names: "SHIFT", "CTRL", "ALT"
+}

@@ -219,6 +219,20 @@ type ScanKeybindFilesCmd struct {
 	RespCh chan<- []string
 }
 
+// GetKeymapCmd returns a snapshot of the active key bindings on RespCh.
+// Each element is a [3]string{action, key, mods} tuple; mods is a
+// comma-separated list of modifier names (empty string when no mods).
+type GetKeymapCmd struct {
+	RespCh chan<- []KeyBindingEntry
+}
+
+// KeyBindingEntry is one row in the active key binding table.
+type KeyBindingEntry struct {
+	Action string
+	Key    string
+	Mods   []string
+}
+
 // ── marker interface implementations ─────────────────────────────────────────
 
 func (WindowSizeCmd) isAppCmd()       {}
@@ -242,6 +256,7 @@ func (OrbitCmd) isAppCmd()            {}
 func (ReloadKeymapCmd) isAppCmd()     {}
 func (SaveKeybindingsCmd) isAppCmd()  {}
 func (ScanKeybindFilesCmd) isAppCmd() {}
+func (GetKeymapCmd) isAppCmd()        {}
 func (RecordStartCmd) isAppCmd()      {}
 func (RecordPauseCmd) isAppCmd()      {}
 func (RecordStopCmd) isAppCmd()       {}

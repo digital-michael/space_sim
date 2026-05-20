@@ -208,6 +208,13 @@ func parseMods(mods []string) (ModSet, error) {
 
 // modsToStrings converts a ModSet to the string slice representation used in
 // JSON files (e.g. ["SHIFT", "CTRL"]).
+// ModsToStrings converts a ModSet bitmask into a human-readable slice of
+// modifier name strings ("SHIFT", "CTRL", "ALT", "SUPER").
+// An empty ModSet returns an empty slice (never nil).
+func ModsToStrings(mods ModSet) []string {
+	return modsToStrings(mods)
+}
+
 func modsToStrings(mods ModSet) []string {
 	if mods == 0 {
 		return []string{}

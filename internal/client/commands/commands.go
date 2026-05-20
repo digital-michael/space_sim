@@ -348,6 +348,17 @@ type RecordDelete struct {
 	Filename string
 }
 
+// ConfigReloadKeybindings reloads keybindings from the configured path and
+// hot-swaps the active KeyMap.
+//
+//	config reload keybindings
+type ConfigReloadKeybindings struct{}
+
+// HelpKeys prints the active key binding table.
+//
+//	help keys
+type HelpKeys struct{}
+
 func (SystemList) isCmd()       {}
 func (SystemGet) isCmd()        {}
 func (SystemLoad) isCmd()       {}
@@ -381,6 +392,8 @@ func (RecordStart) isCmd()      {}
 func (RecordPause) isCmd()      {}
 func (RecordStop) isCmd()       {}
 func (RecordDelete) isCmd()     {}
+func (ConfigReloadKeybindings) isCmd() {}
+func (HelpKeys) isCmd()         {}
 
 // ValidDatasetLevels is the set of accepted level names for SetDataset.
 var ValidDatasetLevels = map[string]struct{}{
@@ -524,6 +537,9 @@ func Parse(line string) (Cmd, error) {
 		return Clear{}, nil
 
 	case "help":
+		if len(args) > 0 && strings.EqualFold(args[0], "keys") {
+			return HelpKeys{}, nil
+		}
 		return Help{}, nil
 
 	case "quit", "exit":
@@ -827,6 +843,16 @@ func Parse(line string) (Cmd, error) {
 		default:
 			return nil, ErrUsage{Cmd: "record", Detail: fmt.Sprintf("unknown sub-command %q", args[0]), Example: "record start|pause|stop|delete"}
 		}
+
+	// ── Config ───────────────────────────────────────────────────────────────
+	case "config":
+		if len(args) < 2 {
+			return nil, fmt.Errorf("config: subcommand required (reload keybindings)")
+		}
+		if strings.EqualFold(args[0], "reload") && strings.EqualFold(args[1], "keybindings") {
+			return ConfigReloadKeybindings{}, nil
+		}
+		return nil, fmt.Errorf("config: unknown subcommand %q %q", args[0], args[1])
 
 	default:
 		return nil, ErrUnknownCommand{Input: fields[0]}

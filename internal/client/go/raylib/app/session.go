@@ -18,6 +18,7 @@ type runtimeSession struct {
 	debugTracker    *DebugTracker
 	navigationOrder []engine.ObjectCategory
 	ship            *ship.ShipInstance
+	driftMode       bool // move.drift_toggle: when true thrust keys are ignored
 }
 
 func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSession, err error) {

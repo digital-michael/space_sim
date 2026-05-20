@@ -591,6 +591,24 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			files = nil
 		}
 		c.RespCh <- files
+
+	case GetKeymapCmd:
+		km := a.keyMap.Load()
+		all := input.AllActions()
+		entries := make([]KeyBindingEntry, 0, len(all))
+		for _, action := range all {
+			key := km.BoundKey(action)
+			if key == 0 {
+				continue
+			}
+			mods := input.ModsToStrings(km.BoundMods(action))
+			entries = append(entries, KeyBindingEntry{
+				Action: action.String(),
+				Key:    input.KeyName(key),
+				Mods:   mods,
+			})
+		}
+		c.RespCh <- entries
 	}
 }
 

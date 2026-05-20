@@ -43,6 +43,8 @@ const (
 	ShutdownServiceName = "spacesim.v1.ShutdownService"
 	// RecordingServiceName is the fully-qualified name of the RecordingService service.
 	RecordingServiceName = "spacesim.v1.RecordingService"
+	// ConfigServiceName is the fully-qualified name of the ConfigService service.
+	ConfigServiceName = "spacesim.v1.ConfigService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -135,6 +137,12 @@ const (
 	// RecordingServiceStopRecordingProcedure is the fully-qualified name of the RecordingService's
 	// StopRecording RPC.
 	RecordingServiceStopRecordingProcedure = "/spacesim.v1.RecordingService/StopRecording"
+	// ConfigServiceReloadKeybindingsProcedure is the fully-qualified name of the ConfigService's
+	// ReloadKeybindings RPC.
+	ConfigServiceReloadKeybindingsProcedure = "/spacesim.v1.ConfigService/ReloadKeybindings"
+	// ConfigServiceGetKeybindingsProcedure is the fully-qualified name of the ConfigService's
+	// GetKeybindings RPC.
+	ConfigServiceGetKeybindingsProcedure = "/spacesim.v1.ConfigService/GetKeybindings"
 )
 
 // SimulationServiceClient is a client for the spacesim.v1.SimulationService service.
@@ -1301,4 +1309,106 @@ func (UnimplementedRecordingServiceHandler) PauseRecording(context.Context, *con
 
 func (UnimplementedRecordingServiceHandler) StopRecording(context.Context, *connect.Request[v1.StopRecordingRequest]) (*connect.Response[v1.StopRecordingResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.RecordingService.StopRecording is not implemented"))
+}
+
+// ConfigServiceClient is a client for the spacesim.v1.ConfigService service.
+type ConfigServiceClient interface {
+	// ReloadKeybindings re-reads configs/keybindings.json and hot-swaps the
+	// active KeyMap without restarting the app.
+	ReloadKeybindings(context.Context, *connect.Request[v1.ReloadKeybindingsRequest]) (*connect.Response[v1.ReloadKeybindingsResponse], error)
+	// GetKeybindings returns the full active key binding table (profile + overrides).
+	GetKeybindings(context.Context, *connect.Request[v1.GetKeybindingsRequest]) (*connect.Response[v1.GetKeybindingsResponse], error)
+}
+
+// NewConfigServiceClient constructs a client for the spacesim.v1.ConfigService service. By default,
+// it uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and
+// sends uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC()
+// or connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewConfigServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ConfigServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	configServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("ConfigService").Methods()
+	return &configServiceClient{
+		reloadKeybindings: connect.NewClient[v1.ReloadKeybindingsRequest, v1.ReloadKeybindingsResponse](
+			httpClient,
+			baseURL+ConfigServiceReloadKeybindingsProcedure,
+			connect.WithSchema(configServiceMethods.ByName("ReloadKeybindings")),
+			connect.WithClientOptions(opts...),
+		),
+		getKeybindings: connect.NewClient[v1.GetKeybindingsRequest, v1.GetKeybindingsResponse](
+			httpClient,
+			baseURL+ConfigServiceGetKeybindingsProcedure,
+			connect.WithSchema(configServiceMethods.ByName("GetKeybindings")),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// configServiceClient implements ConfigServiceClient.
+type configServiceClient struct {
+	reloadKeybindings *connect.Client[v1.ReloadKeybindingsRequest, v1.ReloadKeybindingsResponse]
+	getKeybindings    *connect.Client[v1.GetKeybindingsRequest, v1.GetKeybindingsResponse]
+}
+
+// ReloadKeybindings calls spacesim.v1.ConfigService.ReloadKeybindings.
+func (c *configServiceClient) ReloadKeybindings(ctx context.Context, req *connect.Request[v1.ReloadKeybindingsRequest]) (*connect.Response[v1.ReloadKeybindingsResponse], error) {
+	return c.reloadKeybindings.CallUnary(ctx, req)
+}
+
+// GetKeybindings calls spacesim.v1.ConfigService.GetKeybindings.
+func (c *configServiceClient) GetKeybindings(ctx context.Context, req *connect.Request[v1.GetKeybindingsRequest]) (*connect.Response[v1.GetKeybindingsResponse], error) {
+	return c.getKeybindings.CallUnary(ctx, req)
+}
+
+// ConfigServiceHandler is an implementation of the spacesim.v1.ConfigService service.
+type ConfigServiceHandler interface {
+	// ReloadKeybindings re-reads configs/keybindings.json and hot-swaps the
+	// active KeyMap without restarting the app.
+	ReloadKeybindings(context.Context, *connect.Request[v1.ReloadKeybindingsRequest]) (*connect.Response[v1.ReloadKeybindingsResponse], error)
+	// GetKeybindings returns the full active key binding table (profile + overrides).
+	GetKeybindings(context.Context, *connect.Request[v1.GetKeybindingsRequest]) (*connect.Response[v1.GetKeybindingsResponse], error)
+}
+
+// NewConfigServiceHandler builds an HTTP handler from the service implementation. It returns the
+// path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewConfigServiceHandler(svc ConfigServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	configServiceMethods := v1.File_spacesim_v1_simulation_proto.Services().ByName("ConfigService").Methods()
+	configServiceReloadKeybindingsHandler := connect.NewUnaryHandler(
+		ConfigServiceReloadKeybindingsProcedure,
+		svc.ReloadKeybindings,
+		connect.WithSchema(configServiceMethods.ByName("ReloadKeybindings")),
+		connect.WithHandlerOptions(opts...),
+	)
+	configServiceGetKeybindingsHandler := connect.NewUnaryHandler(
+		ConfigServiceGetKeybindingsProcedure,
+		svc.GetKeybindings,
+		connect.WithSchema(configServiceMethods.ByName("GetKeybindings")),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/spacesim.v1.ConfigService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ConfigServiceReloadKeybindingsProcedure:
+			configServiceReloadKeybindingsHandler.ServeHTTP(w, r)
+		case ConfigServiceGetKeybindingsProcedure:
+			configServiceGetKeybindingsHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedConfigServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedConfigServiceHandler struct{}
+
+func (UnimplementedConfigServiceHandler) ReloadKeybindings(context.Context, *connect.Request[v1.ReloadKeybindingsRequest]) (*connect.Response[v1.ReloadKeybindingsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.ConfigService.ReloadKeybindings is not implemented"))
+}
+
+func (UnimplementedConfigServiceHandler) GetKeybindings(context.Context, *connect.Request[v1.GetKeybindingsRequest]) (*connect.Response[v1.GetKeybindingsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.ConfigService.GetKeybindings is not implemented"))
 }
