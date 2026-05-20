@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-18
+2026-05-20
 
 ## Table of Contents
 1. How to Use This File
@@ -58,7 +58,7 @@ Planning Documents
 	F-019 Run Scripts from UI
 	F-020 Multi-Client gRPC Session Layer
 	F-021 Client Physical Marker
-	F-022 Client Locomotion and Physics
+	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending F-013)
 	F-023 Keyboard Configuration 🔄 In Progress (Phase 1 partial)
 	F-024 Multiplayer HUD Enhancements
 	F-025 Ship-to-Ship Communications
@@ -69,7 +69,7 @@ Planning Documents
 	F-030 Solar Weather Events (Flares, CMEs, Particle Storms)
 	F-031 Asteroid Visual Classification by Mass
 	F-032 ⚠️ Integrate Keybindings into All Simulator Commands (HIGH PRIORITY)
-	F-033 Ship Definition (Externally-Loaded Ship Catalog)
+	F-033 Ship Definition (Externally-Loaded Ship Catalog) ✅ Phase 1 complete (2026-05-20)
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -305,11 +305,11 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 4a | **F-023 Phase 1 complete** `DrainQueue()` + all actions wired (F-032) | Keyboard config is user-visible but non-functional until F-032 closes; do this as one unit |
 | 4b | **F-032** Close keybinding vocabulary gaps | Runs in parallel with / immediately after F-023 Phase 1; no new infrastructure needed |
 | 4c | **TD-002** Decouple sim tick from render/input loop | Full fix for input latency; also the architectural pattern F-010 headless split needs |
-| 5 | **F-020 Phase 1** Multi-client session registry | Foundation for F-022, F-033, and F-021 |
-| 5a | **F-033 Phase 1** Ship definition + catalog + instance | Provides capability ratings for F-022 Day 1; starts immediately after F-020 Phase 1 |
+| 5 | ✅ **F-020 Phase 1** Multi-client session registry | Foundation for F-022, F-033, and F-021 |
+| 5a | ✅ **F-033 Phase 1** Ship definition + catalog + instance — 2026-05-20 | Provides capability ratings for F-022 Day 1; starts immediately after F-020 Phase 1 |
 | 5b | **F-021 Phase 1** Player physical marker | Visual identity; can be done in parallel with F-033 Phase 1 |
-| 6 | **F-022 Phase 1** Kinematic movement | Thrusters + warp + drift without gravity; uses F-033 ShipInstance ratings |
-| 6a | **F-022 §9** Player-as-Ship wiring | Camera forward → FacingVector; thrust along facing; turn rate from ShipInstance |
+| 6 | ✅ **F-022 Phase 1** Kinematic movement — 2026-05-20 | Thrusters + warp + drift without gravity; uses F-033 ShipInstance ratings |
+| 6a | ✅ **F-022 §9** Player-as-Ship wiring — 2026-05-20 | Camera forward → FacingVector; thrust along facing; turn rate from ShipInstance |
 | 7 | **F-010** Multi-machine split (headless server + client) | Network foundation |
 | 8 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
 | 9 | **F-008** Artifact object type | Content foundation for F-009 |
