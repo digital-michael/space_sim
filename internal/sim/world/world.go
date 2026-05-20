@@ -7,17 +7,19 @@ import (
 	"fmt"
 	"math/rand"
 	"strings"
+	"sync/atomic"
 
 	"github.com/digital-michael/space_sim/internal/protocol"
 	"github.com/digital-michael/space_sim/internal/sim"
 	"github.com/digital-michael/space_sim/internal/sim/engine"
 )
 
-// Simulation wraps engine.Simulation with dataset management driven by the
+// World wraps engine.Simulation with dataset management driven by the
 // loaded system configuration.
 type World struct {
 	*engine.Simulation
-	beltConfigs []*engine.FeatureConfig // belt feature configs for count queries
+	beltConfigs   []*engine.FeatureConfig // belt feature configs for count queries
+	snapshotStore atomic.Value            // stores protocol.WorldSnapshot; written by sim goroutine
 }
 
 // NewSimulation loads an environment from configPath and starts the simulation
@@ -142,7 +144,19 @@ func NewWorld(hz float64, configPath string) (*World, error) {
 	// created it. This happens before Start() so there is no data race.
 	dbPtr = inner.GetState()
 
-	return &World{Simulation: inner, beltConfigs: beltConfigs}, nil
+	w := &World{Simulation: inner, beltConfigs: beltConfigs}
+
+	// Wire the post-tick hook so the sim goroutine builds and publishes a
+	// ready-to-render snapshot after each tick. The main render loop loads
+	// the snapshot atomically (LatestSnapshot) instead of cloning while
+	// holding the front lock, eliminating the mutex contention that caused
+	// the input-latency symptom described in TD-002.
+	inner.SetPostTickHook(func() {
+		snap := w.Snapshot() // clone on sim goroutine; main thread load is O(1)
+		w.snapshotStore.Store(snap)
+	})
+
+	return w, nil
 }
 
 // GetAsteroidCount returns the total number of belt objects for the given
@@ -159,8 +173,10 @@ func (s *World) GetAsteroidCount(dataset engine.AsteroidDataset) int {
 	return total
 }
 
-// Snapshot returns a lock-free point-in-time copy of the simulation state.
-// Safe to read after this call returns without holding any lock.
+// Snapshot returns a point-in-time copy of the simulation state by locking
+// the front buffer and cloning. Prefer LatestSnapshot on the main render
+// thread; use Snapshot only when a fresh clone is explicitly required (e.g.
+// from gRPC handlers or the sim goroutine's post-tick hook).
 func (w *World) Snapshot() protocol.WorldSnapshot {
 	db := w.GetState()
 	state := db.LockFront()
@@ -170,6 +186,19 @@ func (w *World) Snapshot() protocol.WorldSnapshot {
 		State: cloned,
 		Speed: w.GetSpeed(),
 	}
+}
+
+// LatestSnapshot returns the most recent snapshot published by the sim
+// goroutine's post-tick hook without any locking or cloning. It is safe to
+// call from any goroutine.
+//
+// Falls back to Snapshot on the first call before the sim goroutine has
+// produced its first tick (e.g. during startup).
+func (w *World) LatestSnapshot() protocol.WorldSnapshot {
+	if v := w.snapshotStore.Load(); v != nil {
+		return v.(protocol.WorldSnapshot)
+	}
+	return w.Snapshot()
 }
 
 // applyBeltConfig translates a FeatureConfig into a BeltConfig and populates

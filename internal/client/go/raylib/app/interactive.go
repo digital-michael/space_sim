@@ -43,7 +43,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		a.syncWindowState()
 		a.syncRenderState()
 		dt := rl.GetFrameTime()
-		snap := session.sim.Snapshot()
+		snap := session.sim.LatestSnapshot()
 		a.broadcaster.Push(snap)
 		a.drainCmds(session, snap)
 		state := snap.State

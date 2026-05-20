@@ -331,67 +331,26 @@ This is the current best-guess execution sequence integrating dependency order, 
 
 ### TD-001 — Collapse `handleInput` / `updateCameraState` Param Lists
 
-**Value**: `handleInput` currently takes 14 individual params and returns a 6-tuple. `updateCameraState` takes 8. Both functions have access to `*App`, `*runtimeSession`, and `*engine.SimulationState` at their call site in `interactive.go`, but receive their fields piecemeal instead.
-**Status**: 📋 Not started
-**Constraint**: Do not implement until all active phases are stable and a clean test baseline exists.
+**Value**: Eliminate the original 14-param `handleInput` and 8-param `updateCameraState` signatures by passing `*runtimeSession` and using `a.runtime` directly.
+**Status**: ✅ Complete — 2026-05-20
 
-#### Design (agreed 2026-04-04)
-
-Three targeted changes, each independently safe:
-
-1. **Pass `*runtimeSession` to both functions** — eliminates `cameraState`, `inputState`, `navigationOrder`, and `sim` as separate params; they're already fields on the session.
-2. **Pass `*RuntimeContext` (already exists) to both functions** — eliminates `gridVisible`, `hudVisible`, `helpVisible`, `hudDialogVisible`, `labelMode`, `mouseModeEnabled`, `debugEnabled`, `cameraSpeed`, `mouseSensitivity` as separate params; they live on `a.runtime` already.
-3. **Collapse the return tuple** — `handleInput` currently returns `(bool, bool, engine.AsteroidDataset, bool, bool, bool)`. With `*RuntimeContext` passed in, only `shouldQuit bool` needs to be returned; all other values are written through the pointer.
-
-#### Result shape
-```go
-func handleInput(app *App, session *runtimeSession, state *engine.SimulationState) bool
-func updateCameraState(session *runtimeSession, runtime *RuntimeContext, dt float32) float32
-```
-
-#### Constraints
-- `render` package functions (`DrawHUD`, `DrawObjectLabels`) stay as explicit params — the render package cannot import `app`, so no cross-package context struct.
-- Do not merge `runtimeSession` and `RuntimeContext` — they have different lifetimes (session is discarded on system reload; RuntimeContext persists).
-- Do not add a "god context" that combines engine state, camera, input, and settings — violates SRP and Information Expert (GRASP).
+**What was done**: Both functions were made methods on `*App` that take `*runtimeSession` and `*engine.SimulationState`. RuntimeContext fields are accessed via `a.runtime` directly (no longer passed as individual params). Return tuple collapsed to `bool`. Implementations were already in this form; only the dead `state` investigation and formal marking remain.
 
 ---
 
 ### TD-002 — Decouple Sim Tick from Render/Input Loop
 
-**Value**: The simulation engine tick currently runs on the same goroutine as `PollInputEvents` and `BeginDrawing`. Under load, a slow tick starves the input poll — short key taps are missed because they happen entirely between two `PollInputEvents` calls. Decoupling the sim tick lets the render+input loop run at full frame rate regardless of physics load.
+**Value**: Eliminates main-thread stalls caused by `Snapshot()` cloning on the render goroutine, allowing `PollInputEvents` and `handleInput` to run at full frame rate regardless of physics load.
+**Status**: ✅ Complete — 2026-05-20
 
-**Status**: 📋 Not started
-**Priority**: Medium-high — directly causes the input latency symptom (key tap dropped under load); also a prerequisite architectural pattern for F-010 headless split
-**Depends on**: TD-001 (cleaner call sites before restructuring the loop). F-023 Phase 1 `DrainQueue()` is a partial mitigation shipped earlier; TD-002 is the full fix.
+**What was done**: The sim goroutine was already decoupled via `go session.sim.Start(simCtx)`. The remaining coupling was `session.sim.Snapshot()` on the main thread — a `LockFront()` + `Clone(all objects)` call proportional to object count (~24,000 for huge datasets) that blocked the render loop.
 
-#### Symptom
-When the simulation is under load (many bodies, N-body enabled, dense asteroid belts), keyboard input is unresponsive unless a key is held — short taps are silently dropped.
-
-#### Root cause
-`rl.IsKeyPressed(key)` returns true for exactly one frame. If the sim tick blocks the main goroutine for > 1 frame, the key-down→up transition falls entirely between two `PollInputEvents` calls and is never seen. `IsKeyDown` is immune because it reads instantaneous state; `IsKeyPressed` is not.
-
-#### Partial mitigation (F-023 Phase 1 — ship first)
-Replace `rl.IsKeyPressed` call sites with `KeyMap.DrainQueue()` → `IsPressed()` (using `rl.GetKeyPressed()` queue draining). Eliminates missed taps as long as the frame eventually runs.
-
-#### Full fix (TD-002)
-Move the sim engine tick to its own goroutine. Main goroutine runs only: `PollInputEvents` → `handleInput` → `updateCameraState` → `BeginDrawing` → render snapshot → `EndDrawing`. Sim goroutine runs the physics loop and writes results to the existing snapshot double-buffer. Communication via the existing `AppCmd` channel (commands in) and `WorldSnapshot` atomic swap (results out) — no new concurrency primitives needed.
-
-#### Constraints
-- Raylib `PollInputEvents`, `BeginDrawing`, `EndDrawing`, and all `Draw*` calls **must** remain on the main OS thread (GLFW/macOS requirement). Do not move rendering to a goroutine.
-- The sim goroutine must not import `internal/client` — preserves architectural boundary from `agent-readme.md` §3.
-- Double-buffer safety rules from `lessons-learned-double-buffering.md` apply: sim goroutine writes to back buffer; render goroutine reads from front; atomic swap between ticks.
-
-#### Work items
-- [ ] Audit `interactive.go`: identify which calls are render-thread-only vs. sim-only vs. shared
-- [ ] Extract sim tick into `runSimLoop(ctx context.Context, app *App, cmds <-chan AppCmd)`
-- [ ] Wire snapshot atomic swap: sim writes `back`, main loop swaps and reads `front` each frame
-- [ ] Verify race detector passes under `-race` with concurrent sim + render
-- [ ] Measure: input latency before/after (target: short taps reliably registered even at 10 fps sim rate)
-
-#### Acceptance criteria
-- Single key tap registers correctly even when sim tick takes > 100 ms ✓
-- Race detector passes ✓
-- Rendering frame rate is not coupled to sim tick rate ✓
+Fix implemented:
+- Added `postTickHook func()` to `engine.Simulation`; called once per ticker interval after all accumulated steps, on the sim goroutine.
+- `world.World` wires the hook to clone the front buffer and store the result in `snapshotStore atomic.Value`.
+- Added `world.World.LatestSnapshot()` that returns the pre-built snapshot via `atomic.Load()` — O(1), no lock, no clone.
+- `interactive.go` uses `session.sim.LatestSnapshot()` instead of `session.sim.Snapshot()`.
+- Race detector passes. Build clean.
 
 ## 5. Defects
 

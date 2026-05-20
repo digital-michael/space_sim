@@ -23,6 +23,12 @@ type Simulation struct {
 	// dequeued. Injected by the caller so the engine stays decoupled from
 	// domain logic (belt allocation, physics model switching, etc.).
 	applyCommand func(SimCommand)
+
+	// postTickHook is called once per ticker interval after all accumulated
+	// physics steps complete. Runs on the sim goroutine. Used by world.World
+	// to build and atomically publish a ready-to-render snapshot so the main
+	// thread never has to lock or clone.
+	postTickHook func()
 }
 
 // NewSimulation creates a simulation from an already-loaded state.
@@ -60,12 +66,25 @@ func NewSimulation(state *SimulationState, hz float64, applyCommandFn func(SimCo
 	} else {
 		sim.applyCommand = func(SimCommand) {}
 	}
+	sim.postTickHook = func() {}
 	return sim
 }
 
 // GetState returns the double buffer for renderer access.
 func (s *Simulation) GetState() *DoubleBuffer {
 	return s.state
+}
+
+// SetPostTickHook registers a function that is called once per ticker
+// interval, after all accumulated physics steps complete. It runs on the
+// simulation goroutine. Only one hook is supported; calling SetPostTickHook
+// again replaces the previous hook.
+func (s *Simulation) SetPostTickHook(fn func()) {
+	if fn == nil {
+		s.postTickHook = func() {}
+		return
+	}
+	s.postTickHook = fn
 }
 
 // Start begins the simulation loop; blocks until ctx is cancelled or Stop is called.
@@ -112,6 +131,10 @@ func (s *Simulation) Start(ctx context.Context) {
 				s.updateCounter++
 				s.update(dt)
 			}
+			// Publish a ready-to-render snapshot once per ticker interval,
+			// after all accumulated steps. Runs on the sim goroutine so the
+			// main thread never needs to lock or clone.
+			s.postTickHook()
 		}
 	}
 }
