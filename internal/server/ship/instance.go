@@ -34,10 +34,10 @@ type ShipInstance struct {
 	CurrentPowerW float64 // Remaining free power this tick.
 
 	// --- Damage (0.0 = destroyed, 1.0 = undamaged) ---
-	HullIntegrity    float32
-	EngineIntegrity  float32
-	PowerIntegrity   float32
-	ShieldIntegrity  float32 // Reserved for future shield system.
+	HullIntegrity   float32
+	EngineIntegrity float32
+	PowerIntegrity  float32
+	ShieldIntegrity float32 // Reserved for future shield system.
 }
 
 // NewInstance creates a ShipInstance for a session. sessionID is used to

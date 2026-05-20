@@ -1168,8 +1168,8 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 				// Clamp to max speed (hard cap from ShipDefinition).
 				if maxSpeed := session.ship.Definition.MaxSpeedSimUnitsPerS; maxSpeed > 0 {
 					speed := math.Sqrt(
-						session.ship.Velocity[0]*session.ship.Velocity[0]+
-							session.ship.Velocity[1]*session.ship.Velocity[1]+
+						session.ship.Velocity[0]*session.ship.Velocity[0] +
+							session.ship.Velocity[1]*session.ship.Velocity[1] +
 							session.ship.Velocity[2]*session.ship.Velocity[2],
 					)
 					if speed > maxSpeed {
