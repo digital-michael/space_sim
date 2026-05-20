@@ -1209,36 +1209,36 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 				// Build thrust intent from held keys (suppressed in drift mode).
 				var ax, ay, az float64
 				if !session.driftMode {
-				if km.IsDown(input.ActionThrustForward) {
-					ax += float64(session.cameraState.Forward.X) * accelSimUnits
-					ay += float64(session.cameraState.Forward.Y) * accelSimUnits
-					az += float64(session.cameraState.Forward.Z) * accelSimUnits
-				}
-				if km.IsDown(input.ActionThrustBackward) {
-					ax -= float64(session.cameraState.Forward.X) * accelSimUnits
-					ay -= float64(session.cameraState.Forward.Y) * accelSimUnits
-					az -= float64(session.cameraState.Forward.Z) * accelSimUnits
-				}
-				if km.IsDown(input.ActionThrustLeft) {
-					ax -= float64(right.X) * accelSimUnits
-					ay -= float64(right.Y) * accelSimUnits
-					az -= float64(right.Z) * accelSimUnits
-				}
-				if km.IsDown(input.ActionThrustRight) {
-					ax += float64(right.X) * accelSimUnits
-					ay += float64(right.Y) * accelSimUnits
-					az += float64(right.Z) * accelSimUnits
-				}
-				if km.IsDown(input.ActionThrustUp) {
-					ax += float64(session.cameraState.Up.X) * accelSimUnits
-					ay += float64(session.cameraState.Up.Y) * accelSimUnits
-					az += float64(session.cameraState.Up.Z) * accelSimUnits
-				}
-				if km.IsDown(input.ActionThrustDown) {
-					ax -= float64(session.cameraState.Up.X) * accelSimUnits
-					ay -= float64(session.cameraState.Up.Y) * accelSimUnits
-					az -= float64(session.cameraState.Up.Z) * accelSimUnits
-				}
+					if km.IsDown(input.ActionThrustForward) {
+						ax += float64(session.cameraState.Forward.X) * accelSimUnits
+						ay += float64(session.cameraState.Forward.Y) * accelSimUnits
+						az += float64(session.cameraState.Forward.Z) * accelSimUnits
+					}
+					if km.IsDown(input.ActionThrustBackward) {
+						ax -= float64(session.cameraState.Forward.X) * accelSimUnits
+						ay -= float64(session.cameraState.Forward.Y) * accelSimUnits
+						az -= float64(session.cameraState.Forward.Z) * accelSimUnits
+					}
+					if km.IsDown(input.ActionThrustLeft) {
+						ax -= float64(right.X) * accelSimUnits
+						ay -= float64(right.Y) * accelSimUnits
+						az -= float64(right.Z) * accelSimUnits
+					}
+					if km.IsDown(input.ActionThrustRight) {
+						ax += float64(right.X) * accelSimUnits
+						ay += float64(right.Y) * accelSimUnits
+						az += float64(right.Z) * accelSimUnits
+					}
+					if km.IsDown(input.ActionThrustUp) {
+						ax += float64(session.cameraState.Up.X) * accelSimUnits
+						ay += float64(session.cameraState.Up.Y) * accelSimUnits
+						az += float64(session.cameraState.Up.Z) * accelSimUnits
+					}
+					if km.IsDown(input.ActionThrustDown) {
+						ax -= float64(session.cameraState.Up.X) * accelSimUnits
+						ay -= float64(session.cameraState.Up.Y) * accelSimUnits
+						az -= float64(session.cameraState.Up.Z) * accelSimUnits
+					}
 				} // end !driftMode
 
 				// velocity += accel * dt
