@@ -1111,53 +1111,140 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 			session.cameraState.UpdateForwardFromAngles()
 		}
 
-		// WASD movement with Shift for 2x speed
-		moveSpeed := a.runtime.CameraSpeed * dt
-		if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
-			moveSpeed *= 2.0 // Consistent 2x speed boost
+		// Mirror camera facing into ShipInstance.FacingVector every frame
+		// (happens regardless of input-suspension state; spec §9.4).
+		if session.ship != nil {
+			fwd := session.cameraState.Forward
+			session.ship.FacingVector = [3]float32{fwd.X, fwd.Y, fwd.Z}
 		}
+
 		right := session.cameraState.GetRight()
 
 		if !mainWindowInputSuspended {
-			if km.IsDown(input.ActionThrustForward) {
-				session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Forward.Scale(moveSpeed))
-			}
-			if km.IsDown(input.ActionThrustBackward) {
-				session.cameraState.Position = session.cameraState.Position.Sub(session.cameraState.Forward.Scale(moveSpeed))
-			}
-			if km.IsDown(input.ActionThrustLeft) {
-				session.cameraState.Position = session.cameraState.Position.Sub(right.Scale(moveSpeed))
-			}
-			if km.IsDown(input.ActionThrustRight) {
-				session.cameraState.Position = session.cameraState.Position.Add(right.Scale(moveSpeed))
-			}
+			if session.ship != nil {
+				// --- Ship kinematics (F-022 §9, Phase 2 using F-033 ShipInstance) ---
+				// Acceleration is in m/s²; convert to sim_units/s² for integration.
+				accelSimUnits := session.ship.EffectiveAccelMaxMS2() / engine.MetersPerSimUnit
 
-			// Space for up, Ctrl for down (Shift used for speed) - DISABLED FOR TESTING
-			// if rl.IsKeyDown(rl.KeySpace) {
-			// 	session.cameraState.Position.Y += moveSpeed
-			// }
-			// if rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl) {
-			// 	session.cameraState.Position.Y -= moveSpeed
-			// }
+				// Build thrust intent from held keys.
+				var ax, ay, az float64
+				if km.IsDown(input.ActionThrustForward) {
+					ax += float64(session.cameraState.Forward.X) * accelSimUnits
+					ay += float64(session.cameraState.Forward.Y) * accelSimUnits
+					az += float64(session.cameraState.Forward.Z) * accelSimUnits
+				}
+				if km.IsDown(input.ActionThrustBackward) {
+					ax -= float64(session.cameraState.Forward.X) * accelSimUnits
+					ay -= float64(session.cameraState.Forward.Y) * accelSimUnits
+					az -= float64(session.cameraState.Forward.Z) * accelSimUnits
+				}
+				if km.IsDown(input.ActionThrustLeft) {
+					ax -= float64(right.X) * accelSimUnits
+					ay -= float64(right.Y) * accelSimUnits
+					az -= float64(right.Z) * accelSimUnits
+				}
+				if km.IsDown(input.ActionThrustRight) {
+					ax += float64(right.X) * accelSimUnits
+					ay += float64(right.Y) * accelSimUnits
+					az += float64(right.Z) * accelSimUnits
+				}
+				if km.IsDown(input.ActionThrustUp) {
+					ax += float64(session.cameraState.Up.X) * accelSimUnits
+					ay += float64(session.cameraState.Up.Y) * accelSimUnits
+					az += float64(session.cameraState.Up.Z) * accelSimUnits
+				}
+				if km.IsDown(input.ActionThrustDown) {
+					ax -= float64(session.cameraState.Up.X) * accelSimUnits
+					ay -= float64(session.cameraState.Up.Y) * accelSimUnits
+					az -= float64(session.cameraState.Up.Z) * accelSimUnits
+				}
 
-			// Arrow keys move camera position in free-fly mode
-			if km.IsDown(input.ActionCameraPitchUp) {
-				session.cameraState.Position.Y += arrowSpeed
-			}
-			if km.IsDown(input.ActionCameraPitchDown) {
-				session.cameraState.Position.Y -= arrowSpeed
-			}
-			if km.IsDown(input.ActionCameraYawLeft) {
-				session.cameraState.Position.X -= arrowSpeed
-			}
-			if km.IsDown(input.ActionCameraYawRight) {
-				session.cameraState.Position.X += arrowSpeed
+				// velocity += accel * dt
+				dtF := float64(dt)
+				session.ship.Velocity[0] += ax * dtF
+				session.ship.Velocity[1] += ay * dtF
+				session.ship.Velocity[2] += az * dtF
+
+				// Clamp to max speed (hard cap from ShipDefinition).
+				if maxSpeed := session.ship.Definition.MaxSpeedSimUnitsPerS; maxSpeed > 0 {
+					speed := math.Sqrt(
+						session.ship.Velocity[0]*session.ship.Velocity[0]+
+							session.ship.Velocity[1]*session.ship.Velocity[1]+
+							session.ship.Velocity[2]*session.ship.Velocity[2],
+					)
+					if speed > maxSpeed {
+						scale := maxSpeed / speed
+						session.ship.Velocity[0] *= scale
+						session.ship.Velocity[1] *= scale
+						session.ship.Velocity[2] *= scale
+					}
+				}
+
+				// position += velocity * dt
+				session.ship.Position[0] += session.ship.Velocity[0] * dtF
+				session.ship.Position[1] += session.ship.Velocity[1] * dtF
+				session.ship.Position[2] += session.ship.Velocity[2] * dtF
+
+				// Arrow keys move ship position directly (no inertia; useful for
+				// spectator repositioning without changing ship velocity state).
+				if km.IsDown(input.ActionCameraPitchUp) {
+					session.ship.Position[1] += float64(arrowSpeed)
+				}
+				if km.IsDown(input.ActionCameraPitchDown) {
+					session.ship.Position[1] -= float64(arrowSpeed)
+				}
+				if km.IsDown(input.ActionCameraYawLeft) {
+					session.ship.Position[0] -= float64(arrowSpeed)
+				}
+				if km.IsDown(input.ActionCameraYawRight) {
+					session.ship.Position[0] += float64(arrowSpeed)
+				}
+
+				// Mirror ship world position to camera (camera IS the ship cockpit).
+				session.cameraState.Position = engine.Vector3{
+					X: float32(session.ship.Position[0]),
+					Y: float32(session.ship.Position[1]),
+					Z: float32(session.ship.Position[2]),
+				}
+			} else {
+				// --- Legacy direct-position camera (no ship) ---
+				moveSpeed := a.runtime.CameraSpeed * dt
+				if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
+					moveSpeed *= 2.0
+				}
+				if km.IsDown(input.ActionThrustForward) {
+					session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Forward.Scale(moveSpeed))
+				}
+				if km.IsDown(input.ActionThrustBackward) {
+					session.cameraState.Position = session.cameraState.Position.Sub(session.cameraState.Forward.Scale(moveSpeed))
+				}
+				if km.IsDown(input.ActionThrustLeft) {
+					session.cameraState.Position = session.cameraState.Position.Sub(right.Scale(moveSpeed))
+				}
+				if km.IsDown(input.ActionThrustRight) {
+					session.cameraState.Position = session.cameraState.Position.Add(right.Scale(moveSpeed))
+				}
+				if km.IsDown(input.ActionCameraPitchUp) {
+					session.cameraState.Position.Y += arrowSpeed
+				}
+				if km.IsDown(input.ActionCameraPitchDown) {
+					session.cameraState.Position.Y -= arrowSpeed
+				}
+				if km.IsDown(input.ActionCameraYawLeft) {
+					session.cameraState.Position.X -= arrowSpeed
+				}
+				if km.IsDown(input.ActionCameraYawRight) {
+					session.cameraState.Position.X += arrowSpeed
+				}
 			}
 		}
+
 		// Apply persistent velocity drift (set via gRPC NavigationService).
-		// Zero velocity has no effect; this is per-frame AU/s integration.
-		if session.cameraState.Velocity.X != 0 || session.cameraState.Velocity.Y != 0 || session.cameraState.Velocity.Z != 0 {
-			session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Velocity.Scale(dt))
+		// Only applies when there is no ShipInstance; ship kinematics own position otherwise.
+		if session.ship == nil {
+			if session.cameraState.Velocity.X != 0 || session.cameraState.Velocity.Y != 0 || session.cameraState.Velocity.Z != 0 {
+				session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Velocity.Scale(dt))
+			}
 		}
 	}
 

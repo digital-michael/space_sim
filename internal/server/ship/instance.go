@@ -24,8 +24,9 @@ type ShipInstance struct {
 	// --- Engine ---
 	ActiveStage int // 1-based index into Definition.EngineStages.
 
-	// --- Kinematics (sim units / s) ---
-	Velocity       [3]float64 // Current velocity vector.
+	// --- Kinematics (sim units and sim units/s) ---
+	Position       [3]float64 // World-space position in simulation units.
+	Velocity       [3]float64 // Current velocity vector (sim units/s).
 	MovementVector [3]float64 // Thrust intent this frame (unit vector × throttle).
 	FacingVector   [3]float32 // Unit forward vector (ship nose direction).
 

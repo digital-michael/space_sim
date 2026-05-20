@@ -98,13 +98,22 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 		}
 	}
 
+	shipInst := loadDefaultShip(a.cfg)
+	if shipInst != nil {
+		// Initialise ship position to match the camera start position so the
+		// first free-fly frame doesn't snap the camera to the origin.
+		shipInst.Position[0] = float64(cameraState.Position.X)
+		shipInst.Position[1] = float64(cameraState.Position.Y)
+		shipInst.Position[2] = float64(cameraState.Position.Z)
+	}
+
 	return &runtimeSession{
 		sim:             sim,
 		cameraState:     cameraState,
 		inputState:      inputState,
 		debugTracker:    debugTracker,
 		navigationOrder: navigationOrder,
-		ship:            loadDefaultShip(a.cfg),
+		ship:            shipInst,
 	}, nil
 }
 

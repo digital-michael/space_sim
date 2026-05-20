@@ -1,5 +1,11 @@
 package engine
 
+// MetersPerSimUnit is the number of real metres in one simulation unit.
+// Derivation: Earth semi-major-axis = 100 sim units = 1 AU = 1.496 × 10¹¹ m
+// → 1 sim unit = 1.496 × 10⁹ m.
+// Use this to convert SI accelerations (m/s²) to sim-unit accelerations (sim_units/s²).
+const MetersPerSimUnit = 1.496e9
+
 // Rendering distance thresholds (simulation units).
 const (
 	// Point rendering — when objects switch from 3D mesh to point.
