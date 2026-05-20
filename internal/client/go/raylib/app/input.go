@@ -60,7 +60,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 	}
 
 	// sim.timescale_decrease / sim.timescale_increase: Step through time rates
-	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTimescaleDecrease) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTimescaleDecrease) && session.sim != nil {
 		back := session.sim.GetState().GetBack()
 		// Time rates: paused, real-time, 1 hour/sec, 1 day/sec, 1 week/sec, 1 month/sec, 1 year/sec
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
@@ -88,7 +88,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 			}
 		}
 	}
-	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTimescaleIncrease) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTimescaleIncrease) && session.sim != nil {
 		back := session.sim.GetState().GetBack()
 		timeRates := []float32{0.0, 1.0, 3600.0, 86400.0, 604800.0, 2628000.0, 31557600.0}
 		timeLabels := []string{"PAUSED", "real-time", "1 hr/sec", "1 day/sec", "1 week/sec", "1 month/sec", "1 year/sec"}
@@ -117,13 +117,13 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 	}
 
 	// sim.dataset_increase / sim.dataset_decrease: Increase/decrease asteroid dataset
-	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimDatasetIncrease) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimDatasetIncrease) && session.sim != nil {
 		if a.runtime.AsteroidDataset < 3 {
 			a.runtime.AsteroidDataset++
 			session.sim.SetAsteroidDataset(a.runtime.AsteroidDataset)
 		}
 	}
-	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimDatasetDecrease) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimDatasetDecrease) && session.sim != nil {
 		if a.runtime.AsteroidDataset > 0 {
 			a.runtime.AsteroidDataset--
 			session.sim.SetAsteroidDataset(a.runtime.AsteroidDataset)
@@ -132,7 +132,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 
 	// sim.tick_speed_decrease / sim.tick_speed_increase: Physics tick rate
 	// Controls how many sim ticks fire per real second (0%–100%)
-	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTickSpeedDecrease) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTickSpeedDecrease) && session.sim != nil {
 		// Decrease anim speed
 		currentSpeed := session.sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
@@ -143,7 +143,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 			}
 		}
 	}
-	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTickSpeedIncrease) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimTickSpeedIncrease) && session.sim != nil {
 		currentSpeed := session.sim.GetSpeed()
 		speedSteps := []float64{0.0, 0.1, 0.25, 0.5, 0.75, 1.0}
 		for i := 0; i < len(speedSteps); i++ {
@@ -414,7 +414,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 	}
 
 	// sim.pause_toggle: Pause / unpause simulation (SecondsPerSecond toggle).
-	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimPauseToggle) {
+	if !mainWindowInputSuspended && km.IsPressed(input.ActionSimPauseToggle) && session.sim != nil {
 		back := session.sim.GetState().GetBack()
 		if back.SecondsPerSecond == 0 {
 			if a.runtime.PauseRestoreRate == 0 {
@@ -645,9 +645,13 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 					a.runtime.PerfConfig.UseInPlaceSwap = a.runtime.Settings.Perf.UseInPlaceSwap
 					session.inputState.PerfOptions.UseInPlaceSwap = a.runtime.Settings.Perf.UseInPlaceSwap
 					if a.runtime.Settings.Perf.UseInPlaceSwap {
-						session.sim.GetState().EnableInPlaceSwap()
+						if session.sim != nil {
+							session.sim.GetState().EnableInPlaceSwap()
+						}
 					} else {
-						session.sim.GetState().DisableInPlaceSwap()
+						if session.sim != nil {
+							session.sim.GetState().DisableInPlaceSwap()
+						}
 					}
 				}
 			case 3: // Controls tab — keybinding editor
