@@ -48,5 +48,6 @@ configs/*override*.json
 *.pb.go
 !api/proto/*.pb.go
 space-sim
+space-sim-*
 performance_debug.log
 output/

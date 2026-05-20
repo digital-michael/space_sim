@@ -5,6 +5,8 @@
 #   space-sim-grpc    — Raylib client talking to embedded gRPC server via ConnectRPC
 #                       Long-term target: split into separate client and server binaries.
 #   space-sim-repl    — Interactive CLI client for a running space-sim-grpc server.
+#   space-sim-server  — Headless physics server (no Raylib); streams snapshots via gRPC.
+#   space-sim-client  — Remote Raylib renderer; connects to space-sim-server.
 #
 # Proto generation requires buf (https://buf.build/docs/installation).
 # Run `make proto` after installing buf and adding buf.yaml / buf.gen.yaml.
@@ -21,6 +23,12 @@ GRPC_CMD := ./cmd/space-sim-grpc
 REPL_BIN := $(BIN_DIR)/space-sim-repl
 REPL_CMD := ./cmd/space-sim-repl
 
+SERVER_BIN := $(BIN_DIR)/space-sim-server
+SERVER_CMD := ./cmd/space-sim-server
+
+CLIENT_BIN := $(BIN_DIR)/space-sim-client
+CLIENT_CMD := ./cmd/space-sim-client
+
 .DEFAULT_GOAL := build
 
 .PHONY: help
@@ -30,7 +38,7 @@ help: ## Show available targets
 # ── Build ─────────────────────────────────────────────────────────────────────
 
 .PHONY: build
-build: build-direct build-grpc build-repl ## Build all binaries
+build: build-direct build-grpc build-repl build-server build-client ## Build all binaries
 
 .PHONY: build-direct
 build-direct: ## Build space-sim-direct (in-process, no gRPC)
@@ -46,6 +54,16 @@ build-grpc: ## Build space-sim-grpc (Raylib + ConnectRPC)
 build-repl: ## Build space-sim-repl (CLI client)
 	@mkdir -p $(BIN_DIR)
 	$(GO) build -o $(REPL_BIN) $(REPL_CMD)
+
+.PHONY: build-server
+build-server: ## Build space-sim-server (headless physics server, no Raylib)
+	@mkdir -p $(BIN_DIR)
+	$(GO) build -o $(SERVER_BIN) $(SERVER_CMD)
+
+.PHONY: build-client
+build-client: ## Build space-sim-client (remote Raylib renderer)
+	@mkdir -p $(BIN_DIR)
+	$(GO) build -o $(CLIENT_BIN) $(CLIENT_CMD)
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 
@@ -63,6 +81,14 @@ run-grpc: build-grpc ## Run the gRPC-coupled binary
 .PHONY: run-repl
 run-repl: build-repl ## Run the REPL client (set ADDR= to override server address)
 	./$(REPL_BIN) --addr $${ADDR:-http://localhost:9090}
+
+.PHONY: run-server
+run-server: build-server ## Run the headless physics server (set ADDR= and SYSTEM= to override)
+	./$(SERVER_BIN) --addr $${ADDR:-:8080} --system-config $${SYSTEM:-data/systems/solar_system.json}
+
+.PHONY: run-client
+run-client: build-client ## Run the remote renderer (set SERVER= to override server address)
+	./$(CLIENT_BIN) --server $${SERVER:-localhost:8080}
 
 DEMO_SCRIPT := scripts/solar-tour.txt
 

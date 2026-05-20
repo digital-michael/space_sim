@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-20
+2026-05-20 (F-010 Group A+B implemented)
 
 ## Table of Contents
 1. How to Use This File
@@ -662,7 +662,7 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-010 — Multi-Machine Architecture (Option B: headless server + network clients)
 
 **Value**: Run the simulator and gRPC server on a remote/headless machine; connect one or more Raylib renderer clients over the network. Each client has an independent camera POV. Simulation commands are admin-only via a server-side REPL.
-**Status**: 📋 Not started
+**Status**: � In Progress — Start Date: 2026-05-20
 **Priority**: High architectural — gates multi-client, multi-machine, and federated compute goals
 **Depends on**: F-011 (IAAM — need identity before multi-client commands make sense)
 
@@ -678,14 +678,14 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 #### Work Items
 
 **Group A — `cmd/space-sim-server` (headless)**
-- [ ] New entrypoint: no Raylib imports; starts `World`, starts gRPC server, blocks
+- [x] New entrypoint: no Raylib imports; starts `World`, starts gRPC server, blocks
 - [ ] Server-side admin REPL (stdin loop or dedicated port) for simulation commands (setspeed, pause, load, etc.)
-- [ ] Expose existing `SimulationService`, `WorldService`, and other handlers unchanged
+- [x] Expose existing `SimulationService`, `WorldService`, and other handlers unchanged
 
 **Group B — `cmd/space-sim-client` (Raylib renderer)**
-- [ ] Subscribe to `WorldService.StreamSnapshot` over gRPC; store latest snapshot in an `atomic.Pointer`
-- [ ] Render loop reads from atomic pointer instead of calling `sim.Snapshot()` locally
-- [ ] All simulation command RPCs removed from client — camera, nav, window controls remain local
+- [x] Subscribe to `WorldService.StreamSnapshot` over gRPC; store latest snapshot in an `atomic.Pointer`
+- [x] Render loop reads from atomic pointer instead of calling `sim.Snapshot()` locally
+- [x] All simulation command RPCs removed from client — camera, nav, window controls remain local
 
 **Bandwidth mitigations**
 - [ ] **POV frustum filtering**: client sends its current view frustum to the server each frame; server includes only objects within (or near) that frustum in the snapshot. Reuses existing `internal/client/go/raylib/spatial/` frustum logic, moved server-side.
