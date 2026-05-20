@@ -21,14 +21,18 @@ import (
 func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error {
 	startSession := func(activeSession *runtimeSession) context.CancelFunc {
 		simCtx, cancel := context.WithCancel(ctx)
-		go activeSession.sim.Start(simCtx)
+		if activeSession.sim != nil {
+			go activeSession.sim.Start(simCtx)
+		}
 		return cancel
 	}
 
 	sessionCancel := startSession(session)
 	defer func() {
 		sessionCancel()
-		session.sim.Stop()
+		if session.sim != nil {
+			session.sim.Stop()
+		}
 	}()
 
 	shouldQuit := false
@@ -43,7 +47,7 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		a.syncWindowState()
 		a.syncRenderState()
 		dt := rl.GetFrameTime()
-		snap := session.sim.LatestSnapshot()
+		snap := session.snapSrc.LatestSnapshot()
 		a.broadcaster.Push(snap)
 		a.drainCmds(session, snap)
 		state := snap.State
@@ -216,7 +220,9 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			}
 
 			sessionCancel()
-			session.sim.Stop()
+			if session.sim != nil {
+				session.sim.Stop()
+			}
 
 			a.cfg.SystemConfig = pendingSystemPath
 			session = newSession

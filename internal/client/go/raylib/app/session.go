@@ -6,13 +6,19 @@ import (
 	"path/filepath"
 
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
+	"github.com/digital-michael/space_sim/internal/protocol"
 	"github.com/digital-michael/space_sim/internal/server/ship"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	sim "github.com/digital-michael/space_sim/internal/sim/world"
 )
 
 type runtimeSession struct {
-	sim             *sim.World
+	// sim is the local simulation world. Nil in remote-renderer mode; all
+	// simulation commands in input.go must guard with `if session.sim != nil`.
+	sim *sim.World
+	// snapSrc is the snapshot source used by the render loop. Always non-nil;
+	// set to sim for local mode and a grpcSnapshotSource for remote mode.
+	snapSrc         protocol.SnapshotSource
 	cameraState     *ui.CameraState
 	inputState      *ui.InputState
 	debugTracker    *DebugTracker
@@ -110,6 +116,7 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 
 	return &runtimeSession{
 		sim:             sim,
+		snapSrc:         sim, // world.World satisfies protocol.SnapshotSource
 		cameraState:     cameraState,
 		inputState:      inputState,
 		debugTracker:    debugTracker,

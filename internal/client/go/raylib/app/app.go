@@ -148,8 +148,10 @@ func (a *App) Run(ctx context.Context) error {
 	if a.cfg.PerformanceMode {
 		simCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
-		defer session.sim.Stop()
-		go session.sim.Start(simCtx)
+		if session.sim != nil {
+			defer session.sim.Stop()
+			go session.sim.Start(simCtx)
+		}
 
 		log.Printf("Entering performance test mode (profile=%s, threads=%d, locking=%v)", a.cfg.Profile, a.cfg.Threads, !a.cfg.NoLocking)
 		a.runPerformanceTest(session.sim, session.cameraState, session.inputState, a.cfg.Profile, a.cfg.Threads, a.cfg.NoLocking)

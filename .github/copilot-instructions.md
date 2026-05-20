@@ -107,6 +107,15 @@ Before writing code or a plan, confirm you can answer:
 Same as Standard **plus**: write out the answers to all five questions explicitly
 in the reply and wait for user confirmation before proceeding.
 
+Also answer **Q6 — Design principles compliance** explicitly:
+- **DIP**: Do high-level modules (app, render) depend on interfaces, not concrete types? Are transport/network clients constructed at the `cmd/` composition root and injected, not built inside library packages?
+- **DRY**: Are any code paths structurally duplicated (>80% identical)? If so, extract or accept with rationale.
+- **SRP / GRASP Cohesion**: Does each new type/file have one clear responsibility? Are transport, rendering, and domain concerns separated?
+- **Low Coupling / Protected Variations**: Is each transport or data-source seam isolated so swapping it doesn't touch unrelated layers?
+- **IoC**: Are dependencies injected at construction time? Does any library package construct its own network clients or heavy resources?
+
+For each violation found: state **accepted** (rationale + future TD note) or **corrected** in the plan. Accepted violations must not block a corrective refactor later.
+
 ---
 
 ## Project Tools

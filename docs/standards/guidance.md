@@ -89,7 +89,8 @@ Good plans in this repository should:
 - identify whether the work affects code, data, tests, scripts, or docs;
 - state what will be validated after each phase;
 - identify where user approval is expected;
-- avoid mixing unrelated refactors into feature or bug-fix work.
+- avoid mixing unrelated refactors into feature or bug-fix work;
+- include an explicit design principles check (SOLID, DRY, GRASP, IoC): identify any violations, state whether accepted or corrected, and note any accepted violation as a future tech-debt item.
 
 ## 5. Phase Execution Rules
 
