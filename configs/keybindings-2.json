@@ -95,12 +95,12 @@
       "mods": []
     },
     {
-      "action": "sim.speed_increase",
+      "action": "sim.timescale_increase",
       "key": "PERIOD",
       "mods": []
     },
     {
-      "action": "sim.speed_decrease",
+      "action": "sim.timescale_decrease",
       "key": "COMMA",
       "mods": []
     },
