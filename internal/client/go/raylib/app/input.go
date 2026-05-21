@@ -1331,6 +1331,30 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 			if session.cameraState.Velocity.X != 0 || session.cameraState.Velocity.Y != 0 || session.cameraState.Velocity.Z != 0 {
 				session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Velocity.Scale(dt))
 			}
+			// Push the camera out of any solid body it entered (e.g. after a jump
+			// that lands inside a body or after releasing tracking mode). Belt,
+			// ring, and individual asteroid objects have no meaningful physical
+			// surface at camera scale; only named bodies are checked.
+			for _, obj := range state.Objects {
+				cat := obj.Meta.Category
+				if cat == engine.CategoryBelt || cat == engine.CategoryRing || cat == engine.CategoryAsteroid {
+					continue
+				}
+				if obj.Meta.PhysicalRadius <= 0 {
+					continue
+				}
+				diff := session.cameraState.Position.Sub(obj.Anim.Position)
+				d := float64(diff.Length())
+				minDist := float64(obj.Meta.PhysicalRadius) + 0.5
+				if d < minDist {
+					if d > 0.001 {
+						session.cameraState.Position = obj.Anim.Position.Add(diff.Normalize().Scale(float32(minDist)))
+					} else {
+						// Camera exactly at object centre; push along +Y.
+						session.cameraState.Position = obj.Anim.Position.Add(engine.Vector3{Y: float32(minDist)})
+					}
+				}
+			}
 		}
 	}
 

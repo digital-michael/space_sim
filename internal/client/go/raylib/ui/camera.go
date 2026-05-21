@@ -239,6 +239,10 @@ func (c *CameraState) UpdateTracking(state *engine.SimulationState) {
 	}
 
 	target := state.Objects[c.TrackTargetIndex]
+	// Clamp TrackDistance so the camera stays outside the target body surface.
+	if minDist := float64(target.Meta.PhysicalRadius) + 0.5; c.TrackDistance < minDist {
+		c.TrackDistance = minDist
+	}
 	x := float32(c.TrackDistance * math.Cos(c.TrackPitch) * math.Sin(c.TrackYaw))
 	y := float32(c.TrackDistance * math.Sin(c.TrackPitch))
 	z := float32(c.TrackDistance * math.Cos(c.TrackPitch) * math.Cos(c.TrackYaw))

@@ -25,8 +25,8 @@ import (
 	"time"
 
 	"github.com/digital-michael/space_sim/api/gen/spacesim/v1/spacesimv1connect"
-	grpcserver "github.com/digital-michael/space_sim/internal/transport/grpc"
 	world "github.com/digital-michael/space_sim/internal/sim/world"
+	grpcserver "github.com/digital-michael/space_sim/internal/transport/grpc"
 )
 
 // snapshotHz is the rate at which snapshots are sampled and pushed to clients.

@@ -504,15 +504,15 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-001 — Camera Collision Prevention
 
 **Value**: Camera should never clip inside a body. Currently possible when zooming in at tracking range or jumping to very small objects.
-**Status**: 📋 Not started
+**Status**: ✅ Complete — 2026-05-21
 **Priority**: High — safety constraint, no deps, contained change
 **Depends on**: Nothing
 
 #### Work Items
 
-- [ ] In `UpdateTracking`, clamp `TrackDistance` so the camera surface stays outside `target.Meta.PhysicalRadius + epsilon`
-- [ ] In `UpdateJump`, detect if landing position would be inside any rendered object and push the camera out to the object surface
-- [ ] Add a general camera-vs-object exclusion check in `updateCameraState` for free-fly mode (prevent flying through spheres)
+- [x] In `UpdateTracking`, clamp `TrackDistance` so the camera surface stays outside `target.Meta.PhysicalRadius + epsilon`
+- [x] In `UpdateJump`, detect if landing position would be inside any rendered object and push the camera out to the object surface (handled by free-fly push-out on first frame after jump)
+- [x] Add a general camera-vs-object exclusion check in `updateCameraState` for free-fly mode (prevent flying through spheres)
 
 ---
 
