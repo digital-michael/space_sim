@@ -126,7 +126,12 @@
     },
     {
       "action": "hud.client_list",
-      "key": "TAB",
+      "key": "F2",
+      "mods": []
+    },
+    {
+      "action": "nav.child_next",
+      "key": "G",
       "mods": []
     },
     {
