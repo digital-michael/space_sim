@@ -166,10 +166,16 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			}
 		}
 
+		// F-021 Phase 1: blinking sphere markers for remote client sessions.
+		a.renderer.DrawClientMarkers(snap.ClientSessions, session.cameraState.Position, session.sessionID, float64(rl.GetTime()))
+
 		rl.EndMode3D()
 
 		rl.SetMatrixProjection(rl.MatrixOrtho(0.0, float32(renderWidth), float32(renderHeight), 0.0, 0.0, 1.0))
 		rl.SetMatrixModelview(rl.MatrixIdentity())
+
+		// F-021 Phase 1: 2D text labels above nearby client markers.
+		a.renderer.DrawClientMarkerLabels(snap.ClientSessions, session.cameraState.Position, session.sessionID, camera)
 
 		if a.runtime.HUDVisible {
 			a.renderer.DrawHUD(state, session.cameraState, session.inputState, a.runtime.AsteroidDataset, a.runtime.MouseModeEnabled, snap.Speed, inViewCount, eligibleInViewCount, renderedCount, a.runtime.HUD.Debug, a.runtime.HUD.Info, a.runtime.HUD.Help)

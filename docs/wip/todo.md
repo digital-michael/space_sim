@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-20 (F-020 Phase 2 position/POV streaming complete)
+2026-05-22 (F-021 Phase 1 blinking sphere markers complete)
 
 ## Table of Contents
 1. How to Use This File
@@ -57,7 +57,7 @@ Planning Documents
 	F-018 Object Annotations HUD (outlines, axes, orbital paths, labels)
 	F-019 Run Scripts from UI
 	F-020 Multi-Client gRPC Session Layer 🔄 Phase 2 complete (Phase 3 pending)
-	F-021 Client Physical Marker
+	F-021 Client Physical Marker 🔄 Phase 1 complete (Phase 2 pending)
 	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending F-013)
 	F-023 Keyboard Configuration 🔄 In Progress (Phase 1 partial)
 	F-024 Multiplayer HUD Enhancements
@@ -307,7 +307,7 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 4c | **TD-002** Decouple sim tick from render/input loop | Full fix for input latency; also the architectural pattern F-010 headless split needs |
 | 5 | ✅ **F-020 Phase 1** Multi-client session registry | Foundation for F-022, F-033, and F-021 |
 | 5a | ✅ **F-033 Phase 1** Ship definition + catalog + instance — 2026-05-20 | Provides capability ratings for F-022 Day 1; starts immediately after F-020 Phase 1 |
-| 5b | **F-021 Phase 1** Player physical marker | Visual identity; can be done in parallel with F-033 Phase 1 |
+| 5b | ✅ **F-021 Phase 1** Player physical marker | Visual identity; can be done in parallel with F-033 Phase 1 |
 | 6 | ✅ **F-022 Phase 1** Kinematic movement — 2026-05-20 | Thrusters + warp + drift without gravity; uses F-033 ShipInstance ratings |
 | 6a | ✅ **F-022 §9** Player-as-Ship wiring — 2026-05-20 | Camera forward → FacingVector; thrust along facing; turn rate from ShipInstance |
 | 7 | **F-010** Multi-machine split (headless server + client) | Network foundation |
@@ -1015,7 +1015,7 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 ### F-021 — Client Physical Marker
 
 **Value**: Give every connected client session a visible physical presence in the simulated world. Three-phase escalation: blinking sphere → IQM model → full textured model. Correct scale (human-sized ship, not planet-sized). LOD rules for planetary distances.
-**Status**: 📋 Not started
+**Status**: � Phase 1 complete — 2026-05-22. Phase 2–3 not started.
 **Priority**: High — makes multiplayer presence visible
 **Depends on**: F-020 Phase 2 (position streaming)
 **Spec**: [f021-physical-marker-spec.md](f021-physical-marker-spec.md)

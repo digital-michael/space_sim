@@ -15,7 +15,7 @@ Read this alongside:
 2026-05-11
 
 ## Status
-📋 Not started
+� Phase 1 complete — 2026-05-22. Phase 2–3 not started.
 
 ---
 

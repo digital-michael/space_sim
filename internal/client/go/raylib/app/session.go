@@ -25,6 +25,11 @@ type runtimeSession struct {
 	navigationOrder []engine.ObjectCategory
 	ship            *ship.ShipInstance
 	driftMode       bool // move.drift_toggle: when true thrust keys are ignored
+
+	// sessionID is the gRPC session ID registered with the server, used to
+	// identify this client's own marker (F-021). Empty string means unknown —
+	// all markers render at full opacity.
+	sessionID string
 }
 
 func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSession, err error) {

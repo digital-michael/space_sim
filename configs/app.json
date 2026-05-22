@@ -7,5 +7,16 @@
     "max_sessions": 100,
     "idle_timeout_seconds": 30,
     "admin_secret": ""
+  },
+  "marker_blink_period_s": 1.5,
+  "marker_far_threshold_sim_units": 1.0,
+  "marker_cull_distance_sim_units": 100.0,
+  "label_visible_distance_sim_units": 0.5,
+  "marker_lod": {
+    "near_threshold_su": 0.01,
+    "label_visible_su": 0.5,
+    "sphere_collapse_su": 1.0,
+    "point_sprite_su": 10.0,
+    "cull_su": 100.0
   }
 }
