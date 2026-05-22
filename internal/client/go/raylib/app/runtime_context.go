@@ -48,6 +48,9 @@ type RuntimeContext struct {
 	// via sim.pause_toggle. Zero means "use 1.0 (real-time)".
 	PauseRestoreRate float32
 
+	// UIScale is the active UI scaling factor (1.0 = 100%). Persisted to config.
+	UIScale float32
+
 	// protectWindowedSize is set for one frame when exiting fullscreen on
 	// macOS/X11 to prevent syncWindowState from clobbering WindowedWidth/Height
 	// before SetWindowSize's resize event is reflected in GetRenderWidth.
@@ -83,6 +86,7 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 			ActiveTab:   0,
 			SelectedRow: 0,
 			HUD:         ui.AllOnHUD(),
+			UIScale:     cfg.UIScale,
 			Perf: ui.PerformanceOptions{
 				FrustumCulling:      cfg.Performance.FrustumCulling,
 				LODEnabled:          cfg.Performance.LODEnabled,
@@ -99,6 +103,7 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 		CameraSpeed:      10.0,
 		MouseSensitivity: 0.003,
 		PerfConfig:       cfg.Performance,
+		UIScale:          cfg.UIScale,
 	}
 }
 
@@ -161,6 +166,7 @@ func (ctx *RuntimeContext) AppConfigSnapshot() AppConfig {
 			Height: ctx.RenderHeight,
 		},
 		Performance:     ctx.PerfConfig,
+		UIScale:         ctx.UIScale,
 		KeybindingsPath: ctx.KeybindingsPath,
 	}
 }

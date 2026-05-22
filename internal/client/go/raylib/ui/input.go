@@ -49,6 +49,7 @@ type SettingsState struct {
 	ActiveTab   int                // 0=System, 1=Display, 2=Performance, 3=Controls
 	SelectedRow int                // focused interactive row within the active tab
 	HUD         HUDState           // Display tab: per-category HUD visibility
+	UIScale     float32            // Display tab: UI scaling factor (persisted)
 	Perf        PerformanceOptions // Performance tab: live options
 
 	// Controls tab — keybinding editor state.

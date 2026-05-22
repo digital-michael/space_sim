@@ -33,11 +33,11 @@ func init() {
 }
 
 func currentScreenWidth() int {
-	return rl.GetScreenWidth()
+	return rl.GetRenderWidth()
 }
 
 func currentScreenHeight() int {
-	return rl.GetScreenHeight()
+	return rl.GetRenderHeight()
 }
 
 // InstanceBatch represents a group of objects with the same rendering properties
@@ -394,7 +394,7 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 
 		// Draw label text with background
 		labelText := obj.Meta.Name
-		fontSize := int32(16)
+		fontSize := int32(21)
 		textSize := rl.MeasureTextEx(rl.GetFontDefault(), labelText, float32(fontSize), 1.0)
 
 		// Position label offset from object (right and slightly up)
@@ -499,8 +499,11 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 
 // drawZoomIndicator draws a visual indicator when zooming
 func drawZoomIndicator(zoomValue float32) {
-	centerX := int32(currentScreenWidth() / 2)
-	centerY := int32(currentScreenHeight() / 2)
+	sw := int32(currentScreenWidth())
+	sh := int32(currentScreenHeight())
+	centerX := sw / 2
+	// Position indicator 70% down the screen, always within view.
+	indicatorY := sh * 70 / 100
 
 	// Determine zoom direction and text
 	var text string
@@ -524,14 +527,14 @@ func drawZoomIndicator(zoomValue float32) {
 	// Draw semi-transparent background
 	bgWidth := int32(260)
 	bgHeight := int32(60)
-	rl.DrawRectangle(centerX-bgWidth/2, centerY+150, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 150})
+	rl.DrawRectangle(centerX-bgWidth/2, indicatorY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 150})
 
 	// Draw text
 	textWidth := rl.MeasureText(text, 20)
-	rl.DrawText(text, centerX-textWidth/2, centerY+160, 20, color)
+	rl.DrawText(text, centerX-textWidth/2, indicatorY+10, 20, color)
 
 	// Draw zoom bar
-	barY := centerY + 185
+	barY := indicatorY + 35
 	rl.DrawRectangle(centerX-100, barY, 200, 8, rl.Color{R: 50, G: 50, B: 50, A: 200})
 
 	if zoomValue > 0 {
@@ -790,8 +793,8 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 	infoLines = append(infoLines, InfoLine{"Camera Distance:", cameraDistStr})
 
 	// Calculate dimensions
-	fontSize := int32(16)
-	lineHeight := int32(22)
+	fontSize := int32(21)
+	lineHeight := int32(27)
 	padding := int32(15)
 
 	maxWidth := int32(0)
@@ -835,11 +838,14 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 
 // drawSelectionUI draws the object selection menu with category tabs
 func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
-	// Semi-transparent background
-	bgX := int32(currentScreenWidth()/2 - 250)
-	bgY := int32(currentScreenHeight()/2 - 250)
-	bgWidth := int32(500)
-	bgHeight := int32(500)
+	sw := int32(currentScreenWidth())
+	sh := int32(currentScreenHeight())
+
+	// Dialog sized as a proportion of the window so it adapts to any resolution.
+	bgWidth := sw * 45 / 100
+	bgHeight := sh * 70 / 100
+	bgX := (sw - bgWidth) / 2
+	bgY := (sh - bgHeight) / 2
 	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 200})
 	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
 
@@ -882,7 +888,7 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		{"Moons", engine.CategoryMoon},
 		{"Belts", engine.CategoryBelt}, // Asteroid Belt and Kuiper Belt
 	}
-	tabWidth := int32(95)
+	tabWidth := (bgWidth - 20) / int32(len(categories))
 	tabHeight := int32(30)
 	tabY := filterY
 
@@ -1338,6 +1344,14 @@ func drawHelpScreen() {
 
 	rl.DrawText(modAlt+"+-  /  "+modAlt+"+=", rightCol, y, bodySize, rl.White)
 	rl.DrawText("Asteroids (200->24K)", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText("Ctrl+-  /  Ctrl+=", rightCol, y, bodySize, rl.White)
+	rl.DrawText("Zoom in/out", rightCol+valueGap, y, bodySize, rl.LightGray)
+	y += lineHeight
+
+	rl.DrawText("-  /  =", rightCol, y, bodySize, rl.White)
+	rl.DrawText("UI scale (0.5x\u20132.0x)", rightCol+valueGap, y, bodySize, rl.LightGray)
 	y += lineHeight
 
 	rl.DrawText(modSuper+"+<  /  "+modSuper+"+>", rightCol, y, bodySize, rl.White)

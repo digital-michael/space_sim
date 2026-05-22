@@ -88,6 +88,8 @@ func New(cfg Config) (*App, error) {
 	app.runtime.KeybindingsPath = effectivePath
 	app.runtime.Settings.KeybindingsPath = effectivePath
 	app.runtime.Settings.SaveAsPath = effectivePath
+	// Apply persisted UI scale (defaults to 1.0 via LoadAppConfig).
+	render.SetUIScale(cfg.AppConfig.UIScale)
 	return app, nil
 }
 

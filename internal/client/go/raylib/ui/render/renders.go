@@ -265,8 +265,8 @@ func renderMousePosition() rl.Vector2 {
 	if layoutWidth <= 0 || layoutHeight <= 0 {
 		return m
 	}
-	windowW := float32(rl.GetScreenWidth())
-	windowH := float32(rl.GetScreenHeight())
+	windowW := float32(rl.GetRenderWidth())
+	windowH := float32(rl.GetRenderHeight())
 	scaleX := windowW / float32(layoutWidth)
 	scaleY := windowH / float32(layoutHeight)
 	scale := scaleX
@@ -305,27 +305,21 @@ func formatSimulationDateText(simSeconds float64, secondsPerSecond float32) stri
 		year, month, day, hour, minute, second, millisecond)
 }
 
+// activeUIScale is the current UI scaling factor. Updated via SetUIScale.
+var activeUIScale float32 = 1.0
+
+// SetUIScale sets the UI scaling factor applied by scaledInt32 throughout the
+// settings dialog and UI chrome. Call at startup from the loaded AppConfig and
+// whenever the user changes the value in the Display settings tab.
+func SetUIScale(f float32) {
+	if f <= 0 {
+		f = 1.0
+	}
+	activeUIScale = f
+}
+
 func uiScale() float32 {
-	width := float32(currentScreenWidth())
-	height := float32(currentScreenHeight())
-	if width <= 0 || height <= 0 {
-		return 1.0
-	}
-
-	scaleW := width / 1920.0
-	scaleH := height / 1080.0
-	scale := scaleW
-	if scaleH < scale {
-		scale = scaleH
-	}
-
-	if scale < 0.85 {
-		return 0.85
-	}
-	if scale > 2.0 {
-		return 2.0
-	}
-	return scale
+	return activeUIScale
 }
 
 func scaledInt32(base int32) int32 {
@@ -426,7 +420,7 @@ func (r *Renderer) BeginFrame() {
 		setLayoutSize(r.renderWidth, r.renderHeight)
 		rl.BeginTextureMode(r.target)
 	} else {
-		setLayoutSize(int32(rl.GetScreenWidth()), int32(rl.GetScreenHeight()))
+		setLayoutSize(int32(rl.GetRenderWidth()), int32(rl.GetRenderHeight()))
 		rl.BeginDrawing()
 	}
 	rl.ClearBackground(rl.Black)
@@ -535,7 +529,7 @@ func (r *Renderer) DrawWelcomeBanner(text string, elapsed time.Duration) {
 // DrawRecordingIndicator draws a ● REC (active) or ⏸ REC (paused) badge in
 // the top-right corner of the render surface when recording is active.
 func (r *Renderer) DrawRecordingIndicator(paused bool) {
-	fontSize := scaledInt32(20)
+	fontSize := scaledInt32(25)
 	pad := scaledInt32(8)
 
 	var label string
@@ -570,18 +564,18 @@ func drawSettingsDialog(state *ui.SettingsState, km *input.KeyMap) {
 
 	// Panel geometry — 70% width like the old help screen
 	bgWidth := sw * 70 / 100
-	if bgWidth < scaledInt32(800) {
-		bgWidth = scaledInt32(800)
+	if bgWidth < 800 {
+		bgWidth = 800
 	}
-	if bgWidth > scaledInt32(1400) {
-		bgWidth = scaledInt32(1400)
+	if bgWidth > 1400 {
+		bgWidth = 1400
 	}
 	bgHeight := sh * 78 / 100
-	if bgHeight < scaledInt32(600) {
-		bgHeight = scaledInt32(600)
+	if bgHeight < 600 {
+		bgHeight = 600
 	}
-	if bgHeight > scaledInt32(1000) {
-		bgHeight = scaledInt32(1000)
+	if bgHeight > 1000 {
+		bgHeight = 1000
 	}
 	bgX := (sw - bgWidth) / 2
 	bgY := (sh - bgHeight) / 2
@@ -590,9 +584,9 @@ func drawSettingsDialog(state *ui.SettingsState, km *input.KeyMap) {
 	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 230})
 	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
 
-	titleFont := scaledInt32(26)
-	tabFont := scaledInt32(17)
-	hintFont := scaledInt32(15)
+	titleFont := scaledInt32(31)
+	tabFont := scaledInt32(22)
+	hintFont := scaledInt32(20)
 
 	// Title
 	titleText := "SETTINGS"
@@ -699,7 +693,9 @@ func drawSettingsSystemTab(bgX, startY, bgWidth, _ int32) {
 		{modAlt + "+L", "Toggle object labels"},
 		{modAlt + "+M", "Toggle mouse mode"},
 		{modAlt + "+F", "Toggle fullscreen"},
+		{"Ctrl+-  /  Ctrl+=", "Zoom in/out"},
 		{modAlt + "+-  /  " + modAlt + "+=", "Asteroids (200->24K)"},
+		{"-  /  =", "UI scale (0.5x\u20132.0x)"},
 		{modSuper + "+<  /  " + modSuper + "+>", "Time scale (PAUSED->1yr/sec)"},
 		{modAlt + "+,  /  " + modAlt + "+.", "Anim speed (0%->100% of 60Hz)"},
 		{modAlt + "+R", "Start/stop recording"},
@@ -747,7 +743,6 @@ func drawSettingsDisplayTab(state *ui.SettingsState, bgX, startY, bgWidth, _ int
 		{"Debug  (stats, screen info)", &state.HUD.Debug},
 		{"Info   (tracking, selection)", &state.HUD.Info},
 		{"Help   (hint bar)", &state.HUD.Help},
-		{"Player (reserved)", nil},
 	}
 
 	mouse := renderMousePosition()
@@ -756,37 +751,46 @@ func drawSettingsDisplayTab(state *ui.SettingsState, bgX, startY, bgWidth, _ int
 	for i, row := range rows {
 		rowY := startY + scaledInt32(36) + int32(i)*rowSpacing
 		boxX := bgX + pad
-		labelColor := rl.Color{R: 160, G: 160, B: 160, A: 255}
+		labelColor := rl.White
 		boxColor := rl.Color{R: 60, G: 60, B: 60, A: 255}
 
-		// Keyboard cursor
-		if i == state.SelectedRow && row.val != nil {
+		if i == state.SelectedRow {
 			rl.DrawText(">", boxX-scaledInt32(16), rowY, arrowFont, rl.Yellow)
 			rl.DrawRectangle(bgX+2, rowY-2, bgWidth-4, boxSize+4, rl.Color{R: 50, G: 100, B: 150, A: 80})
 		}
 
-		if row.val != nil {
-			labelColor = rl.White
-			if *row.val {
-				boxColor = rl.Green
-			}
-			// Mouse hit test
-			hitX := float32(boxX) - 2
-			hitY := float32(rowY) - 2
-			hitW := float32(boxSize+4) + float32(scaledInt32(200))
-			hitH := float32(boxSize + 4)
-			if clicked && mouse.X >= hitX && mouse.X < hitX+hitW && mouse.Y >= hitY && mouse.Y < hitY+hitH {
-				*row.val = !*row.val
-			}
+		if *row.val {
+			boxColor = rl.Green
+		}
+		// Mouse hit test
+		hitX := float32(boxX) - 2
+		hitY := float32(rowY) - 2
+		hitW := float32(boxSize+4) + float32(scaledInt32(200))
+		hitH := float32(boxSize + 4)
+		if clicked && mouse.X >= hitX && mouse.X < hitX+hitW && mouse.Y >= hitY && mouse.Y < hitY+hitH {
+			*row.val = !*row.val
 		}
 
 		rl.DrawRectangle(boxX, rowY, boxSize, boxSize, boxColor)
 		rl.DrawRectangleLines(boxX, rowY, boxSize, boxSize, rl.White)
-		if row.val != nil && *row.val {
+		if *row.val {
 			rl.DrawText("X", boxX+scaledInt32(2), rowY, scaledInt32(16), rl.Green)
 		}
 		rl.DrawText(row.label, boxX+boxSize+scaledInt32(10), rowY, rowFont, labelColor)
 	}
+
+	// UI Scale row (row 3) — LEFT/RIGHT adjusts, steps of 0.25 in [0.5, 2.0]
+	scaleRowY := startY + scaledInt32(36) + int32(len(rows))*rowSpacing + scaledInt32(16)
+	rl.DrawText("RENDERING", bgX+pad, scaleRowY, titleFont, rl.White)
+	scaleRowY += scaledInt32(30)
+
+	if state.SelectedRow == 3 {
+		rl.DrawText(">", bgX+pad-scaledInt32(16), scaleRowY, arrowFont, rl.Yellow)
+		rl.DrawRectangle(bgX+2, scaleRowY-2, bgWidth-4, scaledInt32(22), rl.Color{R: 50, G: 100, B: 150, A: 80})
+	}
+	rl.DrawText("UI Scale", bgX+pad, scaleRowY, rowFont, rl.White)
+	scaleVal := fmt.Sprintf("<  %.2f  >  (LEFT / RIGHT to adjust)", state.UIScale)
+	rl.DrawText(scaleVal, bgX+pad+scaledInt32(120), scaleRowY, rowFont, rl.LightGray)
 }
 
 // drawSettingsPerfTab renders performance toggle checkboxes (tab 3).

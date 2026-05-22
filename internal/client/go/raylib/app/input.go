@@ -8,6 +8,7 @@ import (
 
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/input"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
+	render "github.com/digital-michael/space_sim/internal/client/go/raylib/ui/render"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
@@ -127,6 +128,37 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		if a.runtime.AsteroidDataset > 0 {
 			a.runtime.AsteroidDataset--
 			session.sim.SetAsteroidDataset(a.runtime.AsteroidDataset)
+		}
+	}
+
+	// Bare - / = (no modifiers): step UI scale.
+	// Strictly requires no modifier so it cannot fire alongside CTRL+zoom or OPT+asteroids.
+	if !mainWindowInputSuspended {
+		noMods := !rl.IsKeyDown(rl.KeyLeftAlt) && !rl.IsKeyDown(rl.KeyRightAlt) &&
+			!rl.IsKeyDown(rl.KeyLeftControl) && !rl.IsKeyDown(rl.KeyRightControl) &&
+			!rl.IsKeyDown(rl.KeyLeftShift) && !rl.IsKeyDown(rl.KeyRightShift) &&
+			!rl.IsKeyDown(rl.KeyLeftSuper) && !rl.IsKeyDown(rl.KeyRightSuper)
+		if noMods && (rl.IsKeyPressed(rl.KeyMinus) || rl.IsKeyPressed(rl.KeyEqual)) {
+			scales := []float32{0.5, 0.75, 1.0, 1.25, 1.5, 2.0}
+			cur := a.runtime.UIScale
+			if cur <= 0 {
+				cur = 1.0
+			}
+			idx := 2 // default to 1.0 slot
+			for i, s := range scales {
+				if s >= cur {
+					idx = i
+					break
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyMinus) && idx > 0 {
+				idx--
+			} else if rl.IsKeyPressed(rl.KeyEqual) && idx < len(scales)-1 {
+				idx++
+			}
+			a.runtime.UIScale = scales[idx]
+			a.runtime.Settings.UIScale = scales[idx]
+			render.SetUIScale(scales[idx])
 		}
 	}
 
@@ -363,7 +395,11 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 
 	// ESC / sim.track_stop: Cancel selection, exit tracking, or exit mouse mode (priority order).
 	// Also handles F11 (ui.fullscreen) and F1 (ui.settings) as keymap-driven actions.
-	if km.IsPressed(input.ActionUIFullscreen) {
+	// Opt+F (Alt+F) is a hardcoded secondary binding for fullscreen; the keymap only
+	// supports one binding per action so it cannot be expressed in JSON.
+	altFPressed := (rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt)) &&
+		rl.IsKeyPressed(rl.KeyF)
+	if km.IsPressed(input.ActionUIFullscreen) || altFPressed {
 		a.toggleFullscreen()
 	}
 	if km.IsPressed(input.ActionUISettings) {
@@ -594,7 +630,8 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		}
 		// Up/Down: navigate rows within current tab
 		// Tab 2 (Performance): 7 rows (0-6); Tab 3 (Controls): Load + SaveAs + 48 actions (0-49)
-		tabRowMax := [4]int{0, 2, 6, 49}
+		// Tab 1 (Display): 4 rows — 0=Debug, 1=Info, 2=Help, 3=UIScale
+		tabRowMax := [4]int{0, 3, 6, 49}
 		if a.runtime.Settings.ActiveTab > 0 { // System tab has no row selection
 			if rl.IsKeyPressed(rl.KeyUp) && a.runtime.Settings.SelectedRow > 0 {
 				a.runtime.Settings.SelectedRow--
@@ -617,6 +654,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 				case 2:
 					a.runtime.Settings.HUD.Help = !a.runtime.Settings.HUD.Help
 					a.runtime.HUD.Help = a.runtime.Settings.HUD.Help
+					// row 3 (UIScale) is adjusted via LEFT/RIGHT, not Space/Enter
 				}
 			case 2: // Performance tab — 5 toggles + ImportanceThreshold (row 5) + UseInPlaceSwap (row 6)
 				switch a.runtime.Settings.SelectedRow {
@@ -673,6 +711,34 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 						a.runtime.Settings.KeybindConflict = ""
 					}
 				}
+			}
+		}
+		// Left/Right: adjust UIScale (Display tab, row 3)
+		if a.runtime.Settings.ActiveTab == 1 && a.runtime.Settings.SelectedRow == 3 {
+			scales := []float32{0.5, 0.75, 1.0, 1.25, 1.5, 2.0}
+			current := a.runtime.Settings.UIScale
+			if current <= 0 {
+				current = 1.0
+			}
+			if rl.IsKeyPressed(rl.KeyLeft) {
+				for i := len(scales) - 1; i >= 0; i-- {
+					if current > scales[i]+0.01 {
+						a.runtime.Settings.UIScale = scales[i]
+						break
+					}
+				}
+			}
+			if rl.IsKeyPressed(rl.KeyRight) {
+				for i := 0; i < len(scales); i++ {
+					if current < scales[i]-0.01 {
+						a.runtime.Settings.UIScale = scales[i]
+						break
+					}
+				}
+			}
+			if a.runtime.Settings.UIScale != current {
+				a.runtime.UIScale = a.runtime.Settings.UIScale
+				render.SetUIScale(a.runtime.UIScale)
 			}
 		}
 		// Left/Right: adjust ImportanceThreshold (Performance tab, row 5)

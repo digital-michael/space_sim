@@ -51,6 +51,7 @@ type AppConfig struct {
 	Window          WindowConfig      `json:"window"`
 	Render          RenderConfig      `json:"render"`
 	Performance     PerformanceConfig `json:"performance"`
+	UIScale         float32           `json:"ui_scale,omitempty"`
 	KeybindingsPath string            `json:"keybindings_path,omitempty"`
 	DefaultShipID   string            `json:"default_ship_id,omitempty"`
 }

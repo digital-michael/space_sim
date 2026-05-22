@@ -65,6 +65,9 @@ func LoadAppConfig(path string) (AppConfig, error) {
 	if cfg.Render.Mode == "" {
 		cfg.Render.Mode = RenderModeNative
 	}
+	if cfg.UIScale <= 0 {
+		cfg.UIScale = 1.0
+	}
 	if cfg.Render.Mode == RenderModeFixed {
 		if cfg.Render.Width <= 0 {
 			cfg.Render.Width = defaultScreenWidth
