@@ -39,7 +39,7 @@ type REPL struct {
 	recClient   spacesimv1connect.RecordingServiceClient
 	cfgClient   spacesimv1connect.ConfigServiceClient
 	sesClient   spacesimv1connect.SessionServiceClient
-	sessionID   string            // current registered session; empty if not registered
+	sessionID   string // current registered session; empty if not registered
 	out         io.Writer
 	lastSpeed   float32           // restored by resume; updated by setspeed / pause
 	bodyNames   []string          // cached body names for TAB completion; nil = not yet fetched

@@ -7,6 +7,7 @@ import (
 	v1 "github.com/digital-michael/space_sim/api/gen/spacesim/v1"
 	"github.com/digital-michael/space_sim/internal/server/session"
 )
+
 // SessionHandler implements spacesimv1connect.SessionServiceHandler.
 // It manages client session registration, unregistration, and listing.
 type SessionHandler struct {
