@@ -914,7 +914,7 @@ func Parse(line string) (Cmd, error) {
 		case "teleport":
 			if len(args) < 3 {
 				return nil, ErrUsage{Cmd: "session teleport",
-					Detail: "session_id and body name required",
+					Detail:  "session_id and body name required",
 					Example: "session teleport <session_id> <body_name>"}
 			}
 			return SessionTeleport{

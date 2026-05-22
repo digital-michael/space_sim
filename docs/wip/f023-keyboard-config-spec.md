@@ -21,9 +21,9 @@ Related:
 2026-05-18
 
 ## Status
-🔄 In Progress — Phase 1 partial
+✅ Phase 1 complete (2026-05-22)
 
-The `internal/client/go/raylib/input/` package exists with `actions.go`, `keymap.go`, and `loader.go` implemented. Four actions are wired (`ui.settings`, `ui.fullscreen`, `sim.track_next`, `sim.track_stop`). All remaining hardcoded keys are tracked in **F-032** and must be converted before Phase 1 is complete.
+All vocabulary actions in §3 are wired in `input.go` via `km.IsPressed`/`km.IsDown`. Camera roll (`camera.roll_left`/`camera.roll_right`) implemented with a `Roll` field on `CameraState` and Rodrigues rotation for the Up vector. REPL commands `config reload keybindings` and `help keys` are live. Profile files (`laptop`, `mouse_keyboard`) and `configs/keybindings.json` exist. F-032 is closed. Remaining `rl.IsKeyPressed`/`rl.IsKeyDown` calls in `input.go` are all within UI overlay subsections (settings dialog, selection dialog) and are intentionally not rebindable — they do not appear in the §3 vocabulary.
 
 ---
 
@@ -384,13 +384,14 @@ Work items:
 - [x] Implement config merger: applies `configs/keybindings.json` overrides
 - [x] Conflict detection with clear error messages
 - [x] `KeyMap.DrainQueue()` implemented: drains `rl.GetKeyPressed()` into per-frame pressed-set
-- [ ] **F-032 — Gap closure**: Convert all remaining hardcoded `rl.IsKeyPressed`/`rl.IsKeyDown` sites in `input.go` to vocabulary actions; extend `actions.go` with the §3.3/§3.4/§3.6 additions above
-- [ ] Expand `actions.go` with new §3.3 actions: `sim.timescale_increase/decrease`, `sim.tick_speed_increase/decrease`, `sim.dataset_increase/decrease`
-- [ ] Add §3.4 additions: `ui.system_selector`, `ui.mouse_mode_toggle`, `ui.label_cycle`, `ui.infra_cycle`, `ui.record_toggle`, `ui.record_pause`, `ui.quit`
-- [ ] Add §3.6 navigation actions: `nav.jump`, `nav.child_next`, `nav.parent`, `nav.sibling_next`, `nav.sibling_prev`, `camera.center`
-- [ ] Update stock profile JSON files to include new action defaults
-- [ ] REPL: `config reload keybindings`; `help keys` to print active bindings
-- [ ] Unit tests: enum stability for new constants; conflict detection roundtrip
+- [x] **F-032 — Gap closure**: All vocabulary actions wired via `km.IsPressed`/`km.IsDown`; remaining `rl.IsKey*` calls are in UI overlay subsections (settings/selection dialogs) and are intentionally excluded from the vocabulary
+- [x] Expand `actions.go` with §3.3 actions: `sim.timescale_increase/decrease`, `sim.tick_speed_increase/decrease`, `sim.dataset_increase/decrease`
+- [x] Add §3.4 additions: `ui.system_selector`, `ui.mouse_mode_toggle`, `ui.label_cycle`, `ui.infra_cycle`, `ui.record_toggle`, `ui.record_pause`, `ui.quit`
+- [x] Add §3.6 navigation actions: `nav.jump`, `nav.child_next`, `nav.parent`, `nav.sibling_next`, `nav.sibling_prev`, `camera.center`
+- [x] Camera roll: `Roll float64` field on `CameraState`, `UpdateUpFromRoll()` via Rodrigues rotation, wired via `ActionCameraRollLeft`/`ActionCameraRollRight` in free-fly mode
+- [x] Update stock profile JSON files to include all action defaults
+- [x] REPL: `config reload keybindings`; `help keys` to print active bindings
+- [x] Unit tests: enum stability for new constants; conflict detection roundtrip
 
 Acceptance criteria:
 - All existing keyboard behaviors work identically after refactor ✓

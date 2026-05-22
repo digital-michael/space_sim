@@ -32,9 +32,10 @@ type CameraState struct {
 	Position engine.Vector3
 	Forward  engine.Vector3
 	Up       engine.Vector3
-	Yaw      float64
-	Pitch    float64
-	Mode     CameraMode
+	Yaw   float64
+	Pitch float64
+	Roll  float64 // accumulated roll around the forward axis (radians); 0 = world-up orientation
+	Mode  CameraMode
 
 	// Jump animation
 	JumpStartPos    engine.Vector3
@@ -133,6 +134,31 @@ func (c *CameraState) UpdateForwardFromAngles() {
 		Z: float32(math.Cos(c.Pitch) * math.Cos(c.Yaw)),
 	}
 	c.Forward = c.Forward.Normalize()
+	c.UpdateUpFromRoll()
+}
+
+// UpdateUpFromRoll recomputes the Up vector by rotating the natural-up direction
+// (world +Y projected onto the plane perpendicular to Forward) by the current Roll
+// angle around the Forward axis. Roll = 0 keeps the horizon aligned with world-up.
+func (c *CameraState) UpdateUpFromRoll() {
+	worldUp := engine.Vector3{Y: 1}
+	dot := worldUp.Dot(c.Forward)
+	baseUp := worldUp.Sub(c.Forward.Scale(dot))
+	if baseUp.Length() < 0.001 {
+		// Forward is nearly parallel to world-up (looking straight up or down).
+		// Use +Z as a fallback to avoid degenerate up vectors.
+		baseUp = engine.Vector3{Z: 1}
+	} else {
+		baseUp = baseUp.Normalize()
+	}
+	if c.Roll == 0 {
+		c.Up = baseUp
+		return
+	}
+	cosR := float32(math.Cos(c.Roll))
+	sinR := float32(math.Sin(c.Roll))
+	// Rodrigues rotation of baseUp around Forward by Roll radians.
+	c.Up = baseUp.Scale(cosR).Add(c.Forward.Cross(baseUp).Scale(sinR)).Normalize()
 }
 
 // StartJumpTo initiates a smooth camera jump to a target object.

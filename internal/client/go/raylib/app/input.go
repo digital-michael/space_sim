@@ -1242,7 +1242,16 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 				session.cameraState.Pitch = -1.5
 			}
 
-			// Update forward vector
+			// camera.roll_left / camera.roll_right: rotate Up around Forward (free-fly only).
+			rollSpeed := 1.5 * float64(dt)
+			if km.IsDown(input.ActionCameraRollLeft) {
+				session.cameraState.Roll -= rollSpeed
+			}
+			if km.IsDown(input.ActionCameraRollRight) {
+				session.cameraState.Roll += rollSpeed
+			}
+
+			// Update forward vector (also recomputes Up from current Roll).
 			session.cameraState.UpdateForwardFromAngles()
 		}
 
@@ -1375,6 +1384,12 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 				}
 				if km.IsDown(input.ActionThrustRight) {
 					session.cameraState.Position = session.cameraState.Position.Add(right.Scale(moveSpeed))
+				}
+				if km.IsDown(input.ActionThrustUp) {
+					session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Up.Scale(moveSpeed))
+				}
+				if km.IsDown(input.ActionThrustDown) {
+					session.cameraState.Position = session.cameraState.Position.Sub(session.cameraState.Up.Scale(moveSpeed))
 				}
 				if km.IsDown(input.ActionCameraPitchUp) {
 					session.cameraState.Position.Y += arrowSpeed

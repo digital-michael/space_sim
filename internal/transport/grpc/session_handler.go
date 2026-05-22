@@ -5,11 +5,11 @@ import (
 	"errors"
 
 	"connectrpc.com/connect"
-	"github.com/google/uuid"
 	v1 "github.com/digital-michael/space_sim/api/gen/spacesim/v1"
 	"github.com/digital-michael/space_sim/internal/persist"
 	"github.com/digital-michael/space_sim/internal/server/eventqueue"
 	"github.com/digital-michael/space_sim/internal/server/session"
+	"github.com/google/uuid"
 )
 
 // SessionHandler implements spacesimv1connect.SessionServiceHandler.

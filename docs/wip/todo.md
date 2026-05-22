@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-22 (F-020 Phase 3 admin kick/teleport complete)
+2026-05-22 (F-023 Phase 1 complete; F-032 closed)
 
 ## Table of Contents
 1. How to Use This File
@@ -59,7 +59,7 @@ Planning Documents
 	F-020 Multi-Client gRPC Session Layer ✅ All phases complete (Phase 3: admin kick/teleport)
 	F-021 Client Physical Marker 🔄 Phase 1 complete (Phase 2 pending)
 	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending F-013)
-	F-023 Keyboard Configuration 🔄 In Progress (Phase 1 partial)
+	F-023 Keyboard Configuration ✅ Phase 1 complete (2026-05-22)
 	F-024 Multiplayer HUD Enhancements
 	F-025 Ship-to-Ship Communications
 	F-026 Audio Events
@@ -68,7 +68,7 @@ Planning Documents
 	F-029 Enhanced Sol Corona / Active Atmosphere
 	F-030 Solar Weather Events (Flares, CMEs, Particle Storms)
 	F-031 Asteroid Visual Classification by Mass
-	F-032 ⚠️ Integrate Keybindings into All Simulator Commands (HIGH PRIORITY)
+	F-032 Integrate Keybindings into All Simulator Commands ✅ Closed (2026-05-22 — all vocabulary actions wired; dialog nav intentionally hardcoded)
 	F-033 Ship Definition (Externally-Loaded Ship Catalog) ✅ Phase 1 complete (2026-05-20)
 7. Recommended Ordering
 8. Tech Debt
