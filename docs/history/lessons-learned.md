@@ -4,7 +4,7 @@
 Capture the major implementation defects, debugging discoveries, performance findings, and follow-up recommendations uncovered while building and stabilizing the performance testing workflow.
 
 ## Last Updated
-2026-04-26
+2026-05-22
 
 ## Table of Contents
 1. Session Overview
@@ -597,6 +597,107 @@ while true; do pmset -g thermlog; sleep 5; done
 - ✅ Monitor thermal state during long tests
 - ✅ Document environmental conditions in test metadata
 - ❌ **NEVER trust battery-powered benchmark results**
+
+---
+
+## F-020 Multi-Client Session Layer — Lessons Learned
+
+**Date**: 2026-05-22
+**Context**: Implementing the session registry (Phase 1) and position/POV streaming (Phase 2) for multi-client gRPC sessions.
+
+---
+
+### 13. **Unlock Before Notify: `defer mu.Unlock()` Is Incompatible With Pub-Sub**
+
+**Problem**: Added subscriber notification to `inMemoryRegistry` while the existing methods used `defer r.mu.Unlock()`. The naive approach — notify inside the deferred unlock scope — risks deadlock if any subscriber calls back into the registry (e.g., `Get`, `All`).
+
+**Root Cause**: `defer mu.Unlock()` holds the lock for the entire function body including the notify call. If a subscriber re-enters the registry on the same goroutine the result is a `sync.RWMutex` reentrant-lock panic; on a different goroutine it can deadlock.
+
+**Solution**: Remove `defer` and unlock manually at every return path, then call `notify()` after the lock is released:
+```go
+// WRONG — holds lock during notify:
+func (r *inMemoryRegistry) Register(...) (*ClientSession, error) {
+    r.mu.Lock()
+    defer r.mu.Unlock()   // still held when notify() fires
+    ...
+    r.notify(event)       // subscriber may call r.Get() → deadlock
+    return snap, nil
+}
+
+// CORRECT — lock released before notify:
+func (r *inMemoryRegistry) Register(...) (*ClientSession, error) {
+    r.mu.Lock()
+    if capacityExceeded {
+        r.mu.Unlock()
+        return nil, ErrCapacityExceeded
+    }
+    ...
+    snap := copySession(sess)
+    r.mu.Unlock()          // released before side effects
+    r.notify(event)        // safe: no lock held
+    return snap, nil
+}
+```
+
+**Rule**: Any store/registry that emits change events must release its lock before triggering notifications. Copy the state snapshot under the lock; notify outside it.
+
+---
+
+### 14. **`go build ./...` Does Not Compile Test Files**
+
+**Problem**: Changed `NewWorldHandler()` to `NewWorldHandler(session.Registry)`. `go build ./...` passed clean. Committed. `make test` failed with 6 compilation errors in `server_test.go`.
+
+**Root Cause**: `go build ./...` compiles only non-test packages. Test files (`_test.go`) are compiled only when `go test` processes them.
+
+**Solution**: After any function signature change, search for stale call sites in test files before committing:
+```bash
+grep -r "NewWorldHandler" . --include="*.go"
+```
+
+**Rule**: `go build ./...` is not sufficient validation after a signature change. Always run `make test` (or `go test ./...`) before committing.
+
+---
+
+### 15. **ConnectRPC Bidi Stream: Subscribe Before Bootstrapping**
+
+**Problem**: When implementing `SessionStream`, the initial design called `registry.All()` to send the bootstrap snapshot *before* calling `registry.Subscribe()`. Events emitted by other goroutines between `All()` and `Subscribe()` are silently dropped — the stream client never sees them.
+
+**Root Cause**: There is a window between "read current state" and "attach to future events" where changes are invisible to the new subscriber.
+
+**Solution**: Subscribe first, then send the bootstrap snapshot:
+```go
+// WRONG — events can be lost between All() and Subscribe():
+sessions := h.registry.All()
+eventCh, cancel := h.registry.Subscribe()
+for _, s := range sessions { stream.Send(addDelta(s)) }
+
+// CORRECT — no gap: events after Subscribe() are buffered in the channel:
+eventCh, cancel := h.registry.Subscribe()
+defer cancel()
+for _, s := range h.registry.All() { stream.Send(addDelta(s)) }
+// eventCh receives all events from this point forward, including any
+// that raced with the All() scan above (worst case: client sees a
+// duplicate ADD, which is idempotent and harmless)
+```
+
+**Rule**: For any "catch up then stream live events" pattern, attach the subscription channel before reading the initial snapshot.
+
+---
+
+### 16. **Protobuf: Same-Package Files Still Require Explicit Imports**
+
+**Problem**: `simulation.proto` needed to reference `ClientSessionInfo` defined in `session.proto`. Both files declare `package spacesim.v1`. The import was omitted assuming same-package visibility.
+
+**Result**: `buf generate` succeeded but the generated Go code referenced an undefined type, causing a build failure.
+
+**Solution**: Add an explicit import even within the same proto package:
+```proto
+// simulation.proto
+import "spacesim/v1/session.proto";
+```
+
+**Rule**: Proto `package` is a namespace for generated symbols, not a file-visibility scope. Every cross-file message reference requires an explicit `import` statement regardless of package.
+
 
 ### Test Methodology
 - ✅ Minimum 8-second warmup (480 frames at 60 FPS)
