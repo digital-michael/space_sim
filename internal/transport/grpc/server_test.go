@@ -37,7 +37,7 @@ func newTestMux(sim spacesimv1connect.SimulationServiceHandler, world spacesimv1
 // round-trip works: request serialised, routed to SimulationHandler, nil-world
 // guard fires, error deserialised back to CodeUnimplemented.
 func TestSetSpeed_NilWorld_Unimplemented(t *testing.T) {
-	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nilWorld), NewWorldHandler()))
+	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nilWorld), NewWorldHandler(nil)))
 	t.Cleanup(srv.Close)
 
 	client := spacesimv1connect.NewSimulationServiceClient(srv.Client(), srv.URL)
@@ -59,7 +59,7 @@ func TestSetSpeed_NilWorld_Unimplemented(t *testing.T) {
 // TestGetSpeed_NilWorld_Unimplemented exercises a different RPC path to confirm
 // all handler methods correctly guard against a nil world.
 func TestGetSpeed_NilWorld_Unimplemented(t *testing.T) {
-	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nilWorld), NewWorldHandler()))
+	srv := httptest.NewServer(newTestMux(NewSimulationHandler(nilWorld), NewWorldHandler(nil)))
 	t.Cleanup(srv.Close)
 
 	client := spacesimv1connect.NewSimulationServiceClient(srv.Client(), srv.URL)
@@ -165,7 +165,7 @@ func TestConnLimit_Zero_NoLimiting(t *testing.T) {
 // TestWorldHandler_Receive_DeliversToStream verifies that a snapshot pushed via
 // Receive is delivered to a registered stream channel.
 func TestWorldHandler_Receive_DeliversToStream(t *testing.T) {
-	h := NewWorldHandler()
+	h := NewWorldHandler(nil)
 
 	ch := make(chan protocol.WorldSnapshot, 1)
 	h.addStream(ch)
@@ -193,7 +193,7 @@ func TestWorldHandler_Receive_DeliversToStream(t *testing.T) {
 // TestWorldHandler_Receive_DropsOnSlowConsumer confirms Receive is non-blocking:
 // a full stream channel does not stall the caller.
 func TestWorldHandler_Receive_DropsOnSlowConsumer(t *testing.T) {
-	h := NewWorldHandler()
+	h := NewWorldHandler(nil)
 
 	// Buffer of 1; fill it so subsequent Receive calls would block if not dropped.
 	ch := make(chan protocol.WorldSnapshot, 1)
@@ -218,7 +218,7 @@ func TestWorldHandler_Receive_DropsOnSlowConsumer(t *testing.T) {
 // TestWorldHandler_RemoveStream_Deregisters confirms that a removed stream no
 // longer receives snapshots after deregistration.
 func TestWorldHandler_RemoveStream_Deregisters(t *testing.T) {
-	h := NewWorldHandler()
+	h := NewWorldHandler(nil)
 
 	ch := make(chan protocol.WorldSnapshot, 1)
 	h.addStream(ch)
@@ -237,7 +237,7 @@ func TestWorldHandler_RemoveStream_Deregisters(t *testing.T) {
 // TestWorldHandler_MultipleStreams_AllReceive confirms fan-out delivers to all
 // registered stream channels.
 func TestWorldHandler_MultipleStreams_AllReceive(t *testing.T) {
-	h := NewWorldHandler()
+	h := NewWorldHandler(nil)
 
 	const n = 4
 	channels := make([]chan protocol.WorldSnapshot, n)
