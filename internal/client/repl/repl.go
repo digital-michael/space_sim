@@ -38,6 +38,8 @@ type REPL struct {
 	sdClient    spacesimv1connect.ShutdownServiceClient
 	recClient   spacesimv1connect.RecordingServiceClient
 	cfgClient   spacesimv1connect.ConfigServiceClient
+	sesClient   spacesimv1connect.SessionServiceClient
+	sessionID   string            // current registered session; empty if not registered
 	out         io.Writer
 	lastSpeed   float32           // restored by resume; updated by setspeed / pause
 	bodyNames   []string          // cached body names for TAB completion; nil = not yet fetched
@@ -61,6 +63,7 @@ func New(addr string, opts ...connect.ClientOption) *REPL {
 		sdClient:    spacesimv1connect.NewShutdownServiceClient(http.DefaultClient, addr, opts...),
 		recClient:   spacesimv1connect.NewRecordingServiceClient(http.DefaultClient, addr, opts...),
 		cfgClient:   spacesimv1connect.NewConfigServiceClient(http.DefaultClient, addr, opts...),
+		sesClient:   spacesimv1connect.NewSessionServiceClient(http.DefaultClient, addr, opts...),
 		out:         os.Stdout,
 		lastSpeed:   1.0,
 		vars:        make(map[string]string),
@@ -1352,6 +1355,52 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 				mods = "-"
 			}
 			r.printf("%-40s  %-20s  %s\n", b.Action, b.Key, mods)
+		}
+
+	case commands.SessionRegister:
+		resp, err := r.sesClient.RegisterClient(ctx, connect.NewRequest(&v1.RegisterClientRequest{
+			Version: 1,
+			Label:   c.Label,
+			Role:    v1.ClientRole_CLIENT_ROLE_PLAYER,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.sessionID = resp.Msg.SessionId
+		rgb := resp.Msg.ColorRgb
+		r.printf("registered  session_id=%s  role=%v  color=rgb(%d,%d,%d)\n",
+			resp.Msg.SessionId, resp.Msg.Role, rgb[0], rgb[1], rgb[2])
+
+	case commands.SessionUnregister:
+		if r.sessionID == "" {
+			r.printf("not registered\n")
+			return false, nil
+		}
+		_, err := r.sesClient.UnregisterClient(ctx, connect.NewRequest(&v1.UnregisterClientRequest{
+			Version:   1,
+			SessionId: r.sessionID,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("unregistered session %s\n", r.sessionID)
+		r.sessionID = ""
+
+	case commands.SessionList:
+		resp, err := r.sesClient.ListSessions(ctx, connect.NewRequest(&v1.ListSessionsRequest{Version: 1}))
+		if err != nil {
+			return false, err
+		}
+		if len(resp.Msg.Sessions) == 0 {
+			r.printf("no sessions\n")
+			return false, nil
+		}
+		r.printf("%-36s  %-32s  %-12s  %s\n", "SESSION_ID", "LABEL", "ROLE", "COLOR")
+		r.printf("%s\n", strings.Repeat("-", 95))
+		for _, s := range resp.Msg.Sessions {
+			rgb := s.ColorRgb
+			r.printf("%-36s  %-32s  %-12v  rgb(%d,%d,%d)\n",
+				s.SessionId, s.Label, s.Role, rgb[0], rgb[1], rgb[2])
 		}
 	}
 	return false, nil

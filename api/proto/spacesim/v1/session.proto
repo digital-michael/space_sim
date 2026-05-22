@@ -1,0 +1,83 @@
+syntax = "proto3";
+
+// Package spacesim.v1 is the public contract for the Space Sim server.
+// This file extends the service set with session identity management (F-020).
+package spacesim.v1;
+
+option go_package = "github.com/digital-michael/space_sim/api/gen/spacesim/v1;spacesimv1";
+
+// ─── SessionService ───────────────────────────────────────────────────────────
+//
+// Session identity and registration for connected clients (F-020 Phase 1).
+// Each client registers on connect and receives a server-assigned SessionID,
+// Color, and (possibly downgraded) Role.
+service SessionService {
+  // RegisterClient creates a new session.
+  rpc RegisterClient(RegisterClientRequest) returns (RegisterClientResponse);
+
+  // UnregisterClient removes a session and releases its color slot.
+  // Clients should call this before disconnecting for clean shutdown.
+  rpc UnregisterClient(UnregisterClientRequest) returns (UnregisterClientResponse);
+
+  // ListSessions returns all currently registered sessions.
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+}
+
+// ─── ClientRole ───────────────────────────────────────────────────────────────
+
+// ClientRole classifies the access level of a connected client.
+enum ClientRole {
+  CLIENT_ROLE_UNSPECIFIED = 0;
+  CLIENT_ROLE_PLAYER      = 1; // Default for connected human clients.
+  CLIENT_ROLE_NPC         = 2; // Reserved for server-managed automated clients.
+  CLIENT_ROLE_ADMIN       = 3; // Elevated access; requires admin_secret.
+  CLIENT_ROLE_OTHER       = 4; // Catch-all for future extension.
+}
+
+// ─── RegisterClient ───────────────────────────────────────────────────────────
+
+message RegisterClientRequest {
+  uint32     version      = 1;
+  string     client_uuid  = 2; // Client-generated UUID v4; stable across reconnects.
+  string     label        = 3; // Display name; max 32 UTF-8 chars; server truncates.
+  ClientRole role         = 4; // Requested role; server may downgrade to PLAYER.
+  string     admin_secret = 5; // Required when requesting CLIENT_ROLE_ADMIN.
+}
+
+message RegisterClientResponse {
+  uint32     version    = 1;
+  string     session_id = 2; // Server-assigned UUID for this session.
+  ClientRole role       = 3; // Actual assigned role; may differ from requested.
+  bytes      color_rgb  = 4; // 3-byte RGB color assigned by server (r, g, b).
+}
+
+// ─── UnregisterClient ─────────────────────────────────────────────────────────
+
+message UnregisterClientRequest {
+  uint32 version    = 1;
+  string session_id = 2;
+}
+
+message UnregisterClientResponse {
+  uint32 version = 1;
+}
+
+// ─── ListSessions ─────────────────────────────────────────────────────────────
+
+message ListSessionsRequest {
+  uint32 version = 1;
+}
+
+// ClientSessionInfo carries the public fields of a registered session.
+message ClientSessionInfo {
+  uint32     version    = 1;
+  string     session_id = 2;
+  string     label      = 3;
+  ClientRole role       = 4;
+  bytes      color_rgb  = 5; // 3-byte RGB (r, g, b).
+}
+
+message ListSessionsResponse {
+  uint32                     version  = 1;
+  repeated ClientSessionInfo sessions = 2;
+}

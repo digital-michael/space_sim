@@ -359,6 +359,23 @@ type ConfigReloadKeybindings struct{}
 //	help keys
 type HelpKeys struct{}
 
+// ─── Session commands ────────────────────────────────────────────────────────
+
+// SessionRegister registers this REPL client as a new session.
+//
+//	session register [label]
+type SessionRegister struct{ Label string }
+
+// SessionUnregister removes the current client session.
+//
+//	session unregister
+type SessionUnregister struct{}
+
+// SessionList lists all currently registered sessions.
+//
+//	session list
+type SessionList struct{}
+
 func (SystemList) isCmd()              {}
 func (SystemGet) isCmd()               {}
 func (SystemLoad) isCmd()              {}
@@ -394,6 +411,9 @@ func (RecordStop) isCmd()              {}
 func (RecordDelete) isCmd()            {}
 func (ConfigReloadKeybindings) isCmd() {}
 func (HelpKeys) isCmd()                {}
+func (SessionRegister) isCmd()         {}
+func (SessionUnregister) isCmd()       {}
+func (SessionList) isCmd()             {}
 
 // ValidDatasetLevels is the set of accepted level names for SetDataset.
 var ValidDatasetLevels = map[string]struct{}{
@@ -853,6 +873,26 @@ func Parse(line string) (Cmd, error) {
 			return ConfigReloadKeybindings{}, nil
 		}
 		return nil, fmt.Errorf("config: unknown subcommand %q %q", args[0], args[1])
+
+	// ── Session ──────────────────────────────────────────────────────────────
+	case "session":
+		if len(args) == 0 {
+			return nil, fmt.Errorf("session: subcommand required (register|unregister|list)")
+		}
+		switch args[0] {
+		case "register":
+			label := ""
+			if len(args) > 1 {
+				label = strings.Join(args[1:], " ")
+			}
+			return SessionRegister{Label: label}, nil
+		case "unregister":
+			return SessionUnregister{}, nil
+		case "list":
+			return SessionList{}, nil
+		default:
+			return nil, fmt.Errorf("session: unknown subcommand %q", args[0])
+		}
 
 	default:
 		return nil, ErrUnknownCommand{Input: fields[0]}

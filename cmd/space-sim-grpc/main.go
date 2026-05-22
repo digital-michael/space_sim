@@ -19,6 +19,7 @@ import (
 	"syscall"
 
 	rayapp "github.com/digital-michael/space_sim/internal/client/go/raylib/app"
+	"github.com/digital-michael/space_sim/internal/server/session"
 	grpcserver "github.com/digital-michael/space_sim/internal/transport/grpc"
 )
 
@@ -106,6 +107,9 @@ Mutually exclusive with --render-scale.`
 	recordingHandler := grpcserver.NewRecordingHandler(application.SendCmd)
 	configHandler := grpcserver.NewConfigHandler(application.SendCmd)
 
+	sessionRegistry := session.NewRegistry(session.DefaultConfig())
+	sessionHandler := grpcserver.NewSessionHandler(sessionRegistry)
+
 	srv := grpcserver.New(grpcserver.DefaultServerConfig(), grpcserver.Handlers{
 		Simulation:  simHandler,
 		World:       worldHandler,
@@ -117,6 +121,7 @@ Mutually exclusive with --render-scale.`
 		Shutdown:    shutdownHandler,
 		Recording:   recordingHandler,
 		Config:      configHandler,
+		Session:     sessionHandler,
 	})
 
 	srvDone := make(chan error, 1)

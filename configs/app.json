@@ -2,5 +2,10 @@
   "window": {},
   "render": {},
   "performance": {},
-  "default_ship_id": "scout_mk1"
+  "default_ship_id": "scout_mk1",
+  "session": {
+    "max_sessions": 100,
+    "idle_timeout_seconds": 30,
+    "admin_secret": ""
+  }
 }

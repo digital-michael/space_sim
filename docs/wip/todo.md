@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-20 (F-010 Group A+B implemented)
+2026-05-20 (F-020 Phase 1 session registry complete)
 
 ## Table of Contents
 1. How to Use This File
@@ -56,7 +56,7 @@ Planning Documents
 	F-017 Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
 	F-018 Object Annotations HUD (outlines, axes, orbital paths, labels)
 	F-019 Run Scripts from UI
-	F-020 Multi-Client gRPC Session Layer
+	F-020 Multi-Client gRPC Session Layer 🔄 Phase 1 complete (Phase 2 pending)
 	F-021 Client Physical Marker
 	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending F-013)
 	F-023 Keyboard Configuration 🔄 In Progress (Phase 1 partial)
@@ -381,7 +381,7 @@ Before passing positions to the GPU, subtract the camera world position from eve
 ### DEF-002 — Stars Disappear at Outer-Planet Camera Distances
 
 **Symptom**: Sol vanishes from the display when the camera is at Neptune distance (~3 000 sim units) or further. Any star-jump to an outer planet leaves no visible reference point for the star — the solar system appears unanchored.
-**Status**: 📋 Not started
+**Status**: ✅ Fixed — resolved as side-effect of DEF-003 (2026-04-24). `PointThresholdStar = 1e15` in `engine/constants.go` + `CategoryStar` branch in `renders.go` ensure stars are never point-rendered regardless of distance.
 **Priority**: High — orientation and navigation break without a visible star at any camera distance
 
 #### Root Cause (diagnosed)
@@ -999,7 +999,7 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 ### F-020 — Multi-Client gRPC Session Layer
 
 **Value**: Allow up to 100 concurrent REPL clients to connect to a single `space-sim-grpc` process. Each client has a stable session identity (name, role, color, UUID), and the server tracks all sessions in a registry. Conflict resolution policy defined. IAAM integration reserved as a future slot.
-**Status**: 📋 Not started
+**Status**: � Phase 1 complete — 2026-05-20. Phase 2–4 not started.
 **Priority**: High — foundational for all multiplayer features; F-021 through F-024 depend on it
 **Depends on**: Phase 6 gRPC transport (complete)
 **Spec**: [f020-multi-client-spec.md](f020-multi-client-spec.md)
