@@ -1426,6 +1426,56 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			r.printf("%-36s  %-32s  %-12v  %-28s  rgb(%d,%d,%d)\n",
 				s.SessionId, s.Label, s.Role, pos, rgb[0], rgb[1], rgb[2])
 		}
+
+	case commands.SessionKick:
+		if r.sessionID == "" {
+			r.printf("not registered\n")
+			return false, nil
+		}
+		_, err := r.sesClient.KickClient(ctx, connect.NewRequest(&v1.KickClientRequest{
+			Version:         1,
+			AdminSessionId:  r.sessionID,
+			TargetSessionId: c.TargetSessionID,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("kicked session %s\n", c.TargetSessionID)
+
+	case commands.SessionTeleport:
+		if r.sessionID == "" {
+			r.printf("not registered\n")
+			return false, nil
+		}
+		snap, err := r.oneSnapshot(ctx)
+		if err != nil {
+			return false, fmt.Errorf("teleport: snapshot: %w", err)
+		}
+		var posX, posY, posZ float64
+		found := false
+		for _, b := range snap.Bodies {
+			if strings.EqualFold(b.Name, c.Body) {
+				posX, posY, posZ = b.PosX, b.PosY, b.PosZ
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false, fmt.Errorf("teleport: body %q not found", c.Body)
+		}
+		_, err = r.sesClient.TeleportClient(ctx, connect.NewRequest(&v1.TeleportClientRequest{
+			Version:         1,
+			AdminSessionId:  r.sessionID,
+			TargetSessionId: c.TargetSessionID,
+			PosX:            posX,
+			PosY:            posY,
+			PosZ:            posZ,
+		}))
+		if err != nil {
+			return false, err
+		}
+		r.printf("teleported session %s to %s (%.4f, %.4f, %.4f)\n",
+			c.TargetSessionID, c.Body, posX, posY, posZ)
 	}
 	return false, nil
 }

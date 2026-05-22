@@ -19,6 +19,7 @@ import (
 	"syscall"
 
 	rayapp "github.com/digital-michael/space_sim/internal/client/go/raylib/app"
+	"github.com/digital-michael/space_sim/internal/persist"
 	"github.com/digital-michael/space_sim/internal/server/session"
 	grpcserver "github.com/digital-michael/space_sim/internal/transport/grpc"
 )
@@ -88,6 +89,15 @@ Mutually exclusive with --render-scale.`
 
 	sessionRegistry := session.NewRegistry(session.DefaultConfig())
 	sessionHandler := grpcserver.NewSessionHandler(sessionRegistry)
+
+	// Open admin audit log. Non-fatal: if it fails we log a warning and continue
+	// without audit logging rather than refusing to start.
+	if auditLog, auditErr := persist.OpenEventLog("data/session-audit.jsonl"); auditErr != nil {
+		log.Printf("warning: could not open admin audit log: %v — audit logging disabled", auditErr)
+	} else {
+		defer auditLog.Close()
+		sessionHandler.WithEventLog(auditLog)
+	}
 
 	// WorldHandler implements protocol.Subscriber — register it directly so
 	// the interactive loop delivers WorldSnapshot frames to all streaming clients.

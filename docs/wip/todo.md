@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-22 (F-021 Phase 1 blinking sphere markers complete)
+2026-05-22 (F-020 Phase 3 admin kick/teleport complete)
 
 ## Table of Contents
 1. How to Use This File
@@ -56,7 +56,7 @@ Planning Documents
 	F-017 Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
 	F-018 Object Annotations HUD (outlines, axes, orbital paths, labels)
 	F-019 Run Scripts from UI
-	F-020 Multi-Client gRPC Session Layer 🔄 Phase 2 complete (Phase 3 pending)
+	F-020 Multi-Client gRPC Session Layer ✅ All phases complete (Phase 3: admin kick/teleport)
 	F-021 Client Physical Marker 🔄 Phase 1 complete (Phase 2 pending)
 	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending F-013)
 	F-023 Keyboard Configuration 🔄 In Progress (Phase 1 partial)

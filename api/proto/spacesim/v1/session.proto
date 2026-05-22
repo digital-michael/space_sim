@@ -32,6 +32,14 @@ service SessionService {
   // sends ClientUpdate messages (position + POV); the server replies with
   // SessionDelta messages describing session changes (add/update/remove).
   rpc SessionStream(stream ClientUpdate) returns (stream SessionDelta);
+
+  // KickClient removes a session from the registry (admin only).
+  // The calling client must have CLIENT_ROLE_ADMIN.
+  rpc KickClient(KickClientRequest) returns (KickClientResponse);
+
+  // TeleportClient sets a session's world position (admin only).
+  // The calling client must have CLIENT_ROLE_ADMIN.
+  rpc TeleportClient(TeleportClientRequest) returns (TeleportClientResponse);
 }
 
 // ─── ClientRole ───────────────────────────────────────────────────────────────
@@ -159,4 +167,35 @@ message SessionDelta {
   uint32            version     = 1;
   ChangeType        change_type = 2;
   ClientSessionInfo session     = 3;
+}
+
+// ─── KickClient ───────────────────────────────────────────────────────────────
+
+// KickClientRequest removes target_session_id from the registry.
+// admin_session_id must belong to a CLIENT_ROLE_ADMIN session.
+message KickClientRequest {
+  uint32 version           = 1;
+  string admin_session_id  = 2;
+  string target_session_id = 3;
+}
+
+message KickClientResponse {
+  uint32 version = 1;
+}
+
+// ─── TeleportClient ───────────────────────────────────────────────────────────
+
+// TeleportClientRequest moves target_session_id to the given world position.
+// admin_session_id must belong to a CLIENT_ROLE_ADMIN session.
+message TeleportClientRequest {
+  uint32 version           = 1;
+  string admin_session_id  = 2;
+  string target_session_id = 3;
+  double pos_x             = 4;
+  double pos_y             = 5;
+  double pos_z             = 6;
+}
+
+message TeleportClientResponse {
+  uint32 version = 1;
 }

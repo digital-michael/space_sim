@@ -53,6 +53,12 @@ const (
 	// SessionServiceSessionStreamProcedure is the fully-qualified name of the SessionService's
 	// SessionStream RPC.
 	SessionServiceSessionStreamProcedure = "/spacesim.v1.SessionService/SessionStream"
+	// SessionServiceKickClientProcedure is the fully-qualified name of the SessionService's KickClient
+	// RPC.
+	SessionServiceKickClientProcedure = "/spacesim.v1.SessionService/KickClient"
+	// SessionServiceTeleportClientProcedure is the fully-qualified name of the SessionService's
+	// TeleportClient RPC.
+	SessionServiceTeleportClientProcedure = "/spacesim.v1.SessionService/TeleportClient"
 )
 
 // SessionServiceClient is a client for the spacesim.v1.SessionService service.
@@ -72,6 +78,12 @@ type SessionServiceClient interface {
 	// sends ClientUpdate messages (position + POV); the server replies with
 	// SessionDelta messages describing session changes (add/update/remove).
 	SessionStream(context.Context) *connect.BidiStreamForClient[v1.ClientUpdate, v1.SessionDelta]
+	// KickClient removes a session from the registry (admin only).
+	// The calling client must have CLIENT_ROLE_ADMIN.
+	KickClient(context.Context, *connect.Request[v1.KickClientRequest]) (*connect.Response[v1.KickClientResponse], error)
+	// TeleportClient sets a session's world position (admin only).
+	// The calling client must have CLIENT_ROLE_ADMIN.
+	TeleportClient(context.Context, *connect.Request[v1.TeleportClientRequest]) (*connect.Response[v1.TeleportClientResponse], error)
 }
 
 // NewSessionServiceClient constructs a client for the spacesim.v1.SessionService service. By
@@ -121,6 +133,18 @@ func NewSessionServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(sessionServiceMethods.ByName("SessionStream")),
 			connect.WithClientOptions(opts...),
 		),
+		kickClient: connect.NewClient[v1.KickClientRequest, v1.KickClientResponse](
+			httpClient,
+			baseURL+SessionServiceKickClientProcedure,
+			connect.WithSchema(sessionServiceMethods.ByName("KickClient")),
+			connect.WithClientOptions(opts...),
+		),
+		teleportClient: connect.NewClient[v1.TeleportClientRequest, v1.TeleportClientResponse](
+			httpClient,
+			baseURL+SessionServiceTeleportClientProcedure,
+			connect.WithSchema(sessionServiceMethods.ByName("TeleportClient")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -132,6 +156,8 @@ type sessionServiceClient struct {
 	updatePosition   *connect.Client[v1.UpdatePositionRequest, v1.UpdatePositionResponse]
 	updatePOV        *connect.Client[v1.UpdatePOVRequest, v1.UpdatePOVResponse]
 	sessionStream    *connect.Client[v1.ClientUpdate, v1.SessionDelta]
+	kickClient       *connect.Client[v1.KickClientRequest, v1.KickClientResponse]
+	teleportClient   *connect.Client[v1.TeleportClientRequest, v1.TeleportClientResponse]
 }
 
 // RegisterClient calls spacesim.v1.SessionService.RegisterClient.
@@ -164,6 +190,16 @@ func (c *sessionServiceClient) SessionStream(ctx context.Context) *connect.BidiS
 	return c.sessionStream.CallBidiStream(ctx)
 }
 
+// KickClient calls spacesim.v1.SessionService.KickClient.
+func (c *sessionServiceClient) KickClient(ctx context.Context, req *connect.Request[v1.KickClientRequest]) (*connect.Response[v1.KickClientResponse], error) {
+	return c.kickClient.CallUnary(ctx, req)
+}
+
+// TeleportClient calls spacesim.v1.SessionService.TeleportClient.
+func (c *sessionServiceClient) TeleportClient(ctx context.Context, req *connect.Request[v1.TeleportClientRequest]) (*connect.Response[v1.TeleportClientResponse], error) {
+	return c.teleportClient.CallUnary(ctx, req)
+}
+
 // SessionServiceHandler is an implementation of the spacesim.v1.SessionService service.
 type SessionServiceHandler interface {
 	// RegisterClient creates a new session.
@@ -181,6 +217,12 @@ type SessionServiceHandler interface {
 	// sends ClientUpdate messages (position + POV); the server replies with
 	// SessionDelta messages describing session changes (add/update/remove).
 	SessionStream(context.Context, *connect.BidiStream[v1.ClientUpdate, v1.SessionDelta]) error
+	// KickClient removes a session from the registry (admin only).
+	// The calling client must have CLIENT_ROLE_ADMIN.
+	KickClient(context.Context, *connect.Request[v1.KickClientRequest]) (*connect.Response[v1.KickClientResponse], error)
+	// TeleportClient sets a session's world position (admin only).
+	// The calling client must have CLIENT_ROLE_ADMIN.
+	TeleportClient(context.Context, *connect.Request[v1.TeleportClientRequest]) (*connect.Response[v1.TeleportClientResponse], error)
 }
 
 // NewSessionServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -226,6 +268,18 @@ func NewSessionServiceHandler(svc SessionServiceHandler, opts ...connect.Handler
 		connect.WithSchema(sessionServiceMethods.ByName("SessionStream")),
 		connect.WithHandlerOptions(opts...),
 	)
+	sessionServiceKickClientHandler := connect.NewUnaryHandler(
+		SessionServiceKickClientProcedure,
+		svc.KickClient,
+		connect.WithSchema(sessionServiceMethods.ByName("KickClient")),
+		connect.WithHandlerOptions(opts...),
+	)
+	sessionServiceTeleportClientHandler := connect.NewUnaryHandler(
+		SessionServiceTeleportClientProcedure,
+		svc.TeleportClient,
+		connect.WithSchema(sessionServiceMethods.ByName("TeleportClient")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/spacesim.v1.SessionService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SessionServiceRegisterClientProcedure:
@@ -240,6 +294,10 @@ func NewSessionServiceHandler(svc SessionServiceHandler, opts ...connect.Handler
 			sessionServiceUpdatePOVHandler.ServeHTTP(w, r)
 		case SessionServiceSessionStreamProcedure:
 			sessionServiceSessionStreamHandler.ServeHTTP(w, r)
+		case SessionServiceKickClientProcedure:
+			sessionServiceKickClientHandler.ServeHTTP(w, r)
+		case SessionServiceTeleportClientProcedure:
+			sessionServiceTeleportClientHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -271,4 +329,12 @@ func (UnimplementedSessionServiceHandler) UpdatePOV(context.Context, *connect.Re
 
 func (UnimplementedSessionServiceHandler) SessionStream(context.Context, *connect.BidiStream[v1.ClientUpdate, v1.SessionDelta]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SessionService.SessionStream is not implemented"))
+}
+
+func (UnimplementedSessionServiceHandler) KickClient(context.Context, *connect.Request[v1.KickClientRequest]) (*connect.Response[v1.KickClientResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SessionService.KickClient is not implemented"))
+}
+
+func (UnimplementedSessionServiceHandler) TeleportClient(context.Context, *connect.Request[v1.TeleportClientRequest]) (*connect.Response[v1.TeleportClientResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SessionService.TeleportClient is not implemented"))
 }

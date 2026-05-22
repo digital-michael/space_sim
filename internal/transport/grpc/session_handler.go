@@ -2,9 +2,13 @@ package grpcserver
 
 import (
 	"context"
+	"errors"
 
 	"connectrpc.com/connect"
+	"github.com/google/uuid"
 	v1 "github.com/digital-michael/space_sim/api/gen/spacesim/v1"
+	"github.com/digital-michael/space_sim/internal/persist"
+	"github.com/digital-michael/space_sim/internal/server/eventqueue"
 	"github.com/digital-michael/space_sim/internal/server/session"
 )
 
@@ -12,11 +16,43 @@ import (
 // It manages client session registration, unregistration, and listing.
 type SessionHandler struct {
 	registry session.Registry
+	eventLog *persist.EventLog // nil disables audit logging
 }
 
 // NewSessionHandler constructs a SessionHandler backed by the given registry.
 func NewSessionHandler(reg session.Registry) *SessionHandler {
 	return &SessionHandler{registry: reg}
+}
+
+// WithEventLog attaches an audit event log to the handler. Kick and teleport
+// actions will be recorded as EventTypeCustom entries. Returns h for chaining.
+func (h *SessionHandler) WithEventLog(el *persist.EventLog) *SessionHandler {
+	h.eventLog = el
+	return h
+}
+
+// requireAdmin resolves adminSessionID and returns CodePermissionDenied if the
+// session does not hold ClientRoleAdmin.
+func (h *SessionHandler) requireAdmin(adminSessionID string) error {
+	sess, ok := h.registry.Get(adminSessionID)
+	if !ok {
+		return connect.NewError(connect.CodeNotFound, session.ErrNotFound)
+	}
+	if sess.Role != session.ClientRoleAdmin {
+		return connect.NewError(connect.CodePermissionDenied,
+			errors.New("session: admin role required"))
+	}
+	return nil
+}
+
+// appendAuditEvent writes a custom audit event to the event log if one is set.
+// Errors are silently discarded — audit failures must not break RPC responses.
+func (h *SessionHandler) appendAuditEvent(payload map[string]interface{}) {
+	if h.eventLog == nil {
+		return
+	}
+	evt := eventqueue.NewEvent(uuid.New(), eventqueue.EventTypeCustom, payload, eventqueue.TransactionTypeNone)
+	_ = h.eventLog.Append(evt)
 }
 
 // RegisterClient creates a new session in the registry.
@@ -155,6 +191,49 @@ func (h *SessionHandler) SessionStream(
 			}
 		}
 	}
+}
+
+// KickClient removes target_session_id from the registry (admin only).
+func (h *SessionHandler) KickClient(
+	ctx context.Context,
+	req *connect.Request[v1.KickClientRequest],
+) (*connect.Response[v1.KickClientResponse], error) {
+	if err := h.requireAdmin(req.Msg.AdminSessionId); err != nil {
+		return nil, err
+	}
+	h.registry.Unregister(req.Msg.TargetSessionId)
+	h.appendAuditEvent(map[string]interface{}{
+		"action":            "kick",
+		"admin_session_id":  req.Msg.AdminSessionId,
+		"target_session_id": req.Msg.TargetSessionId,
+	})
+	return connect.NewResponse(&v1.KickClientResponse{Version: 1}), nil
+}
+
+// TeleportClient moves target_session_id to the given world position (admin only).
+func (h *SessionHandler) TeleportClient(
+	ctx context.Context,
+	req *connect.Request[v1.TeleportClientRequest],
+) (*connect.Response[v1.TeleportClientResponse], error) {
+	if err := h.requireAdmin(req.Msg.AdminSessionId); err != nil {
+		return nil, err
+	}
+	pos := [3]float64{req.Msg.PosX, req.Msg.PosY, req.Msg.PosZ}
+	if err := h.registry.UpdatePosition(req.Msg.TargetSessionId, pos); err != nil {
+		if err == session.ErrNotFound {
+			return nil, connect.NewError(connect.CodeNotFound, err)
+		}
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+	h.appendAuditEvent(map[string]interface{}{
+		"action":            "teleport",
+		"admin_session_id":  req.Msg.AdminSessionId,
+		"target_session_id": req.Msg.TargetSessionId,
+		"pos_x":             req.Msg.PosX,
+		"pos_y":             req.Msg.PosY,
+		"pos_z":             req.Msg.PosZ,
+	})
+	return connect.NewResponse(&v1.TeleportClientResponse{Version: 1}), nil
 }
 
 // ─── helpers ──────────────────────────────────────────────────────────────────

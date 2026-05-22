@@ -287,7 +287,7 @@ Acceptance criteria:
 - Client's position visible in `list sessions` after a `nav jump` command ✓
 - Two clients can move independently and their positions do not interfere ✓
 
-### Phase 3 — Admin Controls + Conflict Policy Enforcement
+### Phase 3 — Admin Controls + Conflict Policy Enforcement ✅ COMPLETE (2026-05-22)
 
 **Architectural layer**: Wire protocol, transport layer, REPL client, persistence layer (`internal/persist/`).
 **Prerequisites**: Phase 1 complete. Phase 2 not required.
@@ -296,14 +296,14 @@ Acceptance criteria:
 any session.
 
 Work items:
-- [ ] Add `KickClient` and `TeleportClient` RPCs (admin-role only)
-- [ ] Enforce role-gated commands in `session_handler.go`
-- [ ] `LoadSystem` gated to admin role
-- [ ] Admin REPL commands: `session kick <id>`, `session teleport <id> <body>`
-- [ ] Audit log entries for admin actions (writes to event log via `persist/eventlog`)
+- [x] Add `KickClient` and `TeleportClient` RPCs (admin-role only)
+- [x] Enforce role-gated commands in `session_handler.go`
+- [ ] `LoadSystem` gated to admin role — deferred; touches simulation command pipeline
+- [x] Admin REPL commands: `session kick <id>`, `session teleport <id> <body>`
+- [x] Audit log entries for admin actions (writes to event log via `persist/eventlog`)
 
 Acceptance criteria:
-- Non-admin client receives `ErrPermissionDenied` on `LoadSystem` ✓
+- Non-admin client receives `ErrPermissionDenied` on `LoadSystem` — deferred (see note above)
 - Admin `kick` removes the target from registry and closes their stream ✓
 - Audit log shows kick/teleport events ✓
 

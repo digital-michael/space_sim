@@ -376,6 +376,19 @@ type SessionUnregister struct{}
 //	session list
 type SessionList struct{}
 
+// SessionKick removes a connected client session (admin only).
+//
+//	session kick <session_id>
+type SessionKick struct{ TargetSessionID string }
+
+// SessionTeleport moves a session to a named body's position (admin only).
+//
+//	session teleport <session_id> <body_name>
+type SessionTeleport struct {
+	TargetSessionID string
+	Body            string
+}
+
 func (SystemList) isCmd()              {}
 func (SystemGet) isCmd()               {}
 func (SystemLoad) isCmd()              {}
@@ -414,6 +427,8 @@ func (HelpKeys) isCmd()                {}
 func (SessionRegister) isCmd()         {}
 func (SessionUnregister) isCmd()       {}
 func (SessionList) isCmd()             {}
+func (SessionKick) isCmd()             {}
+func (SessionTeleport) isCmd()         {}
 
 // ValidDatasetLevels is the set of accepted level names for SetDataset.
 var ValidDatasetLevels = map[string]struct{}{
@@ -877,7 +892,7 @@ func Parse(line string) (Cmd, error) {
 	// ── Session ──────────────────────────────────────────────────────────────
 	case "session":
 		if len(args) == 0 {
-			return nil, fmt.Errorf("session: subcommand required (register|unregister|list)")
+			return nil, fmt.Errorf("session: subcommand required (register|unregister|list|kick|teleport)")
 		}
 		switch args[0] {
 		case "register":
@@ -890,6 +905,22 @@ func Parse(line string) (Cmd, error) {
 			return SessionUnregister{}, nil
 		case "list":
 			return SessionList{}, nil
+		case "kick":
+			if len(args) < 2 {
+				return nil, ErrUsage{Cmd: "session kick", Detail: "session_id required",
+					Example: "session kick <session_id>"}
+			}
+			return SessionKick{TargetSessionID: args[1]}, nil
+		case "teleport":
+			if len(args) < 3 {
+				return nil, ErrUsage{Cmd: "session teleport",
+					Detail: "session_id and body name required",
+					Example: "session teleport <session_id> <body_name>"}
+			}
+			return SessionTeleport{
+				TargetSessionID: args[1],
+				Body:            strings.Join(args[2:], " "),
+			}, nil
 		default:
 			return nil, fmt.Errorf("session: unknown subcommand %q", args[0])
 		}
