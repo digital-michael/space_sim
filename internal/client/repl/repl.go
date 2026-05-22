@@ -791,6 +791,27 @@ func (r *REPL) waitForCamera(ctx context.Context) {
 	}
 }
 
+// updateSessionPos reads the current camera position and pushes it to the
+// session registry as this client's last-known world position. No-op if not
+// registered. Errors are silently ignored — position updates are best-effort.
+func (r *REPL) updateSessionPos(ctx context.Context) {
+	if r.sessionID == "" {
+		return
+	}
+	resp, err := r.camClient.GetCamera(ctx, connect.NewRequest(&v1.GetCameraRequest{}))
+	if err != nil {
+		return
+	}
+	cam := resp.Msg.GetCamera()
+	_, _ = r.sesClient.UpdatePosition(ctx, connect.NewRequest(&v1.UpdatePositionRequest{
+		Version:   1,
+		SessionId: r.sessionID,
+		PosX:      cam.GetPosX(),
+		PosY:      cam.GetPosY(),
+		PosZ:      cam.GetPosZ(),
+	}))
+}
+
 func (r *REPL) waitForSystem(ctx context.Context, requested string) {
 	for {
 		select {
@@ -1075,6 +1096,7 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			return false, err
 		}
 		r.printf("ok  event_id=%s  status=%s\n", resp.Msg.Ack.GetEventId(), resp.Msg.Ack.GetStatus())
+		r.updateSessionPos(ctx)
 
 	case commands.NavVelocity:
 		resp, err := r.navClient.GetVelocity(ctx, connect.NewRequest(&v1.GetVelocityRequest{}))
@@ -1117,6 +1139,7 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 		if r.syncMode {
 			r.waitForCamera(ctx)
 		}
+		r.updateSessionPos(ctx)
 
 	// ── Performance ───────────────────────────────────────────────────────────
 
@@ -1395,12 +1418,13 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 			r.printf("no sessions\n")
 			return false, nil
 		}
-		r.printf("%-36s  %-32s  %-12s  %s\n", "SESSION_ID", "LABEL", "ROLE", "COLOR")
-		r.printf("%s\n", strings.Repeat("-", 95))
+		r.printf("%-36s  %-32s  %-12s  %-28s  %s\n", "SESSION_ID", "LABEL", "ROLE", "POSITION (AU)", "COLOR")
+		r.printf("%s\n", strings.Repeat("-", 120))
 		for _, s := range resp.Msg.Sessions {
 			rgb := s.ColorRgb
-			r.printf("%-36s  %-32s  %-12v  rgb(%d,%d,%d)\n",
-				s.SessionId, s.Label, s.Role, rgb[0], rgb[1], rgb[2])
+			pos := fmt.Sprintf("%.4f, %.4f, %.4f", s.PosX, s.PosY, s.PosZ)
+			r.printf("%-36s  %-32s  %-12v  %-28s  rgb(%d,%d,%d)\n",
+				s.SessionId, s.Label, s.Role, pos, rgb[0], rgb[1], rgb[2])
 		}
 	}
 	return false, nil

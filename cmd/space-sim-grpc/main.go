@@ -86,10 +86,13 @@ Mutually exclusive with --render-scale.`
 		os.Exit(1)
 	}
 
-	// ── gRPC server ───────────────────────────────────────────────────────
+	sessionRegistry := session.NewRegistry(session.DefaultConfig())
+	sessionHandler := grpcserver.NewSessionHandler(sessionRegistry)
+
 	// WorldHandler implements protocol.Subscriber — register it directly so
 	// the interactive loop delivers WorldSnapshot frames to all streaming clients.
-	worldHandler := grpcserver.NewWorldHandler()
+	// Pass sessionRegistry so StreamSnapshot responses include client positions.
+	worldHandler := grpcserver.NewWorldHandler(sessionRegistry)
 	application.RegisterSubscriber(worldHandler)
 
 	// application.World is called on every RPC — it resolves to nil until
@@ -106,9 +109,6 @@ Mutually exclusive with --render-scale.`
 	shutdownHandler := grpcserver.NewShutdownHandler(stop)
 	recordingHandler := grpcserver.NewRecordingHandler(application.SendCmd)
 	configHandler := grpcserver.NewConfigHandler(application.SendCmd)
-
-	sessionRegistry := session.NewRegistry(session.DefaultConfig())
-	sessionHandler := grpcserver.NewSessionHandler(sessionRegistry)
 
 	srv := grpcserver.New(grpcserver.DefaultServerConfig(), grpcserver.Handlers{
 		Simulation:  simHandler,

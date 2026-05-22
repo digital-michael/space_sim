@@ -8,7 +8,7 @@ option go_package = "github.com/digital-michael/space_sim/api/gen/spacesim/v1;sp
 
 // ─── SessionService ───────────────────────────────────────────────────────────
 //
-// Session identity and registration for connected clients (F-020 Phase 1).
+// Session identity and registration for connected clients (F-020).
 // Each client registers on connect and receives a server-assigned SessionID,
 // Color, and (possibly downgraded) Role.
 service SessionService {
@@ -21,6 +21,17 @@ service SessionService {
 
   // ListSessions returns all currently registered sessions.
   rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+
+  // UpdatePosition stores the client's last-known world position in the registry.
+  rpc UpdatePosition(UpdatePositionRequest) returns (UpdatePositionResponse);
+
+  // UpdatePOV stores the client's last-known point-of-view direction.
+  rpc UpdatePOV(UpdatePOVRequest) returns (UpdatePOVResponse);
+
+  // SessionStream is a bidirectional streaming RPC. The client continuously
+  // sends ClientUpdate messages (position + POV); the server replies with
+  // SessionDelta messages describing session changes (add/update/remove).
+  rpc SessionStream(stream ClientUpdate) returns (stream SessionDelta);
 }
 
 // ─── ClientRole ───────────────────────────────────────────────────────────────
@@ -75,9 +86,77 @@ message ClientSessionInfo {
   string     label      = 3;
   ClientRole role       = 4;
   bytes      color_rgb  = 5; // 3-byte RGB (r, g, b).
+  // Phase 2: last-known world position (AU-scale).
+  double     pos_x      = 6;
+  double     pos_y      = 7;
+  double     pos_z      = 8;
+  // Phase 2: last-known point-of-view direction (unit vector).
+  float      pov_x      = 9;
+  float      pov_y      = 10;
+  float      pov_z      = 11;
 }
 
 message ListSessionsResponse {
   uint32                     version  = 1;
   repeated ClientSessionInfo sessions = 2;
+}
+
+// ─── UpdatePosition ───────────────────────────────────────────────────────────
+
+message UpdatePositionRequest {
+  uint32 version    = 1;
+  string session_id = 2;
+  double pos_x      = 3;
+  double pos_y      = 4;
+  double pos_z      = 5;
+}
+
+message UpdatePositionResponse {
+  uint32 version = 1;
+}
+
+// ─── UpdatePOV ────────────────────────────────────────────────────────────────
+
+message UpdatePOVRequest {
+  uint32 version    = 1;
+  string session_id = 2;
+  float  pov_x      = 3;
+  float  pov_y      = 4;
+  float  pov_z      = 5;
+}
+
+message UpdatePOVResponse {
+  uint32 version = 1;
+}
+
+// ─── SessionStream ────────────────────────────────────────────────────────────
+
+// ChangeType classifies a session change event.
+enum ChangeType {
+  CHANGE_TYPE_UNSPECIFIED = 0;
+  CHANGE_TYPE_ADD         = 1;
+  CHANGE_TYPE_UPDATE      = 2;
+  CHANGE_TYPE_REMOVE      = 3;
+}
+
+// ClientUpdate is sent by a client over SessionStream to report its current
+// world position and view direction.
+message ClientUpdate {
+  uint32 version    = 1;
+  string session_id = 2;
+  double pos_x      = 3;
+  double pos_y      = 4;
+  double pos_z      = 5;
+  float  pov_x      = 6;
+  float  pov_y      = 7;
+  float  pov_z      = 8;
+}
+
+// SessionDelta carries a single session change event pushed by the server over
+// SessionStream. session is populated for ADD and UPDATE; for REMOVE only
+// session_id is set.
+message SessionDelta {
+  uint32            version     = 1;
+  ChangeType        change_type = 2;
+  ClientSessionInfo session     = 3;
 }

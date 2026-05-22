@@ -7,6 +7,7 @@ import (
 	"connectrpc.com/connect"
 	v1 "github.com/digital-michael/space_sim/api/gen/spacesim/v1"
 	"github.com/digital-michael/space_sim/internal/protocol"
+	"github.com/digital-michael/space_sim/internal/server/session"
 	"github.com/digital-michael/space_sim/internal/sim/engine"
 )
 
@@ -15,16 +16,18 @@ import (
 // interactive loop delivers WorldSnapshot frames here; each active
 // StreamSnapshot RPC receives those frames over its own channel.
 type WorldHandler struct {
-	mu      sync.RWMutex
-	streams []chan protocol.WorldSnapshot
+	mu       sync.RWMutex
+	streams  []chan protocol.WorldSnapshot
+	registry session.Registry // may be nil; enriches responses with session data
 }
 
-// NewWorldHandler constructs a WorldHandler. Register it as a subscriber with
-// the Raylib app after construction:
+// NewWorldHandler constructs a WorldHandler. Optionally pass a session.Registry
+// so that StreamSnapshot responses include client session positions (F-021 hook).
+// Pass nil if session tracking is not needed for this handler.
 //
 //	app.RegisterSubscriber(worldHandler)
-func NewWorldHandler() *WorldHandler {
-	return &WorldHandler{}
+func NewWorldHandler(reg session.Registry) *WorldHandler {
+	return &WorldHandler{registry: reg}
 }
 
 // Receive implements protocol.Subscriber. It is called by the Broadcaster on
@@ -53,7 +56,7 @@ func (h *WorldHandler) StreamSnapshot(ctx context.Context, req *connect.Request[
 		case <-ctx.Done():
 			return nil
 		case snap := <-ch:
-			if err := stream.Send(snapshotToProto(snap)); err != nil {
+			if err := stream.Send(h.snapshotToProto(snap)); err != nil {
 				return err
 			}
 		}
@@ -79,7 +82,7 @@ func (h *WorldHandler) removeStream(ch chan protocol.WorldSnapshot) {
 
 // ─── conversion ───────────────────────────────────────────────────────────────
 
-func snapshotToProto(snap protocol.WorldSnapshot) *v1.StreamSnapshotResponse {
+func (h *WorldHandler) snapshotToProto(snap protocol.WorldSnapshot) *v1.StreamSnapshotResponse {
 	bodies := make([]*v1.BodyState, 0, len(snap.State.Objects))
 	for _, obj := range snap.State.Objects {
 		if !obj.Visible {
@@ -87,12 +90,20 @@ func snapshotToProto(snap protocol.WorldSnapshot) *v1.StreamSnapshotResponse {
 		}
 		bodies = append(bodies, objectToProto(obj))
 	}
-	return &v1.StreamSnapshotResponse{
+	resp := &v1.StreamSnapshotResponse{
 		Version:        1,
 		SimulationTime: snap.State.Time,
 		Speed:          float32(snap.Speed),
 		Bodies:         bodies,
 	}
+	if h.registry != nil {
+		all := h.registry.All()
+		resp.ClientSessions = make([]*v1.ClientSessionInfo, 0, len(all))
+		for _, s := range all {
+			resp.ClientSessions = append(resp.ClientSessions, sessionToProto(s))
+		}
+	}
+	return resp
 }
 
 func objectToProto(obj *engine.Object) *v1.BodyState {

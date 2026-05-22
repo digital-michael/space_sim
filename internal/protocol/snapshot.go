@@ -12,6 +12,17 @@ type SnapshotSource interface {
 	LatestSnapshot() WorldSnapshot
 }
 
+// ClientSessionSnapshot is a point-in-time copy of a registered session's
+// public state. Populated by the session registry; consumed by the Raylib
+// renderer to draw per-client position markers (F-021 hook).
+type ClientSessionSnapshot struct {
+	SessionID string
+	Label     string
+	Color     [3]uint8
+	Position  [3]float64
+	POV       [3]float32
+}
+
 // WorldSnapshot is a point-in-time, lock-free copy of simulation state.
 // Build one with (*world.World).Snapshot(); consume it in any client
 // without holding any simulation lock.
@@ -22,4 +33,9 @@ type WorldSnapshot struct {
 
 	// Speed is the physics animation multiplier at snapshot time.
 	Speed float64
+
+	// ClientSessions lists all registered sessions at snapshot time.
+	// Populated by the gRPC WorldHandler from the session registry.
+	// The Raylib renderer stores this for future F-021 marker rendering.
+	ClientSessions []ClientSessionSnapshot
 }

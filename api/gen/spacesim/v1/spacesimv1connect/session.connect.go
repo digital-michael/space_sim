@@ -44,6 +44,15 @@ const (
 	// SessionServiceListSessionsProcedure is the fully-qualified name of the SessionService's
 	// ListSessions RPC.
 	SessionServiceListSessionsProcedure = "/spacesim.v1.SessionService/ListSessions"
+	// SessionServiceUpdatePositionProcedure is the fully-qualified name of the SessionService's
+	// UpdatePosition RPC.
+	SessionServiceUpdatePositionProcedure = "/spacesim.v1.SessionService/UpdatePosition"
+	// SessionServiceUpdatePOVProcedure is the fully-qualified name of the SessionService's UpdatePOV
+	// RPC.
+	SessionServiceUpdatePOVProcedure = "/spacesim.v1.SessionService/UpdatePOV"
+	// SessionServiceSessionStreamProcedure is the fully-qualified name of the SessionService's
+	// SessionStream RPC.
+	SessionServiceSessionStreamProcedure = "/spacesim.v1.SessionService/SessionStream"
 )
 
 // SessionServiceClient is a client for the spacesim.v1.SessionService service.
@@ -55,6 +64,14 @@ type SessionServiceClient interface {
 	UnregisterClient(context.Context, *connect.Request[v1.UnregisterClientRequest]) (*connect.Response[v1.UnregisterClientResponse], error)
 	// ListSessions returns all currently registered sessions.
 	ListSessions(context.Context, *connect.Request[v1.ListSessionsRequest]) (*connect.Response[v1.ListSessionsResponse], error)
+	// UpdatePosition stores the client's last-known world position in the registry.
+	UpdatePosition(context.Context, *connect.Request[v1.UpdatePositionRequest]) (*connect.Response[v1.UpdatePositionResponse], error)
+	// UpdatePOV stores the client's last-known point-of-view direction.
+	UpdatePOV(context.Context, *connect.Request[v1.UpdatePOVRequest]) (*connect.Response[v1.UpdatePOVResponse], error)
+	// SessionStream is a bidirectional streaming RPC. The client continuously
+	// sends ClientUpdate messages (position + POV); the server replies with
+	// SessionDelta messages describing session changes (add/update/remove).
+	SessionStream(context.Context) *connect.BidiStreamForClient[v1.ClientUpdate, v1.SessionDelta]
 }
 
 // NewSessionServiceClient constructs a client for the spacesim.v1.SessionService service. By
@@ -86,6 +103,24 @@ func NewSessionServiceClient(httpClient connect.HTTPClient, baseURL string, opts
 			connect.WithSchema(sessionServiceMethods.ByName("ListSessions")),
 			connect.WithClientOptions(opts...),
 		),
+		updatePosition: connect.NewClient[v1.UpdatePositionRequest, v1.UpdatePositionResponse](
+			httpClient,
+			baseURL+SessionServiceUpdatePositionProcedure,
+			connect.WithSchema(sessionServiceMethods.ByName("UpdatePosition")),
+			connect.WithClientOptions(opts...),
+		),
+		updatePOV: connect.NewClient[v1.UpdatePOVRequest, v1.UpdatePOVResponse](
+			httpClient,
+			baseURL+SessionServiceUpdatePOVProcedure,
+			connect.WithSchema(sessionServiceMethods.ByName("UpdatePOV")),
+			connect.WithClientOptions(opts...),
+		),
+		sessionStream: connect.NewClient[v1.ClientUpdate, v1.SessionDelta](
+			httpClient,
+			baseURL+SessionServiceSessionStreamProcedure,
+			connect.WithSchema(sessionServiceMethods.ByName("SessionStream")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
@@ -94,6 +129,9 @@ type sessionServiceClient struct {
 	registerClient   *connect.Client[v1.RegisterClientRequest, v1.RegisterClientResponse]
 	unregisterClient *connect.Client[v1.UnregisterClientRequest, v1.UnregisterClientResponse]
 	listSessions     *connect.Client[v1.ListSessionsRequest, v1.ListSessionsResponse]
+	updatePosition   *connect.Client[v1.UpdatePositionRequest, v1.UpdatePositionResponse]
+	updatePOV        *connect.Client[v1.UpdatePOVRequest, v1.UpdatePOVResponse]
+	sessionStream    *connect.Client[v1.ClientUpdate, v1.SessionDelta]
 }
 
 // RegisterClient calls spacesim.v1.SessionService.RegisterClient.
@@ -111,6 +149,21 @@ func (c *sessionServiceClient) ListSessions(ctx context.Context, req *connect.Re
 	return c.listSessions.CallUnary(ctx, req)
 }
 
+// UpdatePosition calls spacesim.v1.SessionService.UpdatePosition.
+func (c *sessionServiceClient) UpdatePosition(ctx context.Context, req *connect.Request[v1.UpdatePositionRequest]) (*connect.Response[v1.UpdatePositionResponse], error) {
+	return c.updatePosition.CallUnary(ctx, req)
+}
+
+// UpdatePOV calls spacesim.v1.SessionService.UpdatePOV.
+func (c *sessionServiceClient) UpdatePOV(ctx context.Context, req *connect.Request[v1.UpdatePOVRequest]) (*connect.Response[v1.UpdatePOVResponse], error) {
+	return c.updatePOV.CallUnary(ctx, req)
+}
+
+// SessionStream calls spacesim.v1.SessionService.SessionStream.
+func (c *sessionServiceClient) SessionStream(ctx context.Context) *connect.BidiStreamForClient[v1.ClientUpdate, v1.SessionDelta] {
+	return c.sessionStream.CallBidiStream(ctx)
+}
+
 // SessionServiceHandler is an implementation of the spacesim.v1.SessionService service.
 type SessionServiceHandler interface {
 	// RegisterClient creates a new session.
@@ -120,6 +173,14 @@ type SessionServiceHandler interface {
 	UnregisterClient(context.Context, *connect.Request[v1.UnregisterClientRequest]) (*connect.Response[v1.UnregisterClientResponse], error)
 	// ListSessions returns all currently registered sessions.
 	ListSessions(context.Context, *connect.Request[v1.ListSessionsRequest]) (*connect.Response[v1.ListSessionsResponse], error)
+	// UpdatePosition stores the client's last-known world position in the registry.
+	UpdatePosition(context.Context, *connect.Request[v1.UpdatePositionRequest]) (*connect.Response[v1.UpdatePositionResponse], error)
+	// UpdatePOV stores the client's last-known point-of-view direction.
+	UpdatePOV(context.Context, *connect.Request[v1.UpdatePOVRequest]) (*connect.Response[v1.UpdatePOVResponse], error)
+	// SessionStream is a bidirectional streaming RPC. The client continuously
+	// sends ClientUpdate messages (position + POV); the server replies with
+	// SessionDelta messages describing session changes (add/update/remove).
+	SessionStream(context.Context, *connect.BidiStream[v1.ClientUpdate, v1.SessionDelta]) error
 }
 
 // NewSessionServiceHandler builds an HTTP handler from the service implementation. It returns the
@@ -147,6 +208,24 @@ func NewSessionServiceHandler(svc SessionServiceHandler, opts ...connect.Handler
 		connect.WithSchema(sessionServiceMethods.ByName("ListSessions")),
 		connect.WithHandlerOptions(opts...),
 	)
+	sessionServiceUpdatePositionHandler := connect.NewUnaryHandler(
+		SessionServiceUpdatePositionProcedure,
+		svc.UpdatePosition,
+		connect.WithSchema(sessionServiceMethods.ByName("UpdatePosition")),
+		connect.WithHandlerOptions(opts...),
+	)
+	sessionServiceUpdatePOVHandler := connect.NewUnaryHandler(
+		SessionServiceUpdatePOVProcedure,
+		svc.UpdatePOV,
+		connect.WithSchema(sessionServiceMethods.ByName("UpdatePOV")),
+		connect.WithHandlerOptions(opts...),
+	)
+	sessionServiceSessionStreamHandler := connect.NewBidiStreamHandler(
+		SessionServiceSessionStreamProcedure,
+		svc.SessionStream,
+		connect.WithSchema(sessionServiceMethods.ByName("SessionStream")),
+		connect.WithHandlerOptions(opts...),
+	)
 	return "/spacesim.v1.SessionService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case SessionServiceRegisterClientProcedure:
@@ -155,6 +234,12 @@ func NewSessionServiceHandler(svc SessionServiceHandler, opts ...connect.Handler
 			sessionServiceUnregisterClientHandler.ServeHTTP(w, r)
 		case SessionServiceListSessionsProcedure:
 			sessionServiceListSessionsHandler.ServeHTTP(w, r)
+		case SessionServiceUpdatePositionProcedure:
+			sessionServiceUpdatePositionHandler.ServeHTTP(w, r)
+		case SessionServiceUpdatePOVProcedure:
+			sessionServiceUpdatePOVHandler.ServeHTTP(w, r)
+		case SessionServiceSessionStreamProcedure:
+			sessionServiceSessionStreamHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -174,4 +259,16 @@ func (UnimplementedSessionServiceHandler) UnregisterClient(context.Context, *con
 
 func (UnimplementedSessionServiceHandler) ListSessions(context.Context, *connect.Request[v1.ListSessionsRequest]) (*connect.Response[v1.ListSessionsResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SessionService.ListSessions is not implemented"))
+}
+
+func (UnimplementedSessionServiceHandler) UpdatePosition(context.Context, *connect.Request[v1.UpdatePositionRequest]) (*connect.Response[v1.UpdatePositionResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SessionService.UpdatePosition is not implemented"))
+}
+
+func (UnimplementedSessionServiceHandler) UpdatePOV(context.Context, *connect.Request[v1.UpdatePOVRequest]) (*connect.Response[v1.UpdatePOVResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SessionService.UpdatePOV is not implemented"))
+}
+
+func (UnimplementedSessionServiceHandler) SessionStream(context.Context, *connect.BidiStream[v1.ClientUpdate, v1.SessionDelta]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("spacesim.v1.SessionService.SessionStream is not implemented"))
 }

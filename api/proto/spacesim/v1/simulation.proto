@@ -6,6 +6,8 @@ syntax = "proto3";
 // by the go_package option below.
 package spacesim.v1;
 
+import "spacesim/v1/session.proto";
+
 option go_package = "github.com/digital-michael/space_sim/api/gen/spacesim/v1;spacesimv1";
 
 // ─── SimulationService ────────────────────────────────────────────────────────
@@ -138,7 +140,7 @@ message StreamSnapshotRequest {
 }
 
 // StreamSnapshotResponse carries a point-in-time snapshot of all simulated
-// bodies and the current simulation speed.
+// bodies, the current simulation speed, and all registered client sessions.
 message StreamSnapshotResponse {
   uint32 version = 1;
 
@@ -150,6 +152,9 @@ message StreamSnapshotResponse {
 
   // bodies contains the state of every visible simulated body.
   repeated BodyState bodies = 4;
+
+  // client_sessions lists all registered sessions at snapshot time (F-021 hook).
+  repeated ClientSessionInfo client_sessions = 5;
 }
 
 // BodyState is the per-frame wire representation of engine.Object.

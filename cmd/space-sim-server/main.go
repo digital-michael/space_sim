@@ -49,7 +49,7 @@ func main() {
 	}
 
 	// ── Build handlers ────────────────────────────────────────────────────
-	worldHandler := grpcserver.NewWorldHandler()
+	worldHandler := grpcserver.NewWorldHandler(nil) // headless server has no session registry
 	simHandler := grpcserver.NewSimulationHandler(func() *world.World { return w })
 
 	// ── Register only the services meaningful for a headless server ───────

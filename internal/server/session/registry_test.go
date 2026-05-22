@@ -169,3 +169,78 @@ func TestConcurrentRegisterUnregister(t *testing.T) {
 		t.Errorf("expected Count=0 after all unregisters, got %d", reg.Count())
 	}
 }
+
+func TestUpdatePosition(t *testing.T) {
+	reg := newReg()
+	sess, _ := reg.Register(session.RegisterRequest{ClientUUID: "c1"})
+
+	pos := [3]float64{1.5, -2.0, 3.14}
+	if err := reg.UpdatePosition(sess.SessionID, pos); err != nil {
+		t.Fatalf("UpdatePosition: %v", err)
+	}
+
+	got, ok := reg.Get(sess.SessionID)
+	if !ok {
+		t.Fatal("session not found after UpdatePosition")
+	}
+	if got.Position != pos {
+		t.Errorf("Position = %v, want %v", got.Position, pos)
+	}
+}
+
+func TestUpdatePOV(t *testing.T) {
+	reg := newReg()
+	sess, _ := reg.Register(session.RegisterRequest{ClientUUID: "c1"})
+
+	pov := [3]float32{0.1, 0.2, 0.9}
+	if err := reg.UpdatePOV(sess.SessionID, pov); err != nil {
+		t.Fatalf("UpdatePOV: %v", err)
+	}
+
+	got, ok := reg.Get(sess.SessionID)
+	if !ok {
+		t.Fatal("session not found after UpdatePOV")
+	}
+	if got.POV != pov {
+		t.Errorf("POV = %v, want %v", got.POV, pov)
+	}
+}
+
+func TestUpdatePositionNotFound(t *testing.T) {
+	reg := newReg()
+	err := reg.UpdatePosition("no-such-id", [3]float64{1, 2, 3})
+	if err != session.ErrNotFound {
+		t.Errorf("expected ErrNotFound, got %v", err)
+	}
+}
+
+func TestSubscribeReceivesEvents(t *testing.T) {
+	reg := newReg()
+	ch, cancel := reg.Subscribe()
+	defer cancel()
+
+	sess, _ := reg.Register(session.RegisterRequest{ClientUUID: "c1", Label: "Test"})
+
+	e := <-ch
+	if e.Type != session.SessionEventAdd {
+		t.Errorf("Type = %v, want SessionEventAdd", e.Type)
+	}
+	if e.ID != sess.SessionID {
+		t.Errorf("ID = %q, want %q", e.ID, sess.SessionID)
+	}
+
+	reg.UpdatePosition(sess.SessionID, [3]float64{1, 2, 3})
+	e = <-ch
+	if e.Type != session.SessionEventUpdate {
+		t.Errorf("Type = %v, want SessionEventUpdate", e.Type)
+	}
+
+	reg.Unregister(sess.SessionID)
+	e = <-ch
+	if e.Type != session.SessionEventRemove {
+		t.Errorf("Type = %v, want SessionEventRemove", e.Type)
+	}
+	if e.ID != sess.SessionID {
+		t.Errorf("Remove ID = %q, want %q", e.ID, sess.SessionID)
+	}
+}
