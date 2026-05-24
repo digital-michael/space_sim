@@ -119,6 +119,7 @@ func LoadSystemFromFile(path string) (*engine.SimulationState, error) {
 		}
 	}
 
+	computeSOIRadii(state)
 	return state, nil
 }
 
@@ -240,6 +241,10 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 		category = engine.CategoryAsteroid
 	case "ring":
 		category = engine.CategoryRing
+	case "rogue", "comet":
+		category = engine.CategoryRogue
+	case "artifact":
+		category = engine.CategoryArtifact
 	}
 
 	initialAngle := float32(0)
@@ -276,6 +281,7 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 			Name:             config.Name,
 			Category:         category,
 			Mass:             config.Physical.Mass,
+			GM:               engine.G_sim * config.Physical.Mass,
 			PhysicalRadius:   config.Physical.Radius,
 			PhysicalRadiusKm: config.Physical.RadiusKm,
 			EquatorialRadius: config.Physical.EquatorialRadius,
@@ -328,6 +334,22 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 		},
 		Visible: true,
 		Dataset: -1,
+	}
+
+	// Artifact position_override: direct coordinate placement bypasses Keplerian calc.
+	if len(config.Orbit.PositionOverride) == 3 {
+		obj.Anim.Position = engine.Vector3{
+			X: float32(config.Orbit.PositionOverride[0]),
+			Y: float32(config.Orbit.PositionOverride[1]),
+			Z: float32(config.Orbit.PositionOverride[2]),
+		}
+	}
+	if len(config.Orbit.VelocityOverride) == 3 {
+		obj.Anim.Velocity = engine.Vector3{
+			X: float32(config.Orbit.VelocityOverride[0]),
+			Y: float32(config.Orbit.VelocityOverride[1]),
+			Z: float32(config.Orbit.VelocityOverride[2]),
+		}
 	}
 
 	return obj, nil
@@ -574,4 +596,222 @@ func createRingSystemFromConfig(state *engine.SimulationState, config engine.Fea
 
 	state.AddObject(obj)
 	return nil
+}
+
+// LoadSystemFromDir loads a solar system from a versioned directory (F-034 format).
+//
+// The directory must contain a system.json manifest. Optional sub-files
+// (stars.json, planets.json, etc.) are loaded when declared in the manifest.
+// Returns the same *engine.SimulationState as LoadSystemFromFile for full
+// backward compatibility with all downstream consumers.
+func LoadSystemFromDir(dir string) (*engine.SimulationState, error) {
+	manifestPath := filepath.Join(dir, "system.json")
+	data, err := os.ReadFile(manifestPath)
+	if err != nil {
+		return nil, fmt.Errorf("LoadSystemFromDir: failed to read system.json in %s: %w", dir, err)
+	}
+
+	var manifest SystemManifest
+	if err := json.Unmarshal(data, &manifest); err != nil {
+		return nil, fmt.Errorf("LoadSystemFromDir: failed to parse system.json in %s: %w", dir, err)
+	}
+
+	if manifest.SchemaVersion == "" {
+		return nil, fmt.Errorf("LoadSystemFromDir: system.json in %s is missing schema_version", dir)
+	}
+	if !supportedSchemaVersions[manifest.SchemaVersion] {
+		return nil, fmt.Errorf("LoadSystemFromDir: unsupported schema_version %q in %s (supported: 2.0)", manifest.SchemaVersion, dir)
+	}
+
+	state := engine.NewSimulationState()
+	rng := rand.New(rand.NewSource(42))
+	seenCategories := make(map[engine.ObjectCategory]bool)
+
+	// Helper: load a typed bodies file and add bodies to state.
+	loadBodies := func(filename string) error {
+		if filename == "" {
+			return nil
+		}
+		path := filepath.Join(dir, filename)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return fmt.Errorf("failed to read %s: %w", path, err)
+		}
+		var f TypedBodiesFile
+		if err := json.Unmarshal(raw, &f); err != nil {
+			return fmt.Errorf("failed to parse %s: %w", path, err)
+		}
+		if f.SchemaVersion != "" && !supportedSchemaVersions[f.SchemaVersion] {
+			return fmt.Errorf("unsupported schema_version %q in %s (supported: 2.0)", f.SchemaVersion, path)
+		}
+		for _, bc := range f.Bodies {
+			obj, err := createBodyFromConfig(bc, nil, rng, manifest.ScaleFactor)
+			if err != nil {
+				return fmt.Errorf("failed to create body %q from %s: %w", bc.Name, path, err)
+			}
+			state.AddObject(obj)
+			seenCategories[obj.Meta.Category] = true
+		}
+		return nil
+	}
+
+	// Load standard typed body files.
+	for _, filename := range []string{
+		manifest.Files.Stars,
+		manifest.Files.Planets,
+		manifest.Files.DwarfPlanets,
+		manifest.Files.Moons,
+	} {
+		if err := loadBodies(filename); err != nil {
+			return nil, err
+		}
+	}
+
+	// Load rogues.json.
+	if manifest.Files.Rogues != "" {
+		path := filepath.Join(dir, manifest.Files.Rogues)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", path, err)
+		}
+		var f RoguesFile
+		if err := json.Unmarshal(raw, &f); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+		}
+		if f.SchemaVersion != "" && !supportedSchemaVersions[f.SchemaVersion] {
+			return nil, fmt.Errorf("unsupported schema_version %q in %s (supported: 2.0)", f.SchemaVersion, path)
+		}
+		for _, bc := range f.Rogues {
+			if bc.Type == "" {
+				bc.Type = "rogue"
+			}
+			obj, err := createBodyFromConfig(bc, nil, rng, manifest.ScaleFactor)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create rogue %q from %s: %w", bc.Name, path, err)
+			}
+			state.AddObject(obj)
+			seenCategories[obj.Meta.Category] = true
+		}
+	}
+
+	// Load artifacts.json.
+	if manifest.Files.Artifacts != "" {
+		path := filepath.Join(dir, manifest.Files.Artifacts)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", path, err)
+		}
+		var f ArtifactsFile
+		if err := json.Unmarshal(raw, &f); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+		}
+		if f.SchemaVersion != "" && !supportedSchemaVersions[f.SchemaVersion] {
+			return nil, fmt.Errorf("unsupported schema_version %q in %s (supported: 2.0)", f.SchemaVersion, path)
+		}
+		for _, bc := range f.Artifacts {
+			if bc.Type == "" {
+				bc.Type = "artifact"
+			}
+			obj, err := createBodyFromConfig(bc, nil, rng, manifest.ScaleFactor)
+			if err != nil {
+				return nil, fmt.Errorf("failed to create artifact %q from %s: %w", bc.Name, path, err)
+			}
+			state.AddObject(obj)
+			seenCategories[obj.Meta.Category] = true
+		}
+	}
+
+	// Load belts.json.
+	if manifest.Files.Belts != "" {
+		path := filepath.Join(dir, manifest.Files.Belts)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", path, err)
+		}
+		var f TypedBeltsFile
+		if err := json.Unmarshal(raw, &f); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+		}
+		if f.SchemaVersion != "" && !supportedSchemaVersions[f.SchemaVersion] {
+			return nil, fmt.Errorf("unsupported schema_version %q in %s (supported: 2.0)", f.SchemaVersion, path)
+		}
+		for _, featureConfig := range f.Belts {
+			if strings.ToLower(featureConfig.Type) == "asteroid_belt" {
+				configCopy := featureConfig
+				state.AsteroidBeltConfig = &configCopy
+				seenCategories[engine.CategoryBelt] = true
+			} else if strings.ToLower(featureConfig.Type) == "kuiper_belt" {
+				configCopy := featureConfig
+				state.KuiperBeltConfig = &configCopy
+				seenCategories[engine.CategoryBelt] = true
+			} else if strings.ToLower(featureConfig.Type) == "ring_system" {
+				seenCategories[engine.CategoryRing] = true
+			}
+			if err := createFeatureFromConfig(state, featureConfig, nil, rng); err != nil {
+				return nil, fmt.Errorf("failed to create feature %q from %s: %w", featureConfig.Name, path, err)
+			}
+		}
+	}
+
+	// Validate cross-file parent references: every body with a non-empty ParentName
+	// must resolve to a loaded object.
+	for _, obj := range state.Objects {
+		if obj.Meta.ParentName != "" {
+			if state.GetObject(obj.Meta.ParentName) == nil {
+				return nil, fmt.Errorf("LoadSystemFromDir: body %q references unknown parent %q in %s",
+					obj.Meta.Name, obj.Meta.ParentName, dir)
+			}
+		}
+	}
+
+	// Build NavigationOrder from seen categories in canonical order.
+	canonicalOrder := []engine.ObjectCategory{
+		engine.CategoryStar,
+		engine.CategoryPlanet,
+		engine.CategoryDwarfPlanet,
+		engine.CategoryMoon,
+		engine.CategoryAsteroid,
+		engine.CategoryRing,
+		engine.CategoryBelt,
+		engine.CategoryRogue,
+		engine.CategoryArtifact,
+	}
+	for _, cat := range canonicalOrder {
+		if seenCategories[cat] {
+			state.NavigationOrder = append(state.NavigationOrder, cat)
+		}
+	}
+
+	// Propagate simulation mode and compute N-body parameters.
+	state.NBodyMode = manifest.Simulation.NBodyMode
+	computeSOIRadii(state)
+
+	return state, nil
+}
+
+// computeSOIRadii populates HillRadius and LaplaceSOI on all loaded objects.
+// Called after all bodies are loaded so parent references are resolved.
+func computeSOIRadii(state *engine.SimulationState) {
+	for _, obj := range state.Objects {
+		if obj.Meta.Mass == 0 {
+			continue
+		}
+		if obj.Meta.ParentName == "" {
+			// Top-level body (star): Hill sphere spans the system edge.
+			obj.Meta.HillRadius = 1e5
+			continue
+		}
+		parent := state.ObjectMap[obj.Meta.ParentName]
+		if parent == nil || parent.Meta.Mass == 0 {
+			continue
+		}
+		a := float64(obj.Meta.SemiMajorAxis)
+		if a == 0 {
+			continue
+		}
+		m := obj.Meta.Mass
+		M := parent.Meta.Mass
+		obj.Meta.HillRadius = a * math.Cbrt(m/(3*M))
+		obj.Meta.LaplaceSOI = a * math.Pow(m/M, 0.4)
+	}
 }

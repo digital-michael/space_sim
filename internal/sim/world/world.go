@@ -6,6 +6,7 @@ package world
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strings"
 	"sync/atomic"
 
@@ -23,13 +24,22 @@ type World struct {
 }
 
 // NewSimulation loads an environment from configPath and starts the simulation
-// process. If configPath is empty, defaults to "data/systems/solar_system.json".
+// process. If configPath is empty, defaults to "data/systems/solar_system".
 func NewWorld(hz float64, configPath string) (*World, error) {
 	if configPath == "" {
-		configPath = "data/systems/solar_system.json"
+		configPath = "data/systems/solar_system"
 	}
 
-	state, err := sim.LoadSystemFromFile(configPath)
+	// Detect whether configPath is a directory (new v2 format) or a JSON file
+	// (legacy v1 format).  Both paths are kept active for the migration period.
+	var state *engine.SimulationState
+	var err error
+	info, statErr := os.Stat(configPath)
+	if statErr == nil && info.IsDir() {
+		state, err = sim.LoadSystemFromDir(configPath)
+	} else {
+		state, err = sim.LoadSystemFromFile(configPath)
+	}
 	if err != nil {
 		return nil, fmt.Errorf("load system %s: %w", configPath, err)
 	}

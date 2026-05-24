@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Teegarden's Star",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 8.5,
+        "mass": 1.929e+29,
+        "rotation_period": 2353.2,
+        "albedo": 1.0,
+        "albedo_note": "emissive M7V star \u2013 nearby ultra-cool red dwarf",
+        "axial_tilt": 0.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          104,
+          82,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 100000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          80,
+          40,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.000732,
+        "surface_temperature_k": 2904,
+        "emission_color": [
+          255,
+          65,
+          18,
+          255
+        ],
+        "emission_intensity": 0.000732,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    }
+  ]
+}

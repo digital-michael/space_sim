@@ -1,0 +1,185 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Luyten c",
+      "parent": "Luyten's Star",
+      "orbit": {
+        "semi_major_axis": 3.6467,
+        "eccentricity": 0.17,
+        "inclination": 0.03,
+        "orbital_period": 4.7234,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.28,
+        "mass": 7.047e+24,
+        "albedo": 0.1,
+        "albedo_note": "estimated \u2013 inner close-in planet",
+        "axial_tilt": 0.0,
+        "rotation_period": 113.3616
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          178,
+          128,
+          102,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Luyten b",
+      "parent": "Luyten's Star",
+      "orbit": {
+        "semi_major_axis": 9.1101,
+        "eccentricity": 0.1,
+        "inclination": 0.03,
+        "orbital_period": 18.6498,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.38,
+        "mass": 1.726e+25,
+        "albedo": 0.3,
+        "albedo_note": "estimated \u2013 potentially habitable super-Earth",
+        "axial_tilt": 0.0,
+        "rotation_period": 447.5952
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          110,
+          154,
+          132,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 90,
+        "principal_chemicals": [
+          "nitrogen",
+          "carbon_dioxide",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.5,
+        "cloud_composition": [
+          "water_ice",
+          "liquid_water_droplets"
+        ],
+        "color_hint": [
+          100,
+          150,
+          200,
+          140
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Luyten d",
+      "parent": "Luyten's Star",
+      "orbit": {
+        "semi_major_axis": 71.2,
+        "eccentricity": 0.17,
+        "inclination": 0.05,
+        "orbital_period": 413.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.95,
+        "mass": 6.45e+25,
+        "albedo": 0.2,
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          54,
+          69,
+          79,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 30,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "nitrogen"
+        ],
+        "cloud_coverage": 0.1,
+        "cloud_composition": [
+          "carbon_dioxide_ice"
+        ],
+        "color_hint": [
+          140,
+          120,
+          100,
+          80
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Luyten e",
+      "parent": "Luyten's Star",
+      "orbit": {
+        "semi_major_axis": 84.9,
+        "eccentricity": 0.03,
+        "inclination": 0.05,
+        "orbital_period": 542.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.88,
+        "mass": 5.554e+25,
+        "albedo": 0.35,
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          54,
+          69,
+          79,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ]
+}

@@ -23,6 +23,8 @@ const (
 	CategoryRing                              // 4
 	CategoryStar                              // 5
 	CategoryBelt        ObjectCategory = 6    // Virtual: asteroid/Kuiper belts
+	CategoryRogue       ObjectCategory = 7    // Comets, interstellar objects, high-eccentricity bodies
+	CategoryArtifact    ObjectCategory = 8    // Human-made or alien-made durable objects (F-008/F-034)
 )
 
 // AsteroidDataset represents a LOD level for asteroid populations.
@@ -100,6 +102,11 @@ type ObjectMetadata struct {
 
 	// Hierarchy
 	ParentName string // Empty for top-level bodies; parent name for moons/rings
+
+	// N-body gravitational parameters (computed at load time; see F-013).
+	GM         float64 // G_sim × Mass in sim³/s²
+	HillRadius float64 // Hill sphere radius in sim units (0 = system default)
+	LaplaceSOI float64 // Laplace SOI radius in sim units (0 = use HillRadius)
 }
 
 // AnimationState contains mutable per-frame 3D state.
@@ -112,6 +119,12 @@ type AnimationState struct {
 	OrbitAngle   float32 // Legacy: equals TrueAnomaly for circular orbits
 	OrbitAxis    Vector3 // Axis of rotation (typically Y-up: 0,1,0)
 	OrbitYOffset float32 // Vertical offset from orbital plane (asteroid belt)
+
+	// N-body integration state (float64 for long-term precision; see F-013).
+	// Renderer reads float32 Position above; N-body writes here.
+	NBodyPos [3]float64 // Inertial-frame position in sim units
+	NBodyVel [3]float64 // Inertial-frame velocity in sim units/s
+	NBodyAcc [3]float64 // Current gravitational acceleration in sim units/s²
 }
 
 // Object represents a simulated celestial body.

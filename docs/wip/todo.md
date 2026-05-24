@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-22 (F-023 Phase 1 complete; F-032 closed)
+2026-05-24 (F-034–F-038 formalized; F-008 absorbed into F-034; F-024 superseded by F-038)
 
 ## Table of Contents
 1. How to Use This File
@@ -38,6 +38,11 @@ Planning Documents
 	[f026-audio-events-spec.md](f026-audio-events-spec.md) — F-026 audio events spec
 	[f027-collision-damage-spec.md](f027-collision-damage-spec.md) — F-027 ship collision detection and damage spec
 	[f033-ship-definition-spec.md](f033-ship-definition-spec.md) — F-033 ship definition and catalog spec
+	[f034-system-data-structure-spec.md](f034-system-data-structure-spec.md) — F-034 system data directory structure spec (absorbs F-008)
+	[f035-game-definition-spec.md](f035-game-definition-spec.md) — F-035 game definition spec (themes, factions)
+	[f036-playable-scenario-spec.md](f036-playable-scenario-spec.md) — F-036 playable scenario spec
+	[f037-ai-npc-console-spec.md](f037-ai-npc-console-spec.md) — F-037 AI/NPC console spec
+	[f038-hud-profiles-spec.md](f038-hud-profiles-spec.md) — F-038 HUD profiles spec (supersedes F-024)
 	F-002 REPL: track <object> and track stop ✅
 	F-003 Texture/Bitmap Rendering
 	F-004 Procedural Star Field Background
@@ -70,6 +75,11 @@ Planning Documents
 	F-031 Asteroid Visual Classification by Mass
 	F-032 Integrate Keybindings into All Simulator Commands ✅ Closed (2026-05-22 — all vocabulary actions wired; dialog nav intentionally hardcoded)
 	F-033 Ship Definition (Externally-Loaded Ship Catalog) ✅ Phase 1 complete (2026-05-20)
+	F-034 System Data Directory Structure (absorbs F-008) 📋
+	F-035 Game Definition — Themes and Factions 📋
+	F-036 Playable Scenario 📋
+	F-037 AI/NPC Console 📋
+	F-038 HUD Profiles (supersedes F-024) 📋
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -298,32 +308,43 @@ This is the current best-guess execution sequence integrating dependency order, 
 
 | Step | Item | Rationale |
 |------|------|-----------|
-| 1 | **F-013** N-body barycenter | Physics accuracy first; single-process validation before distributing |
-| 2 | **F-001** Camera collision prevention | 30-min fix; affects every session; pull forward from Group 1 |
-| 3 | **DEF-001** Floating-origin exploration + fix | Touches same render sites as F-003/F-004/F-005; fix before visual work to avoid double-rewrite |
-| 4 | **TD-001** Collapse handleInput param lists | Clean up before Group 5 network work adds more code around it |
-| 4a | **F-023 Phase 1 complete** `DrainQueue()` + all actions wired (F-032) | Keyboard config is user-visible but non-functional until F-032 closes; do this as one unit |
-| 4b | **F-032** Close keybinding vocabulary gaps | Runs in parallel with / immediately after F-023 Phase 1; no new infrastructure needed |
-| 4c | **TD-002** Decouple sim tick from render/input loop | Full fix for input latency; also the architectural pattern F-010 headless split needs |
-| 5 | ✅ **F-020 Phase 1** Multi-client session registry | Foundation for F-022, F-033, and F-021 |
-| 5a | ✅ **F-033 Phase 1** Ship definition + catalog + instance — 2026-05-20 | Provides capability ratings for F-022 Day 1; starts immediately after F-020 Phase 1 |
-| 5b | ✅ **F-021 Phase 1** Player physical marker | Visual identity; can be done in parallel with F-033 Phase 1 |
-| 6 | ✅ **F-022 Phase 1** Kinematic movement — 2026-05-20 | Thrusters + warp + drift without gravity; uses F-033 ShipInstance ratings |
-| 6a | ✅ **F-022 §9** Player-as-Ship wiring — 2026-05-20 | Camera forward → FacingVector; thrust along facing; turn rate from ShipInstance |
+| 1 | **F-034 Phase 1** System data directory structure | Data management must be stable before N-body test system; foundational for F-035/F-036; absorbs F-008 |
+| 2 | **F-013** N-body barycenter | Physics accuracy; uses the `nbody_test` system created in F-034 |
+| 3 | **F-022 Phase 2** Gravity + N-body movement | Depends on F-013; enables realistic player ship physics |
+| 4 | **F-035 Phase 1** Game Definition (themes + factions) | Data layer for gameplay; no runtime deps beyond F-034 |
+| 5 | **F-036 Phase 1** Playable Scenario | Scenario config + universe state; depends on F-034 and F-035 |
+| 6 | **F-038 Phase 1** HUD Profiles | Needs F-020, F-021, F-022 (all Phase 1 complete); absorbs F-024; provides Comms HUD slot for F-037 |
 | 7 | **F-010** Multi-machine split (headless server + client) | Network foundation |
 | 8 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
-| 9 | **F-008** Artifact object type | Content foundation for F-009 |
-| 10 | **F-009** Object-object collision/proximity | Needs F-008 for full value |
-| 11 | **F-033 Phase 2** Ship 3D model integration | Needs F-021 Phase 2 IQM pipeline; runs after F-008/F-009 unblocked visual track |
+| 9 | **F-037 Phase 1** AI/NPC Console — Personal Copilot | Local LLM + AIService gRPC; Comms HUD slot from F-038 Phase 1 |
+| 10 | **F-033 Phase 2** Ship 3D model integration | Needs F-021 Phase 2 IQM pipeline |
+| 11 | **F-009** Object-object collision/proximity | Needs F-034 Phase 1 (artifacts loaded) |
 | 12 | **F-033 Phase 3** Engine stage + power HUD | Needs F-033 Phase 1 and F-023 full wiring |
-| 13 | **F-006** XYZ keyboard nav + mouse facing → **deferred until F-023 Phase 1** | F-023 Phase 3 covers mouse-delta; do F-023 first |
-| 14 | **F-003** Textures on planets/moons | Group 2 visual; floating-origin fix (DEF-001) already done |
-| 15 | **F-004** Procedural star field | Group 2 visual |
-| 16 | **F-005** Physical lighting from stars | Needs F-003 |
-| 17 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable. Own phase. |
-| 18 | **F-018** Object annotations HUD | High value, low risk; no engine changes; builds on existing label + render infra |
-| 19 | **F-019** Run scripts from UI | Medium priority; builds directly on REPL and existing dialog UX |
+| 13 | **F-034 Phase 2** Rogue coma/tail shaders + artifact 3D models | Needs shader infra + IQM pipeline |
+| 14 | **F-035 Phase 2** Faction NPC spawning | Needs F-037 Phase 1 and F-036 Phase 1 |
+| 15 | **F-036 Phase 2** Manufacturing economy | Needs F-035 Phase 2 and F-037 |
+| 16 | **F-037 Phase 2** NPC Characters + Theme Managers + external LLMs | Full AI/NPC runtime |
+| 17 | **F-038 Phase 2** HUD role enforcement + Spectral viewport | Needs F-011 IAAM |
+| 18 | **F-006** XYZ keyboard nav + mouse facing | F-023 Phase 3 covers mouse-delta |
+| 19 | **F-003** Textures on planets/moons (already ✅) | Group 2 visual |
+| 20 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable |
+| 21 | **F-018** Object annotations HUD | High value, low risk; no engine changes |
+| 22 | **F-019** Run scripts from UI | Builds directly on REPL |
 | — | **4.7** Belt overlap/speed uniqueness | ⏸ Deferred — cosmetic only, insert whenever bandwidth allows |
+
+### Steps Completed (archived here for ordering context)
+
+| Step | Item | Completed |
+|------|------|-----------|
+| A | **F-001** Camera collision prevention | ✅ 2026-05-21 |
+| B | **DEF-001** Floating-origin rendering | ✅ |
+| C | **TD-001** Collapse handleInput param lists | ✅ 2026-05-20 |
+| D | **F-023 Phase 1** + **F-032** Keybindings | ✅ 2026-05-22 |
+| E | **TD-002** Decouple sim tick from render | ✅ 2026-05-20 |
+| F | **F-020 Phase 1** Multi-client session registry | ✅ |
+| G | **F-033 Phase 1** Ship definition + catalog | ✅ 2026-05-20 |
+| H | **F-021 Phase 1** Player physical marker | ✅ |
+| I | **F-022 Phase 1 + §9** Kinematic movement | ✅ 2026-05-20 |
 
 ---
 
@@ -627,18 +648,10 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 
 ### F-008 — Artifact Object Type
 
-**Value**: Introduce a new object category for non-natural, non-spherical objects: asteroid shapes (polyhedra), satellites, space probes, comets, spacecraft. Enables richer scene content without forcing everything into a sphere.
-**Status**: 📋 Not started
-**Priority**: Medium-low — architectural; requires schema, loader, and renderer changes
-**Depends on**: F-003 (texture pipeline) for surface detail; possibly F-005 (lighting) for accurate material response
+> **Absorbed by F-034.** All artifact and comet (rogue) work is specified in [f034-system-data-structure-spec.md](f034-system-data-structure-spec.md). F-008 is closed; do not start work here. F-034 Phase 1 delivers the schema and loader; F-034 Phase 2 delivers 3D model rendering.
 
-#### Work Items
-
-- [ ] Add `CategoryArtifact` to `engine/object.go` object category enum
-- [ ] Extend the JSON schema to support `"type": "artifact"` with a `mesh` field pointing to an OBJ/GLB asset
-- [ ] Implement mesh loading in the Raylib renderer (Raylib has `LoadModel`/`DrawModel`)
-- [ ] Comet type: add dust-tail and ion-tail particle emitters driven by distance-to-star
-- [ ] Bounding-sphere approximation for camera collision (F-001) and frustum culling
+**Status**: ⏸ Superseded — see F-034
+**Priority**: N/A — see F-034
 
 ---
 
@@ -1059,16 +1072,11 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 
 ### F-024 — Multiplayer HUD Enhancements
 
-**Value**: HUD additions for multi-client awareness: own-client status panel, session list (Tab overlay), compass indicators for off-screen clients, proximity alert, admin session panel.
-**Status**: 📋 Not started
-**Priority**: Medium — enhances multiplayer UX; not blocking for core functionality
-**Depends on**: F-020 Phase 2 (client sessions in WorldSnapshot); F-023 Phase 1 (toggle bindings)
-**Spec**: [f024-multiplayer-hud-spec.md](f024-multiplayer-hud-spec.md)
+> **Superseded by F-038 — HUD Profiles.** All components of this feature are absorbed into [f038-hud-profiles-spec.md](f038-hud-profiles-spec.md). Do not start new work against F-024 directly; use F-038 instead. F-024 is closed when F-038 Phase 1 ships.
 
-#### Phases
-- Phase 1: Own-client status panel + session list (Tab overlay)
-- Phase 2: Compass indicators + proximity alert
-- Phase 3: Admin session panel with kick action
+**Status**: ⏸ Superseded — see F-038
+**Priority**: N/A — see F-038
+**Spec (historical reference)**: [f024-multiplayer-hud-spec.md](f024-multiplayer-hud-spec.md)
 
 ---
 
@@ -1273,6 +1281,76 @@ Full spec: [`docs/wip/f033-ship-definition-spec.md`](f033-ship-definition-spec.m
 - F-023 `move.engine_stage_up/down` vocabulary entries defined for use in Phase 3
 - F-027 damage writes to `ShipInstance.HullIntegrity`, `EngineIntegrity`, `PowerIntegrity`
 - F-020 `RegisterClientRequest` gains `ship_id`; response gains `transponder_id`
+
+---
+
+### F-034 — System Data Directory Structure
+
+**Value**: Replace monolithic per-system JSON files with versioned per-system directories containing typed sub-files. Introduces rogues (comets, interstellar objects) and artifacts as first-class types. Absorbs and closes F-008.
+**Status**: 📋 Not started
+**Priority**: High — foundational data management; must precede F-013 (N-body test system) and F-035 (Game Definition)
+**Depends on**: Nothing blocking
+**Spec**: [f034-system-data-structure-spec.md](f034-system-data-structure-spec.md)
+
+**Summary of phases**:
+- Phase 1: Directory layout, `system.json` manifest, typed sub-files, `LoadSystemFromDir`, migration script, `nbody_test` system, rogue and artifact Keplerian rendering (fallback sphere)
+- Phase 2: Coma/tail shaders for rogues; artifact 3D model rendering; faction linkage (post F-035)
+
+---
+
+### F-035 — Game Definition (Themes and Factions)
+
+**Value**: Higher-level configuration layer above system data. Defines cross-system factions with mindset profiles, visual branding, and artifact resources. Themes overlay factions onto specific systems with placement rules. Multiple themes can be active simultaneously.
+**Status**: 📋 Not started
+**Priority**: High — required by F-036 (Playable Scenario) and F-037 (AI/NPC faction seeding)
+**Depends on**: F-034 (system directories must be stable)
+**Spec**: [f035-game-definition-spec.md](f035-game-definition-spec.md)
+
+**Summary of phases**:
+- Phase 1: `game_definition.json`, faction and theme schemas, loader, multi-theme conflict resolution, placement log, `--game-def` CLI flag
+- Phase 2: Faction NPC spawning (via event queue); AI Theme Manager seeding (F-037)
+
+---
+
+### F-036 — Playable Scenario
+
+**Value**: Named, server-scoped configuration that activates a Game Definition, sets initial conditions, drives runtime universe state, and enables scripted events. Platform ships pre-built scenarios; operators can create custom ones. Supports multi-server interlocking via player handoff.
+**Status**: 📋 Not started
+**Priority**: Medium — requires F-034 and F-035; unlocks F-037 objectives and F-036 Phase 2 manufacturing
+**Depends on**: F-034, F-035
+**Spec**: [f036-playable-scenario-spec.md](f036-playable-scenario-spec.md)
+
+**Summary of phases**:
+- Phase 1: `scenario.json`, `universe_state.json`, `sim_time` scripted events, `--scenario` flag, two pre-built scenarios
+- Phase 2: Manufacturing economy loop; multi-server player handoff
+
+---
+
+### F-037 — AI/NPC Console
+
+**Value**: Abstracted, pluggable LLM integration for three profiles: Personal Copilot (per-player ship assistant), NPC Characters (individual automated actors), NPC Theme Managers (faction-level orchestrators). Supports local (Ollama) and remote (OpenAI, Anthropic) back-ends with a unified `LLMProvider` interface.
+**Status**: 📋 Not started
+**Priority**: Medium — depends on F-035 (faction mindset profiles) and F-036 (scenario context)
+**Depends on**: F-035, F-036, F-020 (session layer), soft-depends F-011 (IAAM for role-gated access)
+**Spec**: [f037-ai-npc-console-spec.md](f037-ai-npc-console-spec.md)
+
+**Summary of phases**:
+- Phase 1: `LLMProvider` interface, `LocalLLM` (Ollama), `RuleBasedLLM` fallback, `AIService` gRPC handler, Personal Copilot chat panel (requires F-038 Phase 1 Comms HUD slot)
+- Phase 2: NPC Characters + Theme Managers; external LLM back-ends; client-side provider override
+
+---
+
+### F-038 — HUD Profiles
+
+**Value**: Replace ad-hoc HUD panel collection with five data-driven profiles: Debug, Educational, Player, Admin, Spectral. Panels are independently toggleable within each profile. Absorbs and closes F-024.
+**Status**: 📋 Not started
+**Priority**: Medium — depends on F-020 (session data), F-021 (own-ship position), F-022 (ship telemetry)
+**Depends on**: F-020, F-021, F-022. Soft-depends F-011 (role gating for Admin/Spectral profiles)
+**Spec**: [f038-hud-profiles-spec.md](f038-hud-profiles-spec.md)
+
+**Summary of phases**:
+- Phase 1: All 5 profiles functional; `configs/hud_profiles.json`; per-panel toggles; Spectral text-only; pre-IAAM graceful degradation; F-024 absorbed
+- Phase 2: IAAM role enforcement; panel state persistence; Spectral render-to-texture viewport
 
 ---
 

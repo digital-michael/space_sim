@@ -1,0 +1,67 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Sol",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 27.25,
+        "radius_km": 696340,
+        "mass": 1.989e+30,
+        "albedo": 1.0,
+        "albedo_note": "emissive \u2013 not reflective",
+        "axial_tilt": 7.25,
+        "rotation_period": 609.12
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": "data/assets/textures/sunmap.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          245,
+          245,
+          255,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 2000000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "oxygen",
+          "carbon"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          160,
+          50,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 1.0,
+        "surface_temperature_k": 5778,
+        "emission_color": [
+          255,
+          244,
+          220,
+          255
+        ],
+        "emission_intensity": 1.0
+      }
+    }
+  ]
+}

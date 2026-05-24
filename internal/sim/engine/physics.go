@@ -49,9 +49,16 @@ func NewSimulation(state *SimulationState, hz float64, applyCommandFn func(SimCo
 		}
 	}
 
+	// N-body systems use Clone-based swap so the back buffer pointer stays
+	// stable (SystemSet holds raw *Object pointers into the back buffer).
+	// Keplerian systems use zero-allocation InPlaceSwap.
 	db := NewDoubleBuffer(state)
-	db.EnableInPlaceSwap()
-	fmt.Printf("✓ Enabled in-place swap optimization (zero-allocation mode)\n")
+	if state.NBodyMode != "nbody" {
+		db.EnableInPlaceSwap()
+		fmt.Printf("✓ Enabled in-place swap optimization (zero-allocation mode)\n")
+	} else {
+		fmt.Printf("✓ N-body mode: using clone-based swap for pointer stability\n")
+	}
 
 	sim := &Simulation{
 		state:         db,
@@ -67,6 +74,15 @@ func NewSimulation(state *SimulationState, hz float64, applyCommandFn func(SimCo
 		sim.applyCommand = func(SimCommand) {}
 	}
 	sim.postTickHook = func() {}
+
+	// Seed N-body state on the back buffer when N-body mode is active.
+	// Must happen after NewDoubleBuffer so we initialise the correct buffer.
+	if state.NBodyMode == "nbody" {
+		back := db.GetBack()
+		back.SystemSet = BuildSystemSet(back)
+		initNBody(back)
+	}
+
 	return sim
 }
 
@@ -187,6 +203,38 @@ func (s *Simulation) update(dt float64) {
 	back.Time += scaledDt
 	back.DeltaTime = scaledDt
 
+	if back.NBodyMode == "nbody" {
+		// ── N-body path ──────────────────────────────────────────────────────
+		// Leapfrog DKD step for all named bodies (stars, planets, moons, …).
+		StepGravSet(back.SystemSet, scaledDt)
+
+		// Belt children (Dataset >= 0) still follow Keplerian orbits whose
+		// center tracks the N-body updated parent position.
+		children := back.GetChildren()
+		for _, obj := range children {
+			if obj.Dataset < 0 {
+				continue // named bodies are integrated inside SystemSet
+			}
+			if !obj.Visible {
+				continue
+			}
+			if parent := back.ObjectMap[obj.Meta.ParentName]; parent != nil {
+				obj.Anim.OrbitCenter = parent.Anim.Position
+			}
+		}
+		for _, obj := range children {
+			if obj.Dataset < 0 {
+				continue
+			}
+			s.updateObject(obj, float32(scaledDt))
+		}
+
+		updateBarycenter(back)
+		s.state.Swap()
+		return
+	}
+
+	// ── Keplerian path (default) ──────────────────────────────────────────────
 	parents := back.GetParents()
 	children := back.GetChildren()
 
@@ -341,4 +389,123 @@ func rotateOrbit(x, y float32, argPeri, incl, longNode float32) Vector3 {
 	z3 := z2
 
 	return Vector3{X: x3, Y: z3, Z: -y3} // Swap Y/Z to match Y-up; negate Z for CCW-from-north orbits
+}
+
+// ─── N-body initialisation ────────────────────────────────────────────────────
+
+// initNBody seeds NBodyPos and NBodyVel for all bodies in state.SystemSet.
+// Positions are computed from the current (primed) MeanAnomaly via Kepler's
+// equation.  Velocities are derived from the vis-viva relation and accumulated
+// inertially (child's velocity = orbital velocity + parent's inertial velocity).
+// Bodies are processed in three topological passes: level-0 (no parent),
+// level-1 (parent is level-0), level-2 (parent is level-1), covering stars →
+// planets → moons without requiring the Participants slice to be ordered.
+func initNBody(state *SimulationState) {
+	processed := make(map[string]bool, len(state.SystemSet.Participants))
+
+	for pass := 0; pass < 3; pass++ {
+		for _, obj := range state.SystemSet.Participants {
+			pName := obj.Meta.ParentName
+
+			if pass == 0 && pName != "" {
+				continue
+			}
+			if pass > 0 && (pName == "" || !processed[pName]) {
+				continue
+			}
+
+			// ── Position ────────────────────────────────────────────────────
+			if obj.Meta.SemiMajorAxis > 0 && obj.Meta.OrbitalPeriod > 0 {
+				E := solveKeplersEquation(obj.Anim.MeanAnomaly, obj.Meta.Eccentricity)
+				nu := calculateTrueAnomaly(E, obj.Meta.Eccentricity)
+				obj.Anim.TrueAnomaly = nu
+
+				e := float64(obj.Meta.Eccentricity)
+				a := float64(obj.Meta.SemiMajorAxis)
+				nu64 := float64(nu)
+				r := float32(a * (1 - e*e) / (1 + e*math.Cos(nu64)))
+
+				pos3D := rotateOrbit(
+					r*float32(math.Cos(nu64)),
+					r*float32(math.Sin(nu64)),
+					obj.Meta.ArgPeriapsis,
+					obj.Meta.Inclination,
+					obj.Meta.LongAscendingNode,
+				)
+				center := Vector3{}
+				if pName != "" {
+					if parent := state.ObjectMap[pName]; parent != nil {
+						center = parent.Anim.Position
+					}
+				}
+				obj.Anim.Position = Vector3{
+					X: center.X + pos3D.X,
+					Y: center.Y + pos3D.Y,
+					Z: center.Z + pos3D.Z,
+				}
+			}
+
+			obj.Anim.NBodyPos = [3]float64{
+				float64(obj.Anim.Position.X),
+				float64(obj.Anim.Position.Y),
+				float64(obj.Anim.Position.Z),
+			}
+
+			// ── Velocity ────────────────────────────────────────────────────
+			if pName != "" && obj.Meta.SemiMajorAxis > 0 {
+				if parent := state.ObjectMap[pName]; parent != nil && parent.Meta.GM > 0 {
+					a := float64(obj.Meta.SemiMajorAxis)
+					e := float64(obj.Meta.Eccentricity)
+					nu := float64(obj.Anim.TrueAnomaly)
+					p := a * (1 - e*e)
+					sqGMp := math.Sqrt(parent.Meta.GM / p)
+					// In-plane velocity components (perifocal frame)
+					vx := -sqGMp * math.Sin(nu)
+					vy := sqGMp * (e + math.Cos(nu))
+					// Rotate to 3D inertial frame
+					rotV := rotateOrbit(
+						float32(vx), float32(vy),
+						obj.Meta.ArgPeriapsis,
+						obj.Meta.Inclination,
+						obj.Meta.LongAscendingNode,
+					)
+					// Add parent's inertial velocity for correct heliocentric frame
+					obj.Anim.NBodyVel = [3]float64{
+						float64(rotV.X) + parent.Anim.NBodyVel[0],
+						float64(rotV.Y) + parent.Anim.NBodyVel[1],
+						float64(rotV.Z) + parent.Anim.NBodyVel[2],
+					}
+				}
+			} else {
+				// Top-level body: seed from Anim.Velocity (e.g. velocity_override or zero).
+				obj.Anim.NBodyVel = [3]float64{
+					float64(obj.Anim.Velocity.X),
+					float64(obj.Anim.Velocity.Y),
+					float64(obj.Anim.Velocity.Z),
+				}
+			}
+
+			processed[obj.Meta.Name] = true
+		}
+	}
+}
+
+// updateBarycenter computes the mass-weighted center of all Participants and
+// stores it in state.SystemBarycenter (float32 Vector3 for renderer access).
+func updateBarycenter(state *SimulationState) {
+	var cx, cy, cz, totalMass float64
+	for _, obj := range state.SystemSet.Participants {
+		m := obj.Meta.Mass
+		cx += m * obj.Anim.NBodyPos[0]
+		cy += m * obj.Anim.NBodyPos[1]
+		cz += m * obj.Anim.NBodyPos[2]
+		totalMass += m
+	}
+	if totalMass > 0 {
+		state.SystemBarycenter = Vector3{
+			X: float32(cx / totalMass),
+			Y: float32(cy / totalMass),
+			Z: float32(cz / totalMass),
+		}
+	}
 }

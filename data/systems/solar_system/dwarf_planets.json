@@ -1,0 +1,466 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "dwarf_planet",
+      "name": "Ceres",
+      "orbit": {
+        "semi_major_axis": 173.5,
+        "eccentricity": 0.076,
+        "inclination": 0.184,
+        "orbital_period": 1681.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 1.402,
+        "argument_periapsis": 1.285
+      },
+      "physical": {
+        "radius": 0.047,
+        "mass": 938400000000000000000,
+        "rotation_period": 9.1,
+        "axial_tilt": 4.0,
+        "albedo": 0.09
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          150,
+          140,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Pluto",
+      "orbit": {
+        "semi_major_axis": 2460,
+        "eccentricity": 0.248,
+        "inclination": 0.298451,
+        "longitude_ascending_node": 1.924955,
+        "argument_periapsis": 1.98576,
+        "orbital_period": 90560.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.093,
+        "mass": 1.309e+22,
+        "rotation_period": 153.3,
+        "axial_tilt": 122.5,
+        "albedo": 0.52
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/plutomap1k.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          220,
+          200,
+          180,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 200,
+        "principal_chemicals": [
+          "nitrogen",
+          "methane",
+          "carbon_monoxide"
+        ],
+        "cloud_coverage": 0.05,
+        "cloud_composition": [
+          "nitrogen_ice",
+          "methane_ice",
+          "tholins"
+        ],
+        "color_hint": [
+          205,
+          185,
+          165,
+          80
+        ]
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Haumea",
+      "orbit": {
+        "semi_major_axis": 2710,
+        "eccentricity": 0.191,
+        "inclination": 0.491,
+        "orbital_period": 103410.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 4.023,
+        "argument_periapsis": 4.204
+      },
+      "physical": {
+        "radius": 0.078,
+        "mass": 4.006e+21,
+        "rotation_period": 3.9,
+        "axial_tilt": 0.0,
+        "albedo": 0.804
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          200,
+          210,
+          220,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Makemake",
+      "orbit": {
+        "semi_major_axis": 2860,
+        "eccentricity": 0.163,
+        "inclination": 0.476,
+        "orbital_period": 112897.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 4.43,
+        "argument_periapsis": 2.931
+      },
+      "physical": {
+        "radius": 0.071,
+        "mass": 3.1e+21,
+        "rotation_period": 22.8,
+        "axial_tilt": 0.0,
+        "albedo": 0.81
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          190,
+          170,
+          150,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "methane"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Eris",
+      "orbit": {
+        "semi_major_axis": 4250,
+        "eccentricity": 0.442,
+        "inclination": 0.762,
+        "orbital_period": 203830.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 1.858,
+        "argument_periapsis": 2.557
+      },
+      "physical": {
+        "radius": 0.092,
+        "mass": 1.66e+22,
+        "rotation_period": 25.9,
+        "axial_tilt": 0.0,
+        "albedo": 0.96,
+        "albedo_note": "extremely high \u2013 fresh methane/nitrogen ice surface"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          230,
+          230,
+          240,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "nitrogen",
+          "methane"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Orcus",
+      "orbit": {
+        "semi_major_axis": 2460,
+        "eccentricity": 0.226,
+        "inclination": 0.179,
+        "orbital_period": 90465.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 2.72,
+        "argument_periapsis": 2.679
+      },
+      "physical": {
+        "radius": 0.046,
+        "mass": 640000000000000000000,
+        "rotation_period": 10.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.23
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          210,
+          205,
+          200,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Quaoar",
+      "orbit": {
+        "semi_major_axis": 2160,
+        "eccentricity": 0.034,
+        "inclination": 0.436,
+        "orbital_period": 104260.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 3.293,
+        "argument_periapsis": 3.437
+      },
+      "physical": {
+        "radius": 0.055,
+        "mass": 1.4e+21,
+        "rotation_period": 17.7,
+        "axial_tilt": 0.0,
+        "albedo": 0.109
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          180,
+          175,
+          170,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Gonggong",
+      "orbit": {
+        "semi_major_axis": 3350,
+        "eccentricity": 0.502,
+        "inclination": 0.539,
+        "orbital_period": 80280.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 0.337,
+        "argument_periapsis": 4.416
+      },
+      "physical": {
+        "radius": 0.062,
+        "mass": 1.75e+21,
+        "rotation_period": 22.4,
+        "axial_tilt": 0.0,
+        "albedo": 0.14
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          200,
+          100,
+          100,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Sedna",
+      "orbit": {
+        "semi_major_axis": 31600,
+        "eccentricity": 0.843,
+        "inclination": 0.208,
+        "orbital_period": 4130000.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 2.533,
+        "argument_periapsis": 1.796
+      },
+      "physical": {
+        "radius": 0.05,
+        "mass": 1e+21,
+        "rotation_period": 10.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.32
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          230,
+          150,
+          140,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Salacia",
+      "orbit": {
+        "semi_major_axis": 2100,
+        "eccentricity": 0.108,
+        "inclination": 0.417,
+        "orbital_period": 103600.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 1.78,
+        "argument_periapsis": 2.53
+      },
+      "physical": {
+        "radius": 0.042,
+        "mass": 450000000000000000000,
+        "rotation_period": 6.1,
+        "axial_tilt": 0.0,
+        "albedo": 0.044
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          195,
+          190,
+          185,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "dwarf_planet",
+      "name": "Varda",
+      "orbit": {
+        "semi_major_axis": 2150,
+        "eccentricity": 0.082,
+        "inclination": 0.379,
+        "orbital_period": 86640.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 4.289,
+        "argument_periapsis": 0.881
+      },
+      "physical": {
+        "radius": 0.036,
+        "mass": 270000000000000000000,
+        "rotation_period": 5.9,
+        "axial_tilt": 0.0,
+        "albedo": 0.099
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          215,
+          210,
+          205,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ]
+}

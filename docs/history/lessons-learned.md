@@ -2187,3 +2187,95 @@ const skyRadius = float32(5.0)
 
 ---
 
+## F-013 N-Body Gravitational Sets — Design Lessons
+
+**Date**: 2026-05-22
+**Context**: Redesigning the F-013 N-body scope to support configurable gravitational sets rather than a fixed "all named bodies" pass.
+
+---
+
+### 32. **N-Body Scope Should Be Set-Based, Not Category-Based** [PHYSICS]
+
+**Problem**: The original F-013 design hard-wired N-body scope to `Dataset == -1` (all named bodies: stars, planets, dwarf planets, moons). This works for the default solar-system case but cannot express the actual use cases: planet+moons clusters, bodies within a sphere of influence, asteroids near a planet, player ships in local gravity.
+
+**Root Cause**: The scope predicate was encoded as a boolean filter on a single field (`Dataset`), not as an explicit participant list. This made the integration boundary invisible and non-composable.
+
+**Solution**: Formalize the `[]*Object` slice that was already being passed to `accumForces()` as a first-class `GravSet{Participants, TestParticles}` struct. The integration boundary becomes explicit and composable:
+
+```go
+type GravSet struct {
+    Name         string
+    Participants  []*Object  // mutually attract; have mass
+    TestParticles []*Object  // receive gravity only; mass negligible
+}
+```
+
+The force accumulator and leapfrog integrator are unchanged — they already operated on a slice. The only new code is the builder functions that assemble the slices.
+
+**Solution (extended)**: Separate the concern into two layers:
+
+1. **Collectors** (`CollectByCategory`, `CollectInSOI`, `CollectChildren`, etc.) — return `[]*Object` slices filtered by a single criterion. Each is independently testable and composable.
+2. **Set builders** (`SystemSet`, `LocalSet`, `SOISet`) — compose collector results into `GravSet{Participants, TestParticles}`.
+3. **Integrator** (`stepGravSet`) — takes a finished `GravSet`; no knowledge of categories.
+
+```go
+// Caller assembles the set; integrator just runs it.
+gs := GravSet{
+    Participants: append(
+        CollectByName(state, "Earth", "Moon"),
+        CollectByCategory(state, CategoryArtifact)...,
+    ),
+}
+stepGravSet(gs, dt)
+```
+
+Adding a new body type (e.g., `CategoryArtifact`) only requires adding a `CollectByCategory` call at the construction site — the integrator is untouched.
+
+**Rule**: Any physics loop that takes a slice of participants is implicitly set-based. Make it explicit with a two-layer pattern: collectors assemble slices by criterion; builders compose slices into sets; the integrator consumes sets without knowing how they were built.
+
+---
+
+### 33. **Test-Particle Approximation Is the Correct Model for Ships** [PHYSICS]
+
+**Problem**: The question of whether player ships should "participate" in N-body (exert force on planets) vs. just "receive" gravity (be attracted by planets) was initially unclear. Adding ships as full participants would make them perturb planetary orbits.
+
+**Analysis**:
+- A 1,000 kg ship has GM ≈ `1.991e-38 × 1e3 ≈ 2e-35` sim³/s²
+- Earth's GM ≈ `2.4e-11` sim³/s²
+- Ratio: ~1e24 — ship gravity is physically negligible on any named body
+
+**Solution**: Ships are `TestParticles` — they receive gravitational force from all `Participants` but their mass is not included in the pairwise force sums. This is the standard test-particle approximation used in orbital mechanics.
+
+Benefits:
+- Physically correct (ship mass is genuinely negligible)
+- Performance: O(N) per ship vs. O(N²) expansion if ships were full participants
+- Scalability: 1,000 ships add 1,000 × N_participants force evaluations, not 1,000² pairwise
+
+**Rule**: Any body whose mass is < ~1e-15 of the dominant body in its local set should be a test particle. For space sims, this means all ships, probes, and small artifacts.
+
+---
+
+### 34. **Sphere of Influence Needs Two Radii, Not One** [PHYSICS]
+
+**Problem**: Early thinking used a single "SOI radius" per body to both define set membership (is this body inside the SOI?) and trigger dynamic entry/exit events. These two uses require different precision.
+
+**Analysis**:
+- **Hill sphere** (`r_H = a × (m/3M)^⅓`): The region where a body's gravity dominates over tidal forces from the parent. Conservative; larger. Best for set containment — if a body is inside the Hill sphere, it is definitely in the local gravitational field.
+- **Laplace SOI** (`r_SOI = a × (m/M)^⅖`): The smaller, more precise boundary where the body's gravity exceeds the parent's gravity on an orbiting test particle. Best for entry/exit trigger — the transition point where local physics takes over.
+
+Using Hill radius for membership containment and Laplace SOI for entry/exit detection gives a hysteresis band that prevents bodies from rapidly toggling in and out of sets near the boundary.
+
+**Rule**: Store both `HillRadius` and `LaplaceSOI` per body. Use `LaplaceSOI` as the entry trigger and `HillRadius` as the exit boundary. This prevents rapid set membership oscillation for bodies near the SOI edge.
+
+---
+
+### 35. **Artifacts Need a Category Before They Can Participate in Physics** [ARCHITECTURE]
+
+**Problem**: The request to include "space stations and larger ships" in N-body gravitational sets exposed a gap: there was no `ObjectCategory` for human-constructed objects. Without a category, there is no way to select them for a `GravSet`, assign them mass, or distinguish them from belt asteroids.
+
+**Solution**: Add `CategoryArtifact = 7` to the `ObjectCategory` enum. Artifacts are eligible as `GravSet.Participants` if they have a defined mass. They differ from player ships in that they have a persistent world position in simulation state (not in session registry) and are loaded from data files.
+
+**Rule**: Before a new class of physics object can participate in any simulation subsystem, it must have a category. Categories are the type tag that every subsystem (physics, renderer, UI, session registry) uses to dispatch. Adding a category is cheap; retrofitting one later is not.
+
+---
+

@@ -32,10 +32,10 @@ type CameraState struct {
 	Position engine.Vector3
 	Forward  engine.Vector3
 	Up       engine.Vector3
-	Yaw   float64
-	Pitch float64
-	Roll  float64 // accumulated roll around the forward axis (radians); 0 = world-up orientation
-	Mode  CameraMode
+	Yaw      float64
+	Pitch    float64
+	Roll     float64 // accumulated roll around the forward axis (radians); 0 = world-up orientation
+	Mode     CameraMode
 
 	// Jump animation
 	JumpStartPos    engine.Vector3

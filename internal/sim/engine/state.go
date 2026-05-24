@@ -26,6 +26,16 @@ type SimulationState struct {
 	// Populated by the loader from the types it encounters in the dataset.
 	NavigationOrder []ObjectCategory
 
+	// N-body integration (F-013).
+	// NBodyMode is "nbody" to enable leapfrog integration; empty or "keplerian" uses
+	// the legacy single-parent Keplerian path. Set by the loader from system.json.
+	NBodyMode string
+	// SystemBarycenter is updated each tick in N-body mode.
+	SystemBarycenter Vector3
+	// SystemSet is the default GravSet used when NBodyMode == "nbody".
+	// Built on the back buffer by NewSimulation; NOT copied in Clone.
+	SystemSet GravSet
+
 	// Cached arrays for performance (avoid repeated categorisation loop)
 	parents  []*Object
 	children []*Object
@@ -118,6 +128,10 @@ func (s *SimulationState) clone(pool *ObjectPool) *SimulationState {
 		AllocatedDatasets:  make(map[AsteroidDataset]bool, len(s.AllocatedDatasets)),
 		AsteroidBeltConfig: s.AsteroidBeltConfig, // immutable after load
 		KuiperBeltConfig:   s.KuiperBeltConfig,   // immutable after load
+		NBodyMode:          s.NBodyMode,
+		SystemBarycenter:   s.SystemBarycenter,
+		// SystemSet intentionally NOT copied: the back buffer owns the live
+		// GravSet; the front clone is renderer-only and never integrates.
 	}
 
 	for k, v := range s.AllocatedDatasets {

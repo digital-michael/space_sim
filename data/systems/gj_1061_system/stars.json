@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "GJ 1061",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 10.0,
+        "mass": 2.486e+29,
+        "rotation_period": 3000.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive M5.5V star",
+        "axial_tilt": 0.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          102,
+          84,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 150000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          80,
+          40,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.00156,
+        "surface_temperature_k": 3000,
+        "emission_color": [
+          255,
+          75,
+          25,
+          255
+        ],
+        "emission_intensity": 0.00156,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    }
+  ]
+}

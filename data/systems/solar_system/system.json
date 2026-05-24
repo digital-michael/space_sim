@@ -1,0 +1,19 @@
+{
+  "name": "Solar System",
+  "system_version": "2.0",
+  "schema_version": "2.0",
+  "scale_factor": 50,
+  "simulation": {
+    "default_time_scale": 1,
+    "nbody_mode": "keplerian"
+  },
+  "files": {
+    "stars": "stars.json",
+    "planets": "planets.json",
+    "dwarf_planets": "dwarf_planets.json",
+    "moons": "moons.json",
+    "belts": "belts.json",
+    "rogues": "rogues.json",
+    "artifacts": "artifacts.json"
+  }
+}

@@ -5,7 +5,7 @@
 Single source of truth for project goals, known requirements, and the prioritized implementation plan. Draws from `todo.md` (work items) and session planning discussions. This document describes *what* and *why*; `todo.md` carries the *how* (work items, acceptance criteria, decisions).
 
 ## Last Updated
-2026-05-18
+2026-05-24
 
 ---
 
@@ -21,6 +21,8 @@ Single source of truth for project goals, known requirements, and the prioritize
 | G6 | Configurable controls: user-remappable key bindings, 6-DOF navigation |
 | G7 | Federated compute: distribute physics across multiple nodes to scale simulation fidelity beyond a single machine |
 | G8 | Simulation accuracy and experience quality take precedence over maximizing concurrent user count |
+| G9 | Gameplay layer: themed, faction-driven playable scenarios composable from versioned system data |
+| G10 | AI/NPC integration: abstracted LLM back-end driving Personal Copilot, NPC characters, and faction-level orchestration |
 
 ---
 
@@ -84,19 +86,42 @@ Items are ordered by the agreed priority sequence. Dependencies are noted per it
 
 | Phase | Steps | Focus | Status |
 |-------|-------|-------|--------|
-| Pre-A | 1, 2, 3 | N-body foundation, camera fix, floating origin | 1 done (DEF-001 ✅); 1+2 pending |
 | A | 4 | Input cleanup + keybinding gap closure (TD-001 + F-032) | ✅ Complete |
-| B | 4a | Ship definition catalog (F-033 Phase 1) | 📋 Not started |
-| C | 4b | Kinematic movement + player as ship (F-022 Phase 1 + §9) | 📋 Not started |
-| D | 4c | Player physical marker (F-021 Phase 1) | 📋 Not started |
-| E | 5 | Multi-client session registry (F-020 Phase 1) | 📋 Not started |
+| B | 4a | Ship definition catalog (F-033 Phase 1) | ✅ Complete (2026-05-20) |
+| C | 4b | Kinematic movement + player as ship (F-022 Phase 1 + §9) | ✅ Complete (2026-05-20) |
+| D | 4c | Player physical marker (F-021 Phase 1) | ✅ Complete |
+| E | 5 | Multi-client session registry (F-020 Phase 1) | ✅ Complete |
+| Pre-H | — | System data structure (F-034 Phase 1) | 📋 Not started — **next up** |
+| H | — | N-body barycenter (F-013) | 📋 Not started — after F-034 |
+| I | — | Game Definition (F-035 Phase 1) | 📋 Not started |
+| J | — | Playable Scenario (F-036 Phase 1) | 📋 Not started |
+| K | — | HUD Profiles (F-038 Phase 1, absorbs F-024) | 📋 Not started |
 | F | 6, 7 | Network split + IAAM (F-010, F-011) | 📋 Not started |
-| G | 8, 9 | Object model expansion (F-008, F-009) | 📋 Not started |
+| L | — | AI/NPC Console Phase 1 (F-037) | 📋 Not started — after F-038 Phase 1 |
+| G+ | — | Object model expansion (F-009; F-008 absorbed by F-034) | 📋 Not started |
+
+---
+
+### Step 0 — F-034 Phase 1: System Data Directory Structure
+**Phase**: Pre-H (data foundation; must precede F-013)
+**Status**: 📋 Not started
+**Why before F-013**: The N-body implementation needs a dedicated test system (`nbody_test/`) that can only be defined cleanly in the new directory layout. Starting F-013 against the monolithic single-file format creates a migration burden mid-physics work.
+**Spec**: [f034-system-data-structure-spec.md](f034-system-data-structure-spec.md)
+
+Delivers:
+- Per-system directories under `data/systems/<name>/`
+- `system.json` manifest with `schema_version` and `nbody_mode` flag
+- Typed sub-files: `stars.json`, `planets.json`, `dwarf_planets.json`, `moons.json`, `belts.json`, `rogues.json`, `artifacts.json`
+- `LoadSystemFromDir` with schema validation and cross-file parent resolution
+- Migration script for all existing system files
+- `data/systems/nbody_test/` — minimal 3-body test system for F-013 validation
+- Rogue (comet/interstellar) and artifact body types rendered as fallback-color spheres
+- Closes F-008 (Artifact Object Type)
 
 ---
 
 ### Step 1 — F-013: N-Body Barycenter Integration
-**Phase**: Pre-A (foundation; independent)
+**Phase**: H (foundation; after F-034)
 **Status**: 📋 Not started — implementation plan complete ([f013-nbody-plan.md](f013-nbody-plan.md))  
 **Independent**: Yes — self-contained to `internal/sim/engine/physics.go`  
 **Why first**: Physics accuracy is a stated project goal (G1). Validating correctness in a single-process model before distributing (F-010, F-012) avoids compounding errors. Also informs DEF-001's `float64` position requirement and F-012's partition strategy.
@@ -299,11 +324,91 @@ Open research questions (partition strategy, reconciliation, clock sync, failure
 
 ---
 
+### Phase I — F-035 Phase 1: Game Definition (Themes + Factions)
+
+**Status**: 📋 Not started  
+**Depends on**: F-034 Phase 1  
+**Spec**: [f035-game-definition-spec.md](f035-game-definition-spec.md)
+
+Delivers:
+- `data/game_definitions/vanilla/` with `game_definition.json`, factions, themes, assets
+- Faction schema: id, name, mindset archetype, AI profile, artifact resources, color theme, visual assets
+- Theme schema: target system, `faction_placement` array (home body, controlled bodies, force scale)
+- Multi-theme conflict resolution (overlapping controlled bodies, synthetic placement artifact for extreme mismatch)
+- Placement log written to `game_state/<scenario_id>/placement_log.json` at scenario startup
+- `--game-def <id>` CLI flag
+
+**Goal alignment**: G9 (gameplay layer foundation), G10 (AI faction profiles seed F-037)
+
+---
+
+### Phase J — F-036 Phase 1: Playable Scenario
+
+**Status**: 📋 Not started  
+**Depends on**: F-034 Phase 1, F-035 Phase 1  
+**Spec**: [f036-playable-scenario-spec.md](f036-playable-scenario-spec.md)
+
+Delivers:
+- `scenario.json` manifest, `initial_state.json`, `objectives.json`, `events.json` per-scenario directory
+- `universe_state.json`: live faction state (controlled bodies, resource credits, active ships/stations) + player states
+- Atomic universe state writes at configurable interval and on shutdown (extends Phase 5 persistence)
+- `sim_time` scripted event triggers via existing event queue
+- `--scenario <id>` CLI flag
+- Two platform-provided scenarios: `exploration_run`, `inner_system_war`
+- Phase 2 planning: manufacturing economy loop; multi-server player handoff with transit token
+
+**Goal alignment**: G9 (playable scenario), G3 (multi-server interlocking in Phase 2)
+
+---
+
+### Phase K — F-038 Phase 1: HUD Profiles (absorbs F-024)
+
+**Status**: 📋 Not started  
+**Depends on**: F-020, F-021, F-022 (all Phase 1 complete ✅)  
+**Spec**: [f038-hud-profiles-spec.md](f038-hud-profiles-spec.md)
+
+Delivers:
+- Five profiles: Debug (0), Educational (1), Player (2), Admin (3), Spectral (4)
+- `configs/hud_profiles.json`: data-driven panel definitions
+- Player profile: Navigation HUD, Ship Status HUD, Comms/Chat HUD (placeholder), System Overview
+- Per-panel independent toggle keybindings; aggregatable to single view
+- Admin profile: adds Admin Session Panel and Sim Controls
+- Spectral Phase 1: text-only `spectral_data` panel (no render-to-texture)
+- Pre-IAAM graceful degradation: profiles 3/4 fall back to profile 2
+- **F-024 (Multiplayer HUD Enhancements) closed by this feature**
+
+**Goal alignment**: G2 (visual experience), G4 (role-gated panels in Phase 2)
+
+---
+
+### Phase L — F-037 Phase 1: AI/NPC Console — Personal Copilot
+
+**Status**: 📋 Not started  
+**Depends on**: F-035, F-036, F-020; requires F-038 Phase 1 Comms/Chat HUD slot  
+**Spec**: [f037-ai-npc-console-spec.md](f037-ai-npc-console-spec.md)
+
+Delivers:
+- `LLMProvider` interface (`internal/ai/llm/provider.go`)
+- `LocalLLM` implementation (Ollama HTTP API)
+- `RuleBasedLLM` fallback (no external service needed for tests)
+- Provider registry loaded from server config; `token_cap_per_request` enforced
+- `AIService` gRPC handler: streaming `Chat` RPC
+- Personal Copilot chat thread in Player HUD Comms panel (live with F-038 Phase 1)
+- Context window: player position, 10 nearest named bodies, ship status summary
+- Phase 2 planning: NPC Characters, NPC Theme Managers, `OpenAILLM`, `AnthropicLLM`, client-side provider override
+
+**Goal alignment**: G10 (AI/NPC integration)
+
+---
+
 ### Deferred
 
 | Item | Status | Notes |
 |------|--------|-------|
 | 4.7 Belt overlap / speed uniqueness | ⏸ Deferred | Cosmetic only; insert whenever bandwidth allows |
+| F-036 Phase 2 Manufacturing | ⏸ After Phase J | Requires F-037 NPC Theme Manager (Phase L Phase 2) |
+| F-037 Phase 2 NPC Characters / Theme Managers | ⏸ After Phase L | Requires F-035 Phase 2 faction spawning |
+| F-038 Phase 2 Spectral viewport | ⏸ After F-011 IAAM | Render-to-texture; incremental path defined in F-038 §9 |
 
 ---
 

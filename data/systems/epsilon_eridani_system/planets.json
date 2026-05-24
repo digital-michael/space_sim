@@ -1,0 +1,60 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Epsilon Eridani b",
+      "parent": "Epsilon Eridani",
+      "orbit": {
+        "semi_major_axis": 353,
+        "eccentricity": 0.06,
+        "inclination": 0.698,
+        "longitude_ascending_node": 0.0,
+        "argument_periapsis": 1.2,
+        "orbital_period": 2677.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2.8,
+        "mass": 1.898e+27,
+        "albedo": 0.503,
+        "albedo_note": "estimated \u2013 likely Jupiter-analog gas giant",
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          201,
+          176,
+          129,
+          255
+        ]
+      },
+      "importance": 90,
+      "atmosphere": {
+        "thickness_km": 8000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane",
+          "ammonia"
+        ],
+        "cloud_coverage": 1.0,
+        "cloud_composition": [
+          "ammonia_crystals",
+          "water_ice"
+        ],
+        "color_hint": [
+          210,
+          180,
+          130,
+          200
+        ]
+      }
+    }
+  ]
+}

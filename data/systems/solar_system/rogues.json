@@ -1,0 +1,35 @@
+{
+  "schema_version": "2.0",
+  "rogues": [
+    {
+      "type": "rogue",
+      "subtype": "periodic_comet",
+      "name": "Halley's Comet",
+      "orbit": {
+        "semi_major_axis": 17.8,
+        "eccentricity": 0.967,
+        "inclination": 162.3,
+        "longitude_ascending_node": 58.42,
+        "argument_periapsis": 111.33,
+        "orbital_period": 2765.5,
+        "initial_mean_anomaly": "180"
+      },
+      "physical": {
+        "mass": 2.2e14,
+        "radius": 0.018,
+        "radius_km": 11.0,
+        "color": [220, 230, 255, 210]
+      },
+      "rendering": {
+        "fallback_color": [220, 230, 255, 210]
+      },
+      "importance": 70,
+      "metadata": {
+        "description": "Famous short-period comet visible from Earth every ~75 years",
+        "tags": ["comet", "periodic", "historical"],
+        "last_perihelion": "1986-02-09",
+        "next_perihelion": "2061-07-28"
+      }
+    }
+  ]
+}

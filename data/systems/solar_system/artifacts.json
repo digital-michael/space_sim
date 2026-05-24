@@ -1,0 +1,63 @@
+{
+  "schema_version": "2.0",
+  "artifacts": [
+    {
+      "type": "artifact",
+      "subtype": "probe",
+      "name": "Voyager 1",
+      "faction": "nasa",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "position_override": [8000.0, 12.0, 1400.0],
+        "velocity_override": [0.0, 0.0, 0.0]
+      },
+      "physical": {
+        "mass": 721.9,
+        "radius": 0.0001,
+        "radius_km": 0.001,
+        "color": [220, 210, 180, 255]
+      },
+      "rendering": {
+        "fallback_color": [220, 210, 180, 255]
+      },
+      "importance": 80,
+      "metadata": {
+        "description": "First human-made object to enter interstellar space",
+        "launch_date": "1977-09-05",
+        "tags": ["probe", "interstellar", "nasa", "historical"]
+      }
+    },
+    {
+      "type": "artifact",
+      "subtype": "probe",
+      "name": "Pioneer 10",
+      "faction": "nasa",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "position_override": [-6500.0, -8.0, -100.0],
+        "velocity_override": [0.0, 0.0, 0.0]
+      },
+      "physical": {
+        "mass": 258.0,
+        "radius": 0.0001,
+        "radius_km": 0.001,
+        "color": [200, 200, 190, 255]
+      },
+      "rendering": {
+        "fallback_color": [200, 200, 190, 255]
+      },
+      "importance": 75,
+      "metadata": {
+        "description": "First spacecraft to travel through the asteroid belt and make a close pass of Jupiter",
+        "launch_date": "1972-03-02",
+        "tags": ["probe", "nasa", "historical"]
+      }
+    }
+  ]
+}

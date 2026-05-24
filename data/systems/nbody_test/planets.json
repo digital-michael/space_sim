@@ -1,0 +1,49 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Inner Planet",
+      "parent": "Test Star",
+      "orbit": {
+        "semi_major_axis": 1.0,
+        "eccentricity": 0.0,
+        "inclination": 0.0,
+        "orbital_period": 365.25,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "mass": 5.972e24,
+        "radius": 0.0426,
+        "radius_km": 6371,
+        "color": [100, 149, 237, 255]
+      },
+      "rendering": {
+        "fallback_color": [100, 149, 237, 255]
+      },
+      "importance": 80
+    },
+    {
+      "type": "planet",
+      "name": "Outer Planet",
+      "parent": "Test Star",
+      "orbit": {
+        "semi_major_axis": 4.0,
+        "eccentricity": 0.0,
+        "inclination": 0.0,
+        "orbital_period": 2920.0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "mass": 5.972e24,
+        "radius": 0.0426,
+        "radius_km": 6371,
+        "color": [210, 140, 80, 255]
+      },
+      "rendering": {
+        "fallback_color": [210, 140, 80, 255]
+      },
+      "importance": 75
+    }
+  ]
+}

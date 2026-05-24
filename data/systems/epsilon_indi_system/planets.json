@@ -1,0 +1,61 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Epsilon Indi Ab",
+      "parent": "Epsilon Indi A",
+      "orbit": {
+        "semi_major_axis": 1576,
+        "eccentricity": 0.25,
+        "inclination": 1.784,
+        "longitude_ascending_node": 0.8,
+        "argument_periapsis": 2.0,
+        "orbital_period": 25568.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 3.1,
+        "mass": 1.198e+28,
+        "albedo": 0.5,
+        "albedo_note": "estimated \u2013 cold super-Jupiter at wide orbit",
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          185,
+          156,
+          118,
+          255
+        ]
+      },
+      "importance": 90,
+      "atmosphere": {
+        "thickness_km": 5000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane",
+          "ammonia"
+        ],
+        "cloud_coverage": 1.0,
+        "cloud_composition": [
+          "ammonia_crystals",
+          "water_ice",
+          "methane_ice"
+        ],
+        "color_hint": [
+          180,
+          160,
+          120,
+          200
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,201 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Epsilon Indi A",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 19.4,
+        "mass": 1.555e+30,
+        "rotation_period": 857.6,
+        "albedo": 1.0,
+        "albedo_note": "emissive K5V star",
+        "axial_tilt": 0.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          190,
+          118,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 500000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          180,
+          100,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.22,
+        "surface_temperature_k": 4280,
+        "emission_color": [
+          255,
+          170,
+          90,
+          255
+        ],
+        "emission_intensity": 0.22
+      }
+    },
+    {
+      "type": "star",
+      "name": "Epsilon Indi Ba",
+      "parent": "Epsilon Indi A",
+      "orbit": {
+        "semi_major_axis": 25000,
+        "eccentricity": 0.3,
+        "inclination": 0.5,
+        "longitude_ascending_node": 1.1,
+        "argument_periapsis": 2.4,
+        "orbital_period": 350000000.0,
+        "initial_mean_anomaly": "2.1"
+      },
+      "physical": {
+        "radius": 8.0,
+        "mass": 1.27e+29,
+        "rotation_period": 5.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive T1 brown dwarf",
+        "axial_tilt": 0.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          176,
+          122,
+          70,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 80000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.7,
+        "cloud_composition": [
+          "iron_droplets",
+          "silicate_dust",
+          "methane_ice"
+        ],
+        "color_hint": [
+          200,
+          100,
+          60,
+          200
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.00096,
+        "surface_temperature_k": 1300,
+        "emission_color": [
+          200,
+          75,
+          15,
+          255
+        ],
+        "emission_intensity": 0.00096,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    },
+    {
+      "type": "star",
+      "name": "Epsilon Indi Bb",
+      "parent": "Epsilon Indi Ba",
+      "orbit": {
+        "semi_major_axis": 241,
+        "eccentricity": 0.54,
+        "inclination": 1.345,
+        "longitude_ascending_node": 2.582,
+        "argument_periapsis": 5.73,
+        "orbital_period": 4025.0,
+        "initial_mean_anomaly": "1.0"
+      },
+      "physical": {
+        "radius": 7.3,
+        "mass": 1.011e+29,
+        "rotation_period": 5.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive T6 brown dwarf",
+        "axial_tilt": 0.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          120,
+          96,
+          170,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 80000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.5,
+        "cloud_composition": [
+          "methane_ice",
+          "water_ice"
+        ],
+        "color_hint": [
+          160,
+          70,
+          30,
+          200
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 1.5e-05,
+        "surface_temperature_k": 900,
+        "emission_color": [
+          140,
+          30,
+          5,
+          255
+        ],
+        "emission_intensity": 1.5e-05,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    }
+  ]
+}

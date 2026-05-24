@@ -1,0 +1,189 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Alpha Centauri A",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 29.0,
+        "mass": 2.187e+30,
+        "rotation_period": 528.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive G2V star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          244,
+          234,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 1000000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          244,
+          234,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 1.519,
+        "surface_temperature_k": 5790,
+        "emission_color": [
+          255,
+          245,
+          222,
+          255
+        ],
+        "emission_intensity": 1.519
+      }
+    },
+    {
+      "type": "star",
+      "name": "Alpha Centauri B",
+      "parent": "Alpha Centauri A",
+      "orbit": {
+        "semi_major_axis": 1800,
+        "eccentricity": 0.52,
+        "inclination": 0.02,
+        "longitude_ascending_node": 0.8,
+        "argument_periapsis": 2.1,
+        "orbital_period": 29191.0,
+        "initial_mean_anomaly": "1.2"
+      },
+      "physical": {
+        "radius": 24.0,
+        "mass": 1.804e+30,
+        "rotation_period": 984.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive K1V star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          204,
+          144,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 800000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          204,
+          144,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.5,
+        "surface_temperature_k": 5260,
+        "emission_color": [
+          255,
+          210,
+          155,
+          255
+        ],
+        "emission_intensity": 0.5
+      }
+    },
+    {
+      "type": "star",
+      "name": "Proxima Centauri",
+      "parent": "Alpha Centauri A",
+      "orbit": {
+        "semi_major_axis": 15000,
+        "eccentricity": 0.35,
+        "inclination": 0.24,
+        "longitude_ascending_node": 1.3,
+        "argument_periapsis": 0.7,
+        "orbital_period": 2007500.0,
+        "initial_mean_anomaly": "3.6"
+      },
+      "physical": {
+        "radius": 12.0,
+        "mass": 2.43e+29,
+        "rotation_period": 1992.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive M5.5Ve flare star"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          120,
+          90,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 300000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          120,
+          90,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.00155,
+        "surface_temperature_k": 3042,
+        "emission_color": [
+          255,
+          80,
+          30,
+          255
+        ],
+        "emission_intensity": 0.00155,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    }
+  ]
+}

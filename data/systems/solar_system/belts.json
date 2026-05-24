@@ -1,0 +1,414 @@
+{
+  "schema_version": "2.0",
+  "belts": [
+    {
+      "type": "ring_system",
+      "name": "Jupiter-Ring-Main",
+      "parent": "Jupiter",
+      "distribution": {
+        "inner_radius": 3.2,
+        "outer_radius": 3.8
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 3.1
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          180,
+          160,
+          140,
+          60
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-D",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 2.6,
+        "outer_radius": 3.0
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          210,
+          190,
+          140,
+          180
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-C",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 3.0,
+        "outer_radius": 3.8
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          230,
+          210,
+          160,
+          200
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-B",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 3.8,
+        "outer_radius": 4.7
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          245,
+          225,
+          180,
+          240
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-A",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 4.9,
+        "outer_radius": 5.6
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          240,
+          220,
+          175,
+          220
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Uranus-Ring-6",
+      "parent": "Uranus",
+      "distribution": {
+        "inner_radius": 1.65,
+        "outer_radius": 1.68
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Uranus-Ring-Epsilon",
+      "parent": "Uranus",
+      "distribution": {
+        "inner_radius": 1.95,
+        "outer_radius": 2.05
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          120,
+          120,
+          120,
+          140
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Neptune-Ring-Galle",
+      "parent": "Neptune",
+      "distribution": {
+        "inner_radius": 1.65,
+        "outer_radius": 1.7
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          110,
+          110,
+          130,
+          80
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Neptune-Ring-Adams",
+      "parent": "Neptune",
+      "distribution": {
+        "inner_radius": 2.45,
+        "outer_radius": 2.55
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          130,
+          130,
+          150,
+          100
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "asteroid_belt",
+      "name": "Main Asteroid Belt",
+      "parent": "Sol",
+      "distribution": {
+        "inner_radius": 195,
+        "outer_radius": 240,
+        "thickness": 15,
+        "density_profile": "uniform"
+      },
+      "procedural": {
+        "seed": 42,
+        "size_range": [
+          0.05,
+          0.25
+        ],
+        "color_palette": [
+          [
+            128,
+            128,
+            128,
+            255
+          ]
+        ],
+        "color_variation": 0.1,
+        "shape_model": "sphere"
+      },
+      "count_levels": [
+        200,
+        1200,
+        2400,
+        24000
+      ],
+      "object_types": {
+        "large": {
+          "count_by_level": [
+            200,
+            200,
+            400,
+            4000
+          ],
+          "size_range": [
+            0.15,
+            0.25
+          ],
+          "importance_by_level": [
+            15,
+            12,
+            10,
+            8
+          ],
+          "description": "100+ km diameter asteroids"
+        },
+        "medium": {
+          "count_by_level": [
+            0,
+            1000,
+            2000,
+            20000
+          ],
+          "size_range": [
+            0.05,
+            0.13
+          ],
+          "importance_by_level": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "description": "30-100 km diameter asteroids"
+        }
+      },
+      "orbital_mechanics": {
+        "use_kepler_law": true,
+        "distance_to_au_ratio": 100,
+        "eccentricity_range": [
+          0.0,
+          0.05
+        ],
+        "inclination_range": [
+          0.0,
+          0.0
+        ]
+      },
+      "physical": {},
+      "rendering": {}
+    },
+    {
+      "type": "kuiper_belt",
+      "name": "Kuiper Belt",
+      "parent": "Sol",
+      "distribution": {
+        "inner_radius": 3000,
+        "outer_radius": 5000,
+        "thickness": 50,
+        "density_profile": "classical_belt",
+        "classical_belt_range": [
+          4200,
+          4800
+        ],
+        "classical_belt_probability": 0.6
+      },
+      "procedural": {
+        "seed": 43,
+        "size_range": [
+          0.05,
+          0.3
+        ],
+        "color_palette": [
+          [
+            180,
+            140,
+            120,
+            255
+          ],
+          [
+            220,
+            180,
+            160,
+            255
+          ],
+          [
+            200,
+            160,
+            140,
+            255
+          ]
+        ],
+        "color_variation": 0.15,
+        "shape_model": "sphere"
+      },
+      "count_levels": [
+        200,
+        1200,
+        2400,
+        24000
+      ],
+      "object_types": {
+        "large": {
+          "count_by_level": [
+            200,
+            200,
+            400,
+            4000
+          ],
+          "size_range": [
+            0.15,
+            0.3
+          ],
+          "importance_by_level": [
+            15,
+            12,
+            10,
+            8
+          ],
+          "description": "100-300 km diameter KBOs (dwarf planet candidates)"
+        },
+        "medium": {
+          "count_by_level": [
+            0,
+            1000,
+            2000,
+            20000
+          ],
+          "size_range": [
+            0.05,
+            0.15
+          ],
+          "importance_by_level": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "description": "30-100 km diameter KBOs"
+        }
+      },
+      "orbital_mechanics": {
+        "use_kepler_law": true,
+        "distance_to_au_ratio": 100,
+        "eccentricity_range": [
+          0.01,
+          0.16
+        ],
+        "inclination_range": [
+          -0.15,
+          0.15
+        ]
+      },
+      "physical": {},
+      "rendering": {}
+    }
+  ]
+}

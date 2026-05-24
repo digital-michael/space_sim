@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Luyten's Star",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 12.0,
+        "mass": 5.768e+29,
+        "rotation_period": 2774.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive M3.5V star",
+        "axial_tilt": 0.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          112,
+          92,
+          255
+        ]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 150000,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          90,
+          50,
+          180
+        ]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.00456,
+        "surface_temperature_k": 3382,
+        "emission_color": [
+          255,
+          100,
+          48,
+          255
+        ],
+        "emission_intensity": 0.00456,
+        "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
+      }
+    }
+  ]
+}

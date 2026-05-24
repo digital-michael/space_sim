@@ -6,6 +6,16 @@ package engine
 // Use this to convert SI accelerations (m/s²) to sim-unit accelerations (sim_units/s²).
 const MetersPerSimUnit = 1.496e9
 
+// G_sim is the gravitational constant in simulation units:
+//
+//	G_SI  = 6.674e-11 m³ / (kg·s²)
+//	1 sim = 1 AU/100  = 1.496e9 m
+//	G_sim = G_SI / (1.496e9)³ ≈ 1.991e-38  sim³ / (kg·s²)
+//
+// Sanity check: Earth orbital period via T = 2π√(a³/GM_sol) with
+// a = 100 sim units, GM_sol ≈ 3.96e-8 → T ≈ 3.15e7 s (1 year). ✓
+const G_sim = 1.991e-38
+
 // Rendering distance thresholds (simulation units).
 const (
 	// Point rendering — when objects switch from 3D mesh to point.

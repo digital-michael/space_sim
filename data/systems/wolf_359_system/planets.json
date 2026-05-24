@@ -1,0 +1,56 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Wolf 359 b",
+      "parent": "Wolf 359",
+      "orbit": {
+        "semi_major_axis": 184.5,
+        "eccentricity": 0.04,
+        "inclination": 0.05,
+        "orbital_period": 2938.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1.2,
+        "mass": 2.622e+26,
+        "albedo": 0.3,
+        "albedo_note": "estimated \u2013 potentially in habitable zone",
+        "axial_tilt": 0.0,
+        "rotation_period": 24.0
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          54,
+          69,
+          79,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 100,
+        "principal_chemicals": [
+          "nitrogen",
+          "carbon_dioxide",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.4,
+        "cloud_composition": [
+          "water_ice"
+        ],
+        "color_hint": [
+          110,
+          150,
+          190,
+          120
+        ]
+      }
+    }
+  ]
+}

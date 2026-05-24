@@ -316,3 +316,178 @@ func TestLoaderFallbackColorPreferredOverPhysicalColor(t *testing.T) {
 		t.Errorf("expected fallback_color [100,150,200], got %+v", obj.Meta.Color)
 	}
 }
+// ─── LoadSystemFromDir tests ────────────────────────────────────────────────
+
+func writeFile(t *testing.T, dir, name, content string) {
+	t.Helper()
+	if err := os.WriteFile(filepath.Join(dir, name), []byte(content), 0644); err != nil {
+		t.Fatalf("write %s: %v", name, err)
+	}
+}
+
+func TestLoadSystemFromDir_Basic(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "system.json", `{
+		"name":"Test","system_version":"1.0","schema_version":"2.0","scale_factor":1,
+		"files":{"stars":"stars.json","planets":"planets.json"}
+	}`)
+	writeFile(t, dir, "stars.json", `{
+		"schema_version":"2.0","bodies":[{
+			"type":"star","name":"Sol",
+			"orbit":{"semi_major_axis":0,"eccentricity":0,"inclination":0,"orbital_period":0},
+			"physical":{"mass":1.989e30,"radius":10,"color":[255,244,180,255]},
+			"rendering":{"material":"emissive"},
+			"luminosity":{"self_luminous":true,"solar_luminosity":1.0},
+			"importance":100
+		}]
+	}`)
+	writeFile(t, dir, "planets.json", `{
+		"schema_version":"2.0","bodies":[{
+			"type":"planet","name":"Earth","parent":"Sol",
+			"orbit":{"semi_major_axis":1,"eccentricity":0,"inclination":0,"orbital_period":365},
+			"physical":{"mass":5.972e24,"radius":0.04,"color":[100,149,237,255]},
+			"rendering":{"material":"diffuse"},
+			"importance":80
+		}]
+	}`)
+
+	state, err := LoadSystemFromDir(dir)
+	if err != nil {
+		t.Fatalf("LoadSystemFromDir: %v", err)
+	}
+	if state.GetObject("Sol") == nil {
+		t.Error("expected Sol to be loaded")
+	}
+	if state.GetObject("Earth") == nil {
+		t.Error("expected Earth to be loaded")
+	}
+	if len(state.NavigationOrder) == 0 {
+		t.Error("expected non-empty NavigationOrder")
+	}
+}
+
+func TestLoadSystemFromDir_SchemaVersionMismatch(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "system.json", `{
+		"name":"Test","system_version":"1.0","schema_version":"9.9","scale_factor":1,
+		"files":{}
+	}`)
+
+	_, err := LoadSystemFromDir(dir)
+	if err == nil {
+		t.Fatal("expected error for unsupported schema_version, got nil")
+	}
+}
+
+func TestLoadSystemFromDir_MissingSchemaVersion(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "system.json", `{"name":"Test","scale_factor":1,"files":{}}`)
+
+	_, err := LoadSystemFromDir(dir)
+	if err == nil {
+		t.Fatal("expected error for missing schema_version, got nil")
+	}
+}
+
+func TestLoadSystemFromDir_RoguesFile(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "system.json", `{
+		"name":"Test","system_version":"1.0","schema_version":"2.0","scale_factor":1,
+		"files":{"stars":"stars.json","rogues":"rogues.json"}
+	}`)
+	writeFile(t, dir, "stars.json", `{
+		"schema_version":"2.0","bodies":[{
+			"type":"star","name":"Sol",
+			"orbit":{"semi_major_axis":0,"eccentricity":0,"inclination":0,"orbital_period":0},
+			"physical":{"mass":1.989e30,"radius":10,"color":[255,255,255,255]},
+			"rendering":{"material":"emissive"},"importance":100
+		}]
+	}`)
+	writeFile(t, dir, "rogues.json", `{
+		"schema_version":"2.0","rogues":[{
+			"type":"rogue","name":"Comet X","subtype":"hyperbolic",
+			"orbit":{"semi_major_axis":500,"eccentricity":0.99,"inclination":120,"orbital_period":99999},
+			"physical":{"mass":1e12,"radius":0.005,"color":[200,220,255,200]},
+			"rendering":{"material":"diffuse"},"importance":30
+		}]
+	}`)
+
+	state, err := LoadSystemFromDir(dir)
+	if err != nil {
+		t.Fatalf("LoadSystemFromDir: %v", err)
+	}
+	comet := state.GetObject("Comet X")
+	if comet == nil {
+		t.Fatal("expected Comet X to be loaded")
+	}
+	if comet.Meta.Category != engine.CategoryRogue {
+		t.Errorf("expected CategoryRogue (%d), got %d", engine.CategoryRogue, comet.Meta.Category)
+	}
+}
+
+func TestLoadSystemFromDir_ArtifactsPositionOverride(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "system.json", `{
+		"name":"Test","system_version":"1.0","schema_version":"2.0","scale_factor":1,
+		"files":{"stars":"stars.json","artifacts":"artifacts.json"}
+	}`)
+	writeFile(t, dir, "stars.json", `{
+		"schema_version":"2.0","bodies":[{
+			"type":"star","name":"Sol",
+			"orbit":{"semi_major_axis":0,"eccentricity":0,"inclination":0,"orbital_period":0},
+			"physical":{"mass":1.989e30,"radius":10,"color":[255,255,255,255]},
+			"rendering":{"material":"emissive"},"importance":100
+		}]
+	}`)
+	writeFile(t, dir, "artifacts.json", `{
+		"schema_version":"2.0","artifacts":[{
+			"type":"artifact","name":"Voyager 1","subtype":"probe","faction":"nasa",
+			"orbit":{
+				"semi_major_axis":0,"eccentricity":0,"inclination":0,"orbital_period":0,
+				"position_override":[100.0,5.0,200.0],
+				"velocity_override":[0.1,0.0,0.05]
+			},
+			"physical":{"mass":721.9,"radius":0.0001,"color":[220,210,180,255]},
+			"rendering":{"material":"diffuse"},"importance":80
+		}]
+	}`)
+
+	state, err := LoadSystemFromDir(dir)
+	if err != nil {
+		t.Fatalf("LoadSystemFromDir: %v", err)
+	}
+	v1 := state.GetObject("Voyager 1")
+	if v1 == nil {
+		t.Fatal("expected Voyager 1 to be loaded")
+	}
+	if v1.Meta.Category != engine.CategoryArtifact {
+		t.Errorf("expected CategoryArtifact (%d), got %d", engine.CategoryArtifact, v1.Meta.Category)
+	}
+	if v1.Anim.Position.X != 100.0 || v1.Anim.Position.Y != 5.0 || v1.Anim.Position.Z != 200.0 {
+		t.Errorf("unexpected position: %+v", v1.Anim.Position)
+	}
+	if v1.Anim.Velocity.X != 0.1 || v1.Anim.Velocity.Z != 0.05 {
+		t.Errorf("unexpected velocity: %+v", v1.Anim.Velocity)
+	}
+}
+
+func TestLoadSystemFromDir_ParentResolutionError(t *testing.T) {
+	dir := t.TempDir()
+	writeFile(t, dir, "system.json", `{
+		"name":"Test","system_version":"1.0","schema_version":"2.0","scale_factor":1,
+		"files":{"planets":"planets.json"}
+	}`)
+	writeFile(t, dir, "planets.json", `{
+		"schema_version":"2.0","bodies":[{
+			"type":"planet","name":"Orphan","parent":"MissingParent",
+			"orbit":{"semi_major_axis":1,"eccentricity":0,"inclination":0,"orbital_period":365},
+			"physical":{"mass":5e24,"radius":0.04,"color":[100,149,237,255]},
+			"rendering":{"material":"diffuse"},"importance":50
+		}]
+	}`)
+
+	_, err := LoadSystemFromDir(dir)
+	if err == nil {
+		t.Fatal("expected error for unresolved parent reference, got nil")
+	}
+}

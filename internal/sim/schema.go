@@ -19,11 +19,13 @@ type SystemConfig struct {
 	DefaultState     StateConfig            `json:"default_state,omitempty"`
 }
 
-// BodyConfig defines a celestial body (star, planet, moon, dwarf planet).
+// BodyConfig defines a celestial body (star, planet, moon, dwarf planet, rogue, artifact).
 type BodyConfig struct {
 	Type       string            `json:"type"`
 	Name       string            `json:"name"`
+	Subtype    string            `json:"subtype,omitempty"` // rogue/artifact subtype (e.g. "periodic", "probe")
 	Parent     string            `json:"parent,omitempty"`
+	Faction    string            `json:"faction,omitempty"` // artifact faction id (F-035, Phase 2)
 	Template   string            `json:"template,omitempty"`
 	Overrides  map[string]any    `json:"overrides,omitempty"`
 	Orbit      OrbitConfig       `json:"orbit,omitempty"`
@@ -32,6 +34,7 @@ type BodyConfig struct {
 	Atmosphere *AtmosphereConfig `json:"atmosphere,omitempty"`
 	Luminosity LuminosityConfig  `json:"luminosity,omitempty"`
 	Importance int               `json:"importance"`
+	Metadata   map[string]any    `json:"metadata,omitempty"` // artifact freeform metadata
 }
 
 // OrbitConfig defines orbital mechanics parameters.
@@ -44,6 +47,9 @@ type OrbitConfig struct {
 	OrbitalPeriod          float32 `json:"orbital_period"`
 	InitialMeanAnomaly     string  `json:"initial_mean_anomaly,omitempty"`
 	OrbitalSpeed           float32 `json:"orbital_speed,omitempty"`
+	// Artifact-only: direct position/velocity placement bypassing Keplerian calculation.
+	PositionOverride []float64 `json:"position_override,omitempty"` // [x, y, z] in sim units
+	VelocityOverride []float64 `json:"velocity_override,omitempty"` // [vx, vy, vz] in sim units/s
 }
 
 // PhysicalConfig defines physical characteristics.
@@ -149,4 +155,67 @@ type BeltObjectTypeConfig struct {
 	SizeMin    float32
 	SizeMax    float32
 	Importance int
+}
+
+// ── F-034 System Directory Format ──────────────────────────────────────────
+
+// SystemManifest is the top-level manifest parsed from a system directory's
+// system.json file (schema_version "2.0").
+type SystemManifest struct {
+	Name          string                 `json:"name"`
+	SystemVersion string                 `json:"system_version"`
+	SchemaVersion string                 `json:"schema_version"`
+	ScaleFactor   float32                `json:"scale_factor"`
+	Simulation    SystemSimulationConfig `json:"simulation,omitempty"`
+	Files         SystemFilesManifest    `json:"files,omitempty"`
+}
+
+// SystemSimulationConfig holds per-system simulation parameters from system.json.
+type SystemSimulationConfig struct {
+	DefaultTimeScale float32 `json:"default_time_scale,omitempty"`
+	NBodyMode        string  `json:"nbody_mode,omitempty"` // "keplerian" (default) or "nbody"
+}
+
+// SystemFilesManifest maps type keys to sub-file names within a system directory.
+type SystemFilesManifest struct {
+	Stars        string `json:"stars,omitempty"`
+	Planets      string `json:"planets,omitempty"`
+	DwarfPlanets string `json:"dwarf_planets,omitempty"`
+	Moons        string `json:"moons,omitempty"`
+	Belts        string `json:"belts,omitempty"`
+	Rogues       string `json:"rogues,omitempty"`
+	Artifacts    string `json:"artifacts,omitempty"`
+}
+
+// TypedBodiesFile is the container for per-type body files (stars.json,
+// planets.json, dwarf_planets.json, moons.json).
+type TypedBodiesFile struct {
+	SchemaVersion string       `json:"schema_version"`
+	Bodies        []BodyConfig `json:"bodies"`
+}
+
+// TypedBeltsFile is the container for belts.json in a system directory.
+type TypedBeltsFile struct {
+	SchemaVersion string                 `json:"schema_version"`
+	Belts         []engine.FeatureConfig `json:"belts"`
+}
+
+// RoguesFile is the container for rogues.json — comets, interstellar objects,
+// and other high-eccentricity natural bodies.
+type RoguesFile struct {
+	SchemaVersion string       `json:"schema_version"`
+	Rogues        []BodyConfig `json:"rogues"`
+}
+
+// ArtifactsFile is the container for artifacts.json — human-made or alien-made
+// durable objects (absorbs F-008).
+type ArtifactsFile struct {
+	SchemaVersion string       `json:"schema_version"`
+	Artifacts     []BodyConfig `json:"artifacts"`
+}
+
+// supportedSchemaVersions is the set of schema_version values accepted by the
+// directory loader.  Add new versions here when the per-file schema changes.
+var supportedSchemaVersions = map[string]bool{
+	"2.0": true,
 }
