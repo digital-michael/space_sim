@@ -65,7 +65,7 @@
       "name": "Alpha Centauri B",
       "parent": "Alpha Centauri A",
       "orbit": {
-        "semi_major_axis": 1800,
+        "semi_major_axis": 2340,
         "eccentricity": 0.52,
         "inclination": 0.02,
         "longitude_ascending_node": 0.8,
@@ -132,11 +132,11 @@
         "inclination": 0.24,
         "longitude_ascending_node": 1.3,
         "argument_periapsis": 0.7,
-        "orbital_period": 2007500.0,
+        "orbital_period": 474000.0,
         "initial_mean_anomaly": "3.6"
       },
       "physical": {
-        "radius": 12.0,
+        "radius": 4.2,
         "mass": 2.43e+29,
         "rotation_period": 1992.0,
         "axial_tilt": 0.0,

@@ -1,14 +1,13 @@
 {
-  "name": "Alpha Centauri System",
+  "name": "Sagittarius A* System (S-Cluster)",
   "system_version": "1.0",
   "schema_version": "2.0",
   "scale_factor": 50,
   "simulation": {
-    "default_time_scale": 1,
+    "default_time_scale": 31557600,
     "nbody_mode": "nbody"
   },
   "files": {
-    "stars": "stars.json",
-    "planets": "planets.json"
+    "stars": "stars.json"
   }
 }

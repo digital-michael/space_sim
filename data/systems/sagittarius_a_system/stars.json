@@ -1,0 +1,416 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 800,
+        "mass": 8.5527e+36,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "supermassive black hole — visual radius represents accretion disk"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [255, 140, 0, 255]
+      },
+      "importance": 100,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [255, 140, 0, 100]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.0,
+        "surface_temperature_k": 50000,
+        "emission_color": [255, 140, 0, 255],
+        "emission_intensity": 2.0
+      }
+    },
+    {
+      "type": "star",
+      "name": "S2",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 103450,
+        "eccentricity": 0.884,
+        "inclination": 2.356,
+        "longitude_ascending_node": 3.981,
+        "argument_periapsis": 1.152,
+        "orbital_period": 5844.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 164,
+        "mass": 2.7846e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive OB supergiant — heavily used to confirm General Relativity near Sgr A*"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [150, 180, 255, 255]
+      },
+      "importance": 90,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 15000.0,
+        "surface_temperature_k": 29000,
+        "emission_color": [150, 180, 255, 255],
+        "emission_intensity": 1.5
+      }
+    },
+    {
+      "type": "star",
+      "name": "S4714",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 84000,
+        "eccentricity": 0.985,
+        "inclination": 2.47,
+        "longitude_ascending_node": 3.2,
+        "argument_periapsis": 1.8,
+        "orbital_period": 4383.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 41,
+        "mass": 3.978e+30,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — reaches ~8% speed of light at periapsis; e=0.985 needle orbit"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [220, 230, 255, 255]
+      },
+      "importance": 85,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 100.0,
+        "surface_temperature_k": 8500,
+        "emission_color": [220, 230, 255, 255],
+        "emission_intensity": 1.0
+      }
+    },
+    {
+      "type": "star",
+      "name": "S4711",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 62070,
+        "eccentricity": 0.768,
+        "inclination": 2.09,
+        "longitude_ascending_node": 1.5,
+        "argument_periapsis": 0.8,
+        "orbital_period": 2776.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 41,
+        "mass": 3.978e+30,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — shortest known orbital period around Sgr A* at 7.6 years"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [220, 230, 255, 255]
+      },
+      "importance": 85,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 100.0,
+        "surface_temperature_k": 8500,
+        "emission_color": [220, 230, 255, 255],
+        "emission_intensity": 1.0
+      }
+    },
+    {
+      "type": "star",
+      "name": "S301",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 95000,
+        "eccentricity": 0.980,
+        "inclination": 1.8,
+        "longitude_ascending_node": 2.8,
+        "argument_periapsis": 2.5,
+        "orbital_period": 3178.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 35,
+        "mass": 2.9835e+30,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — low-mass star orbiting at relativistic speeds"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [230, 235, 255, 255]
+      },
+      "importance": 75,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 25.0,
+        "surface_temperature_k": 7500,
+        "emission_color": [230, 235, 255, 255],
+        "emission_intensity": 1.0
+      }
+    },
+    {
+      "type": "star",
+      "name": "S38",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 134000,
+        "eccentricity": 0.821,
+        "inclination": 0.6,
+        "longitude_ascending_node": 1.2,
+        "argument_periapsis": 3.8,
+        "orbital_period": 7013.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 136,
+        "mass": 1.989e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — orbit oriented nearly flat-on (plane of sky) from Earth's view"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [170, 190, 255, 255]
+      },
+      "importance": 80,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 8000.0,
+        "surface_temperature_k": 22000,
+        "emission_color": [170, 190, 255, 255],
+        "emission_intensity": 1.2
+      }
+    },
+    {
+      "type": "star",
+      "name": "S1",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 743000,
+        "eccentricity": 0.556,
+        "inclination": 1.1,
+        "longitude_ascending_node": 4.5,
+        "argument_periapsis": 0.5,
+        "orbital_period": 60632.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 164,
+        "mass": 2.3868e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — highly inclined orbit wandering into the inner parsec"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [160, 185, 255, 255]
+      },
+      "importance": 78,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 12000.0,
+        "surface_temperature_k": 26000,
+        "emission_color": [160, 185, 255, 255],
+        "emission_intensity": 1.2
+      }
+    },
+    {
+      "type": "star",
+      "name": "S62",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 66700,
+        "eccentricity": 0.976,
+        "inclination": 2.8,
+        "longitude_ascending_node": 5.2,
+        "argument_periapsis": 2.1,
+        "orbital_period": 3616.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 82,
+        "mass": 1.1934e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — fast eccentric orbit tracking close to Sgr A* event horizon"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [190, 205, 255, 255]
+      },
+      "importance": 80,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 2500.0,
+        "surface_temperature_k": 16000,
+        "emission_color": [190, 205, 255, 255],
+        "emission_intensity": 1.1
+      }
+    },
+    {
+      "type": "star",
+      "name": "S8",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 609000,
+        "eccentricity": 0.803,
+        "inclination": 0.9,
+        "longitude_ascending_node": 3.1,
+        "argument_periapsis": 1.4,
+        "orbital_period": 35064.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 136,
+        "mass": 1.989e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — one of the earliest charted outer S-cluster members"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [175, 192, 255, 255]
+      },
+      "importance": 78,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 8000.0,
+        "surface_temperature_k": 22000,
+        "emission_color": [175, 192, 255, 255],
+        "emission_intensity": 1.1
+      }
+    },
+    {
+      "type": "star",
+      "name": "D9a",
+      "parent": "Sagittarius A*",
+      "orbit": {
+        "semi_major_axis": 300000,
+        "eccentricity": 0.70,
+        "inclination": 1.4,
+        "longitude_ascending_node": 2.0,
+        "argument_periapsis": 3.0,
+        "orbital_period": 28963.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 55,
+        "mass": 5.967e+30,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — primary component of the D9 binary system near the black hole"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [210, 220, 255, 255]
+      },
+      "importance": 70,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 300.0,
+        "surface_temperature_k": 10000,
+        "emission_color": [210, 220, 255, 255],
+        "emission_intensity": 1.0
+      }
+    },
+    {
+      "type": "star",
+      "name": "D9b",
+      "parent": "D9a",
+      "orbit": {
+        "semi_major_axis": 200,
+        "eccentricity": 0.05,
+        "inclination": 0.1,
+        "longitude_ascending_node": 0.0,
+        "argument_periapsis": 0.0,
+        "orbital_period": 422.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 55,
+        "mass": 5.967e+30,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "emissive — secondary component of the D9 binary; tight 422-day orbit around D9a"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [210, 220, 255, 255]
+      },
+      "importance": 70,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 300.0,
+        "surface_temperature_k": 10000,
+        "emission_color": [210, 220, 255, 255],
+        "emission_intensity": 1.0
+      }
+    }
+  ]
+}
