@@ -212,8 +212,10 @@ func (s *Simulation) update(dt float64) {
 		// center tracks the N-body updated parent position.
 		children := back.GetChildren()
 		for _, obj := range children {
-			if obj.Dataset < 0 {
-				continue // named bodies are integrated inside SystemSet
+			// Named bodies (Dataset<0) are integrated inside SystemSet, except
+			// rings which orbit via Keplerian and need their center updated.
+			if obj.Dataset < 0 && obj.Meta.Category != CategoryRing {
+				continue
 			}
 			if !obj.Visible {
 				continue
@@ -223,7 +225,7 @@ func (s *Simulation) update(dt float64) {
 			}
 		}
 		for _, obj := range children {
-			if obj.Dataset < 0 {
+			if obj.Dataset < 0 && obj.Meta.Category != CategoryRing {
 				continue
 			}
 			s.updateObject(obj, float32(scaledDt))

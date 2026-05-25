@@ -90,6 +90,7 @@ waitLoop:
 // that have at least one object.
 func deriveNavigationOrder(objects []*engine.Object) []engine.ObjectCategory {
 	canonical := []engine.ObjectCategory{
+		engine.CategoryBlackHole,
 		engine.CategoryStar,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,

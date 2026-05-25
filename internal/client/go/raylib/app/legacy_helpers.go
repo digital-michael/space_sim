@@ -69,6 +69,12 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 			continue
 		}
 
+		// Black holes and jet-emitting bodies need individual rendering
+		if obj.Meta.Material == engine.MaterialBlackHole || obj.Meta.JetLength > 0 {
+			drawObject(obj, cameraPos, pointRenderingEnabled, lodEnabled)
+			continue
+		}
+
 		// Calculate distance and determine rendering properties
 		dx := obj.Anim.Position.X - cameraPos.X
 		dy := obj.Anim.Position.Y - cameraPos.Y
@@ -680,6 +686,12 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		categoryName = "Black Hole"
 	case engine.CategoryRing:
 		categoryName = "Ring System"
+	case engine.CategoryRogue:
+		categoryName = "Rogue"
+	case engine.CategoryArtifact:
+		categoryName = "Artifact"
+	case engine.CategoryBelt:
+		categoryName = "Belt"
 	}
 
 	// Format mass (scientific notation)
