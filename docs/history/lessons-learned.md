@@ -2402,3 +2402,17 @@ Convert world-space positions to camera-relative coordinates just before the GPU
 
 **Rule**: When adding a field to a camera/view state struct that should be reset on every target change, add the reset to the canonical `StartTracking` function immediately — not to individual call sites. Call-site resets drift apart over time as new navigation paths are added without copying the full reset list.
 
+---
+
+### 40. **Refactor Extension Points Before Their Features Land** [SEQUENCING, TECH DEBT]
+
+**Date**: 2026-05-25
+
+**Context**: During tech debt sequencing, `commands.go::Parse` was initially ranked low-priority ("doesn't structurally block any feature") and scheduled last. Two pending features (F-019 Run Scripts, F-037 NPC Console) both add new command verbs directly to this function. The function has a known SRP/OCP violation: a 428-line string-switch where new commands are new `case` arms, not new table rows.
+
+**The mistake**: "Doesn't structurally block the feature" is the wrong criterion for sequencing cleanup. The feature can be implemented without the cleanup — but every new command arm added to the bad structure is additional debt written intentionally, knowing the structure is wrong. After F-019 and F-037 land, the refactor is harder (more code to touch, more tests to update, more arms to migrate) and the window to do it cleanly has closed.
+
+**Rule**: Before scheduling a tech debt item as low-priority, ask: *"Will upcoming feature work add code to this structure?"* If yes, the cleanup must precede those features regardless of whether it is a hard structural gate. Extension points — functions or types that features are known to extend — must be clean before the extensions arrive, not after.
+
+**Corollary**: When producing a sequencing recommendation from a tech debt report, identify which items are extension points for planned features. Those items belong in the foundational batch even if they appear simple or non-blocking by structural dependency alone.
+

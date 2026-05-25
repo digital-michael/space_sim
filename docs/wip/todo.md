@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-24 (F-034–F-038 formalized; F-008 absorbed into F-034; F-024 superseded by F-038)
+2026-05-25 (TD-003–TD-009 added from tech debt audit; §7 ordering updated with foundational TD batch)
 
 ## Table of Contents
 1. How to Use This File
@@ -84,6 +84,13 @@ Planning Documents
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
 	TD-002 Decouple Sim Tick from Render/Input Loop
+	TD-003 Delete legacy_helpers.go Dead Code
+	TD-004 commands.go Table-Driven Parser
+	TD-005 renders.go Monolith Split
+	TD-006 CameraState Sub-Structs
+	TD-007 handleInput + updateCameraState Split
+	TD-008 repl::exec + dispatchCmd Split
+	TD-009 physics.go + world.go Coverage Baseline
 9. Related Docs
 
 ## 1. How to Use This File
@@ -308,28 +315,35 @@ This is the current best-guess execution sequence integrating dependency order, 
 
 | Step | Item | Rationale |
 |------|------|-----------|
+| 0a | **TD-003** Delete legacy_helpers.go dead code | Zero-risk 1,494-line deletion; clears dead render path before F-017/F-018/F-038 extend renders.go |
+| 0b | **TD-004** commands.go table-driven parser | Extension-point cleanup; F-019 and F-037 add command verbs — structure must be clean before they land (LL #40) |
+| 0c | **TD-005** renders.go monolith split | Structural prerequisite for F-017, F-018, F-021 Ph2, F-038; run after TD-003 clears dead parallel code |
+| 0d | **TD-006** CameraState sub-structs | Structural prerequisite for TD-007; enforces mode-safe tracking/jump state (S1/S3/S7) |
 | 1 | **F-034 Phase 1** System data directory structure | Data management must be stable before N-body test system; foundational for F-035/F-036; absorbs F-008 |
-| 2 | **F-013** N-body barycenter | Physics accuracy; uses the `nbody_test` system created in F-034 |
-| 3 | **F-022 Phase 2** Gravity + N-body movement | Depends on F-013; enables realistic player ship physics |
-| 4 | **F-035 Phase 1** Game Definition (themes + factions) | Data layer for gameplay; no runtime deps beyond F-034 |
-| 5 | **F-036 Phase 1** Playable Scenario | Scenario config + universe state; depends on F-034 and F-035 |
-| 6 | **F-038 Phase 1** HUD Profiles | Needs F-020, F-021, F-022 (all Phase 1 complete); absorbs F-024; provides Comms HUD slot for F-037 |
-| 7 | **F-010** Multi-machine split (headless server + client) | Network foundation |
-| 8 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
-| 9 | **F-037 Phase 1** AI/NPC Console — Personal Copilot | Local LLM + AIService gRPC; Comms HUD slot from F-038 Phase 1 |
-| 10 | **F-033 Phase 2** Ship 3D model integration | Needs F-021 Phase 2 IQM pipeline |
-| 11 | **F-009** Object-object collision/proximity | Needs F-034 Phase 1 (artifacts loaded) |
-| 12 | **F-033 Phase 3** Engine stage + power HUD | Needs F-033 Phase 1 and F-023 full wiring |
-| 13 | **F-034 Phase 2** Rogue coma/tail shaders + artifact 3D models | Needs shader infra + IQM pipeline |
-| 14 | **F-035 Phase 2** Faction NPC spawning | Needs F-037 Phase 1 and F-036 Phase 1 |
-| 15 | **F-036 Phase 2** Manufacturing economy | Needs F-035 Phase 2 and F-037 |
-| 16 | **F-037 Phase 2** NPC Characters + Theme Managers + external LLMs | Full AI/NPC runtime |
-| 17 | **F-038 Phase 2** HUD role enforcement + Spectral viewport | Needs F-011 IAAM |
-| 18 | **F-006** XYZ keyboard nav + mouse facing | F-023 Phase 3 covers mouse-delta |
-| 19 | **F-003** Textures on planets/moons (already ✅) | Group 2 visual |
-| 20 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable |
-| 21 | **F-018** Object annotations HUD | High value, low risk; no engine changes |
-| 22 | **F-019** Run scripts from UI | Builds directly on REPL |
+| 2 | **TD-009** physics.go + world.go coverage baseline | Test baseline required before F-013 lands in untested physics layer |
+| 3 | **F-013** N-body barycenter | Physics accuracy; uses the `nbody_test` system created in F-034 |
+| 4 | **TD-007** handleInput + updateCameraState split | Extension-point cleanup for F-022 Ph2; do before writing new nav branches into 995-line function |
+| 5 | **F-022 Phase 2** Gravity + N-body movement | Depends on F-013 and TD-007; enables realistic player ship physics |
+| 6 | **F-035 Phase 1** Game Definition (themes + factions) | Data layer for gameplay; no runtime deps beyond F-034 |
+| 7 | **F-036 Phase 1** Playable Scenario | Scenario config + universe state; depends on F-034 and F-035 |
+| 8 | **F-038 Phase 1** HUD Profiles | Needs F-020, F-021, F-022 (all Phase 1 complete); absorbs F-024; provides Comms HUD slot for F-037 |
+| 9 | **TD-008** repl::exec + dispatchCmd split | Extension-point cleanup for F-037 and F-019; both add new command arms |
+| 10 | **F-010** Multi-machine split (headless server + client) | Network foundation |
+| 11 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
+| 12 | **F-037 Phase 1** AI/NPC Console — Personal Copilot | Local LLM + AIService gRPC; Comms HUD slot from F-038 Phase 1; requires TD-004 and TD-008 |
+| 13 | **F-033 Phase 2** Ship 3D model integration | Needs F-021 Phase 2 IQM pipeline |
+| 14 | **F-009** Object-object collision/proximity | Needs F-034 Phase 1 (artifacts loaded) |
+| 15 | **F-033 Phase 3** Engine stage + power HUD | Needs F-033 Phase 1 and F-023 full wiring |
+| 16 | **F-034 Phase 2** Rogue coma/tail shaders + artifact 3D models | Needs shader infra + IQM pipeline |
+| 17 | **F-035 Phase 2** Faction NPC spawning | Needs F-037 Phase 1 and F-036 Phase 1 |
+| 18 | **F-036 Phase 2** Manufacturing economy | Needs F-035 Phase 2 and F-037 |
+| 19 | **F-037 Phase 2** NPC Characters + Theme Managers + external LLMs | Full AI/NPC runtime |
+| 20 | **F-038 Phase 2** HUD role enforcement + Spectral viewport | Needs F-011 IAAM |
+| 21 | **F-006** XYZ keyboard nav + mouse facing | F-023 Phase 3 covers mouse-delta |
+| 22 | **F-003** Textures on planets/moons (already ✅) | Group 2 visual |
+| 23 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable |
+| 24 | **F-018** Object annotations HUD | High value, low risk; no engine changes |
+| 25 | **F-019** Run scripts from UI | Builds directly on REPL; requires TD-004 and TD-008 complete |
 | — | **4.7** Belt overlap/speed uniqueness | ⏸ Deferred — cosmetic only, insert whenever bandwidth allows |
 
 ### Steps Completed (archived here for ordering context)
@@ -372,6 +386,73 @@ Fix implemented:
 - Added `world.World.LatestSnapshot()` that returns the pre-built snapshot via `atomic.Load()` — O(1), no lock, no clone.
 - `interactive.go` uses `session.sim.LatestSnapshot()` instead of `session.sim.Snapshot()`.
 - Race detector passes. Build clean.
+
+---
+
+### TD-003 — Delete `legacy_helpers.go` Dead Code
+
+**Value**: Remove 1,494 lines of unreachable render code and clear the dead parallel implementation before F-017/F-018/F-038 extend `renders.go`.
+**Status**: 📋 Not started
+**Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #2 — description, fix steps, and acceptance criteria.
+**Unlocks**: TD-005 (removes confusion before renders.go split)
+
+---
+
+### TD-004 — `commands.go` Table-Driven Parser
+
+**Value**: Replace the 428-line string-switch in `Parse` with a `[]cmdSpec` table so new command verbs (F-019, F-037) are table rows, not new `case` arms.
+**Status**: 📋 Not started
+**Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #9 — description, fix steps, and acceptance criteria.
+**Unlocks**: F-019, F-037 (extension-point cleanup per LL #40)
+
+---
+
+### TD-005 — `renders.go` Monolith Split
+
+**Value**: Split the 3,224-line renderer into focused files by concern (objects, atmosphere, HUD, selection, settings, labels) to unblock F-017, F-018, F-021 Ph2, F-038.
+**Status**: 📋 Not started
+**Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #3 — description, fix steps, and acceptance criteria.
+**Depends on**: TD-003 complete
+**Unlocks**: F-017, F-018, F-021 Ph2, F-038
+
+---
+
+### TD-006 — `CameraState` Sub-Structs
+
+**Value**: Extract `TrackingState` and `JumpState` sub-structs from the flat `CameraState` to enforce mode-field validity at compile time and eliminate the LL #39 pattern structurally.
+**Status**: 📋 Not started
+**Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #5 — description, fix steps, and acceptance criteria.
+**Unlocks**: TD-007 (required before handleInput/updateCameraState split is clean)
+
+---
+
+### TD-007 — `handleInput` + `updateCameraState` Split
+
+**Value**: Split the 995-line `handleInput` into four domain files and extract `updateCameraState` mode-tick logic into `CameraState` methods, making F-022 Ph2 nav additions safe to write.
+**Status**: 📋 Not started
+**Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #1 and #7 — description, fix steps, and acceptance criteria.
+**Depends on**: TD-006 recommended first
+**Unlocks**: F-022 Ph2, F-006, F-013 (tracking tick)
+
+---
+
+### TD-008 — `repl::exec` + `dispatchCmd` Split
+
+**Value**: Split the 628-line `exec` and 369-line `dispatchCmd` into domain sub-dispatchers so F-037 and F-019 command arms are added to focused files, not monolithic switches.
+**Status**: 📋 Not started
+**Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #4 and #6 — description, fix steps, and acceptance criteria.
+**Unlocks**: F-037 Ph1, F-019
+
+---
+
+### TD-009 — `physics.go` + `world.go` Coverage Baseline
+
+**Value**: Add unit tests for Keplerian orbit correctness, N-body activation, belt orbital period, and world tick/pause/resume — establishing a regression baseline before F-013 modifies the physics layer.
+**Status**: 📋 Not started
+**Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #8 and #10 — description, fix steps, and acceptance criteria.
+**Unlocks**: F-013 (safe to implement N-body with a test net in place)
+
+---
 
 ## 5. Defects
 

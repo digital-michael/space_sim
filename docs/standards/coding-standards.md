@@ -26,6 +26,7 @@ Provide the default implementation standards for LLM Agents and human contributo
 	7.5 Control Flow and Style
 	7.6 Testing
 	7.7 Performance
+	7.8 State Management
 8. JSON Data Structure Best Practices
 	8.1 Schema and Evolution
 	8.2 Naming and Types
@@ -176,6 +177,31 @@ Inversion of Control means that high-level modules define what they need (throug
 - Avoid micro-optimizations that make the codebase harder to evolve.
 - When performance tradeoffs are non-obvious, document the invariant or benchmark result that justifies them.
 
+### State Management
+
+Goal: prevent stale-data access and partial-initialization bugs. These rules extend SRP §3.1, GRASP Information Expert and Creator §5, DRY §4, and the DDD Aggregate Root pattern.
+
+**S1 — Cohesion: keep state structs narrowly focused.**
+A state struct should contain only fields that are semantically coupled — values that are always updated together and only meaningful together. Fields that are only relevant in some modes or for some subjects belong in a sub-struct or a separate type. A struct that mixes unrelated concerns becomes a surface where partial resets are possible. (Extends SRP §3.1, GRASP High Cohesion §5.)
+
+**S2 — Encapsulation: mutations go through named methods.**
+External callers must not write struct fields directly. Provide constructor functions or named transition methods (e.g. `StartTracking`, `StartJumpTo`) that set all relevant fields as a unit. In Go: unexport fields where practical; expose behavior through methods. Direct field access from outside the owning package is a red flag. (Extends GRASP Information Expert §5, Parnas Information Hiding, Command-Query Separation.)
+
+**S3 — Constructor completeness: a transition method owns all fields it touches.**
+When a type has a named initializer or transition method, that method is responsible for resetting every field that is meaningful in that mode or context — not only the fields that existed when the method was first written. When a new field is added to a struct, immediately identify which constructor or transition functions should reset it and add the reset there. Never delegate that reset to individual call sites. Call-site resets drift apart as new paths are added without copying the full reset list. (Extends GRASP Creator §5, DDD Aggregate Root. See LL #39.)
+
+**S4 — Owner-change invalidates all owned state.**
+When the subject or owner of a state context changes (e.g. tracking a new object, switching datasets, changing a player target), treat all prior context as invalid and reset the entire context — not just the fields that are obviously stale. A partial reset is a latent bug waiting for the next field to be added. (DDD Aggregate Root: the root enforces invariants on every transition, including re-assignment.)
+
+**S5 — Single locus of mutation.**
+Each mutable field must have one authoritative write site. If a field is set inside a method on the owning type, external call sites must not also set it. If state genuinely must live in two places (e.g. a session copy and a persistent copy), define the sync contract explicitly at the definition site — which is authoritative, which is derived, and where writes must propagate. Do not discover the two-write requirement by debugging a persistence regression. (Extends DRY §4. See LL #33.)
+
+**S6 — Pass snapshots across boundaries; never share live mutable state.**
+When state is consumed by a second subsystem (renderer, network serializer, test), pass a snapshot taken at a defined phase boundary, not a live reference to the mutable struct. A reader that can observe a partially-written struct will produce incorrect output non-deterministically. This is the read-side counterpart to the double-buffer write discipline already required for simulation state.
+
+**S7 — Make mode-dependent field validity explicit.**
+When a struct contains fields that are only meaningful in a specific mode or state (e.g. `TrackDistance` and `TrackOffset` are undefined in `CameraModeFree`; a "selected target" index is undefined when nothing is selected), treat cross-mode field access as a design smell. At the design level, prefer making invalid states unrepresentable: extract mode-specific fields into a sub-struct or a dedicated type that only exists when the mode is active. Where that refactor is not yet done, guard every read of a mode-gated field with an explicit mode check and document the invariant at the field definition. Use this rule to scrutinize existing structs: if you find yourself checking `if mode == X` before reading a field, that field is a candidate for extraction. (Extends S1 Cohesion; relates to the "make illegal states unrepresentable" principle from type-driven design.)
+
 ## 8. JSON Data Structure Best Practices
 
 ### Schema and Evolution
@@ -228,6 +254,9 @@ Work is not done until all of the following are true:
 - SOLID overview: https://en.wikipedia.org/wiki/SOLID
 - DRY overview: https://en.wikipedia.org/wiki/Don%27t_repeat_yourself
 - GRASP overview: https://en.wikipedia.org/wiki/GRASP_(object-oriented_design)
+- DDD Aggregate pattern: https://martinfowler.com/bliki/DDD_Aggregate.html
+- Command-Query Separation (CQS): https://martinfowler.com/bliki/CommandQuerySeparation.html
+- Parnas Information Hiding: https://en.wikipedia.org/wiki/Information_hiding
 - Effective Go: https://go.dev/doc/effective_go
 - Go Code Review Comments: https://go.dev/wiki/CodeReviewComments
 - Practical Go style guide: https://google.github.io/styleguide/go/
