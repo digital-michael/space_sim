@@ -12,11 +12,11 @@
         "initial_mean_anomaly": "0"
       },
       "physical": {
-        "radius": 8.5,
+        "radius": 1.9,
         "mass": 1.929e+29,
         "rotation_period": 2353.2,
         "albedo": 1.0,
-        "albedo_note": "emissive M7V star \u2013 nearby ultra-cool red dwarf",
+        "albedo_note": "emissive M7V star – nearby ultra-cool red dwarf; visual radius capped at 1.9 su so innermost planet (2.59 su) renders outside disk",
         "axial_tilt": 0.0
       },
       "rendering": {

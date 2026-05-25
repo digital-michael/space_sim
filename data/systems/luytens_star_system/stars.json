@@ -12,11 +12,11 @@
         "initial_mean_anomaly": "0"
       },
       "physical": {
-        "radius": 12.0,
+        "radius": 2.5,
         "mass": 5.768e+29,
         "rotation_period": 2774.0,
         "albedo": 1.0,
-        "albedo_note": "emissive M3.5V star",
+        "albedo_note": "emissive M3.5V star; visual radius capped at 2.5 su so innermost planet (3.65 su) renders outside disk",
         "axial_tilt": 0.0
       },
       "rendering": {
