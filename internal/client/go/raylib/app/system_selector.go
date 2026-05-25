@@ -50,31 +50,37 @@ func discoverSystemOptionsFromDir(dir string) ([]ui.SystemOption, error) {
 
 	options := make([]ui.SystemOption, 0, len(entries))
 	for _, entry := range entries {
-		var configPath string
-		var label string
-
 		if entry.IsDir() {
 			// Directory-format system: must contain system.json.
-			candidate := filepath.Join(dir, entry.Name(), "system.json")
-			if _, err := os.Stat(candidate); err != nil {
+			// Store the directory path so NewWorld calls LoadSystemFromDir.
+			manifestPath := filepath.Join(dir, entry.Name(), "system.json")
+			if _, err := os.Stat(manifestPath); err != nil {
 				continue
 			}
-			configPath = normalizeSystemConfigPath(candidate)
-			label = entry.Name()
-		} else if strings.HasSuffix(strings.ToLower(entry.Name()), ".json") {
-			configPath = normalizeSystemConfigPath(filepath.Join(dir, entry.Name()))
-			label = entry.Name()
-		} else {
+			label := entry.Name()
+			displayName := readSystemDisplayName(manifestPath)
+			if displayName == "" {
+				displayName = label
+			}
+			options = append(options, ui.SystemOption{
+				Label:       label,
+				DisplayName: displayName,
+				Path:        normalizeSystemConfigPath(filepath.Join(dir, entry.Name())),
+			})
 			continue
 		}
 
-		displayName := readSystemDisplayName(configPath)
-		if displayName == "" {
-			displayName = label
+		if !strings.HasSuffix(strings.ToLower(entry.Name()), ".json") {
+			continue
 		}
 
+		configPath := normalizeSystemConfigPath(filepath.Join(dir, entry.Name()))
+		displayName := readSystemDisplayName(configPath)
+		if displayName == "" {
+			displayName = entry.Name()
+		}
 		options = append(options, ui.SystemOption{
-			Label:       label,
+			Label:       entry.Name(),
 			DisplayName: displayName,
 			Path:        configPath,
 		})
