@@ -50,18 +50,31 @@ func discoverSystemOptionsFromDir(dir string) ([]ui.SystemOption, error) {
 
 	options := make([]ui.SystemOption, 0, len(entries))
 	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(strings.ToLower(entry.Name()), ".json") {
+		var configPath string
+		var label string
+
+		if entry.IsDir() {
+			// Directory-format system: must contain system.json.
+			candidate := filepath.Join(dir, entry.Name(), "system.json")
+			if _, err := os.Stat(candidate); err != nil {
+				continue
+			}
+			configPath = normalizeSystemConfigPath(candidate)
+			label = entry.Name()
+		} else if strings.HasSuffix(strings.ToLower(entry.Name()), ".json") {
+			configPath = normalizeSystemConfigPath(filepath.Join(dir, entry.Name()))
+			label = entry.Name()
+		} else {
 			continue
 		}
 
-		configPath := normalizeSystemConfigPath(filepath.Join(dir, entry.Name()))
 		displayName := readSystemDisplayName(configPath)
 		if displayName == "" {
-			displayName = entry.Name()
+			displayName = label
 		}
 
 		options = append(options, ui.SystemOption{
-			Label:       entry.Name(),
+			Label:       label,
 			DisplayName: displayName,
 			Path:        configPath,
 		})

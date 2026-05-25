@@ -136,12 +136,12 @@
         "initial_mean_anomaly": "3.6"
       },
       "physical": {
-        "radius": 4.2,
+        "radius": 1.0,
         "mass": 2.43e+29,
         "rotation_period": 1992.0,
         "axial_tilt": 0.0,
         "albedo": 1.0,
-        "albedo_note": "emissive M5.5Ve flare star"
+        "albedo_note": "emissive M5.5Ve flare star; visual radius capped at 1.0 su so Proxima d (2.9 su) and b (4.85 su) render outside the disk"
       },
       "rendering": {
         "material": "emissive",
