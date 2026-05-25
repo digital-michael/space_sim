@@ -222,3 +222,18 @@ func isReplContext(a InputAction) bool {
 	}
 	return false
 }
+
+// isMoveContext reports whether an action belongs to the ship-movement context.
+// Move actions are only evaluated when the simulation is in ship-physics mode;
+// they can share keys with camera actions (evaluated only in camera modes)
+// without functional conflict.
+func isMoveContext(a InputAction) bool {
+	switch a {
+	case ActionThrustForward, ActionThrustBackward,
+		ActionThrustLeft, ActionThrustRight,
+		ActionThrustUp, ActionThrustDown,
+		ActionBrake, ActionDriftToggle:
+		return true
+	}
+	return false
+}

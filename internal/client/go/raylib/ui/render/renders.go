@@ -502,13 +502,13 @@ func (r *Renderer) DrawGroundPlane() {
 	drawGroundPlane()
 }
 
-func (r *Renderer) DrawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object, mode ui.LabelMode) {
-	drawObjectLabels(state, cameraState, camera, objectsToRender, mode)
+func (r *Renderer) DrawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object, mode ui.LabelMode, screenW, screenH int32) {
+	drawObjectLabels(state, cameraState, camera, objectsToRender, mode, screenW, screenH)
 }
 
-func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int, showDebug bool, showInfo bool, showHelp bool) {
+func (r *Renderer) DrawHUD(state *engine.SimulationState, cameraState *ui.CameraState, inputState *ui.InputState, asteroidDataset engine.AsteroidDataset, mouseModeEnabled bool, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int, showDebug bool, showInfo bool, showHelp bool, labelMode ui.LabelMode) {
 	if showDebug {
-		drawHUDDebug(state, cameraState, asteroidDataset, speed, inViewCount, eligibleInViewCount, renderedCount)
+		drawHUDDebug(state, cameraState, asteroidDataset, speed, inViewCount, eligibleInViewCount, renderedCount, labelMode)
 	}
 	if showInfo {
 		drawHUDInfo(state, cameraState, inputState)
@@ -1279,6 +1279,9 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 							r.lighting.setAmbient(defaultAmbient)
 						}
 						r.drawAtmosphereGlow(obj, pos)
+						if obj.Meta.Category == engine.CategoryBlackHole {
+							r.drawBlackHoleGlow(obj, pos)
+						}
 						drawnCount++
 						continue
 					}
@@ -1304,6 +1307,9 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 					rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
 				}
 				r.drawAtmosphereGlow(obj, pos)
+				if obj.Meta.Category == engine.CategoryBlackHole {
+					r.drawBlackHoleGlow(obj, pos)
+				}
 				// Wireframe
 				if obj.Meta.Material != engine.MaterialEmissive {
 					rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), batch.wireRings, batch.wireSlices,
@@ -1482,6 +1488,9 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
 	}
 	r.drawAtmosphereGlow(obj, pos)
+	if obj.Meta.Category == engine.CategoryBlackHole {
+		r.drawBlackHoleGlow(obj, pos)
+	}
 
 	// Draw wireframe for better depth perception (skip for rings and sun)
 	// Use simpler wireframe for distant objects when LOD is enabled
@@ -1922,6 +1931,27 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	rl.EndBlendMode()
 }
 
+// drawBlackHoleGlow renders a subtle additive glow sphere around a black hole.
+// Black holes have no atmosphere but benefit from a faint blue-white halo to
+// make them visible against the starfield and to hint at Hawking/accretion
+// radiation. Two concentric glow shells are drawn: an inner ring at 1.4× the
+// body radius (denser glow) and an outer ring at 2.2× (wider fade).
+// Both use BlendAddColors so they never darken the scene.
+func (r *Renderer) drawBlackHoleGlow(obj *engine.Object, pos rl.Vector3) {
+	radius := float32(obj.Meta.PhysicalRadius)
+	if radius <= 0 {
+		return
+	}
+	rl.BeginBlendMode(rl.BlendAddColors)
+	rl.DisableDepthMask()
+	// Inner shell: tighter, slightly brighter ring.
+	rl.DrawSphereEx(pos, radius*1.4, 24, 16, rl.Color{R: 180, G: 210, B: 255, A: 18})
+	// Outer shell: wider, nearly transparent fade.
+	rl.DrawSphereEx(pos, radius*2.2, 20, 14, rl.Color{R: 140, G: 170, B: 240, A: 8})
+	rl.EnableDepthMask()
+	rl.EndBlendMode()
+}
+
 // drawGroundPlane draws a grid for spatial reference
 func drawGroundPlane() {
 	gridSize := 30
@@ -1940,8 +1970,35 @@ func drawGroundPlane() {
 	}
 }
 
+// projectToScreen projects a camera-relative world position to screen coordinates
+// using the same perspective projection as the scene render (engine.CameraFarPlane).
+// Returns (screenPos, true) when the point is in front of the camera; (zero, false) otherwise.
+// This replaces rl.GetWorldToScreenEx which uses a hardcoded far plane of 1000 su,
+// causing labels to wander for objects farther than ~10 AU.
+func projectToScreen(objPos rl.Vector3, camera rl.Camera3D, screenWidth, screenHeight int32) (rl.Vector2, bool) {
+	matView := rl.GetCameraMatrix(camera)
+	matProj := rl.MatrixPerspective(
+		engine.CameraFOV*rl.Deg2rad,
+		float32(screenWidth)/float32(screenHeight),
+		engine.CameraNearPlane,
+		engine.CameraFarPlane,
+	)
+	mvp := rl.MatrixMultiply(matProj, matView)
+	// Transform point: clip = MVP * [x, y, z, 1] (column-major matrix layout)
+	cx := mvp.M0*objPos.X + mvp.M4*objPos.Y + mvp.M8*objPos.Z + mvp.M12
+	cy := mvp.M1*objPos.X + mvp.M5*objPos.Y + mvp.M9*objPos.Z + mvp.M13
+	cw := mvp.M3*objPos.X + mvp.M7*objPos.Y + mvp.M11*objPos.Z + mvp.M15
+	if cw <= 0 {
+		return rl.Vector2{}, false // behind or on the camera plane
+	}
+	return rl.Vector2{
+		X: (cx/cw + 1.0) * 0.5 * float32(screenWidth),
+		Y: (1.0 - cy/cw) * 0.5 * float32(screenHeight),
+	}, true
+}
+
 // drawObjectLabels draws labels for important/visible objects with connector lines
-func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object, mode ui.LabelMode) {
+func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object, mode ui.LabelMode, screenW, screenH int32) {
 	fontSize := scaledInt32(16)
 	labelOffsetX := float32(scaledInt32(15))
 	labelOffsetY := float32(scaledInt32(10))
@@ -1961,11 +2018,14 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 			Z: obj.Anim.Position.Z - cameraState.Position.Z,
 		}
 
-		// Project to screen space
-		screenPos := rl.GetWorldToScreenEx(objPos, camera, int32(currentScreenWidth()), int32(currentScreenHeight()))
-
-		// Skip if behind camera (w < 0 in projection)
-		if screenPos.X < -1000 || screenPos.X > float32(currentScreenWidth()+1000) || screenPos.Y < -1000 || screenPos.Y > float32(currentScreenHeight()+1000) {
+		// Project to screen space using the same perspective as the scene render.
+		// GetWorldToScreenEx has a hardcoded far plane of 1000 su; beyond ~10 AU
+		// the projected w goes negative and labels appear to orbit the screen centre.
+		screenPos, inFront := projectToScreen(objPos, camera, screenW, screenH)
+		if !inFront {
+			continue
+		}
+		if screenPos.X < -1000 || screenPos.X > float32(screenW+1000) || screenPos.Y < -1000 || screenPos.Y > float32(screenH+1000) {
 			continue
 		}
 
@@ -1987,14 +2047,14 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 		labelY := screenPos.Y - labelOffsetY
 
 		// Clamp label position to screen bounds
-		if labelX+textSize.X > float32(currentScreenWidth())-edgePadding {
+		if labelX+textSize.X > float32(screenW)-edgePadding {
 			labelX = screenPos.X - textSize.X - labelOffsetX
 		}
 		if labelY < edgePadding {
 			labelY = edgePadding
 		}
-		if labelY+textSize.Y > float32(currentScreenHeight())-edgePadding {
-			labelY = float32(currentScreenHeight()) - textSize.Y - edgePadding
+		if labelY+textSize.Y > float32(screenH)-edgePadding {
+			labelY = float32(screenH) - textSize.Y - edgePadding
 		}
 
 		// Draw background box
@@ -2108,7 +2168,7 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 
 // drawHUDDebug draws the upper-left statistics block and the lower-left
 // screen/render diagnostic lines.
-func drawHUDDebug(state *engine.SimulationState, cameraState *ui.CameraState, asteroidDataset engine.AsteroidDataset, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int) {
+func drawHUDDebug(state *engine.SimulationState, cameraState *ui.CameraState, asteroidDataset engine.AsteroidDataset, speed float64, inViewCount int, eligibleInViewCount int, renderedCount int, labelMode ui.LabelMode) {
 	leftPad := scaledInt32(10)
 	fontLarge := scaledInt32(20)
 	fontMedium := scaledInt32(18)
@@ -2119,6 +2179,8 @@ func drawHUDDebug(state *engine.SimulationState, cameraState *ui.CameraState, as
 	line5Y := scaledInt32(108)
 	line6Y := scaledInt32(133)
 	line7Y := scaledInt32(158)
+	line8Y := scaledInt32(183)
+	line9Y := scaledInt32(208)
 
 	fps := rl.GetFPS()
 	rl.DrawText(fmt.Sprintf("FPS: %3d / %d threads", fps, state.NumWorkers), leftPad, line1Y, fontLarge, rl.Green)
@@ -2197,6 +2259,51 @@ func drawHUDDebug(state *engine.SimulationState, cameraState *ui.CameraState, as
 
 	posText := fmt.Sprintf("Camera Position: X:%.1f Y:%.1f Z:%.1f", cameraState.Position.X, cameraState.Position.Y, cameraState.Position.Z)
 	rl.DrawText(posText, leftPad, line7Y, fontMedium, rl.Color{R: 0, G: 255, B: 255, A: 255})
+
+	// Label mode indicator
+	var labelModeText string
+	var labelModeColor rl.Color
+	switch labelMode {
+	case ui.LabelModeOff:
+		labelModeText = "Labels: OFF"
+		labelModeColor = rl.Color{R: 150, G: 150, B: 150, A: 255}
+	case ui.LabelModeOn:
+		labelModeText = "Labels: ON (all)"
+		labelModeColor = rl.Color{R: 100, G: 255, B: 100, A: 255}
+	case ui.LabelModeNearest:
+		labelModeText = "Labels: NEAREST"
+		labelModeColor = rl.Color{R: 255, G: 220, B: 80, A: 255}
+	}
+	rl.DrawText(labelModeText, leftPad, line8Y, fontMedium, labelModeColor)
+
+	// POV-inside-object indicator: scan all rendered objects for camera containment.
+	// Camera position and object positions are both in sim-space (su), so the
+	// comparison is direct: inside when dist < PhysicalRadius.
+	type povInsideEntry struct {
+		name   string
+		dist   float32
+		radius float32
+	}
+	var povInside []povInsideEntry
+	for _, o := range state.Objects {
+		if o.Meta.PhysicalRadius <= 0 {
+			continue
+		}
+		d := cameraState.Position.Sub(o.Anim.Position).Length()
+		if d < o.Meta.PhysicalRadius {
+			povInside = append(povInside, povInsideEntry{name: o.Meta.Name, dist: d, radius: o.Meta.PhysicalRadius})
+		}
+	}
+	if len(povInside) > 0 {
+		y := line9Y
+		for _, e := range povInside {
+			povText := fmt.Sprintf("⚠ INSIDE: %s  [%.1f su inside / radius %.1f su]", e.name, e.radius-e.dist, e.radius)
+			rl.DrawText(povText, leftPad, y, fontMedium, rl.Color{R: 255, G: 80, B: 80, A: 255})
+			y += scaledInt32(25)
+		}
+	} else {
+		rl.DrawText("POV: outside all objects", leftPad, line9Y, scaledInt32(14), rl.Color{R: 80, G: 200, B: 80, A: 160})
+	}
 
 	// Lower-left: screen/monitor/render diagnostics
 	screenW := rl.GetScreenWidth()
@@ -2351,8 +2458,24 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 	// Calculate display metrics
 	const auToSimUnits = 100.0 // 100 units = 1 AU
 
-	// Distance from Sol (distance from origin in AUs)
-	distFromSol := obj.Anim.Position.Sub(engine.Vector3{X: 0, Y: 0, Z: 0}).Length() / auToSimUnits
+	// Distance from system primary (highest-importance no-parent star or black hole)
+	systemCenterName := "Sol"
+	systemCenterPos := engine.Vector3{}
+	var bestImportance int
+	for _, o := range state.Objects {
+		if o.Meta.ParentName != "" {
+			continue
+		}
+		if o.Meta.Category != engine.CategoryStar && o.Meta.Category != engine.CategoryBlackHole {
+			continue
+		}
+		if o.Meta.Importance > bestImportance || systemCenterName == "Sol" {
+			bestImportance = o.Meta.Importance
+			systemCenterName = o.Meta.Name
+			systemCenterPos = o.Anim.Position
+		}
+	}
+	distFromSol := obj.Anim.Position.Sub(systemCenterPos).Length() / auToSimUnits
 
 	// Camera distance to object
 	cameraDistUnits := cameraState.Position.Sub(obj.Anim.Position).Length()
@@ -2447,10 +2570,36 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		categoryName = "Star"
 	case engine.CategoryRing:
 		categoryName = "Ring System"
+	case engine.CategoryBlackHole:
+		categoryName = "Black Hole"
 	}
 
 	// Format mass (scientific notation)
 	massStr := fmt.Sprintf("%.2e kg", obj.Meta.Mass)
+
+	// Format physical radius.
+	// Prefer PhysicalRadiusKm (real-world value) when populated; fall back to the
+	// sim-space rendered radius converted to AU.
+	var radiusStr string
+	if obj.Meta.PhysicalRadiusKm > 0 {
+		rKm := float64(obj.Meta.PhysicalRadiusKm)
+		if rKm >= 149597.87 { // ≥ 0.001 AU — large enough to express as AU
+			radiusStr = fmt.Sprintf("%.4f AU (%.0f km)", rKm/149597870.7, rKm)
+		} else if rKm >= 1000 {
+			radiusStr = fmt.Sprintf("%.0f km", rKm)
+		} else {
+			radiusStr = fmt.Sprintf("%.1f km", rKm)
+		}
+	} else if obj.Meta.PhysicalRadius > 0 {
+		rAU := float64(obj.Meta.PhysicalRadius) / float64(auToSimUnits)
+		if rAU >= 0.01 {
+			radiusStr = fmt.Sprintf("%.3f AU", rAU)
+		} else if rAU >= 0.0001 {
+			radiusStr = fmt.Sprintf("%.5f AU", rAU)
+		} else {
+			radiusStr = fmt.Sprintf("%.0f km", rAU*149597870.7)
+		}
+	}
 
 	// Format rotation period
 	rotationStr := "Unknown"
@@ -2535,7 +2684,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 	infoLines := []InfoLine{
 		{"Object:", obj.Meta.Name},
 		{"Type:", categoryName},
-		{"Distance from Sol:", fmt.Sprintf("%.2f AU", distFromSol)},
+		{"Distance from " + systemCenterName + ":", fmt.Sprintf("%.2f AU", distFromSol)},
 	}
 
 	// Add orbit info if applicable
@@ -2548,6 +2697,11 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 
 	infoLines = append(infoLines,
 		InfoLine{"Mass:", massStr},
+	)
+	if radiusStr != "" {
+		infoLines = append(infoLines, InfoLine{"Radius:", radiusStr})
+	}
+	infoLines = append(infoLines,
 		InfoLine{"Rotation:", rotationStr},
 	)
 
@@ -2698,10 +2852,12 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		category engine.ObjectCategory
 	}
 	categories := []categoryTab{
+		{"Black Holes", engine.CategoryBlackHole},
 		{"Stars", engine.CategoryStar}, // First tab
 		{"Planets", engine.CategoryPlanet},
 		{"Dwarf Planets", engine.CategoryDwarfPlanet},
 		{"Moons", engine.CategoryMoon},
+		{"Ring Systems", engine.CategoryRing},
 		{"Belts", engine.CategoryBelt}, // Asteroid Belt and Kuiper Belt
 	}
 	// Calculate tab width based on panel width and number of tabs

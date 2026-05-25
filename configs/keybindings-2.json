@@ -81,7 +81,7 @@
     },
     {
       "action": "move.thrust_down",
-      "key": "LEFT_CONTROL",
+      "key": "DOWN",
       "mods": []
     },
     {

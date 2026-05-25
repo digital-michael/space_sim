@@ -178,10 +178,10 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		a.renderer.DrawClientMarkerLabels(snap.ClientSessions, session.cameraState.Position, session.sessionID, camera)
 
 		if a.runtime.HUDVisible {
-			a.renderer.DrawHUD(state, session.cameraState, session.inputState, a.runtime.AsteroidDataset, a.runtime.MouseModeEnabled, snap.Speed, inViewCount, eligibleInViewCount, renderedCount, a.runtime.HUD.Debug, a.runtime.HUD.Info, a.runtime.HUD.Help)
+			a.renderer.DrawHUD(state, session.cameraState, session.inputState, a.runtime.AsteroidDataset, a.runtime.MouseModeEnabled, snap.Speed, inViewCount, eligibleInViewCount, renderedCount, a.runtime.HUD.Debug, a.runtime.HUD.Info, a.runtime.HUD.Help, a.runtime.LabelMode)
 		}
 		if a.runtime.LabelMode != ui.LabelModeOff {
-			a.renderer.DrawObjectLabels(state, session.cameraState, camera, objectsToRender, a.runtime.LabelMode)
+			a.renderer.DrawObjectLabels(state, session.cameraState, camera, objectsToRender, a.runtime.LabelMode, renderWidth, renderHeight)
 		}
 		if zoomIndicator != 0 {
 			a.renderer.DrawZoomIndicator(zoomIndicator)

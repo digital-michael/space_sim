@@ -22,14 +22,16 @@ type binding struct {
 // multiple goroutines, but DrainQueue and the IsPressed/IsDown methods must
 // all be called from the same OS thread (the Raylib render thread).
 type KeyMap struct {
-	bindings [actionCount]binding
-	pressed  map[int32]struct{} // key codes drained from rl.GetKeyPressed this frame
+	bindings    [actionCount]binding
+	pressed     map[int32]struct{} // key codes drained from rl.GetKeyPressed this frame
+	pressedMods map[int32]ModSet   // modifier state captured when each key entered the queue
 }
 
 // newKeyMap allocates an empty KeyMap. Use the loader to populate bindings.
 func newKeyMap() *KeyMap {
 	return &KeyMap{
-		pressed: make(map[int32]struct{}, 16),
+		pressed:     make(map[int32]struct{}, 16),
+		pressedMods: make(map[int32]ModSet, 16),
 	}
 }
 
@@ -39,21 +41,54 @@ func newKeyMap() *KeyMap {
 //
 // Using DrainQueue + IsPressed instead of rl.IsKeyPressed prevents missed
 // short-tap events when the sim loop runs slower than 60 Hz.
+//
+// Modifier state is sampled once before draining and associated with every key
+// in this batch. This avoids false-negative mod checks when the user releases
+// a modifier key before the next frame's input handler runs.
 func (km *KeyMap) DrainQueue() {
 	for k := range km.pressed {
 		delete(km.pressed, k)
 	}
+	for k := range km.pressedMods {
+		delete(km.pressedMods, k)
+	}
+	// Sample modifier state once, before draining the queue, so every key
+	// pressed this frame inherits the modifiers that were held when the batch
+	// was captured rather than when IsPressed is eventually called.
+	currentMods := km.sampleMods()
 	for {
 		key := rl.GetKeyPressed()
 		if key == 0 {
 			break
 		}
 		km.pressed[int32(key)] = struct{}{}
+		km.pressedMods[int32(key)] = currentMods
 	}
+}
+
+// sampleMods reads the current modifier key state and returns it as a ModSet.
+func (km *KeyMap) sampleMods() ModSet {
+	var ms ModSet
+	if rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift) {
+		ms |= ModShift
+	}
+	if rl.IsKeyDown(rl.KeyLeftControl) || rl.IsKeyDown(rl.KeyRightControl) {
+		ms |= ModCtrl
+	}
+	if rl.IsKeyDown(rl.KeyLeftAlt) || rl.IsKeyDown(rl.KeyRightAlt) {
+		ms |= ModAlt
+	}
+	if rl.IsKeyDown(rl.KeyLeftSuper) || rl.IsKeyDown(rl.KeyRightSuper) {
+		ms |= ModSuper
+	}
+	return ms
 }
 
 // IsPressed reports whether the action's bound key was pressed this frame
 // (captured by DrainQueue) with the required modifiers held.
+//
+// Modifier state is checked against the snapshot recorded at DrainQueue time,
+// so modifiers released before the next frame are still correctly detected.
 //
 // Call DrainQueue once per frame before calling IsPressed.
 func (km *KeyMap) IsPressed(action InputAction) bool {
@@ -64,10 +99,12 @@ func (km *KeyMap) IsPressed(action InputAction) bool {
 	if b.key == 0 {
 		return false
 	}
-	if _, ok := km.pressed[b.key]; !ok {
+	storedMods, ok := km.pressedMods[b.key]
+	if !ok {
 		return false
 	}
-	return km.modsHeld(b.mods)
+	// All required modifiers must have been held when the key was pressed.
+	return storedMods&b.mods == b.mods
 }
 
 // IsDown reports whether the action's bound key is currently held down with
@@ -139,14 +176,17 @@ func (km *KeyMap) SetBinding(action InputAction, key int32, mods ModSet) {
 
 // ConflictFor returns the first world-context action already bound to
 // (key, mods), excluding except. Returns (ActionNone, false) when no
-// conflict exists. REPL-context actions are always excluded from conflict
-// checks because they operate in a separate input context.
+// conflict exists. REPL-context and move-context actions are excluded from
+// conflict checks because they operate in separate input contexts.
 func (km *KeyMap) ConflictFor(key int32, mods ModSet, except InputAction) (InputAction, bool) {
 	for a := ActionCameraPitchUp; a < actionCount; a++ {
 		if a == except {
 			continue
 		}
 		if isReplContext(a) {
+			continue
+		}
+		if isMoveContext(a) {
 			continue
 		}
 		b := km.bindings[a]

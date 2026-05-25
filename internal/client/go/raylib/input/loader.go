@@ -151,6 +151,9 @@ func validateBindings(entries []bindingEntryJSON) error {
 		if isReplContext(action) {
 			continue // REPL-context bindings are exempt from world-context conflict checks.
 		}
+		if isMoveContext(action) {
+			continue // Move-context bindings share keys with camera-context actions without conflict.
+		}
 		key, _ := ParseKeyName(strings.ToUpper(e.Key))
 		mods, err := parseMods(e.Mods)
 		if err != nil {

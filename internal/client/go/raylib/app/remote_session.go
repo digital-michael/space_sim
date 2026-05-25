@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/digital-michael/space_sim/internal/protocol"
 	ui "github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
+	"github.com/digital-michael/space_sim/internal/protocol"
 	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 )
 

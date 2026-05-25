@@ -17,7 +17,7 @@
     { "action": "move.thrust_left",          "key": "A",              "mods": [] },
     { "action": "move.thrust_right",         "key": "D",              "mods": [] },
     { "action": "move.thrust_up",            "key": "SPACE",          "mods": [] },
-    { "action": "move.thrust_down",          "key": "LEFT_CONTROL",   "mods": [] },
+    { "action": "move.thrust_down",          "key": "DOWN",           "mods": [] },
     { "action": "move.brake",                "key": "X",              "mods": [] },
     { "action": "move.drift_toggle",         "key": "Z",              "mods": [] },
     { "action": "sim.timescale_increase",    "key": "PERIOD",         "mods": ["SUPER", "SHIFT"] },

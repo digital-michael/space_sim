@@ -75,8 +75,9 @@ func TestParseModsUnknown(t *testing.T) {
 // ─── Conflict detection ───────────────────────────────────────────────────────
 
 func TestConflictDetected(t *testing.T) {
+	// Two camera-context (world-context) actions on the same key — real conflict.
 	entries := []bindingEntryJSON{
-		{Action: "move.thrust_forward", Key: "W", Mods: []string{}},
+		{Action: "camera.pitch_up", Key: "W", Mods: []string{}},
 		{Action: "camera.reset", Key: "W", Mods: []string{}}, // same key → conflict
 	}
 	err := validateBindings(entries)
@@ -100,6 +101,18 @@ func TestNoConflictOnReplContextSameKey(t *testing.T) {
 	}
 	if err := validateBindings(entries); err != nil {
 		t.Errorf("validateBindings: unexpected error for cross-context ESCAPE: %v", err)
+	}
+}
+
+func TestNoConflictOnMoveContextSameKey(t *testing.T) {
+	// move.thrust_down and camera.pitch_down both use DOWN — allowed because
+	// move actions are only active in ship mode, camera actions in camera mode.
+	entries := []bindingEntryJSON{
+		{Action: "camera.pitch_down", Key: "DOWN", Mods: []string{}},
+		{Action: "move.thrust_down", Key: "DOWN", Mods: []string{}},
+	}
+	if err := validateBindings(entries); err != nil {
+		t.Errorf("validateBindings: unexpected error for move/camera cross-context DOWN: %v", err)
 	}
 }
 
@@ -186,9 +199,8 @@ func TestLoadKeyMapInvalidKeyNameExits(t *testing.T) {
 
 func TestLoadKeyMapConflictExits(t *testing.T) {
 	dir := laptopProfileDir(t)
-	// Override thrust_forward and camera.reset both to the same key (W).
-	// Laptop profile already has camera.reset = R; override it to W → conflict.
-	cfg := writeKeybindings(t, `{"version":1,"base_profile":"laptop","overrides":[{"action":"camera.reset","key":"W","mods":[]}]}`)
+	// Override camera.reset to UP — laptop profile already has camera.pitch_up = UP → conflict.
+	cfg := writeKeybindings(t, `{"version":1,"base_profile":"laptop","overrides":[{"action":"camera.reset","key":"UP","mods":[]}]}`)
 	_, err := LoadKeyMap(dir, cfg)
 	if err == nil {
 		t.Fatal("expected conflict error, got nil")

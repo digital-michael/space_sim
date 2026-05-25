@@ -392,6 +392,33 @@ func drawGroundPlane() {
 	}
 }
 
+// projectToScreen projects a camera-relative world position to screen coordinates
+// using the same perspective projection as the scene render (engine.CameraFarPlane).
+// Returns (screenPos, true) when the point is in front of the camera; (zero, false) otherwise.
+// This replaces rl.GetWorldToScreen which uses a hardcoded far plane of 1000 su,
+// causing labels to wander for objects farther than ~10 AU.
+func projectToScreen(objPos rl.Vector3, camera rl.Camera3D, screenWidth, screenHeight int32) (rl.Vector2, bool) {
+	matView := rl.GetCameraMatrix(camera)
+	matProj := rl.MatrixPerspective(
+		engine.CameraFOV*rl.Deg2rad,
+		float32(screenWidth)/float32(screenHeight),
+		engine.CameraNearPlane,
+		engine.CameraFarPlane,
+	)
+	mvp := rl.MatrixMultiply(matProj, matView)
+	// Transform point: clip = MVP * [x, y, z, 1] (column-major matrix layout)
+	cx := mvp.M0*objPos.X + mvp.M4*objPos.Y + mvp.M8*objPos.Z + mvp.M12
+	cy := mvp.M1*objPos.X + mvp.M5*objPos.Y + mvp.M9*objPos.Z + mvp.M13
+	cw := mvp.M3*objPos.X + mvp.M7*objPos.Y + mvp.M11*objPos.Z + mvp.M15
+	if cw <= 0 {
+		return rl.Vector2{}, false // behind or on the camera plane
+	}
+	return rl.Vector2{
+		X: (cx/cw + 1.0) * 0.5 * float32(screenWidth),
+		Y: (1.0 - cy/cw) * 0.5 * float32(screenHeight),
+	}, true
+}
+
 // drawObjectLabels draws labels for important/visible objects with connector lines
 func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState, camera rl.Camera3D, objectsToRender []*engine.Object) {
 	// Determine which objects should have labels based on priority
@@ -406,10 +433,13 @@ func drawObjectLabels(state *engine.SimulationState, cameraState *ui.CameraState
 			Z: obj.Anim.Position.Z - cameraState.Position.Z,
 		}
 
-		// Project to screen space
-		screenPos := rl.GetWorldToScreen(objPos, camera)
-
-		// Skip if behind camera (w < 0 in projection)
+		// Project to screen space using the same perspective as the scene render.
+		// GetWorldToScreen has a hardcoded far plane of 1000 su; beyond ~10 AU
+		// the projected w goes negative and labels appear to orbit the screen centre.
+		screenPos, inFront := projectToScreen(objPos, camera, int32(currentScreenWidth()), int32(currentScreenHeight()))
+		if !inFront {
+			continue
+		}
 		if screenPos.X < -1000 || screenPos.X > float32(currentScreenWidth()+1000) || screenPos.Y < -1000 || screenPos.Y > float32(currentScreenHeight()+1000) {
 			continue
 		}
@@ -926,6 +956,7 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		{"Planets", engine.CategoryPlanet},
 		{"Dwarf Planets", engine.CategoryDwarfPlanet},
 		{"Moons", engine.CategoryMoon},
+		{"Ring Systems", engine.CategoryRing},
 		{"Belts", engine.CategoryBelt}, // Asteroid Belt and Kuiper Belt
 	}
 	tabWidth := (bgWidth - 20) / int32(len(categories))

@@ -2279,3 +2279,110 @@ Using Hill radius for membership containment and Laplace SOI for entry/exit dete
 
 ---
 
+### 36. **N-Body Timestep Stability: quasar_test Orbital Expansion at Load** [PHYSICS]
+
+**Date**: 2026-05-25
+
+**Symptom**: In `quasar_test` system, the quasar companion stars (Q1, Q2) visibly fly away from the SMBH immediately after the simulation starts, even though `initNBody` computes physically correct initial velocities.
+
+**Root Cause**: `quasar_test/system.json` sets `default_time_scale: 3155760000` (100 years/s). At 60 Hz, one physics tick covers:
+
+```
+dt = (1/60) × 3,155,760,000 ≈ 52,596,000 s ≈ 609 days
+```
+
+Q1's orbital period from GM: `T = 2π × √(a³/GM)` where `a = 150,000 su`, `GM = 1.991e-38 × 1.989e+39 ≈ 39.6 su³/s²`:
+
+```
+T ≈ 2π × √(150000³ / 39.6) ≈ 57,968,000 s ≈ 671 days
+```
+
+**`dt / T ≈ 0.91` — the integrator takes nearly one full orbit per tick.**
+
+The Leapfrog DKD integrator (like any fixed-step symplectic integrator) requires `dt << T` for stability. When `dt ≈ T`, the acceleration evaluated at the initial position is applied over nearly a full orbital arc. Instead of traveling a small arc, the body receives a full-orbit impulse in the wrong direction, injecting energy into the orbit and causing unbounded expansion.
+
+**What this is NOT**:
+- Not a velocity calibration error — `initNBody` computes `v = √(GM/p)` via the perifocal velocity formula; this is correct.
+- Not a `scale_factor` problem — `scale_factor: 500` in `system.json` is metadata and is never applied inside `createBodyFromConfig` (the parameter is accepted but unused, line ~195 in `loader.go`).
+- Not a GM computation error — `GM = G_sim × mass` is correct.
+
+**Fix options** (not yet implemented):
+1. Reduce `default_time_scale` for quasar_test to ≤ 3.15e8 s/s (10 years/s) → dt ≈ 61 days, T/dt ≈ 11. Still marginal; ratio should be ≥ 20 for stable Leapfrog.
+2. Add a per-system `nbody_substeps` field. At 10 substeps per frame, effective dt = 6 days → T/dt ≈ 112 (stable).
+3. Reduce to ~1 year/s (3.15e7) for dt ≈ 6 days → T/dt ≈ 112 without substeps.
+
+**Rule**: For any N-body system, verify `dt/T_min < 0.05` (i.e., T_min > 20 × dt) where T_min is the orbital period of the shortest-period body. If not satisfied, reduce `default_time_scale` or add substep support. Leapfrog is energy-conserving at small dt but diverges rapidly when dt approaches the orbital period.
+
+---
+
+### 37. **Raylib `GetWorldToScreenEx`/`GetWorldToScreen` Use a Hardcoded Far Plane** [RENDERING]
+
+**Date**: 2026-05-25
+
+**Symptom**: Object labels wander across the viewport or orbit the viewport center for objects more than ~1000 su from the camera. The 3D objects themselves render correctly; only the screen-space projection for label placement is wrong.
+
+**Root Cause**: Both `rl.GetWorldToScreenEx` and `rl.GetWorldToScreen` internally construct a projection matrix using `RL_CULL_DISTANCE_FAR = 1000.0` (a compile-time constant in the Raylib C source), regardless of the far plane set via `rl.SetMatrixProjection`. For objects at depth `z > 1000`, the clip-space `w` component goes negative, flipping the NDC x/y coordinates. The resulting screen position is mirrored across the viewport center and drifts as the camera moves.
+
+**`CameraFarPlane` for this project is 200,000 su** — 200× the hardcoded limit.
+
+**Fix**: Custom `projectToScreen` function that builds a correct projection matrix at call time:
+
+```go
+func projectToScreen(worldPos rl.Vector3, camera rl.Camera3D, screenW, screenH float32) rl.Vector2 {
+    aspect := screenW / screenH
+    proj := rl.MatrixPerspective(
+        float64(CameraFOV)*math.Pi/180.0,
+        float64(aspect),
+        float64(CameraNearPlane),
+        float64(CameraFarPlane), // 200000 — not 1000
+    )
+    view := rl.GetCameraMatrix(camera)
+    clipPos := rl.Vector4Transform(
+        rl.Vector4{X: worldPos.X, Y: worldPos.Y, Z: worldPos.Z, W: 1.0},
+        rl.MatrixMultiply(view, proj),
+    )
+    if clipPos.W <= 0 {
+        return rl.Vector2{X: -1, Y: -1} // behind camera
+    }
+    ndc := rl.Vector3{
+        X: clipPos.X / clipPos.W,
+        Y: clipPos.Y / clipPos.W,
+    }
+    return rl.Vector2{
+        X: (ndc.X*0.5 + 0.5) * screenW,
+        Y: (1.0 - (ndc.Y*0.5+0.5)) * screenH,
+    }
+}
+```
+
+**Rule**: Never use `rl.GetWorldToScreenEx` or `rl.GetWorldToScreen` in a project where objects can be more than 1000 su from the camera. Always use a custom projection that matches the actual far plane. Check the return value: if `clipPos.W <= 0`, the point is behind the camera and should not be rendered.
+
+---
+
+### 38. **float32 Position Precision and the 64-bit Upgrade Analysis** [RENDERING, PHYSICS]
+
+**Date**: 2026-05-25
+
+**Context**: All simulation positions (`engine.Vector3`) are `float32`. This was a deliberate constraint because Raylib's rendering pipeline is float32 throughout. The question arises: would upgrading to float64 positions solve the label-positioning and depth-jitter problems seen at large distances?
+
+**What float64 would address**:
+- **Catastrophic cancellation**: When the camera is 50,000 su from the origin and two nearby objects are 50,000 su ± 0.1 su apart, float32 subtraction loses ~4 digits of precision. With float64 (15–16 significant digits vs float32's 7), relative positions remain precise out to ~1e8 su separation.
+- **Accumulation drift in long simulations**: Leapfrog position updates accumulate rounding error over millions of ticks. float64 reduces per-step error from ~1e-7 to ~1e-15 relative magnitude.
+
+**What float64 would NOT address**:
+- **Raylib GPU pipeline**: All vertex buffers, shader uniforms, and mesh data in Raylib use float32. Even if engine positions are float64, they must be cast to float32 before any draw call. The GPU sees float32 regardless.
+- **OpenGL**: OpenGL's standard vertex pipeline is float32; `GL_DOUBLE` vertex attributes exist but are unsupported on many drivers and Metal/MoltenVK backends.
+- **Shader precision**: GLSL `float` is 32-bit. Using float64 on the CPU does not improve fragment shader precision.
+- **The label-positioning bug (LL #37)**: Was caused by Raylib's hardcoded far plane of 1000 su — not by float32 imprecision. The fix is a custom projection function.
+
+**Side effects of a float64 migration**:
+- **Memory**: All `engine.Vector3` (3 × float32 = 12 bytes) become 3 × float64 = 24 bytes — 2× increase for every position in every object in the simulation state (front + back buffers × N objects).
+- **Struct migration**: Every engine type using `Vector3` requires changes: `SimObject`, `AnimState`, `CameraState`, `GravSet`, `NBodyState`, and all serialization/deserialization code.
+- **JSON precision**: The current JSON schema uses standard decimal floats; float64 serialization requires higher precision or the benefit is lost on load.
+- **SIMD**: Go's float32 math can use 4-wide SIMD; float64 drops to 2-wide on most architectures.
+
+**Preferred alternative — origin shifting (camera-relative rendering)**:
+Convert world-space positions to camera-relative coordinates just before the GPU submit. The camera is always at `(0,0,0)` in the render space, so all vertex positions are small floats regardless of world-space coordinates. This eliminates catastrophic cancellation in the GPU pipeline with zero schema changes and near-zero memory impact.
+
+**Rule**: Do not migrate `engine.Vector3` to float64 to fix rendering precision. Use origin shifting at the render boundary instead. Upgrade physics state to float64 only if N-body integration drift is measured to be a problem at the simulation timescales in use.
+
