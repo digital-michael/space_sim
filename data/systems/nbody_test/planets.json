@@ -6,7 +6,7 @@
       "name": "Inner Planet",
       "parent": "Test Star",
       "orbit": {
-        "semi_major_axis": 1.0,
+        "semi_major_axis": 100,
         "eccentricity": 0.0,
         "inclination": 0.0,
         "orbital_period": 365.25,
@@ -28,10 +28,10 @@
       "name": "Outer Planet",
       "parent": "Test Star",
       "orbit": {
-        "semi_major_axis": 4.0,
+        "semi_major_axis": 520,
         "eccentricity": 0.0,
         "inclination": 0.0,
-        "orbital_period": 2920.0,
+        "orbital_period": 4333.0,
         "initial_mean_anomaly": "0"
       },
       "physical": {
