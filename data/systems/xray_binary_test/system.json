@@ -1,10 +1,10 @@
 {
-  "name": "Sagittarius A* System (S-Cluster)",
+  "name": "X-Ray Binary Test",
   "system_version": "1.0",
   "schema_version": "2.0",
-  "scale_factor": 50,
+  "scale_factor": 1,
   "simulation": {
-    "default_time_scale": 31557600,
+    "default_time_scale": 86400,
     "nbody_mode": "nbody"
   },
   "files": {

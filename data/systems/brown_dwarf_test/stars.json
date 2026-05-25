@@ -1,0 +1,68 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Luhman 16A Analog",
+      "subtype": "brown_dwarf",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 15,
+        "mass": 5.7e+28,
+        "rotation_period": 4.87,
+        "axial_tilt": 8.0,
+        "albedo": 0.12,
+        "albedo_note": "~30 Jupiter-mass L/T-transition brown dwarf; effective temp ~1800 K"
+      },
+      "rendering": {
+        "material": "diffuse_thermal",
+        "fallback_color": [90, 20, 50, 255]
+      },
+      "importance": 90,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.000025,
+        "surface_temperature_k": 1800,
+        "emission_color": [120, 30, 60, 255],
+        "emission_intensity": 0.3
+      }
+    },
+    {
+      "type": "star",
+      "name": "M-Dwarf Companion",
+      "orbit": {
+        "semi_major_axis": 5000,
+        "eccentricity": 0.25,
+        "inclination": 0.15,
+        "orbital_period": 181524.7,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 8,
+        "mass": 3.978e+29,
+        "rotation_period": 32.0,
+        "axial_tilt": 5.0,
+        "albedo": 1.0,
+        "albedo_note": "0.2 solar-mass M-dwarf companion at wide separation"
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [255, 100, 50, 255]
+      },
+      "importance": 75,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.005,
+        "surface_temperature_k": 3200,
+        "emission_color": [255, 100, 50, 255],
+        "emission_intensity": 0.8
+      }
+    }
+  ]
+}

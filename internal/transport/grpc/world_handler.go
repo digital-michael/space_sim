@@ -136,6 +136,8 @@ func categoryLabel(c engine.ObjectCategory) string {
 		return "star"
 	case engine.CategoryBelt:
 		return "belt"
+	case engine.CategoryBlackHole:
+		return "blackhole"
 	default:
 		return "unknown"
 	}

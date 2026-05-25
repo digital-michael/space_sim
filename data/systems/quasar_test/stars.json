@@ -1,0 +1,95 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "blackhole",
+      "name": "3C 273 Analog SMBH",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 2000,
+        "mass": 1.989e+39,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.0,
+        "albedo_note": "10^9 solar-mass SMBH quasar; Schwarzschild radius ~4.4 AU (440 su at default scale)"
+      },
+      "rendering": {
+        "material": "blackhole",
+        "fallback_color": [0, 0, 0, 255]
+      },
+      "importance": 100
+    },
+    {
+      "type": "star",
+      "name": "S-Star Q1",
+      "parent": "3C 273 Analog SMBH",
+      "orbit": {
+        "semi_major_axis": 150000,
+        "eccentricity": 0.6,
+        "inclination": 1.2,
+        "longitude_ascending_node": 2.1,
+        "argument_periapsis": 0.8,
+        "orbital_period": 400.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 164,
+        "mass": 2.785e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [160, 200, 255, 255]
+      },
+      "importance": 50,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 15000.0,
+        "surface_temperature_k": 28000,
+        "emission_color": [160, 200, 255, 255],
+        "emission_intensity": 1.0
+      }
+    },
+    {
+      "type": "star",
+      "name": "S-Star Q2",
+      "parent": "3C 273 Analog SMBH",
+      "orbit": {
+        "semi_major_axis": 320000,
+        "eccentricity": 0.4,
+        "inclination": 0.8,
+        "longitude_ascending_node": 4.2,
+        "argument_periapsis": 2.3,
+        "orbital_period": 1250.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 120,
+        "mass": 1.989e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [200, 220, 255, 255]
+      },
+      "importance": 48,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 8000.0,
+        "surface_temperature_k": 25000,
+        "emission_color": [200, 220, 255, 255],
+        "emission_intensity": 1.0
+      }
+    }
+  ]
+}

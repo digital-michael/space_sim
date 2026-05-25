@@ -1,0 +1,80 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "PSR 1257+12 A",
+      "parent": "PSR 1257+12",
+      "orbit": {
+        "semi_major_axis": 1900,
+        "eccentricity": 0.0,
+        "inclination": 0.0,
+        "orbital_period": 25.34,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.5,
+        "mass": 4.2e+22,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.1,
+        "albedo_note": "~0.02 Earth-mass moonlet; first confirmed exoplanet"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "fallback_color": [90, 70, 60, 255]
+      },
+      "importance": 70
+    },
+    {
+      "type": "planet",
+      "name": "PSR 1257+12 B",
+      "parent": "PSR 1257+12",
+      "orbit": {
+        "semi_major_axis": 3600,
+        "eccentricity": 0.0186,
+        "inclination": 0.0,
+        "orbital_period": 66.54,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1.5,
+        "mass": 8.36e+24,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.15,
+        "albedo_note": "~4.3 Earth-mass planet"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "fallback_color": [110, 90, 75, 255]
+      },
+      "importance": 75
+    },
+    {
+      "type": "planet",
+      "name": "PSR 1257+12 C",
+      "parent": "PSR 1257+12",
+      "orbit": {
+        "semi_major_axis": 4600,
+        "eccentricity": 0.0252,
+        "inclination": 0.0,
+        "orbital_period": 98.21,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1.5,
+        "mass": 8.26e+24,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.15,
+        "albedo_note": "~4.3 Earth-mass planet; resonant pair with PSR 1257+12 B"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "fallback_color": [100, 85, 70, 255]
+      },
+      "importance": 74
+    }
+  ]
+}

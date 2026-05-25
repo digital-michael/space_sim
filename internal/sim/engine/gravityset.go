@@ -111,7 +111,7 @@ func BuildSystemSet(state *SimulationState, ships ...*Object) GravSet {
 	return GravSet{
 		Name: "system",
 		Participants: CollectByCategory(state,
-			CategoryStar, CategoryPlanet, CategoryDwarfPlanet,
+			CategoryStar, CategoryBlackHole, CategoryPlanet, CategoryDwarfPlanet,
 			CategoryMoon, CategoryArtifact,
 		),
 		TestParticles: ships,

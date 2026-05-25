@@ -18,6 +18,7 @@ func TestObjectCategoryValues(t *testing.T) {
 		{"CategoryRing", CategoryRing, 4},
 		{"CategoryStar", CategoryStar, 5},
 		{"CategoryBelt", CategoryBelt, 6},
+		{"CategoryBlackHole", CategoryBlackHole, 9},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -31,7 +32,7 @@ func TestObjectCategoryValues(t *testing.T) {
 // TestObjectCategoryCount ensures no new values were silently added or removed.
 // Update this constant intentionally whenever the enum changes.
 func TestObjectCategoryCount(t *testing.T) {
-	const wantCount = 7
+	const wantCount = 8
 	all := []ObjectCategory{
 		CategoryPlanet,
 		CategoryDwarfPlanet,
@@ -40,6 +41,7 @@ func TestObjectCategoryCount(t *testing.T) {
 		CategoryRing,
 		CategoryStar,
 		CategoryBelt,
+		CategoryBlackHole,
 	}
 	if len(all) != wantCount {
 		t.Errorf("ObjectCategory enum has %d values, want %d", len(all), wantCount)

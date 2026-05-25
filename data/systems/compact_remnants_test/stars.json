@@ -1,0 +1,94 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "Remnant White Dwarf",
+      "subtype": "white_dwarf",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 0.5,
+        "mass": 1.193e+30,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "0.6 solar-mass white dwarf — Earth-sized, high surface temperature"
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [200, 220, 255, 255]
+      },
+      "importance": 90,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.005,
+        "surface_temperature_k": 25000,
+        "emission_color": [200, 220, 255, 255],
+        "emission_intensity": 1.0
+      }
+    },
+    {
+      "type": "star",
+      "name": "Compact Neutron Star",
+      "subtype": "neutron_star",
+      "parent": "Remnant White Dwarf",
+      "orbit": {
+        "semi_major_axis": 500,
+        "eccentricity": 0.05,
+        "inclination": 0.1,
+        "orbital_period": 7143.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2,
+        "mass": 2.785e+30,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 1.0,
+        "albedo_note": "1.4 solar-mass neutron star — physical radius ~2 su for visibility (real ~0.003 su)"
+      },
+      "rendering": {
+        "material": "neutron_star",
+        "fallback_color": [180, 220, 255, 255]
+      },
+      "importance": 85,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.001,
+        "surface_temperature_k": 600000,
+        "emission_color": [180, 220, 255, 255],
+        "emission_intensity": 2.0
+      }
+    },
+    {
+      "type": "blackhole",
+      "name": "Stellar Black Hole",
+      "orbit": {
+        "semi_major_axis": 2000,
+        "eccentricity": 0.1,
+        "inclination": 0.2,
+        "orbital_period": 226274.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 5,
+        "mass": 1.989e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.0,
+        "albedo_note": "10 solar-mass stellar black hole — Schwarzschild radius ~88 km; visual radius 5 su"
+      },
+      "rendering": {
+        "material": "blackhole",
+        "fallback_color": [0, 0, 0, 255]
+      },
+      "importance": 80
+    }
+  ]
+}

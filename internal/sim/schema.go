@@ -185,6 +185,7 @@ type SystemFilesManifest struct {
 	Belts        string `json:"belts,omitempty"`
 	Rogues       string `json:"rogues,omitempty"`
 	Artifacts    string `json:"artifacts,omitempty"`
+	Features     string `json:"features,omitempty"` // photon_ring, accretion_disk, relativistic_jet, ring_system
 }
 
 // TypedBodiesFile is the container for per-type body files (stars.json,
@@ -198,6 +199,13 @@ type TypedBodiesFile struct {
 type TypedBeltsFile struct {
 	SchemaVersion string                 `json:"schema_version"`
 	Belts         []engine.FeatureConfig `json:"belts"`
+}
+
+// TypedFeaturesFile is the container for features.json in a system directory.
+// Supports: photon_ring, accretion_disk, relativistic_jet, ring_system.
+type TypedFeaturesFile struct {
+	SchemaVersion string                 `json:"schema_version"`
+	Features      []engine.FeatureConfig `json:"features"`
 }
 
 // RoguesFile is the container for rogues.json — comets, interstellar objects,

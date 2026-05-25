@@ -9,6 +9,8 @@ const (
 	MaterialMetallic                           // Shiny metal (asteroids)
 	MaterialMirror                             // Reflective (satellites)
 	MaterialDiffuseThermal                     // Thermally self-luminous but not a star (gas giants, volcanic Io)
+	MaterialBlackHole                          // Light absorber; body draws black; photon ring / accretion disk are separate features
+	MaterialNeutronStar                        // Ultra-compact high-energy emitter (neutron star, pulsar, magnetar)
 )
 
 // ObjectCategory defines object grouping for UI navigation.
@@ -25,6 +27,7 @@ const (
 	CategoryBelt        ObjectCategory = 6    // Virtual: asteroid/Kuiper belts
 	CategoryRogue       ObjectCategory = 7    // Comets, interstellar objects, high-eccentricity bodies
 	CategoryArtifact    ObjectCategory = 8    // Human-made or alien-made durable objects (F-008/F-034)
+	CategoryBlackHole   ObjectCategory = 9    // Black holes: stellar, intermediate, SMBH, quasar, blazar
 )
 
 // AsteroidDataset represents a LOD level for asteroid populations.
@@ -99,6 +102,16 @@ type ObjectMetadata struct {
 	// Legacy simplified orbital parameters
 	OrbitRadius float32 // Circular orbital distance
 	OrbitSpeed  float32 // Angular velocity in radians/second
+
+	// Stellar subtype (optional, within type:"star" or type:"blackhole")
+	// Examples: "pulsar", "magnetar", "white_dwarf", "neutron_star", "brown_dwarf",
+	// "quasar", "blazar", "main_sequence"
+	Subtype string
+
+	// Relativistic jet parameters (set by relativistic_jet feature; 0 = no jets)
+	JetLength float32 // Total length of each jet arm in sim units
+	JetRadius float32 // Cone base radius at body surface in sim units
+	JetColor  Color   // Jet emission color
 
 	// Hierarchy
 	ParentName string // Empty for top-level bodies; parent name for moons/rings

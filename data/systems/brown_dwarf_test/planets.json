@@ -1,0 +1,53 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "BD Planet I",
+      "parent": "Luhman 16A Analog",
+      "orbit": {
+        "semi_major_axis": 40,
+        "eccentricity": 0.04,
+        "inclination": 0.1,
+        "orbital_period": 50.1,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1.1,
+        "mass": 5.97e+24,
+        "rotation_period": 0.0,
+        "axial_tilt": 3.0,
+        "albedo": 0.3
+      },
+      "rendering": {
+        "material": "diffuse",
+        "fallback_color": [100, 80, 60, 255]
+      },
+      "importance": 55
+    },
+    {
+      "type": "planet",
+      "name": "BD Planet II",
+      "parent": "Luhman 16A Analog",
+      "orbit": {
+        "semi_major_axis": 70,
+        "eccentricity": 0.06,
+        "inclination": 0.2,
+        "orbital_period": 116.4,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1.4,
+        "mass": 9.6e+24,
+        "rotation_period": 0.0,
+        "axial_tilt": 7.0,
+        "albedo": 0.25
+      },
+      "rendering": {
+        "material": "diffuse",
+        "fallback_color": [90, 75, 55, 255]
+      },
+      "importance": 53
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": "2.0",
+  "features": [
+    {
+      "type": "accretion_disk",
+      "name": "Neutron Star Accretion Disk",
+      "parent": "Accreting Neutron Star",
+      "distribution": {
+        "inner_radius": 2.5,
+        "outer_radius": 12
+      },
+      "physical": {
+        "color": [255, 140, 60, 200]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 70
+    }
+  ]
+}

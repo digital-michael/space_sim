@@ -1,0 +1,50 @@
+{
+  "schema_version": "2.0",
+  "features": [
+    {
+      "type": "photon_ring",
+      "name": "Quasar Photon Ring",
+      "parent": "3C 273 Analog SMBH",
+      "distribution": {
+        "inner_radius": 2040,
+        "outer_radius": 2080
+      },
+      "physical": {
+        "color": [255, 252, 210, 230]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 80
+    },
+    {
+      "type": "accretion_disk",
+      "name": "Quasar Accretion Disk",
+      "parent": "3C 273 Analog SMBH",
+      "distribution": {
+        "inner_radius": 2100,
+        "outer_radius": 30000
+      },
+      "physical": {
+        "color": [255, 160, 40, 210]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 75
+    },
+    {
+      "type": "relativistic_jet",
+      "name": "Quasar Relativistic Jet",
+      "parent": "3C 273 Analog SMBH",
+      "distribution": {
+        "outer_radius": 500000,
+        "thickness": 2000
+      },
+      "physical": {
+        "color": [100, 160, 255, 170]
+      },
+      "importance": 70
+    }
+  ]
+}

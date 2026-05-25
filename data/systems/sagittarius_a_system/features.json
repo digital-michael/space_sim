@@ -1,0 +1,50 @@
+{
+  "schema_version": "2.0",
+  "features": [
+    {
+      "type": "photon_ring",
+      "name": "Sgr A* Photon Ring",
+      "parent": "Sagittarius A*",
+      "distribution": {
+        "inner_radius": 816,
+        "outer_radius": 832
+      },
+      "physical": {
+        "color": [255, 248, 200, 220]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 60
+    },
+    {
+      "type": "accretion_disk",
+      "name": "Sgr A* Accretion Disk",
+      "parent": "Sagittarius A*",
+      "distribution": {
+        "inner_radius": 840,
+        "outer_radius": 6000
+      },
+      "physical": {
+        "color": [255, 120, 20, 200]
+      },
+      "rendering": {
+        "material": "emissive"
+      },
+      "importance": 50
+    },
+    {
+      "type": "relativistic_jet",
+      "name": "Sgr A* Jet",
+      "parent": "Sagittarius A*",
+      "distribution": {
+        "outer_radius": 60000,
+        "thickness": 300
+      },
+      "physical": {
+        "color": [120, 180, 255, 160]
+      },
+      "importance": 40
+    }
+  ]
+}

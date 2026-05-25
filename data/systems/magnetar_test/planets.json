@@ -1,0 +1,55 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Survivor Alpha",
+      "parent": "SGR 1806-20",
+      "orbit": {
+        "semi_major_axis": 300,
+        "eccentricity": 0.08,
+        "inclination": 0.15,
+        "orbital_period": 27019.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2,
+        "mass": 3.58e+25,
+        "rotation_period": 0.0,
+        "axial_tilt": 5.0,
+        "albedo": 0.05,
+        "albedo_note": "irradiated rocky planet — baked by magnetar X-ray flares"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "fallback_color": [80, 40, 20, 255]
+      },
+      "importance": 60
+    },
+    {
+      "type": "planet",
+      "name": "Survivor Beta",
+      "parent": "SGR 1806-20",
+      "orbit": {
+        "semi_major_axis": 800,
+        "eccentricity": 0.12,
+        "inclination": 0.3,
+        "orbital_period": 117827.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 3,
+        "mass": 2.68e+26,
+        "rotation_period": 0.0,
+        "axial_tilt": 12.0,
+        "albedo": 0.08,
+        "albedo_note": "dense irradiated super-Earth"
+      },
+      "rendering": {
+        "material": "diffuse",
+        "fallback_color": [60, 35, 20, 255]
+      },
+      "importance": 58
+    }
+  ]
+}

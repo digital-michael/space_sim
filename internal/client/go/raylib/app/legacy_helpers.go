@@ -182,7 +182,9 @@ func drawObjectsInstanced(objects []*engine.Object, cameraPos engine.Vector3, po
 				rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
 
 				// Wireframe
-				if obj.Meta.Material != engine.MaterialEmissive {
+				if obj.Meta.Material != engine.MaterialEmissive &&
+					obj.Meta.Material != engine.MaterialBlackHole &&
+					obj.Meta.Material != engine.MaterialNeutronStar {
 					rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), batch.wireRings, batch.wireSlices,
 						rl.Color{R: 255, G: 255, B: 255, A: 100})
 				}
@@ -328,11 +330,18 @@ func drawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnab
 		}
 	}
 
+	// Black holes: override color to black and draw absorbing sphere
+	if obj.Meta.Material == engine.MaterialBlackHole {
+		color = rl.Color{R: 0, G: 0, B: 0, A: 255}
+	}
+
 	rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
 
 	// Draw wireframe for better depth perception (skip for rings and sun)
 	// Use simpler wireframe for distant objects when LOD is enabled
-	if obj.Meta.Material != engine.MaterialEmissive {
+	if obj.Meta.Material != engine.MaterialEmissive &&
+		obj.Meta.Material != engine.MaterialBlackHole &&
+		obj.Meta.Material != engine.MaterialNeutronStar {
 		wireRings := int32(8)
 		wireSlices := int32(8)
 		if lodEnabled && distance > 50.0 {
@@ -340,6 +349,22 @@ func drawObject(obj *engine.Object, cameraPos engine.Vector3, pointRenderingEnab
 			wireSlices = 4
 		}
 		rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), wireRings, wireSlices, rl.Color{R: 255, G: 255, B: 255, A: 100})
+	}
+
+	// Relativistic jets: bilateral cones along the Y axis when JetLength > 0
+	if obj.Meta.JetLength > 0 {
+		jetColor := rl.Color{
+			R: obj.Meta.JetColor.R,
+			G: obj.Meta.JetColor.G,
+			B: obj.Meta.JetColor.B,
+			A: obj.Meta.JetColor.A,
+		}
+		jr := obj.Meta.JetRadius
+		jl := obj.Meta.JetLength
+		// +Y arm: cone with base at body, apex above
+		rl.DrawCylinder(pos, 0, jr, jl, 8, jetColor)
+		// -Y arm: cone with base at body, apex below
+		rl.DrawCylinder(rl.Vector3{X: pos.X, Y: pos.Y - jl, Z: pos.Z}, jr, 0, jl, 8, jetColor)
 	}
 }
 
@@ -651,6 +676,8 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		categoryName = "Asteroid"
 	case engine.CategoryStar:
 		categoryName = "Star"
+	case engine.CategoryBlackHole:
+		categoryName = "Black Hole"
 	case engine.CategoryRing:
 		categoryName = "Ring System"
 	}
@@ -882,6 +909,7 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		category engine.ObjectCategory
 	}
 	categories := []categoryTab{
+		{"Black Holes", engine.CategoryBlackHole},
 		{"Stars", engine.CategoryStar}, // First tab
 		{"Planets", engine.CategoryPlanet},
 		{"Dwarf Planets", engine.CategoryDwarfPlanet},

@@ -1,0 +1,62 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "star",
+      "name": "HDE 226868 Analog",
+      "subtype": "main_sequence",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0"
+      },
+      "physical": {
+        "radius": 45,
+        "mass": 5.969e+31,
+        "rotation_period": 5.6,
+        "axial_tilt": 10.0,
+        "albedo": 1.0,
+        "albedo_note": "30 solar-mass O-supergiant; donor star for BH companion (Cygnus X-1 analog)"
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [130, 170, 255, 255]
+      },
+      "importance": 85,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 270000.0,
+        "surface_temperature_k": 30000,
+        "emission_color": [130, 170, 255, 255],
+        "emission_intensity": 1.5
+      }
+    },
+    {
+      "type": "blackhole",
+      "name": "Cygnus X-1 Analog BH",
+      "parent": "HDE 226868 Analog",
+      "orbit": {
+        "semi_major_axis": 400,
+        "eccentricity": 0.018,
+        "inclination": 0.5,
+        "orbital_period": 5.6,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 8,
+        "mass": 2.984e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.0,
+        "albedo_note": "15 solar-mass stellar black hole — Schwarzschild radius ~132 km; visual radius 8 su"
+      },
+      "rendering": {
+        "material": "blackhole",
+        "fallback_color": [0, 0, 0, 255]
+      },
+      "importance": 90
+    }
+  ]
+}

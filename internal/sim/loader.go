@@ -95,7 +95,9 @@ func LoadSystemFromFile(path string) (*engine.SimulationState, error) {
 			configCopy := featureConfig
 			state.KuiperBeltConfig = &configCopy
 			seenCategories[engine.CategoryBelt] = true
-		} else if strings.ToLower(featureConfig.Type) == "ring_system" {
+		} else if strings.ToLower(featureConfig.Type) == "ring_system" ||
+			strings.ToLower(featureConfig.Type) == "photon_ring" ||
+			strings.ToLower(featureConfig.Type) == "accretion_disk" {
 			seenCategories[engine.CategoryRing] = true
 		}
 
@@ -104,8 +106,7 @@ func LoadSystemFromFile(path string) (*engine.SimulationState, error) {
 		}
 	}
 
-	canonicalOrder := []engine.ObjectCategory{
-		engine.CategoryStar,
+	canonicalOrder := []engine.ObjectCategory{engine.CategoryBlackHole, engine.CategoryStar,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,
 		engine.CategoryMoon,
@@ -226,6 +227,10 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 			material = engine.MaterialMirror
 		case "diffuse_thermal":
 			material = engine.MaterialDiffuseThermal
+		case "blackhole":
+			material = engine.MaterialBlackHole
+		case "neutron_star":
+			material = engine.MaterialNeutronStar
 		}
 	}
 
@@ -245,6 +250,8 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 		category = engine.CategoryRogue
 	case "artifact":
 		category = engine.CategoryArtifact
+	case "blackhole":
+		category = engine.CategoryBlackHole
 	}
 
 	initialAngle := float32(0)
@@ -280,6 +287,7 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 		Meta: engine.ObjectMetadata{
 			Name:             config.Name,
 			Category:         category,
+			Subtype:          config.Subtype,
 			Mass:             config.Physical.Mass,
 			GM:               engine.G_sim * config.Physical.Mass,
 			PhysicalRadius:   config.Physical.Radius,
@@ -422,8 +430,10 @@ func createFeatureFromConfig(state *engine.SimulationState, config engine.Featur
 	switch strings.ToLower(config.Type) {
 	case "asteroid_belt", "kuiper_belt":
 		return createBeltFromConfig(state, config, rng)
-	case "ring_system":
+	case "ring_system", "photon_ring", "accretion_disk":
 		return createRingSystemFromConfig(state, config)
+	case "relativistic_jet":
+		return createRelativistcJetFromConfig(state, config)
 	default:
 		return fmt.Errorf("unsupported feature type: %s", config.Type)
 	}
@@ -442,6 +452,42 @@ func parseFeatureMaterial(material string) (engine.MaterialType, error) {
 	default:
 		return engine.MaterialDiffuse, fmt.Errorf("unsupported ring material %q", material)
 	}
+}
+
+// createRelativistcJetFromConfig attaches jet parameters to the named parent
+// body. Jets are rendered by drawObject when JetLength > 0.
+// JSON fields used:
+//   - parent: name of the star or black hole body
+//   - distribution.outer_radius: total jet arm length in sim units
+//   - distribution.thickness:    jet cone base radius at the body surface
+//   - physical.color:            jet emission color (RGBA)
+func createRelativistcJetFromConfig(state *engine.SimulationState, config engine.FeatureConfig) error {
+	if strings.TrimSpace(config.Parent) == "" {
+		return fmt.Errorf("relativistic_jet %q is missing parent", config.Name)
+	}
+	parent := state.GetObject(config.Parent)
+	if parent == nil {
+		return fmt.Errorf("relativistic_jet %q parent %q not found", config.Name, config.Parent)
+	}
+	if config.Distribution.OuterRadius <= 0 {
+		return fmt.Errorf("relativistic_jet %q must define distribution.outer_radius > 0 (jet length)", config.Name)
+	}
+	parent.Meta.JetLength = config.Distribution.OuterRadius
+	parent.Meta.JetRadius = config.Distribution.Thickness
+	if parent.Meta.JetRadius <= 0 {
+		parent.Meta.JetRadius = parent.Meta.PhysicalRadius * 0.3
+	}
+	if config.Physical.Color[3] != 0 {
+		parent.Meta.JetColor = engine.Color{
+			R: config.Physical.Color[0],
+			G: config.Physical.Color[1],
+			B: config.Physical.Color[2],
+			A: config.Physical.Color[3],
+		}
+	} else {
+		parent.Meta.JetColor = engine.Color{R: 140, G: 200, B: 255, A: 180}
+	}
+	return nil
 }
 
 func createBeltFromConfig(state *engine.SimulationState, config engine.FeatureConfig, rng *rand.Rand) error {
@@ -744,11 +790,38 @@ func LoadSystemFromDir(dir string) (*engine.SimulationState, error) {
 				configCopy := featureConfig
 				state.KuiperBeltConfig = &configCopy
 				seenCategories[engine.CategoryBelt] = true
-			} else if strings.ToLower(featureConfig.Type) == "ring_system" {
+			} else if strings.ToLower(featureConfig.Type) == "ring_system" ||
+				strings.ToLower(featureConfig.Type) == "photon_ring" ||
+				strings.ToLower(featureConfig.Type) == "accretion_disk" {
 				seenCategories[engine.CategoryRing] = true
 			}
 			if err := createFeatureFromConfig(state, featureConfig, nil, rng); err != nil {
 				return nil, fmt.Errorf("failed to create feature %q from %s: %w", featureConfig.Name, path, err)
+			}
+		}
+	}
+
+	// Load features.json (photon rings, accretion disks, relativistic jets, ring systems).
+	if manifest.Files.Features != "" {
+		path := filepath.Join(dir, manifest.Files.Features)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read %s: %w", path, err)
+		}
+		var f TypedFeaturesFile
+		if err := json.Unmarshal(raw, &f); err != nil {
+			return nil, fmt.Errorf("failed to parse %s: %w", path, err)
+		}
+		if f.SchemaVersion != "" && !supportedSchemaVersions[f.SchemaVersion] {
+			return nil, fmt.Errorf("unsupported schema_version %q in %s (supported: 2.0)", f.SchemaVersion, path)
+		}
+		for _, fc := range f.Features {
+			ft := strings.ToLower(fc.Type)
+			if ft == "ring_system" || ft == "photon_ring" || ft == "accretion_disk" {
+				seenCategories[engine.CategoryRing] = true
+			}
+			if err := createFeatureFromConfig(state, fc, nil, rng); err != nil {
+				return nil, fmt.Errorf("failed to create feature %q from %s: %w", fc.Name, path, err)
 			}
 		}
 	}
@@ -766,6 +839,7 @@ func LoadSystemFromDir(dir string) (*engine.SimulationState, error) {
 
 	// Build NavigationOrder from seen categories in canonical order.
 	canonicalOrder := []engine.ObjectCategory{
+		engine.CategoryBlackHole,
 		engine.CategoryStar,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,
