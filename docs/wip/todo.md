@@ -315,7 +315,7 @@ This is the current best-guess execution sequence integrating dependency order, 
 
 | Step | Item | Rationale |
 |------|------|-----------|
-| 0a | **TD-003** Delete legacy_helpers.go dead code | Zero-risk 1,494-line deletion; clears dead render path before F-017/F-018/F-038 extend renders.go |
+| 0a | ~~**TD-003**~~ Delete legacy_helpers.go dead code | ✅ 2026-05-25 |
 | 0b | **TD-004** commands.go table-driven parser | Extension-point cleanup; F-019 and F-037 add command verbs — structure must be clean before they land (LL #40) |
 | 0c | **TD-005** renders.go monolith split | Structural prerequisite for F-017, F-018, F-021 Ph2, F-038; run after TD-003 clears dead parallel code |
 | 0d | **TD-006** CameraState sub-structs | Structural prerequisite for TD-007; enforces mode-safe tracking/jump state (S1/S3/S7) |
@@ -392,7 +392,7 @@ Fix implemented:
 ### TD-003 — Delete `legacy_helpers.go` Dead Code
 
 **Value**: Remove 1,494 lines of unreachable render code and clear the dead parallel implementation before F-017/F-018/F-038 extend `renders.go`.
-**Status**: 📋 Not started
+**Status**: ✅ Complete — 2026-05-25
 **Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #2 — description, fix steps, and acceptance criteria.
 **Unlocks**: TD-005 (removes confusion before renders.go split)
 
