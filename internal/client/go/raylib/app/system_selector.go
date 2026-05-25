@@ -11,7 +11,7 @@ import (
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 )
 
-const defaultSystemConfigPath = "data/systems/solar_system.json"
+const defaultSystemConfigPath = "data/systems/solar_system"
 
 type systemConfigSummary struct {
 	Name string `json:"name"`

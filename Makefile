@@ -84,7 +84,7 @@ run-repl: build-repl ## Run the REPL client (set ADDR= to override server addres
 
 .PHONY: run-server
 run-server: build-server ## Run the headless physics server (set ADDR= and SYSTEM= to override)
-	./$(SERVER_BIN) --addr $${ADDR:-:8080} --system-config $${SYSTEM:-data/systems/solar_system.json}
+	./$(SERVER_BIN) --addr $${ADDR:-:8080} --system-config $${SYSTEM:-data/systems/solar_system}
 
 .PHONY: run-client
 run-client: build-client ## Run the remote renderer (set SERVER= to override server address)
