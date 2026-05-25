@@ -25,6 +25,33 @@
         "surface_temperature_k": 5778
       },
       "importance": 100
+    },
+    {
+      "type": "star",
+      "name": "White Dwarf",
+      "parent": "Test Star",
+      "orbit": {
+        "semi_major_axis": 40,
+        "eccentricity": 0.3,
+        "inclination": 5.0,
+        "orbital_period": 92.4,
+        "initial_mean_anomaly": "90"
+      },
+      "physical": {
+        "mass": 1.193e+30,
+        "radius": 0.5,
+        "radius_km": 7000,
+        "color": [240, 248, 255, 255]
+      },
+      "rendering": {
+        "fallback_color": [240, 248, 255, 255]
+      },
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.001,
+        "surface_temperature_k": 25000
+      },
+      "importance": 90
     }
   ]
 }

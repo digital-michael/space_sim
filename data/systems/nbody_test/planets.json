@@ -28,10 +28,10 @@
       "name": "Outer Planet",
       "parent": "Test Star",
       "orbit": {
-        "semi_major_axis": 520,
+        "semi_major_axis": 130,
         "eccentricity": 0.0,
         "inclination": 0.0,
-        "orbital_period": 4333.0,
+        "orbital_period": 541.0,
         "initial_mean_anomaly": "0"
       },
       "physical": {
