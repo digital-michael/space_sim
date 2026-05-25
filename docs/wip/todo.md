@@ -316,7 +316,7 @@ This is the current best-guess execution sequence integrating dependency order, 
 | Step | Item | Rationale |
 |------|------|-----------|
 | 0a | ~~**TD-003**~~ Delete legacy_helpers.go dead code | ✅ 2026-05-25 |
-| 0b | **TD-004** commands.go table-driven parser | Extension-point cleanup; F-019 and F-037 add command verbs — structure must be clean before they land (LL #40) |
+| 0b | ~~**TD-004**~~ commands.go table-driven parser | ✅ 2026-05-25 |
 | 0c | **TD-005** renders.go monolith split | Structural prerequisite for F-017, F-018, F-021 Ph2, F-038; run after TD-003 clears dead parallel code |
 | 0d | **TD-006** CameraState sub-structs | Structural prerequisite for TD-007; enforces mode-safe tracking/jump state (S1/S3/S7) |
 | 1 | **F-034 Phase 1** System data directory structure | Data management must be stable before N-body test system; foundational for F-035/F-036; absorbs F-008 |
@@ -401,7 +401,7 @@ Fix implemented:
 ### TD-004 — `commands.go` Table-Driven Parser
 
 **Value**: Replace the 428-line string-switch in `Parse` with a `[]cmdSpec` table so new command verbs (F-019, F-037) are table rows, not new `case` arms.
-**Status**: 📋 Not started
+**Status**: ✅ 2026-05-25
 **Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #9 — description, fix steps, and acceptance criteria.
 **Unlocks**: F-019, F-037 (extension-point cleanup per LL #40)
 
