@@ -99,7 +99,7 @@ func NewRuntimeContext(cfg AppConfig) *RuntimeContext {
 			KeybindCapture: -1,
 		},
 		MouseModeEnabled: true,
-		LabelMode:        ui.LabelModeOff,
+		LabelMode:        ui.LabelModeNearest,
 		CameraSpeed:      10.0,
 		MouseSensitivity: 0.003,
 		PerfConfig:       cfg.Performance,

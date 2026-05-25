@@ -217,10 +217,10 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 				session.cameraState.Pitch = math.Asin(float64(session.cameraState.Forward.Y))
 			}
 		} else if session.cameraState.Mode == ui.CameraModeTracking {
-			// Tracking mode: reset zoom to 24% auto-zoom distance
+			// Tracking mode: reset zoom to 40% auto-zoom distance
 			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
 				targetObj := state.Objects[session.cameraState.TrackTargetIndex]
-				session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.24)
+				session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
 			}
 		}
 	}
@@ -283,7 +283,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 						fmt.Printf("[DEBUG] Tracking closest child: %s\n", closestChild.Meta.Name)
 					}
 					session.cameraState.StartTracking(children[0].index)
-					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(closestChild.Meta.PhysicalRadius, 0.24)
+					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(closestChild.Meta.PhysicalRadius, 0.40)
 				}
 			}
 		}
@@ -304,7 +304,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 								fmt.Printf("[DEBUG] Found parent: %s\n", obj.Meta.Name)
 							}
 							session.cameraState.StartTracking(i)
-							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
+							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
 							break
 						}
 					}
@@ -319,7 +319,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 								fmt.Printf("[DEBUG] Found central star: %s\n", obj.Meta.Name)
 							}
 							session.cameraState.StartTracking(i)
-							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
+							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
 							break
 						}
 					}
@@ -386,7 +386,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 						// Start tracking the next sibling with auto-zoom
 						nextObj := state.Objects[nextIndex]
 						session.cameraState.StartTracking(nextIndex)
-						session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(nextObj.Meta.PhysicalRadius, 0.24)
+						session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(nextObj.Meta.PhysicalRadius, 0.40)
 					}
 				}
 			}
@@ -472,7 +472,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 		if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
 			obj := state.Objects[session.cameraState.TrackTargetIndex]
 			session.cameraState.StartTracking(session.cameraState.TrackTargetIndex)
-			session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
+			session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
 		}
 	}
 
@@ -974,11 +974,11 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 
 				targetObj := state.Objects[actualIndex]
 				if mode == ui.SelectionModeJump {
-					// Jump to object with good viewing distance (5x radius)
-					session.cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, float64(targetObj.Meta.PhysicalRadius)*5.0)
+					// Jump to object at 40% auto-zoom distance
+					session.cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40))
 				} else if mode == ui.SelectionModeTrack {
 					session.cameraState.StartTracking(actualIndex)
-					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.24)
+					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
 				} else if mode == ui.SelectionModeTrackEquatorial {
 					// Start tracking from surface view - closer zoom (40% of screen height)
 					session.cameraState.StartTrackingEquatorial(actualIndex)

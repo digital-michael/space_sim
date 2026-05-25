@@ -243,6 +243,7 @@ func (c *CameraState) StartTracking(targetIndex int) {
 	c.TrackYaw = math.Pi
 	c.TrackPitch = 0.3
 	c.TrackLookOutward = false
+	c.TrackOffset = engine.Vector3{} // reset accumulated WASD offset on every target change
 }
 
 // StartTrackingEquatorial locks the camera to track from the equatorial plane.
@@ -252,6 +253,7 @@ func (c *CameraState) StartTrackingEquatorial(targetIndex int) {
 	c.TrackYaw = math.Pi
 	c.TrackPitch = 0.0
 	c.TrackLookOutward = true
+	c.TrackOffset = engine.Vector3{} // reset accumulated WASD offset on every target change
 }
 
 // UpdateTracking recomputes the camera position relative to the tracked object.

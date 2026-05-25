@@ -2386,3 +2386,19 @@ Convert world-space positions to camera-relative coordinates just before the GPU
 
 **Rule**: Do not migrate `engine.Vector3` to float64 to fix rendering precision. Use origin shifting at the render boundary instead. Upgrade physics state to float64 only if N-body integration drift is measured to be a problem at the simulation timescales in use.
 
+---
+
+### 39. **Navigation State Must Be Fully Reset on Every Target Change** [UI, STATE MANAGEMENT]
+
+**Date**: 2026-05-25
+
+**Context**: TAB, SHIFT+TAB, F, B, T, and J all navigate to a new tracked object. Each sets `TrackDistance` explicitly but none reset `TrackOffset` — the accumulated WASD pan vector. After panning near a large star, pressing TAB to the next star placed the camera at the panned offset relative to the new star, producing an unexpected viewpoint.
+
+**Root Cause**: `StartTracking` initialized `Mode`, `TrackTargetIndex`, `TrackYaw`, `TrackPitch`, and `TrackLookOutward` but not `TrackOffset`. The field was added later and the reset was never added to the canonical initialization function.
+
+**Fix**: Added `c.TrackOffset = engine.Vector3{}` to both `StartTracking` and `StartTrackingEquatorial`. All navigation paths call one of these two functions, so the reset is now guaranteed by the constructor rather than repeated at every call site.
+
+**Corollary — zoom consistency**: The same audit revealed that every navigation path used a different zoom formula: `0.24`, `0.5`, `radius*5.0`, or nothing. Standardized all to `CalculateAutoZoomDistance(radius, 0.40)` (40% screen fill). Having a single canonical distance function called from a single canonical entry point (`StartTracking`) makes it easy to tune the value once and have it apply everywhere.
+
+**Rule**: When adding a field to a camera/view state struct that should be reset on every target change, add the reset to the canonical `StartTracking` function immediately — not to individual call sites. Call-site resets drift apart over time as new navigation paths are added without copying the full reset list.
+

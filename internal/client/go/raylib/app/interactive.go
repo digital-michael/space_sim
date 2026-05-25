@@ -338,7 +338,7 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			target := findBodyByName(state, c.Name)
 			if target >= 0 {
 				cs.StartTracking(target)
-				cs.TrackDistance = ui.CalculateAutoZoomDistance(state.Objects[target].Meta.PhysicalRadius, 0.24)
+				cs.TrackDistance = ui.CalculateAutoZoomDistance(state.Objects[target].Meta.PhysicalRadius, 0.40)
 			} else {
 				log.Printf("CameraTrackCmd: body %q not found in snapshot", c.Name)
 			}
@@ -385,7 +385,7 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 				targets = append(targets, ui.JumpTarget{
 					TargetIndex: idx,
 					TargetPos:   obj.Anim.Position,
-					ViewDist:    ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24),
+					ViewDist:    ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40),
 				})
 			} else {
 				log.Printf("JumpToCmd: body %q not found, skipping", name)
@@ -528,7 +528,7 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		}
 		obj := state.Objects[idx]
 		cs.StartTracking(idx)
-		cs.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.24)
+		cs.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
 		cs.TrackOffset = engine.Vector3{}
 		cs.UpdateTracking(state)
 		cs.OrbitSpeed = orbitSpeed
