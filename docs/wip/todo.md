@@ -317,7 +317,7 @@ This is the current best-guess execution sequence integrating dependency order, 
 |------|------|-----------|
 | 0a | ~~**TD-003**~~ Delete legacy_helpers.go dead code | ✅ 2026-05-25 |
 | 0b | ~~**TD-004**~~ commands.go table-driven parser | ✅ 2026-05-25 |
-| 0c | **TD-005** renders.go monolith split | Structural prerequisite for F-017, F-018, F-021 Ph2, F-038; run after TD-003 clears dead parallel code |
+| 0c | ~~**TD-005**~~ renders.go monolith split | ✅ 2026-05-25 |
 | 0d | **TD-006** CameraState sub-structs | Structural prerequisite for TD-007; enforces mode-safe tracking/jump state (S1/S3/S7) |
 | 1 | **F-034 Phase 1** System data directory structure | Data management must be stable before N-body test system; foundational for F-035/F-036; absorbs F-008 |
 | 2 | **TD-009** physics.go + world.go coverage baseline | Test baseline required before F-013 lands in untested physics layer |
@@ -410,7 +410,7 @@ Fix implemented:
 ### TD-005 — `renders.go` Monolith Split
 
 **Value**: Split the 3,224-line renderer into focused files by concern (objects, atmosphere, HUD, selection, settings, labels) to unblock F-017, F-018, F-021 Ph2, F-038.
-**Status**: 📋 Not started
+**Status**: ✅ 2026-05-25
 **Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #3 — description, fix steps, and acceptance criteria.
 **Depends on**: TD-003 complete
 **Unlocks**: F-017, F-018, F-021 Ph2, F-038
