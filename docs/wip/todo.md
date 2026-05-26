@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-25 (TD-003–TD-009 added from tech debt audit; §7 ordering updated with foundational TD batch)
+2026-05-25 (TD-007 complete 738cf19; F-022 Phase 2 complete 35214ad)
 
 ## Table of Contents
 1. How to Use This File
@@ -63,7 +63,7 @@ Planning Documents
 	F-019 Run Scripts from UI
 	F-020 Multi-Client gRPC Session Layer ✅ All phases complete (Phase 3: admin kick/teleport)
 	F-021 Client Physical Marker 🔄 Phase 1 complete (Phase 2 pending)
-	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending TD-007)
+	F-022 Client Locomotion and Physics 🔄 Phase 1+2 complete (Phase 3 NPC automation deferred)
 	F-023 Keyboard Configuration ✅ Phase 1 complete (2026-05-22)
 	F-024 Multiplayer HUD Enhancements
 	F-025 Ship-to-Ship Communications
@@ -322,8 +322,8 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 1 | ~~**F-034 Phase 1**~~ System data directory structure | ✅ 2026-05-24 |
 | 2 | ~~**TD-009**~~ physics.go + world.go coverage baseline (N-body ACs done; world tick/pause/resume tests outstanding — deferred) | ✅ 2026-05-24 |
 | 3 | ~~**F-013**~~ N-body barycenter (camera barycenter tracking deferred to F-022 Ph2) | ✅ 2026-05-24 |
-| 4 | **TD-007** handleInput + updateCameraState split | Extension-point cleanup for F-022 Ph2; do before writing new nav branches into 995-line function |
-| 5 | **F-022 Phase 2** Gravity + N-body movement | Depends on F-013 and TD-007; enables realistic player ship physics |
+| 4 | ~~**TD-007**~~ handleInput + updateCameraState split | ✅ 2026-05-25 |
+| 5 | ~~**F-022 Phase 2**~~ Gravity + N-body movement | ✅ 2026-05-25 |
 | 6 | **F-035 Phase 1** Game Definition (themes + factions) | Data layer for gameplay; no runtime deps beyond F-034 |
 | 7 | **F-036 Phase 1** Playable Scenario | Scenario config + universe state; depends on F-034 and F-035 |
 | 8 | **F-038 Phase 1** HUD Profiles | Needs F-020, F-021, F-022 (all Phase 1 complete); absorbs F-024; provides Comms HUD slot for F-037 |
@@ -359,6 +359,8 @@ This is the current best-guess execution sequence integrating dependency order, 
 | G | **F-033 Phase 1** Ship definition + catalog | ✅ 2026-05-20 |
 | H | **F-021 Phase 1** Player physical marker | ✅ |
 | I | **F-022 Phase 1 + §9** Kinematic movement | ✅ 2026-05-20 |
+| J | **TD-007** handleInput + updateCameraState split | ✅ 2026-05-25 |
+| K | **F-022 Phase 2** N-body gravity for ships | ✅ 2026-05-25 |
 
 ---
 
@@ -429,7 +431,7 @@ Fix implemented:
 ### TD-007 — `handleInput` + `updateCameraState` Split
 
 **Value**: Split the 995-line `handleInput` into four domain files and extract `updateCameraState` mode-tick logic into `CameraState` methods, making F-022 Ph2 nav additions safe to write.
-**Status**: 📋 Not started
+**Status**: ✅ Complete — 2026-05-25 (commit 738cf19)
 **Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #1 and #7 — description, fix steps, and acceptance criteria.
 **Depends on**: TD-006 recommended first
 **Unlocks**: F-022 Ph2, F-006, F-013 (tracking tick)
