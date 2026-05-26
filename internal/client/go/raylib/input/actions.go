@@ -80,8 +80,11 @@ const (
 	ActionNavSiblingPrev InputAction = 47
 	ActionNavJump        InputAction = 48
 
+	// Debug
+	ActionUIDebugLabels InputAction = 49
+
 	// sentinel — must equal last constant + 1
-	actionCount InputAction = 49
+	actionCount InputAction = 50
 )
 
 // actionNames maps each action to its dot-notation vocabulary name.
@@ -138,6 +141,8 @@ var actionNames = map[InputAction]string{
 	ActionNavSiblingNext: "nav.sibling_next",
 	ActionNavSiblingPrev: "nav.sibling_prev",
 	ActionNavJump:        "nav.jump",
+
+	ActionUIDebugLabels: "ui.debug_labels",
 }
 
 // nameActions is the reverse of actionNames, built at init.
@@ -184,6 +189,7 @@ func OrderedActions() []InputAction {
 		ActionUISystemSelector, ActionUILabelCycle, ActionUIInfraCycle,
 		ActionUIMouseModeToggle, ActionUIQuit,
 		ActionUIRecordToggle, ActionUIRecordPause,
+		ActionUIDebugLabels,
 		// Simulation
 		ActionSimTimescaleIncrease, ActionSimTimescaleDecrease,
 		ActionSimTickSpeedIncrease, ActionSimTickSpeedDecrease,

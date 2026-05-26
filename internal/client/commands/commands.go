@@ -359,6 +359,11 @@ type ConfigReloadKeybindings struct{}
 //	help keys
 type HelpKeys struct{}
 
+// DebugLabels writes a full label-pipeline diagnostic to debug.log.
+//
+//	debug labels
+type DebugLabels struct{}
+
 // ─── Session commands ────────────────────────────────────────────────────────
 
 // SessionRegister registers this REPL client as a new session.
@@ -424,6 +429,7 @@ func (RecordStop) isCmd()              {}
 func (RecordDelete) isCmd()            {}
 func (ConfigReloadKeybindings) isCmd() {}
 func (HelpKeys) isCmd()                {}
+func (DebugLabels) isCmd()             {}
 func (SessionRegister) isCmd()         {}
 func (SessionUnregister) isCmd()       {}
 func (SessionList) isCmd()             {}
@@ -542,6 +548,14 @@ var cmdTable = []cmdEntry{
 	{verbs: []string{"record"}, parse: parseRecord},
 	{verbs: []string{"config"}, parse: parseConfig},
 	{verbs: []string{"session"}, parse: parseSession},
+	{verbs: []string{"debug"}, parse: parseDebugLabels},
+}
+
+func parseDebugLabels(args []string) (Cmd, error) {
+	if len(args) > 0 && strings.ToLower(args[0]) != "labels" {
+		return nil, ErrUsage{Cmd: "debug", Detail: fmt.Sprintf("unknown sub-command %q", args[0]), Example: "debug labels"}
+	}
+	return DebugLabels{}, nil
 }
 
 // Parse parses one trimmed input line into a Cmd. It returns

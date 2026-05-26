@@ -48,6 +48,7 @@
     { "action": "repl.open",                 "key": "GRAVE",          "mods": [] },
     { "action": "repl.close",                "key": "ESCAPE",         "mods": [] },
     { "action": "repl.history_prev",         "key": "UP",             "mods": [] },
-    { "action": "repl.history_next",         "key": "DOWN",           "mods": [] }
+    { "action": "repl.history_next",         "key": "DOWN",           "mods": [] },
+    { "action": "ui.debug_labels",           "key": "BACKSLASH",      "mods": ["CTRL"] }
   ]
 }

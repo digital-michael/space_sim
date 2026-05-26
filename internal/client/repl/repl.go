@@ -881,7 +881,7 @@ func (r *REPL) exec(ctx context.Context, cmd commands.Cmd) (bool, error) {
 		return r.execSessionCmds(ctx, cmd)
 	case commands.Bodies, commands.Inspect, commands.Status, commands.Clear,
 		commands.Help, commands.Quit, commands.Sync,
-		commands.ConfigReloadKeybindings, commands.HelpKeys:
+		commands.ConfigReloadKeybindings, commands.HelpKeys, commands.DebugLabels:
 		return r.execMiscCmds(ctx, cmd)
 	}
 	return false, nil

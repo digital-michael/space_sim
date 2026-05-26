@@ -183,6 +183,10 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		if a.runtime.LabelMode != ui.LabelModeOff {
 			a.renderer.DrawObjectLabels(state, session.cameraState, camera, objectsToRender, a.runtime.LabelMode, renderWidth, renderHeight)
 		}
+		if a.runtime.PendingLabelDebugDump {
+			a.runtime.PendingLabelDebugDump = false
+			a.renderer.DumpLabelDebug(state, session.cameraState, camera, objectsToRender, a.runtime.LabelMode, renderWidth, renderHeight, "debug.log")
+		}
 		if zoomIndicator != 0 {
 			a.renderer.DrawZoomIndicator(zoomIndicator)
 		}

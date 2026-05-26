@@ -30,6 +30,9 @@ func (a *App) handleInputDisplay(session *runtimeSession, km *input.KeyMap, susp
 	if !suspended && km.IsPressed(input.ActionUIInfraCycle) {
 		a.runtime.InfraMode = (a.runtime.InfraMode + 1) % 3
 	}
+	if !suspended && km.IsPressed(input.ActionUIDebugLabels) {
+		a.runtime.PendingLabelDebugDump = true
+	}
 	if !suspended && km.IsPressed(input.ActionUIMouseModeToggle) {
 		a.runtime.MouseModeEnabled = !a.runtime.MouseModeEnabled
 		if a.runtime.MouseModeEnabled {

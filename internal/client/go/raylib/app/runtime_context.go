@@ -51,6 +51,10 @@ type RuntimeContext struct {
 	// UIScale is the active UI scaling factor (1.0 = 100%). Persisted to config.
 	UIScale float32
 
+	// PendingLabelDebugDump is set by ActionUIDebugLabels and consumed once
+	// per frame in the render loop to write a label-pipeline diagnostic file.
+	PendingLabelDebugDump bool
+
 	// protectWindowedSize is set for one frame when exiting fullscreen on
 	// macOS/X11 to prevent syncWindowState from clobbering WindowedWidth/Height
 	// before SetWindowSize's resize event is reflected in GetRenderWidth.
