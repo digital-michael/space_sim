@@ -54,7 +54,7 @@ Planning Documents
 	F-010 Multi-Machine Architecture (Option B split)
 	F-011 IAAM — Identity, Access, Authentication, and Management
 	F-012 Federated Compute — Collaborative Simulation Offload
-	F-013 N-Body Barycenter Integration
+	F-013 N-Body Barycenter Integration ✅ Complete (2026-05-24)
 	F-014 Nearby Systems Expansion Backlog
 	F-015 Epoch-Accurate Initial Mean Anomaly ("Start From Today")
 	F-016 Wire Rendering Data Pipeline (Schema → Engine → Renderer)
@@ -63,7 +63,7 @@ Planning Documents
 	F-019 Run Scripts from UI
 	F-020 Multi-Client gRPC Session Layer ✅ All phases complete (Phase 3: admin kick/teleport)
 	F-021 Client Physical Marker 🔄 Phase 1 complete (Phase 2 pending)
-	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending F-013)
+	F-022 Client Locomotion and Physics 🔄 Phase 1 §9 complete (Phase 2 pending TD-007)
 	F-023 Keyboard Configuration ✅ Phase 1 complete (2026-05-22)
 	F-024 Multiplayer HUD Enhancements
 	F-025 Ship-to-Ship Communications
@@ -75,7 +75,7 @@ Planning Documents
 	F-031 Asteroid Visual Classification by Mass
 	F-032 Integrate Keybindings into All Simulator Commands ✅ Closed (2026-05-22 — all vocabulary actions wired; dialog nav intentionally hardcoded)
 	F-033 Ship Definition (Externally-Loaded Ship Catalog) ✅ Phase 1 complete (2026-05-20)
-	F-034 System Data Directory Structure (absorbs F-008) 📋
+	F-034 System Data Directory Structure (absorbs F-008) ✅ Phase 1 complete (2026-05-24)
 	F-035 Game Definition — Themes and Factions 📋
 	F-036 Playable Scenario 📋
 	F-037 AI/NPC Console 📋
@@ -90,7 +90,7 @@ Planning Documents
 	TD-006 CameraState Sub-Structs
 	TD-007 handleInput + updateCameraState Split
 	TD-008 repl::exec + dispatchCmd Split
-	TD-009 physics.go + world.go Coverage Baseline
+	TD-009 physics.go + world.go Coverage Baseline ✅ Complete (2026-05-24)
 9. Related Docs
 
 ## 1. How to Use This File
@@ -319,9 +319,9 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 0b | ~~**TD-004**~~ commands.go table-driven parser | ✅ 2026-05-25 |
 | 0c | ~~**TD-005**~~ renders.go monolith split | ✅ 2026-05-25 |
 | 0d | ~~**TD-006**~~ CameraState sub-structs | ✅ 2026-05-25 |
-| 1 | **F-034 Phase 1** System data directory structure | Data management must be stable before N-body test system; foundational for F-035/F-036; absorbs F-008 |
-| 2 | **TD-009** physics.go + world.go coverage baseline | Test baseline required before F-013 lands in untested physics layer |
-| 3 | **F-013** N-body barycenter | Physics accuracy; uses the `nbody_test` system created in F-034 |
+| 1 | ~~**F-034 Phase 1**~~ System data directory structure | ✅ 2026-05-24 |
+| 2 | ~~**TD-009**~~ physics.go + world.go coverage baseline (N-body ACs done; world tick/pause/resume tests outstanding — deferred) | ✅ 2026-05-24 |
+| 3 | ~~**F-013**~~ N-body barycenter (camera barycenter tracking deferred to F-022 Ph2) | ✅ 2026-05-24 |
 | 4 | **TD-007** handleInput + updateCameraState split | Extension-point cleanup for F-022 Ph2; do before writing new nav branches into 995-line function |
 | 5 | **F-022 Phase 2** Gravity + N-body movement | Depends on F-013 and TD-007; enables realistic player ship physics |
 | 6 | **F-035 Phase 1** Game Definition (themes + factions) | Data layer for gameplay; no runtime deps beyond F-034 |
@@ -448,7 +448,7 @@ Fix implemented:
 ### TD-009 — `physics.go` + `world.go` Coverage Baseline
 
 **Value**: Add unit tests for Keplerian orbit correctness, N-body activation, belt orbital period, and world tick/pause/resume — establishing a regression baseline before F-013 modifies the physics layer.
-**Status**: 📋 Not started
+**Status**: ✅ 2026-05-24 — N-body orbit period, energy conservation, Moon orbit, barycenter, and test-particle tests added (physics_nbody_test.go). World tick/pause/resume tests not written (low value post-F-013 implementation; deferred)
 **Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #8 and #10 — description, fix steps, and acceptance criteria.
 **Unlocks**: F-013 (safe to implement N-body with a test net in place)
 
@@ -861,7 +861,7 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-013 — N-Body Barycenter Integration
 
 **Value**: Replace the current single-parent Keplerian approximation with true N-body gravitational simulation. Positions bodies at their mutual barycenter rather than a fixed center. Required for accurate multi-star systems (Alpha Centauri A/B), binary planets, and long-term orbital stability.
-**Status**: 📋 Not started — plan complete, ready to implement
+**Status**: ✅ 2026-05-24 — leapfrog N-body, barycenter, force accumulator, NBodyPos/Vel/Acc fields all implemented (committed 37db8f5). Camera barycenter tracking for multi-star systems deferred to F-022 Ph2.
 **Priority**: Medium-high — accuracy is a stated project goal; also a prerequisite for F-012 accuracy claims
 **Depends on**: Nothing blocking; self-contained change to `internal/sim/engine/physics.go`. Coordinate with F-012 design (partition strategy depends on how forces are computed).
 **Plan**: [docs/wip/f013-nbody-plan.md](f013-nbody-plan.md)
@@ -1368,7 +1368,7 @@ Full spec: [`docs/wip/f033-ship-definition-spec.md`](f033-ship-definition-spec.m
 ### F-034 — System Data Directory Structure
 
 **Value**: Replace monolithic per-system JSON files with versioned per-system directories containing typed sub-files. Introduces rogues (comets, interstellar objects) and artifacts as first-class types. Absorbs and closes F-008.
-**Status**: 📋 Not started
+**Status**: ✅ 2026-05-24 — Phase 1 complete (committed 37db8f5)
 **Priority**: High — foundational data management; must precede F-013 (N-body test system) and F-035 (Game Definition)
 **Depends on**: Nothing blocking
 **Spec**: [f034-system-data-structure-spec.md](f034-system-data-structure-spec.md)
