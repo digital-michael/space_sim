@@ -338,7 +338,7 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			target := findBodyByName(state, c.Name)
 			if target >= 0 {
 				cs.StartTracking(target)
-				cs.TrackDistance = ui.CalculateAutoZoomDistance(state.Objects[target].Meta.PhysicalRadius, 0.40)
+				cs.Tracking.Distance = ui.CalculateAutoZoomDistance(state.Objects[target].Meta.PhysicalRadius, 0.40)
 			} else {
 				log.Printf("CameraTrackCmd: body %q not found in snapshot", c.Name)
 			}
@@ -347,9 +347,9 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 	case GetCameraCmd:
 		trackName := ""
 		if cs.Mode == ui.CameraModeTracking &&
-			cs.TrackTargetIndex >= 0 &&
-			cs.TrackTargetIndex < len(state.Objects) {
-			trackName = state.Objects[cs.TrackTargetIndex].Meta.Name
+			cs.Tracking.TargetIndex >= 0 &&
+			cs.Tracking.TargetIndex < len(state.Objects) {
+			trackName = state.Objects[cs.Tracking.TargetIndex].Meta.Name
 		}
 		const radToDeg = 180.0 / math.Pi
 		c.RespCh <- CameraSnapshot{
@@ -396,9 +396,9 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		}
 		// Start the first jump immediately; enqueue the rest.
 		first := targets[0]
-		cs.JumpCurrentDwell = first.DwellSeconds
+		cs.Jump.CurrentDwell = first.DwellSeconds
 		cs.StartJumpTo(first.TargetIndex, first.TargetPos, first.ViewDist)
-		cs.JumpQueue = append(cs.JumpQueue[:0], targets[1:]...)
+		cs.Jump.Queue = append(cs.Jump.Queue[:0], targets[1:]...)
 
 	case GetVelocityCmd:
 		c.RespCh <- cs.Velocity
@@ -528,8 +528,8 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		}
 		obj := state.Objects[idx]
 		cs.StartTracking(idx)
-		cs.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
-		cs.TrackOffset = engine.Vector3{}
+		cs.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+		cs.Tracking.Offset = engine.Vector3{}
 		cs.UpdateTracking(state)
 		cs.OrbitSpeed = orbitSpeed
 		cs.OrbitRadiansRemaining = orbitRadians

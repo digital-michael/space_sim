@@ -218,9 +218,9 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 			}
 		} else if session.cameraState.Mode == ui.CameraModeTracking {
 			// Tracking mode: reset zoom to 40% auto-zoom distance
-			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
-				targetObj := state.Objects[session.cameraState.TrackTargetIndex]
-				session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
+			if session.cameraState.Tracking.TargetIndex >= 0 && session.cameraState.Tracking.TargetIndex < len(state.Objects) {
+				targetObj := state.Objects[session.cameraState.Tracking.TargetIndex]
+				session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
 			}
 		}
 	}
@@ -228,8 +228,8 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 	// nav.child_next / nav.parent: Drill into child or move to parent in hierarchy
 	if session.cameraState.Mode == ui.CameraModeTracking && !mainWindowInputSuspended {
 		if km.IsPressed(input.ActionNavChildNext) {
-			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
-				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
+			if session.cameraState.Tracking.TargetIndex >= 0 && session.cameraState.Tracking.TargetIndex < len(state.Objects) {
+				currentObj := state.Objects[session.cameraState.Tracking.TargetIndex]
 
 				// F: Drill down to closest child
 				if a.cfg.Debug {
@@ -283,14 +283,14 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 						fmt.Printf("[DEBUG] Tracking closest child: %s\n", closestChild.Meta.Name)
 					}
 					session.cameraState.StartTracking(children[0].index)
-					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(closestChild.Meta.PhysicalRadius, 0.40)
+					session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(closestChild.Meta.PhysicalRadius, 0.40)
 				}
 			}
 		}
 
 		if km.IsPressed(input.ActionNavParent) {
-			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
-				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
+			if session.cameraState.Tracking.TargetIndex >= 0 && session.cameraState.Tracking.TargetIndex < len(state.Objects) {
+				currentObj := state.Objects[session.cameraState.Tracking.TargetIndex]
 
 				// B: Move up to parent
 				if a.cfg.Debug {
@@ -304,7 +304,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 								fmt.Printf("[DEBUG] Found parent: %s\n", obj.Meta.Name)
 							}
 							session.cameraState.StartTracking(i)
-							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+							session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
 							break
 						}
 					}
@@ -319,7 +319,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 								fmt.Printf("[DEBUG] Found central star: %s\n", obj.Meta.Name)
 							}
 							session.cameraState.StartTracking(i)
-							session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+							session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
 							break
 						}
 					}
@@ -342,8 +342,8 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 				fmt.Printf("[DEBUG] sibling nav: forward=%v back=%v\n", siblingForward, siblingBack)
 			}
 
-			if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
-				currentObj := state.Objects[session.cameraState.TrackTargetIndex]
+			if session.cameraState.Tracking.TargetIndex >= 0 && session.cameraState.Tracking.TargetIndex < len(state.Objects) {
+				currentObj := state.Objects[session.cameraState.Tracking.TargetIndex]
 
 				// TAB: Cycle through siblings (same parent, same category)
 				siblings := []int{}
@@ -360,7 +360,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 					// Find current object in siblings list
 					currentPos := -1
 					for i, idx := range siblings {
-						if idx == session.cameraState.TrackTargetIndex {
+						if idx == session.cameraState.Tracking.TargetIndex {
 							currentPos = i
 							break
 						}
@@ -386,7 +386,7 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 						// Start tracking the next sibling with auto-zoom
 						nextObj := state.Objects[nextIndex]
 						session.cameraState.StartTracking(nextIndex)
-						session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(nextObj.Meta.PhysicalRadius, 0.40)
+						session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(nextObj.Meta.PhysicalRadius, 0.40)
 					}
 				}
 			}
@@ -469,10 +469,10 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 	// Only active in free-fly mode; F in tracking mode fires nav.child_next instead.
 	if !mainWindowInputSuspended && km.IsPressed(input.ActionCameraToggleFreeFly) &&
 		session.cameraState.Mode == ui.CameraModeFree {
-		if session.cameraState.TrackTargetIndex >= 0 && session.cameraState.TrackTargetIndex < len(state.Objects) {
-			obj := state.Objects[session.cameraState.TrackTargetIndex]
-			session.cameraState.StartTracking(session.cameraState.TrackTargetIndex)
-			session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+		if session.cameraState.Tracking.TargetIndex >= 0 && session.cameraState.Tracking.TargetIndex < len(state.Objects) {
+			obj := state.Objects[session.cameraState.Tracking.TargetIndex]
+			session.cameraState.StartTracking(session.cameraState.Tracking.TargetIndex)
+			session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
 		}
 	}
 
@@ -978,11 +978,11 @@ func (a *App) handleInput(session *runtimeSession, state *engine.SimulationState
 					session.cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40))
 				} else if mode == ui.SelectionModeTrack {
 					session.cameraState.StartTracking(actualIndex)
-					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
+					session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
 				} else if mode == ui.SelectionModeTrackEquatorial {
 					// Start tracking from surface view - closer zoom (40% of screen height)
 					session.cameraState.StartTrackingEquatorial(actualIndex)
-					session.cameraState.TrackDistance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
+					session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
 				}
 			}
 		}
@@ -1033,13 +1033,13 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 		switch session.cameraState.Mode {
 		case ui.CameraModeTracking:
 			// In tracking mode, adjust distance from target
-			session.cameraState.TrackDistance -= float64(zoomSpeed * 10.0)
+			session.cameraState.Tracking.Distance -= float64(zoomSpeed * 10.0)
 			// Clamp to reasonable values
-			if session.cameraState.TrackDistance < engine.CameraTrackDistMin {
-				session.cameraState.TrackDistance = engine.CameraTrackDistMin
+			if session.cameraState.Tracking.Distance < engine.CameraTrackDistMin {
+				session.cameraState.Tracking.Distance = engine.CameraTrackDistMin
 			}
-			if session.cameraState.TrackDistance > engine.CameraTrackDistMax {
-				session.cameraState.TrackDistance = engine.CameraTrackDistMax
+			if session.cameraState.Tracking.Distance > engine.CameraTrackDistMax {
+				session.cameraState.Tracking.Distance = engine.CameraTrackDistMax
 			}
 
 		case ui.CameraModeFree, ui.CameraModeJumping:
@@ -1055,9 +1055,9 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 		if km.IsDown(input.ActionCameraZoomIn) {
 			switch session.cameraState.Mode {
 			case ui.CameraModeTracking:
-				session.cameraState.TrackDistance -= float64(keyZoomSpeed * 10.0)
-				if session.cameraState.TrackDistance < engine.CameraTrackDistMin {
-					session.cameraState.TrackDistance = engine.CameraTrackDistMin
+				session.cameraState.Tracking.Distance -= float64(keyZoomSpeed * 10.0)
+				if session.cameraState.Tracking.Distance < engine.CameraTrackDistMin {
+					session.cameraState.Tracking.Distance = engine.CameraTrackDistMin
 				}
 			case ui.CameraModeFree, ui.CameraModeJumping:
 				session.cameraState.Position = session.cameraState.Position.Add(session.cameraState.Forward.Scale(keyZoomSpeed * 10.0))
@@ -1066,9 +1066,9 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 		if km.IsDown(input.ActionCameraZoomOut) {
 			switch session.cameraState.Mode {
 			case ui.CameraModeTracking:
-				session.cameraState.TrackDistance += float64(keyZoomSpeed * 10.0)
-				if session.cameraState.TrackDistance > engine.CameraTrackDistMax {
-					session.cameraState.TrackDistance = engine.CameraTrackDistMax
+				session.cameraState.Tracking.Distance += float64(keyZoomSpeed * 10.0)
+				if session.cameraState.Tracking.Distance > engine.CameraTrackDistMax {
+					session.cameraState.Tracking.Distance = engine.CameraTrackDistMax
 				}
 			case ui.CameraModeFree, ui.CameraModeJumping:
 				session.cameraState.Position = session.cameraState.Position.Sub(session.cameraState.Forward.Scale(keyZoomSpeed * 10.0))
@@ -1091,9 +1091,9 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 		// is immediately visible on screen at the correct zoom distance.
 		// Running UpdateTracking in the same frame avoids a one-frame snap.
 		if session.cameraState.Mode == ui.CameraModeFree {
-			session.cameraState.StartTracking(session.cameraState.JumpTargetIndex)
-			session.cameraState.TrackDistance = session.cameraState.JumpTargetViewDist
-			session.cameraState.TrackOffset = engine.Vector3{}
+			session.cameraState.StartTracking(session.cameraState.Jump.TargetIndex)
+			session.cameraState.Tracking.Distance = session.cameraState.Jump.TargetViewDist
+			session.cameraState.Tracking.Offset = engine.Vector3{}
 			session.cameraState.UpdateTracking(state) // center now, not next frame
 			// Apply any orbit that was queued while the jump was in flight.
 			if session.cameraState.PendingOrbitSpeed != 0 {
@@ -1102,12 +1102,12 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 				session.cameraState.PendingOrbitSpeed = 0
 				session.cameraState.PendingOrbitRadians = 0
 			}
-			session.cameraState.JumpDwellRemaining = session.cameraState.JumpCurrentDwell
+			session.cameraState.Jump.DwellRemaining = session.cameraState.Jump.CurrentDwell
 			// No dwell: immediately pop the next hop if queued.
-			if session.cameraState.JumpDwellRemaining <= 0 && len(session.cameraState.JumpQueue) > 0 {
-				next := session.cameraState.JumpQueue[0]
-				session.cameraState.JumpQueue = session.cameraState.JumpQueue[1:]
-				session.cameraState.JumpCurrentDwell = next.DwellSeconds
+			if session.cameraState.Jump.DwellRemaining <= 0 && len(session.cameraState.Jump.Queue) > 0 {
+				next := session.cameraState.Jump.Queue[0]
+				session.cameraState.Jump.Queue = session.cameraState.Jump.Queue[1:]
+				session.cameraState.Jump.CurrentDwell = next.DwellSeconds
 				session.cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
 			}
 		}
@@ -1146,12 +1146,12 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 
 	case ui.CameraModeTracking:
 		// Tick dwell countdown for multi-hop jump sequences.
-		if session.cameraState.JumpDwellRemaining > 0 {
-			session.cameraState.JumpDwellRemaining -= float64(dt)
-			if session.cameraState.JumpDwellRemaining <= 0 && len(session.cameraState.JumpQueue) > 0 {
-				next := session.cameraState.JumpQueue[0]
-				session.cameraState.JumpQueue = session.cameraState.JumpQueue[1:]
-				session.cameraState.JumpCurrentDwell = next.DwellSeconds
+		if session.cameraState.Jump.DwellRemaining > 0 {
+			session.cameraState.Jump.DwellRemaining -= float64(dt)
+			if session.cameraState.Jump.DwellRemaining <= 0 && len(session.cameraState.Jump.Queue) > 0 {
+				next := session.cameraState.Jump.Queue[0]
+				session.cameraState.Jump.Queue = session.cameraState.Jump.Queue[1:]
+				session.cameraState.Jump.CurrentDwell = next.DwellSeconds
 				session.cameraState.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
 			}
 		}
@@ -1159,7 +1159,7 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 		// Tick orbit animation.
 		if session.cameraState.OrbitSpeed != 0 && session.cameraState.OrbitRadiansRemaining > 0 {
 			delta := session.cameraState.OrbitSpeed * float64(dt)
-			session.cameraState.TrackYaw += delta
+			session.cameraState.Tracking.Yaw += delta
 			session.cameraState.OrbitRadiansRemaining -= math.Abs(delta)
 			if session.cameraState.OrbitRadiansRemaining <= 0 {
 				session.cameraState.OrbitSpeed = 0
@@ -1188,43 +1188,43 @@ func (a *App) updateCameraState(session *runtimeSession, state *engine.Simulatio
 		if !mainWindowInputSuspended {
 			if km.IsDown(input.ActionThrustForward) {
 				// Move forward (closer to target)
-				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Add(session.cameraState.Forward.Scale(moveSpeed))
+				session.cameraState.Tracking.Offset = session.cameraState.Tracking.Offset.Add(session.cameraState.Forward.Scale(moveSpeed))
 			}
 			if km.IsDown(input.ActionThrustBackward) {
 				// Move backward (away from target)
-				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Sub(session.cameraState.Forward.Scale(moveSpeed))
+				session.cameraState.Tracking.Offset = session.cameraState.Tracking.Offset.Sub(session.cameraState.Forward.Scale(moveSpeed))
 			}
 			if km.IsDown(input.ActionThrustLeft) {
 				// Pan left
-				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Sub(right.Scale(moveSpeed))
+				session.cameraState.Tracking.Offset = session.cameraState.Tracking.Offset.Sub(right.Scale(moveSpeed))
 			}
 			if km.IsDown(input.ActionThrustRight) {
 				// Pan right
-				session.cameraState.TrackOffset = session.cameraState.TrackOffset.Add(right.Scale(moveSpeed))
+				session.cameraState.Tracking.Offset = session.cameraState.Tracking.Offset.Add(right.Scale(moveSpeed))
 			}
 
 			// Space for up (camera-relative) - DISABLED FOR TESTING
 			// if rl.IsKeyDown(rl.KeySpace) {
-			// 	session.cameraState.TrackOffset = session.cameraState.TrackOffset.Add(session.cameraState.Up.Scale(moveSpeed))
+			// 	session.cameraState.Tracking.Offset = session.cameraState.Tracking.Offset.Add(session.cameraState.Up.Scale(moveSpeed))
 			// }
 
 			// Arrow keys modify offset in tracking mode
 			if km.IsDown(input.ActionCameraPitchUp) {
-				session.cameraState.TrackOffset.Y += arrowSpeed
+				session.cameraState.Tracking.Offset.Y += arrowSpeed
 			}
 			if km.IsDown(input.ActionCameraPitchDown) {
-				session.cameraState.TrackOffset.Y -= arrowSpeed
+				session.cameraState.Tracking.Offset.Y -= arrowSpeed
 			}
 			if km.IsDown(input.ActionCameraYawLeft) {
-				session.cameraState.TrackOffset.X -= arrowSpeed
+				session.cameraState.Tracking.Offset.X -= arrowSpeed
 			}
 			if km.IsDown(input.ActionCameraYawRight) {
-				session.cameraState.TrackOffset.X += arrowSpeed
+				session.cameraState.Tracking.Offset.X += arrowSpeed
 			}
 
 			// camera.reset: reset offset
 			if km.IsPressed(input.ActionCameraReset) {
-				session.cameraState.TrackOffset = engine.Vector3{X: 0, Y: 0, Z: 0}
+				session.cameraState.Tracking.Offset = engine.Vector3{X: 0, Y: 0, Z: 0}
 			}
 		}
 

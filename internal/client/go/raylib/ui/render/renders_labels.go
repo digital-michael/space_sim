@@ -137,8 +137,8 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 		priority := float32(obj.Meta.Importance)
 
 		// Boost priority for tracked object
-		if cameraState.Mode == ui.CameraModeTracking && cameraState.TrackTargetIndex >= 0 {
-			if cameraState.TrackTargetIndex < len(state.Objects) && state.Objects[cameraState.TrackTargetIndex] == obj {
+		if cameraState.Mode == ui.CameraModeTracking && cameraState.Tracking.TargetIndex >= 0 {
+			if cameraState.Tracking.TargetIndex < len(state.Objects) && state.Objects[cameraState.Tracking.TargetIndex] == obj {
 				priority += 1000.0 // Tracked object always gets a label
 			}
 		}
@@ -172,14 +172,14 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 	if mode == ui.LabelModeNearest {
 		maxLabels = 5
 		threshold := float32(10.0)
-		if cameraState.Mode == ui.CameraModeTracking && cameraState.TrackDistance > 0 {
-			threshold = float32(math.Max(10.0, cameraState.TrackDistance*3.0))
+		if cameraState.Mode == ui.CameraModeTracking && cameraState.Tracking.Distance > 0 {
+			threshold = float32(math.Max(10.0, cameraState.Tracking.Distance*3.0))
 		}
 		targetIdx := -1
 		if cameraState.Mode == ui.CameraModeTracking {
-			targetIdx = cameraState.TrackTargetIndex
+			targetIdx = cameraState.Tracking.TargetIndex
 		} else if cameraState.Mode == ui.CameraModeJumping {
-			targetIdx = cameraState.JumpTargetIndex
+			targetIdx = cameraState.Jump.TargetIndex
 		}
 		filtered := candidates[:0]
 		for _, c := range candidates {

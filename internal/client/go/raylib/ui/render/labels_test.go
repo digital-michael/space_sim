@@ -332,8 +332,8 @@ func TestLabelSelect_NearestMode_DistanceFilter(t *testing.T) {
 func TestLabelSelect_NearestMode_TrackedAlwaysIncluded(t *testing.T) {
 	cs := makeFreeCamera(0, 0, 0)
 	cs.Mode = ui.CameraModeTracking
-	cs.TrackTargetIndex = 0
-	cs.TrackDistance = 5000                                                    // so threshold = max(10, 15000)... still far
+	cs.Tracking.TargetIndex = 0
+	cs.Tracking.Distance = 5000                                                    // so threshold = max(10, 15000)... still far
 	tracked := makeObject("FarTracked", engine.CategoryPlanet, 50, 9999, 0, 0) // dist=9999 su
 	state := makeState(tracked)
 	objs := []*engine.Object{tracked}

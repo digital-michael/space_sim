@@ -27,6 +27,38 @@ type JumpTarget struct {
 	DwellSeconds float64 // seconds to pause at this stop before jumping onward (0 = no pause)
 }
 
+// TrackingState holds all fields that are only valid in CameraModeTracking.
+// Assigned as a whole by StartTracking / StartTrackingEquatorial so every
+// field is reset by construction on each target change.
+type TrackingState struct {
+	TargetIndex  int
+	Distance     float64
+	Height       float64
+	Yaw          float64
+	Pitch        float64
+	Offset       engine.Vector3
+	LookOutward  bool
+}
+
+// JumpState holds all fields that are only valid during a CameraModeJumping
+// animation. Assigned as a whole by StartJumpTo so every field is reset by
+// construction on each new jump.
+type JumpState struct {
+	TargetIndex    int
+	StartPos       engine.Vector3
+	TargetPos      engine.Vector3
+	Progress       float64
+	Duration       float64
+	Queue          []JumpTarget
+	CurrentDwell   float64
+	DwellRemaining float64
+	TargetViewDist float64
+	StartYaw       float64
+	StartPitch     float64
+	TargetYaw      float64
+	TargetPitch    float64
+}
+
 // CameraState holds camera position, orientation, and animation state.
 type CameraState struct {
 	Position engine.Vector3
@@ -37,48 +69,19 @@ type CameraState struct {
 	Roll     float64 // accumulated roll around the forward axis (radians); 0 = world-up orientation
 	Mode     CameraMode
 
-	// Jump animation
-	JumpStartPos    engine.Vector3
-	JumpTargetPos   engine.Vector3
-	JumpProgress    float64
-	JumpDuration    float64
-	JumpTargetIndex int
-
-	// JumpQueue holds pending jump targets for multi-hop animated sequences.
-	// After each jump completes the next entry is started automatically.
-	JumpQueue []JumpTarget
-
-	// JumpCurrentDwell is the dwell time (seconds) for the currently-executing hop.
-	// Stored here so input.go can read it after UpdateJump marks the hop complete.
-	JumpCurrentDwell float64
-
-	// JumpDwellRemaining counts down after arrival before the next hop starts.
-	// The camera stays in tracking mode during the dwell.
-	JumpDwellRemaining float64
-
-	// JumpTargetViewDist is the view-distance used for the active jump, carried
-	// forward so the post-arrival tracking distance is set correctly.
-	JumpTargetViewDist float64
-
-	// JumpStartYaw/Pitch and JumpTargetYaw/Pitch are the camera angles at the
-	// beginning and end of a jump, used to smoothly interpolate the look direction.
-	JumpStartYaw    float64
-	JumpStartPitch  float64
-	JumpTargetYaw   float64
-	JumpTargetPitch float64
+	// Jump holds all state for the current jump animation (only valid when
+	// Mode == CameraModeJumping). StartJumpTo assigns a fresh JumpState so
+	// every field is reset by construction.
+	Jump JumpState
 
 	// Velocity is a persistent drift applied to the camera position every
 	// frame (AU/s, free-fly mode only). Set to zero to stop.
 	Velocity engine.Vector3
 
-	// Tracking
-	TrackTargetIndex int
-	TrackDistance    float64
-	TrackHeight      float64
-	TrackOffset      engine.Vector3
-	TrackYaw         float64
-	TrackPitch       float64
-	TrackLookOutward bool
+	// Tracking holds all state for tracking a specific object (only valid when
+	// Mode == CameraModeTracking). StartTracking / StartTrackingEquatorial
+	// assign a fresh TrackingState so every field is reset by construction.
+	Tracking TrackingState
 
 	// Orbit animation
 	OrbitSpeed            float64 // rad/sec; positive = counter-clockwise; 0 = not orbiting
@@ -93,16 +96,18 @@ type CameraState struct {
 // NewCameraState creates a camera with sensible defaults.
 func NewCameraState() *CameraState {
 	return &CameraState{
-		Position:      engine.Vector3{X: 0, Y: 50, Z: -100},
-		Forward:       engine.Vector3{X: 0, Y: 0, Z: 1},
-		Up:            engine.Vector3{X: 0, Y: 1, Z: 0},
-		Yaw:           0,
-		Pitch:         0,
-		Mode:          CameraModeFree,
-		TrackDistance: 50.0,
-		TrackHeight:   20.0,
-		TrackYaw:      math.Pi,
-		TrackPitch:    0.3,
+		Position: engine.Vector3{X: 0, Y: 50, Z: -100},
+		Forward:  engine.Vector3{X: 0, Y: 0, Z: 1},
+		Up:       engine.Vector3{X: 0, Y: 1, Z: 0},
+		Yaw:      0,
+		Pitch:    0,
+		Mode:     CameraModeFree,
+		Tracking: TrackingState{
+			Distance: 50.0,
+			Height:   20.0,
+			Yaw:      math.Pi,
+			Pitch:    0.3,
+		},
 	}
 }
 
@@ -164,37 +169,37 @@ func (c *CameraState) UpdateUpFromRoll() {
 // StartJumpTo initiates a smooth camera jump to a target object.
 func (c *CameraState) StartJumpTo(targetIndex int, targetPos engine.Vector3, viewDistance float64) {
 	c.Mode = CameraModeJumping
-	c.JumpStartPos = c.Position
-	c.JumpTargetIndex = targetIndex
+	c.Jump.StartPos = c.Position
+	c.Jump.TargetIndex = targetIndex
 
 	direction := c.Position.Sub(targetPos).Normalize()
 	if direction.Length() < 0.1 {
 		direction = engine.Vector3{X: 0, Y: 0, Z: -1}
 	}
-	c.JumpTargetPos = targetPos.Add(direction.Scale(float32(viewDistance)))
-	c.JumpTargetPos.Y = c.JumpTargetPos.Y + float32(viewDistance*0.3)
-	c.JumpProgress = 0.0
+	c.Jump.TargetPos = targetPos.Add(direction.Scale(float32(viewDistance)))
+	c.Jump.TargetPos.Y = c.Jump.TargetPos.Y + float32(viewDistance*0.3)
+	c.Jump.Progress = 0.0
 
 	// Scale duration by travel distance so long jumps feel traversed.
 	// World coordinates: Earth = 100 units from Sol; sqrt(travel)*0.1 gives
 	// ~1.5s for nearby hops and ~3s for system-crossing jumps. Clamped [1.5, 3.0].
-	travel := float64(c.Position.Sub(c.JumpTargetPos).Length())
-	c.JumpDuration = math.Max(1.5, math.Min(3.0, math.Sqrt(travel)*0.1))
+	travel := float64(c.Position.Sub(c.Jump.TargetPos).Length())
+	c.Jump.Duration = math.Max(1.5, math.Min(3.0, math.Sqrt(travel)*0.1))
 
-	c.JumpTargetViewDist = viewDistance
+	c.Jump.TargetViewDist = viewDistance
 
 	// Save start angles and compute the target look direction so UpdateJump can
 	// smoothly interpolate the camera's facing over the duration of the jump.
-	c.JumpStartYaw = c.Yaw
-	c.JumpStartPitch = c.Pitch
-	lookDir := targetPos.Sub(c.JumpTargetPos)
+	c.Jump.StartYaw = c.Yaw
+	c.Jump.StartPitch = c.Pitch
+	lookDir := targetPos.Sub(c.Jump.TargetPos)
 	if lookDir.Length() > 0.01 {
 		lookDir = lookDir.Normalize()
-		c.JumpTargetYaw = math.Atan2(float64(lookDir.X), float64(lookDir.Z))
-		c.JumpTargetPitch = math.Asin(math.Max(-1.0, math.Min(1.0, float64(lookDir.Y))))
+		c.Jump.TargetYaw = math.Atan2(float64(lookDir.X), float64(lookDir.Z))
+		c.Jump.TargetPitch = math.Asin(math.Max(-1.0, math.Min(1.0, float64(lookDir.Y))))
 	} else {
-		c.JumpTargetYaw = c.Yaw
-		c.JumpTargetPitch = c.Pitch
+		c.Jump.TargetYaw = c.Yaw
+		c.Jump.TargetPitch = c.Pitch
 	}
 }
 
@@ -203,57 +208,57 @@ func (c *CameraState) UpdateJump(dt float64) {
 	if c.Mode != CameraModeJumping {
 		return
 	}
-	c.JumpProgress += dt / c.JumpDuration
-	if c.JumpProgress >= 1.0 {
-		c.Position = c.JumpTargetPos
-		c.Yaw = c.JumpTargetYaw
-		c.Pitch = c.JumpTargetPitch
+	c.Jump.Progress += dt / c.Jump.Duration
+	if c.Jump.Progress >= 1.0 {
+		c.Position = c.Jump.TargetPos
+		c.Yaw = c.Jump.TargetYaw
+		c.Pitch = c.Jump.TargetPitch
 		c.UpdateForwardFromAngles()
 		c.Mode = CameraModeFree
 		return
 	}
-	t := c.JumpProgress
+	t := c.Jump.Progress
 	// Asymmetric easing: remap t through t^(2/3) before applying smoothstep.
 	// The remap shifts the velocity peak to t≈0.37 so the camera spends ~37%
 	// of the time accelerating and ~63% decelerating — arrival is a smooth
 	// coast-in rather than a pop.
 	tIn := math.Pow(t, 2.0/3.0) // t^(2/3) — ease-out remap
 	smoothT := float32(tIn * tIn * (3.0 - 2.0*tIn))
-	c.Position.X = c.JumpStartPos.X + smoothT*(c.JumpTargetPos.X-c.JumpStartPos.X)
-	c.Position.Y = c.JumpStartPos.Y + smoothT*(c.JumpTargetPos.Y-c.JumpStartPos.Y)
-	c.Position.Z = c.JumpStartPos.Z + smoothT*(c.JumpTargetPos.Z-c.JumpStartPos.Z)
+	c.Position.X = c.Jump.StartPos.X + smoothT*(c.Jump.TargetPos.X-c.Jump.StartPos.X)
+	c.Position.Y = c.Jump.StartPos.Y + smoothT*(c.Jump.TargetPos.Y-c.Jump.StartPos.Y)
+	c.Position.Z = c.Jump.StartPos.Z + smoothT*(c.Jump.TargetPos.Z-c.Jump.StartPos.Z)
 	// Interpolate camera facing toward the destination over the same curve.
 	// Wrap yaw delta into (-π, π) so the camera always takes the short arc.
-	dyaw := c.JumpTargetYaw - c.JumpStartYaw
+	dyaw := c.Jump.TargetYaw - c.Jump.StartYaw
 	for dyaw > math.Pi {
 		dyaw -= 2 * math.Pi
 	}
 	for dyaw < -math.Pi {
 		dyaw += 2 * math.Pi
 	}
-	c.Yaw = c.JumpStartYaw + float64(smoothT)*dyaw
-	c.Pitch = c.JumpStartPitch + float64(smoothT)*(c.JumpTargetPitch-c.JumpStartPitch)
+	c.Yaw = c.Jump.StartYaw + float64(smoothT)*dyaw
+	c.Pitch = c.Jump.StartPitch + float64(smoothT)*(c.Jump.TargetPitch-c.Jump.StartPitch)
 	c.UpdateForwardFromAngles()
 }
 
 // StartTracking locks the camera to track a specific object (orbital view).
 func (c *CameraState) StartTracking(targetIndex int) {
 	c.Mode = CameraModeTracking
-	c.TrackTargetIndex = targetIndex
-	c.TrackYaw = math.Pi
-	c.TrackPitch = 0.3
-	c.TrackLookOutward = false
-	c.TrackOffset = engine.Vector3{} // reset accumulated WASD offset on every target change
+	c.Tracking.TargetIndex = targetIndex
+	c.Tracking.Yaw = math.Pi
+	c.Tracking.Pitch = 0.3
+	c.Tracking.LookOutward = false
+	c.Tracking.Offset = engine.Vector3{} // reset accumulated WASD offset on every target change
 }
 
 // StartTrackingEquatorial locks the camera to track from the equatorial plane.
 func (c *CameraState) StartTrackingEquatorial(targetIndex int) {
 	c.Mode = CameraModeTracking
-	c.TrackTargetIndex = targetIndex
-	c.TrackYaw = math.Pi
-	c.TrackPitch = 0.0
-	c.TrackLookOutward = true
-	c.TrackOffset = engine.Vector3{} // reset accumulated WASD offset on every target change
+	c.Tracking.TargetIndex = targetIndex
+	c.Tracking.Yaw = math.Pi
+	c.Tracking.Pitch = 0.0
+	c.Tracking.LookOutward = true
+	c.Tracking.Offset = engine.Vector3{} // reset accumulated WASD offset on every target change
 }
 
 // UpdateTracking recomputes the camera position relative to the tracked object.
@@ -261,24 +266,24 @@ func (c *CameraState) UpdateTracking(state *engine.SimulationState) {
 	if c.Mode != CameraModeTracking {
 		return
 	}
-	if c.TrackTargetIndex < 0 || c.TrackTargetIndex >= len(state.Objects) {
+	if c.Tracking.TargetIndex < 0 || c.Tracking.TargetIndex >= len(state.Objects) {
 		c.Mode = CameraModeFree
 		return
 	}
 
-	target := state.Objects[c.TrackTargetIndex]
+	target := state.Objects[c.Tracking.TargetIndex]
 	// Clamp TrackDistance so the camera stays outside the target body surface.
-	if minDist := float64(target.Meta.PhysicalRadius) + 0.5; c.TrackDistance < minDist {
-		c.TrackDistance = minDist
+	if minDist := float64(target.Meta.PhysicalRadius) + 0.5; c.Tracking.Distance < minDist {
+		c.Tracking.Distance = minDist
 	}
-	x := float32(c.TrackDistance * math.Cos(c.TrackPitch) * math.Sin(c.TrackYaw))
-	y := float32(c.TrackDistance * math.Sin(c.TrackPitch))
-	z := float32(c.TrackDistance * math.Cos(c.TrackPitch) * math.Cos(c.TrackYaw))
+	x := float32(c.Tracking.Distance * math.Cos(c.Tracking.Pitch) * math.Sin(c.Tracking.Yaw))
+	y := float32(c.Tracking.Distance * math.Sin(c.Tracking.Pitch))
+	z := float32(c.Tracking.Distance * math.Cos(c.Tracking.Pitch) * math.Cos(c.Tracking.Yaw))
 
 	basePosition := target.Anim.Position.Add(engine.Vector3{X: x, Y: y, Z: z})
-	c.Position = basePosition.Add(c.TrackOffset)
+	c.Position = basePosition.Add(c.Tracking.Offset)
 
-	if c.TrackLookOutward {
+	if c.Tracking.LookOutward {
 		var lookAtPos engine.Vector3
 		if target.Meta.ParentName != "" {
 			if parent := state.GetObject(target.Meta.ParentName); parent != nil {
@@ -359,12 +364,12 @@ func (m LabelMode) String() string {
 
 // AdjustTrackAngles adjusts the camera orbit angles (mouse/scroll input).
 func (c *CameraState) AdjustTrackAngles(deltaYaw, deltaPitch float64) {
-	c.TrackYaw += deltaYaw
-	c.TrackPitch += deltaPitch
-	if c.TrackPitch > math.Pi/2.0-0.01 {
-		c.TrackPitch = math.Pi/2.0 - 0.01
+	c.Tracking.Yaw += deltaYaw
+	c.Tracking.Pitch += deltaPitch
+	if c.Tracking.Pitch > math.Pi/2.0-0.01 {
+		c.Tracking.Pitch = math.Pi/2.0 - 0.01
 	}
-	if c.TrackPitch < -math.Pi/2.0+0.01 {
-		c.TrackPitch = -math.Pi/2.0 + 0.01
+	if c.Tracking.Pitch < -math.Pi/2.0+0.01 {
+		c.Tracking.Pitch = -math.Pi/2.0 + 0.01
 	}
 }

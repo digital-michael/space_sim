@@ -140,7 +140,7 @@ func drawHUDDebug(state *engine.SimulationState, cameraState *ui.CameraState, as
 	case ui.CameraModeJumping:
 		modeText = "JUMPING"
 	case ui.CameraModeTracking:
-		modeText = fmt.Sprintf("TRACKING: %s", state.Objects[cameraState.TrackTargetIndex].Meta.Name)
+		modeText = fmt.Sprintf("TRACKING: %s", state.Objects[cameraState.Tracking.TargetIndex].Meta.Name)
 	}
 	rl.DrawText(fmt.Sprintf("Mode: %s", modeText), leftPad, line6Y, fontLarge, rl.Yellow)
 
@@ -336,11 +336,11 @@ func drawWelcomeBanner(text string, elapsed time.Duration) {
 
 // drawTrackingInfo displays comprehensive information about the tracked object in the lower right
 func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState) {
-	if cameraState.TrackTargetIndex < 0 || cameraState.TrackTargetIndex >= len(state.Objects) {
+	if cameraState.Tracking.TargetIndex < 0 || cameraState.Tracking.TargetIndex >= len(state.Objects) {
 		return
 	}
 
-	obj := state.Objects[cameraState.TrackTargetIndex]
+	obj := state.Objects[cameraState.Tracking.TargetIndex]
 
 	// Calculate display metrics
 	const auToSimUnits = 100.0 // 100 units = 1 AU
@@ -389,7 +389,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		for i, otherObj := range state.Objects {
 			if otherObj.Meta.ParentName == obj.Meta.ParentName && otherObj.Meta.Category == obj.Meta.Category {
 				siblingCount++
-				if i <= cameraState.TrackTargetIndex && otherObj.Meta.Name == obj.Meta.Name {
+				if i <= cameraState.Tracking.TargetIndex && otherObj.Meta.Name == obj.Meta.Name {
 					siblingIndex = siblingCount
 				}
 			}
@@ -399,7 +399,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		for i, otherObj := range state.Objects {
 			if otherObj.Meta.Category == engine.CategoryPlanet && otherObj.Meta.ParentName == "" {
 				siblingCount++
-				if i <= cameraState.TrackTargetIndex && otherObj.Meta.Name == obj.Meta.Name {
+				if i <= cameraState.Tracking.TargetIndex && otherObj.Meta.Name == obj.Meta.Name {
 					siblingIndex = siblingCount
 				}
 			}
@@ -409,7 +409,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		for i, otherObj := range state.Objects {
 			if otherObj.Meta.Category == engine.CategoryDwarfPlanet {
 				siblingCount++
-				if i <= cameraState.TrackTargetIndex && otherObj.Meta.Name == obj.Meta.Name {
+				if i <= cameraState.Tracking.TargetIndex && otherObj.Meta.Name == obj.Meta.Name {
 					siblingIndex = siblingCount
 				}
 			}
@@ -434,7 +434,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 				}
 				if namePrefix == objPrefix {
 					siblingCount++
-					if i <= cameraState.TrackTargetIndex && otherObj.Meta.Name == obj.Meta.Name {
+					if i <= cameraState.Tracking.TargetIndex && otherObj.Meta.Name == obj.Meta.Name {
 						siblingIndex = siblingCount
 					}
 				}

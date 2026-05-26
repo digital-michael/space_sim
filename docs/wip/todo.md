@@ -318,7 +318,7 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 0a | ~~**TD-003**~~ Delete legacy_helpers.go dead code | ✅ 2026-05-25 |
 | 0b | ~~**TD-004**~~ commands.go table-driven parser | ✅ 2026-05-25 |
 | 0c | ~~**TD-005**~~ renders.go monolith split | ✅ 2026-05-25 |
-| 0d | **TD-006** CameraState sub-structs | Structural prerequisite for TD-007; enforces mode-safe tracking/jump state (S1/S3/S7) |
+| 0d | ~~**TD-006**~~ CameraState sub-structs | ✅ 2026-05-25 |
 | 1 | **F-034 Phase 1** System data directory structure | Data management must be stable before N-body test system; foundational for F-035/F-036; absorbs F-008 |
 | 2 | **TD-009** physics.go + world.go coverage baseline | Test baseline required before F-013 lands in untested physics layer |
 | 3 | **F-013** N-body barycenter | Physics accuracy; uses the `nbody_test` system created in F-034 |
@@ -420,7 +420,7 @@ Fix implemented:
 ### TD-006 — `CameraState` Sub-Structs
 
 **Value**: Extract `TrackingState` and `JumpState` sub-structs from the flat `CameraState` to enforce mode-field validity at compile time and eliminate the LL #39 pattern structurally.
-**Status**: 📋 Not started
+**Status**: ✅ 2026-05-25
 **Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #5 — description, fix steps, and acceptance criteria.
 **Unlocks**: TD-007 (required before handleInput/updateCameraState split is clean)
 

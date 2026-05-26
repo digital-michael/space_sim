@@ -106,8 +106,8 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 		// Position camera so the star fills ~50% of screen height, but never
 		// closer than 0.75 AU (75 su) past the surface. For large stars this
 		// prevents the initial view from being entirely filled by the star disk.
-		cameraState.TrackDistance = max(float64(starRadius)+75.0, ui.CalculateAutoZoomDistance(starRadius, 0.40))
-		log.Printf("Camera started tracking object (index %d), TrackDistance=%.2f", solIndex, cameraState.TrackDistance)
+		cameraState.Tracking.Distance = max(float64(starRadius)+75.0, ui.CalculateAutoZoomDistance(starRadius, 0.40))
+		log.Printf("Camera started tracking object (index %d), TrackDistance=%.2f", solIndex, cameraState.Tracking.Distance)
 	} else {
 		log.Printf("Warning: no star or black hole found in simulation, starting in free-fly mode")
 	}

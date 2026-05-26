@@ -76,7 +76,7 @@ waitLoop:
 	for i, obj := range firstSnap.State.Objects {
 		if obj.Meta.Category == engine.CategoryStar {
 			session.cameraState.StartTracking(i)
-			session.cameraState.TrackDistance = float64(obj.Meta.PhysicalRadius) + 75.0
+			session.cameraState.Tracking.Distance = float64(obj.Meta.PhysicalRadius) + 75.0
 			break
 		}
 	}
