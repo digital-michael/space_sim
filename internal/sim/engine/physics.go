@@ -29,6 +29,11 @@ type Simulation struct {
 	// to build and atomically publish a ready-to-render snapshot so the main
 	// thread never has to lock or clone.
 	postTickHook func()
+
+	// shipsMu protects ships and clientGravityEnabled.
+	shipsMu              sync.RWMutex
+	ships                []*ShipParticle // client sessions receiving N-body gravity
+	clientGravityEnabled bool            // F-022 Phase 2: enable gravity for client ships
 }
 
 // NewSimulation creates a simulation from an already-loaded state.
@@ -195,6 +200,25 @@ func (s *Simulation) SetAsteroidDataset(dataset AsteroidDataset) {
 	}
 }
 
+// SetShipParticles replaces the list of client ship particles that receive
+// N-body gravity each simulation step.  Safe to call from any goroutine.
+// The slice is referenced (not copied) so callers must not mutate it after
+// passing; build a fresh slice each call if ownership is needed.
+func (s *Simulation) SetShipParticles(ships []*ShipParticle) {
+	s.shipsMu.Lock()
+	s.ships = ships
+	s.shipsMu.Unlock()
+}
+
+// SetClientGravityEnabled enables or disables N-body gravity for client ships.
+// When false, ship particles are ignored in the integration step.
+// Corresponds to "client_gravity_enabled" in configs/app.json.
+func (s *Simulation) SetClientGravityEnabled(enabled bool) {
+	s.shipsMu.Lock()
+	s.clientGravityEnabled = enabled
+	s.shipsMu.Unlock()
+}
+
 // update performs one simulation step.
 func (s *Simulation) update(dt float64) {
 	back := s.state.GetBack()
@@ -205,6 +229,15 @@ func (s *Simulation) update(dt float64) {
 
 	if back.NBodyMode == "nbody" {
 		// ── N-body path ──────────────────────────────────────────────────────
+		// Inject client ship particles into the GravSet when gravity is enabled.
+		s.shipsMu.RLock()
+		if s.clientGravityEnabled && len(s.ships) > 0 {
+			back.SystemSet.Ships = s.ships
+		} else {
+			back.SystemSet.Ships = nil
+		}
+		s.shipsMu.RUnlock()
+
 		// Leapfrog DKD step for all named bodies (stars, planets, moons, …).
 		StepGravSet(back.SystemSet, scaledDt)
 

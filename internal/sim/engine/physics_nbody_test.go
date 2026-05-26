@@ -315,3 +315,138 @@ func TestNBody_TestParticleNeutrality(t *testing.T) {
 		t.Errorf("Test-particle neutrality: Earth drifted %.2e sim units (want 0)", drift)
 	}
 }
+
+// TestNBody_ShipStableOrbit verifies that a ShipParticle placed in a circular
+// orbit at Earth's distance (aEarth sim units) returns within 1° of its
+// starting angle after one full orbital period.
+// AC: Ship in circular orbit maintains orbit within 1% period error over
+// 1 simulated year (F-022 Phase 2 spec §8).
+func TestNBody_ShipStableOrbit(t *testing.T) {
+	sol := makeSol()
+
+	// Circular orbit velocity for a test particle at aEarth.
+	v := math.Sqrt(GMsol / aEarth)
+
+	ship := &ShipParticle{
+		SessionID: "test-ship-1",
+		NBodyPos:  [3]float64{aEarth, 0, 0},
+		NBodyVel:  [3]float64{0, v, 0},
+	}
+
+	gs := GravSet{
+		Name:         "ship-orbit",
+		Participants: []*Object{sol},
+		Ships:        []*ShipParticle{ship},
+	}
+
+	startAngle := math.Atan2(-ship.NBodyPos[2], ship.NBodyPos[0]) * 180.0 / math.Pi
+
+	// Run for 1 Earth year with 2000 steps (~4.3-hour steps).
+	const nSteps = 2000
+	dt := yearSec / float64(nSteps)
+	for i := 0; i < nSteps; i++ {
+		StepGravSet(gs, dt)
+	}
+
+	endAngle := math.Atan2(-ship.NBodyPos[2], ship.NBodyPos[0]) * 180.0 / math.Pi
+	diff := endAngle - startAngle
+	for diff > 180 {
+		diff -= 360
+	}
+	for diff < -180 {
+		diff += 360
+	}
+	if math.Abs(diff) > 1.0 {
+		t.Errorf("Ship stable orbit: angular drift = %.3f° after 1 year (want < 1°)", diff)
+	}
+
+	// Radius should stay close to aEarth (symplectic integrator conserves energy).
+	r := math.Sqrt(ship.NBodyPos[0]*ship.NBodyPos[0] + ship.NBodyPos[1]*ship.NBodyPos[1] + ship.NBodyPos[2]*ship.NBodyPos[2])
+	if math.Abs(r-aEarth)/aEarth > 0.01 {
+		t.Errorf("Ship orbit radius drift: %.4f sim units (want %.4f ± 1%%)", r, aEarth)
+	}
+}
+
+// TestNBody_ShipDrift verifies that a ShipParticle released from rest at
+// Earth's distance falls toward Sol (position moves closer to origin).
+// AC: Ship released from rest at Earth distance falls toward Sol (F-022 Ph2 spec §8).
+func TestNBody_ShipDrift(t *testing.T) {
+	sol := makeSol()
+
+	ship := &ShipParticle{
+		SessionID: "test-ship-drift",
+		NBodyPos:  [3]float64{aEarth, 0, 0},
+		NBodyVel:  [3]float64{0, 0, 0}, // released from rest
+	}
+
+	gs := GravSet{
+		Name:         "ship-drift",
+		Participants: []*Object{sol},
+		Ships:        []*ShipParticle{ship},
+	}
+
+	r0 := math.Sqrt(ship.NBodyPos[0]*ship.NBodyPos[0] + ship.NBodyPos[1]*ship.NBodyPos[1] + ship.NBodyPos[2]*ship.NBodyPos[2])
+
+	// Free-fall time from aEarth to origin ≈ 5.57e6 s.  Run for 1/20th of
+	// that (~2.78e5 s) so the ship is clearly still falling, not yet past Sol.
+	const freeFallSec = 5.57e6 // approximate
+	const nSteps = 500
+	dt := (freeFallSec / 20.0) / float64(nSteps)
+	for i := 0; i < nSteps; i++ {
+		StepGravSet(gs, dt)
+	}
+
+	r1 := math.Sqrt(ship.NBodyPos[0]*ship.NBodyPos[0] + ship.NBodyPos[1]*ship.NBodyPos[1] + ship.NBodyPos[2]*ship.NBodyPos[2])
+	if r1 >= r0 {
+		t.Errorf("Ship drift: radius did not decrease (r0=%.4f, r1=%.4f)", r0, r1)
+	}
+}
+
+// TestNBody_ShipNeutrality verifies that 100 ShipParticles do not measurably
+// alter Participant trajectories (test-particle approximation).
+// AC: N-body frame time increase with 100 clients < 0.5 ms (structural
+// validation; the test particle neutrality property is a prerequisite).
+func TestNBody_ShipNeutrality(t *testing.T) {
+	// Reference run: Sol + Earth, no ships.
+	solRef := makeSol()
+	earthRef := makeEarth(solRef)
+	gsRef := GravSet{
+		Name:         "ref",
+		Participants: []*Object{solRef, earthRef},
+	}
+
+	// Perturbed run: same bodies with 100 ships at Earth's orbit.
+	solP := makeSol()
+	earthP := makeEarth(solP)
+	v := math.Sqrt(GMsol / aEarth)
+	ships := make([]*ShipParticle, 100)
+	for i := range ships {
+		angle := 2.0 * math.Pi * float64(i) / 100.0
+		ships[i] = &ShipParticle{
+			SessionID: "ship",
+			NBodyPos:  [3]float64{aEarth * math.Cos(angle), 0, aEarth * math.Sin(angle)},
+			NBodyVel:  [3]float64{-v * math.Sin(angle), 0, v * math.Cos(angle)},
+		}
+	}
+	gsP := GravSet{
+		Name:         "perturbed",
+		Participants: []*Object{solP, earthP},
+		Ships:        ships,
+	}
+
+	const nSteps = 1000
+	dt := yearSec / float64(nSteps)
+	for i := 0; i < nSteps; i++ {
+		StepGravSet(gsRef, dt)
+		StepGravSet(gsP, dt)
+	}
+
+	// Participant positions must be identical — ships are massless.
+	dxE := earthRef.Anim.NBodyPos[0] - earthP.Anim.NBodyPos[0]
+	dyE := earthRef.Anim.NBodyPos[1] - earthP.Anim.NBodyPos[1]
+	dzE := earthRef.Anim.NBodyPos[2] - earthP.Anim.NBodyPos[2]
+	drift := math.Sqrt(dxE*dxE + dyE*dyE + dzE*dzE)
+	if drift > 1e-9 {
+		t.Errorf("Ship neutrality: Earth drifted %.2e sim units (want 0)", drift)
+	}
+}

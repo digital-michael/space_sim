@@ -11,10 +11,13 @@ import (
 // integration.  Participants exert gravity on each other and on TestParticles.
 // TestParticles receive forces but do not exert them back (test-particle
 // approximation — valid when their mass is negligible compared to Participants).
+// Ships are client-session test particles; they use ShipParticle rather than
+// Object so the session registry can read NBodyPos/Vel back after each step.
 type GravSet struct {
-	Name          string    // human label for debug/logging
-	Participants  []*Object // full mutual interaction (stars, planets, moons, artifacts)
-	TestParticles []*Object // receive forces only (ships, asteroids near an SOI)
+	Name          string          // human label for debug/logging
+	Participants  []*Object       // full mutual interaction (stars, planets, moons, artifacts)
+	TestParticles []*Object       // receive forces only (belt asteroids near an SOI)
+	Ships         []*ShipParticle // receive forces only; do not exert forces (F-022 Ph2)
 }
 
 // ShipParticle is the physics representation of a client ship in the N-body
@@ -181,26 +184,39 @@ func BuildSOISet(state *SimulationState, center Vector3, radius float64, ships .
 // For Participants, float32 Position and Velocity are also updated so the
 // renderer sees the new positions immediately.
 // TestParticle float32 copies are left for the F-022 session-registry caller.
+// Ship NBodyPos/Vel are updated in-place; the session registry reads them back.
 func StepGravSet(gs GravSet, dt float64) {
 	h := dt / 2.0
 	all := make([]*Object, 0, len(gs.Participants)+len(gs.TestParticles))
 	all = append(all, gs.Participants...)
 	all = append(all, gs.TestParticles...)
 
-	// Drift ½ — all bodies advance half a step at current velocity.
+	// Drift ½ — all Object bodies advance half a step at current velocity.
 	for _, obj := range all {
 		obj.Anim.NBodyPos[0] += obj.Anim.NBodyVel[0] * h
 		obj.Anim.NBodyPos[1] += obj.Anim.NBodyVel[1] * h
 		obj.Anim.NBodyPos[2] += obj.Anim.NBodyVel[2] * h
 	}
+	// Drift ½ — ship particles advance half a step.
+	for _, s := range gs.Ships {
+		s.NBodyPos[0] += s.NBodyVel[0] * h
+		s.NBodyPos[1] += s.NBodyVel[1] * h
+		s.NBodyPos[2] += s.NBodyVel[2] * h
+	}
 
 	// Kick — compute accelerations at half-drifted positions, then update velocities.
 	accumForces(gs)
 	accumTestParticleForces(gs)
+	accumShipForces(gs)
 	for _, obj := range all {
 		obj.Anim.NBodyVel[0] += obj.Anim.NBodyAcc[0] * dt
 		obj.Anim.NBodyVel[1] += obj.Anim.NBodyAcc[1] * dt
 		obj.Anim.NBodyVel[2] += obj.Anim.NBodyAcc[2] * dt
+	}
+	for _, s := range gs.Ships {
+		s.NBodyVel[0] += s.NBodyAcc[0] * dt
+		s.NBodyVel[1] += s.NBodyAcc[1] * dt
+		s.NBodyVel[2] += s.NBodyAcc[2] * dt
 	}
 
 	// Drift ½ — all bodies advance the remaining half step.
@@ -208,6 +224,11 @@ func StepGravSet(gs GravSet, dt float64) {
 		obj.Anim.NBodyPos[0] += obj.Anim.NBodyVel[0] * h
 		obj.Anim.NBodyPos[1] += obj.Anim.NBodyVel[1] * h
 		obj.Anim.NBodyPos[2] += obj.Anim.NBodyVel[2] * h
+	}
+	for _, s := range gs.Ships {
+		s.NBodyPos[0] += s.NBodyVel[0] * h
+		s.NBodyPos[1] += s.NBodyVel[1] * h
+		s.NBodyPos[2] += s.NBodyVel[2] * h
 	}
 
 	// Copy float64 precision state → float32 for the renderer (Participants only).
@@ -271,6 +292,28 @@ func accumTestParticleForces(gs GravSet) {
 			tp.Anim.NBodyAcc[0] += p.Meta.GM / r3 * dx
 			tp.Anim.NBodyAcc[1] += p.Meta.GM / r3 * dy
 			tp.Anim.NBodyAcc[2] += p.Meta.GM / r3 * dz
+		}
+	}
+}
+
+// accumShipForces accumulates gravity on each ShipParticle from all
+// Participants (test-particle approximation: ships receive forces, never exert
+// them back).  Called after accumTestParticleForces.
+func accumShipForces(gs GravSet) {
+	for _, s := range gs.Ships {
+		s.NBodyAcc = [3]float64{}
+		for _, p := range gs.Participants {
+			dx := p.Anim.NBodyPos[0] - s.NBodyPos[0]
+			dy := p.Anim.NBodyPos[1] - s.NBodyPos[1]
+			dz := p.Anim.NBodyPos[2] - s.NBodyPos[2]
+			r2 := dx*dx + dy*dy + dz*dz
+			if r2 < 1e-12 {
+				continue
+			}
+			r3 := r2 * math.Sqrt(r2)
+			s.NBodyAcc[0] += p.Meta.GM / r3 * dx
+			s.NBodyAcc[1] += p.Meta.GM / r3 * dy
+			s.NBodyAcc[2] += p.Meta.GM / r3 * dz
 		}
 	}
 }

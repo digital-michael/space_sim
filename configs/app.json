@@ -3,6 +3,7 @@
   "render": {},
   "performance": {},
   "default_ship_id": "scout_mk1",
+  "client_gravity_enabled": true,
   "session": {
     "max_sessions": 100,
     "idle_timeout_seconds": 30,

@@ -39,6 +39,7 @@ type ClientSession struct {
 	Role         ClientRole
 	Color        [3]uint8   // RGB, server-assigned from palette
 	Position     [3]float64 // world position in sim units; server-authoritative
+	Velocity     [3]float64 // velocity in sim units/s; integrated by N-body (F-022 Ph2)
 	POV          [3]float32 // facing direction unit vector; client-authoritative
 	MarkerRef    string     // model ref; empty in Phase 1
 	ConnectedAt  time.Time

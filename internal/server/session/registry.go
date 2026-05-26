@@ -48,6 +48,9 @@ type Registry interface {
 	// UpdatePosition stores the last-known world position for a session.
 	// Returns ErrNotFound if the session does not exist.
 	UpdatePosition(sessionID string, pos [3]float64) error
+	// UpdateVelocity stores the N-body velocity for a session (F-022 Phase 2).
+	// Returns ErrNotFound if the session does not exist.
+	UpdateVelocity(sessionID string, vel [3]float64) error
 	// UpdatePOV stores the last-known point-of-view direction for a session.
 	// Returns ErrNotFound if the session does not exist.
 	UpdatePOV(sessionID string, pov [3]float32) error
@@ -194,6 +197,18 @@ func (r *inMemoryRegistry) UpdatePosition(sessionID string, pos [3]float64) erro
 	snap := copySession(sess)
 	r.mu.Unlock()
 	r.notify(SessionEvent{Type: SessionEventUpdate, Session: snap, ID: snap.SessionID})
+	return nil
+}
+
+func (r *inMemoryRegistry) UpdateVelocity(sessionID string, vel [3]float64) error {
+	r.mu.Lock()
+	sess, ok := r.sessions[sessionID]
+	if !ok {
+		r.mu.Unlock()
+		return ErrNotFound
+	}
+	sess.Velocity = vel
+	r.mu.Unlock()
 	return nil
 }
 
