@@ -373,3 +373,153 @@ func (c *CameraState) AdjustTrackAngles(deltaYaw, deltaPitch float64) {
 		c.Tracking.Pitch = -math.Pi/2.0 + 0.01
 	}
 }
+
+// TickTracking processes one frame of tracking-mode physics.
+// wasdDelta is the pre-scaled world-space offset delta from WASD input (computed from
+// the previous frame's Forward/Right — 1-frame lag is imperceptible at interactive rates).
+// arrowDelta is the pre-scaled world-axis delta from arrow keys.
+// mouseYaw/mousePitch are the angular delta in radians (signed, pre-scaled by sensitivity).
+// zoomDelta is the signed Tracking.Distance change (positive = zoom out); 0 = no zoom.
+// resetOffset clears the WASD-accumulated offset when true.
+func (c *CameraState) TickTracking(state *engine.SimulationState, dt float32,
+	wasdDelta, arrowDelta engine.Vector3,
+	mouseYaw, mousePitch, zoomDelta float64,
+	resetOffset bool,
+) {
+	// Zoom (applied before mode-specific angle updates to match original pre-switch order).
+	if zoomDelta != 0 {
+		c.Tracking.Distance += zoomDelta
+		if c.Tracking.Distance < engine.CameraTrackDistMin {
+			c.Tracking.Distance = engine.CameraTrackDistMin
+		}
+		if c.Tracking.Distance > engine.CameraTrackDistMax {
+			c.Tracking.Distance = engine.CameraTrackDistMax
+		}
+	}
+	// Dwell countdown for multi-hop jump queues.
+	if c.Jump.DwellRemaining > 0 {
+		c.Jump.DwellRemaining -= float64(dt)
+		if c.Jump.DwellRemaining <= 0 && len(c.Jump.Queue) > 0 {
+			next := c.Jump.Queue[0]
+			c.Jump.Queue = c.Jump.Queue[1:]
+			c.Jump.CurrentDwell = next.DwellSeconds
+			c.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
+			return
+		}
+	}
+	// Orbit animation tick.
+	if c.OrbitSpeed != 0 && c.OrbitRadiansRemaining > 0 {
+		delta := c.OrbitSpeed * float64(dt)
+		c.Tracking.Yaw += delta
+		c.OrbitRadiansRemaining -= math.Abs(delta)
+		if c.OrbitRadiansRemaining <= 0 {
+			c.OrbitSpeed = 0
+		}
+	}
+	// Mouse-look.
+	if mouseYaw != 0 || mousePitch != 0 {
+		c.AdjustTrackAngles(mouseYaw, mousePitch)
+	}
+	// Recompute position/forward from updated tracking angles.
+	c.UpdateTracking(state)
+	// Offset adjustments (reset wins over WASD/arrow, matching original behavior).
+	if resetOffset {
+		c.Tracking.Offset = engine.Vector3{}
+	} else {
+		c.Tracking.Offset = c.Tracking.Offset.Add(wasdDelta).Add(arrowDelta)
+	}
+}
+
+// TickFreeFly processes one frame of free-fly mode physics (no ShipInstance).
+// All input vectors must be pre-zeroed by the caller when input is suspended.
+// freeZoom moves the camera along its forward vector (positive = forward).
+func (c *CameraState) TickFreeFly(state *engine.SimulationState, dt float32,
+	wasdDelta, arrowDelta engine.Vector3,
+	mouseYaw, mousePitch, rollDelta float64,
+	freeZoom float32,
+) {
+	c.Yaw += mouseYaw
+	c.Pitch += mousePitch
+	if c.Pitch > 1.5 {
+		c.Pitch = 1.5
+	}
+	if c.Pitch < -1.5 {
+		c.Pitch = -1.5
+	}
+	c.Roll += rollDelta
+	c.UpdateForwardFromAngles()
+	if freeZoom != 0 {
+		c.Position = c.Position.Add(c.Forward.Scale(freeZoom))
+	}
+	c.Position = c.Position.Add(wasdDelta).Add(arrowDelta)
+	// Persistent velocity drift (set via gRPC NavigationService).
+	if c.Velocity.X != 0 || c.Velocity.Y != 0 || c.Velocity.Z != 0 {
+		c.Position = c.Position.Add(c.Velocity.Scale(dt))
+	}
+	// Body-exclusion: push camera out of any solid named body.
+	for _, obj := range state.Objects {
+		cat := obj.Meta.Category
+		if cat == engine.CategoryBelt || cat == engine.CategoryRing || cat == engine.CategoryAsteroid {
+			continue
+		}
+		if obj.Meta.PhysicalRadius <= 0 {
+			continue
+		}
+		diff := c.Position.Sub(obj.Anim.Position)
+		d := float64(diff.Length())
+		minDist := float64(obj.Meta.PhysicalRadius) + 0.5
+		if d < minDist {
+			if d > 0.001 {
+				c.Position = obj.Anim.Position.Add(diff.Normalize().Scale(float32(minDist)))
+			} else {
+				c.Position = obj.Anim.Position.Add(engine.Vector3{Y: float32(minDist)})
+			}
+		}
+	}
+}
+
+// TickJump processes one frame of jump-mode physics.
+// All input vectors must be pre-zeroed by the caller when input is suspended.
+// freeZoom moves the camera along its forward vector before the animation step.
+func (c *CameraState) TickJump(state *engine.SimulationState, dt float32,
+	mouseYaw, mousePitch float64,
+	arrowDelta engine.Vector3,
+	freeZoom float32,
+) {
+	if freeZoom != 0 {
+		c.Position = c.Position.Add(c.Forward.Scale(freeZoom))
+	}
+	c.UpdateJump(float64(dt))
+	// Arrival: UpdateJump changed Mode to CameraModeFree — start tracking immediately.
+	if c.Mode == CameraModeFree {
+		c.StartTracking(c.Jump.TargetIndex)
+		c.Tracking.Distance = c.Jump.TargetViewDist
+		c.Tracking.Offset = engine.Vector3{}
+		c.UpdateTracking(state)
+		if c.PendingOrbitSpeed != 0 {
+			c.OrbitSpeed = c.PendingOrbitSpeed
+			c.OrbitRadiansRemaining = c.PendingOrbitRadians
+			c.PendingOrbitSpeed = 0
+			c.PendingOrbitRadians = 0
+		}
+		c.Jump.DwellRemaining = c.Jump.CurrentDwell
+		if c.Jump.DwellRemaining <= 0 && len(c.Jump.Queue) > 0 {
+			next := c.Jump.Queue[0]
+			c.Jump.Queue = c.Jump.Queue[1:]
+			c.Jump.CurrentDwell = next.DwellSeconds
+			c.StartJumpTo(next.TargetIndex, next.TargetPos, next.ViewDist)
+		}
+		return
+	}
+	// Still in-flight: apply mouse look and arrow-key repositioning.
+	c.Yaw += mouseYaw
+	c.Pitch += mousePitch
+	if c.Pitch > 1.5 {
+		c.Pitch = 1.5
+	}
+	if c.Pitch < -1.5 {
+		c.Pitch = -1.5
+	}
+	c.UpdateForwardFromAngles()
+	c.Position = c.Position.Add(arrowDelta)
+}
