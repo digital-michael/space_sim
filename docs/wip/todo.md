@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-25 (TD-007 complete 738cf19; F-022 Phase 2 complete 35214ad)
+2026-05-25 (TD-008 complete; repl::exec + dispatchCmd split into domain sub-dispatchers)
 
 ## Table of Contents
 1. How to Use This File
@@ -327,7 +327,7 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 6 | **F-035 Phase 1** Game Definition (themes + factions) | Data layer for gameplay; no runtime deps beyond F-034 |
 | 7 | **F-036 Phase 1** Playable Scenario | Scenario config + universe state; depends on F-034 and F-035 |
 | 8 | **F-038 Phase 1** HUD Profiles | Needs F-020, F-021, F-022 (all Phase 1 complete); absorbs F-024; provides Comms HUD slot for F-037 |
-| 9 | **TD-008** repl::exec + dispatchCmd split | Extension-point cleanup for F-037 and F-019; both add new command arms |
+| 9 | ~~**TD-008**~~ repl::exec + dispatchCmd split | ✅ 2026-05-25 |
 | 10 | **F-010** Multi-machine split (headless server + client) | Network foundation |
 | 11 | **F-011** IAAM (identity, roles, auth) | Safety layer for multi-client; immediately after F-010 |
 | 12 | **F-037 Phase 1** AI/NPC Console — Personal Copilot | Local LLM + AIService gRPC; Comms HUD slot from F-038 Phase 1; requires TD-004 and TD-008 |
@@ -441,7 +441,7 @@ Fix implemented:
 ### TD-008 — `repl::exec` + `dispatchCmd` Split
 
 **Value**: Split the 628-line `exec` and 369-line `dispatchCmd` into domain sub-dispatchers so F-037 and F-019 command arms are added to focused files, not monolithic switches.
-**Status**: 📋 Not started
+**Status**: ✅ Complete — 2026-05-25
 **Report**: [output/tech-debt-report-2026-05-25.md](../../output/tech-debt-report-2026-05-25.md) #4 and #6 — description, fix steps, and acceptance criteria.
 **Unlocks**: F-037 Ph1, F-019
 

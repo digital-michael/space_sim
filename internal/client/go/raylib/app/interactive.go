@@ -268,10 +268,26 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 	is := session.inputState
 	state := snap.State
 
+	switch cmd.(type) {
+	case WindowSizeCmd, WindowMaximizeCmd, WindowRestoreCmd, WindowFullscreenCmd, GetWindowCmd:
+		a.dispatchWindowCmd(cmd)
+	case CameraOrientCmd, CameraPositionCmd, CameraTrackCmd, GetCameraCmd, OrbitCmd:
+		dispatchCameraCmd(cs, state, cmd)
+	case SetVelocityCmd, JumpToCmd, GetVelocityCmd:
+		dispatchNavCmd(cs, state, cmd)
+	case PerfSetCmd, GetPerfCmd, SetHUDCmd:
+		a.dispatchPerfCmd(session, snap, cmd)
+	case LoadSystemCmd, GetActiveSystemCmd:
+		dispatchSystemCmd(is, cmd)
+	case RecordStartCmd, RecordPauseCmd, RecordStopCmd:
+		a.dispatchRecordCmd(cmd)
+	case ReloadKeymapCmd, SaveKeybindingsCmd, ScanKeybindFilesCmd, GetKeymapCmd:
+		a.dispatchKeybindCmd(cmd)
+	}
+}
+
+func (a *App) dispatchWindowCmd(cmd AppCmd) {
 	switch c := cmd.(type) {
-
-	// ── Window ─────────────────────────────────────────────────────────────
-
 	case WindowSizeCmd:
 		if c.Width > 0 && c.Height > 0 {
 			rl.SetWindowSize(int(c.Width), int(c.Height))
@@ -279,11 +295,9 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			a.runtime.WindowedHeight = c.Height
 			a.syncWindowState()
 		}
-
 	case WindowMaximizeCmd:
 		rl.MaximizeWindow()
 		a.syncWindowState()
-
 	case WindowRestoreCmd:
 		rl.RestoreWindow()
 		ww := a.runtime.WindowedWidth
@@ -296,12 +310,10 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		}
 		rl.SetWindowSize(int(ww), int(wh))
 		a.syncWindowState()
-
 	case WindowFullscreenCmd:
 		if c.On != rl.IsWindowFullscreen() {
 			a.toggleFullscreen()
 		}
-
 	case GetWindowCmd:
 		c.RespCh <- WindowSnapshot{
 			Width:      a.runtime.ScreenWidth,
@@ -309,9 +321,11 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			Fullscreen: a.runtime.Fullscreen,
 			Maximized:  rl.IsWindowMaximized(),
 		}
+	}
+}
 
-	// ── Camera ─────────────────────────────────────────────────────────────
-
+func dispatchCameraCmd(cs *ui.CameraState, state *engine.SimulationState, cmd AppCmd) {
+	switch c := cmd.(type) {
 	case CameraOrientCmd:
 		const degToRad = math.Pi / 180.0
 		yaw := c.YawDeg * degToRad
@@ -327,10 +341,8 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		cs.Yaw = yaw
 		cs.Pitch = pitch
 		cs.UpdateForwardFromAngles()
-
 	case CameraPositionCmd:
 		cs.Position = c.Pos
-
 	case CameraTrackCmd:
 		if c.Name == "" {
 			cs.Mode = ui.CameraModeFree
@@ -343,7 +355,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 				log.Printf("CameraTrackCmd: body %q not found in snapshot", c.Name)
 			}
 		}
-
 	case GetCameraCmd:
 		trackName := ""
 		if cs.Mode == ui.CameraModeTracking &&
@@ -359,12 +370,34 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			Mode:        cs.Mode,
 			TrackTarget: trackName,
 		}
+	case OrbitCmd:
+		idx := findBodyByName(state, c.Name)
+		if idx < 0 {
+			log.Printf("OrbitCmd: body %q not found", c.Name)
+			return
+		}
+		orbitSpeed := c.SpeedDegPerSec * (math.Pi / 180.0)
+		orbitRadians := c.Orbits * 2 * math.Pi
+		if cs.Mode == ui.CameraModeJumping {
+			// Jump is in flight — defer orbit to run on arrival.
+			cs.PendingOrbitSpeed = orbitSpeed
+			cs.PendingOrbitRadians = orbitRadians
+			return
+		}
+		obj := state.Objects[idx]
+		cs.StartTracking(idx)
+		cs.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+		cs.Tracking.Offset = engine.Vector3{}
+		cs.UpdateTracking(state)
+		cs.OrbitSpeed = orbitSpeed
+		cs.OrbitRadiansRemaining = orbitRadians
+	}
+}
 
-	// ── Navigation ─────────────────────────────────────────────────────────
-
+func dispatchNavCmd(cs *ui.CameraState, state *engine.SimulationState, cmd AppCmd) {
+	switch c := cmd.(type) {
 	case SetVelocityCmd:
 		cs.Velocity = c.Velocity
-
 	case JumpToCmd:
 		if len(c.Names) == 0 {
 			return
@@ -399,12 +432,14 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		cs.Jump.CurrentDwell = first.DwellSeconds
 		cs.StartJumpTo(first.TargetIndex, first.TargetPos, first.ViewDist)
 		cs.Jump.Queue = append(cs.Jump.Queue[:0], targets[1:]...)
-
 	case GetVelocityCmd:
 		c.RespCh <- cs.Velocity
+	}
+}
 
-	// ── Performance ────────────────────────────────────────────────────────
-
+func (a *App) dispatchPerfCmd(session *runtimeSession, snap protocol.WorldSnapshot, cmd AppCmd) {
+	is := session.inputState
+	switch c := cmd.(type) {
 	case PerfSetCmd:
 		if c.SetFrustumCulling {
 			is.PerfOptions.FrustumCulling = c.Options.FrustumCulling
@@ -473,7 +508,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		if c.SetInfraMode {
 			a.runtime.InfraMode = c.InfraMode
 		}
-
 	case GetPerfCmd:
 		numWorkers := snap.State.NumWorkers
 		c.RespCh <- PerfSnapshot{
@@ -485,17 +519,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			LabelMode:   a.runtime.LabelMode,
 			InfraMode:   a.runtime.InfraMode,
 		}
-
-	// ── System ─────────────────────────────────────────────────────────────
-
-	case LoadSystemCmd:
-		is.PendingSystemPath = c.Path
-
-	case GetActiveSystemCmd:
-		c.RespCh <- is.ActiveSystemPath
-
-	// ── HUD ─────────────────────────────────────────────────────────────────
-
 	case SetHUDCmd:
 		switch c.Category {
 		case "":
@@ -509,33 +532,20 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		case "player":
 			a.runtime.HUD.Player = c.Visible
 		}
+	}
+}
 
-	// ── Orbit ───────────────────────────────────────────────────────────────
+func dispatchSystemCmd(is *ui.InputState, cmd AppCmd) {
+	switch c := cmd.(type) {
+	case LoadSystemCmd:
+		is.PendingSystemPath = c.Path
+	case GetActiveSystemCmd:
+		c.RespCh <- is.ActiveSystemPath
+	}
+}
 
-	case OrbitCmd:
-		idx := findBodyByName(state, c.Name)
-		if idx < 0 {
-			log.Printf("OrbitCmd: body %q not found", c.Name)
-			return
-		}
-		orbitSpeed := c.SpeedDegPerSec * (math.Pi / 180.0)
-		orbitRadians := c.Orbits * 2 * math.Pi
-		if cs.Mode == ui.CameraModeJumping {
-			// Jump is in flight — defer orbit to run on arrival.
-			cs.PendingOrbitSpeed = orbitSpeed
-			cs.PendingOrbitRadians = orbitRadians
-			return
-		}
-		obj := state.Objects[idx]
-		cs.StartTracking(idx)
-		cs.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
-		cs.Tracking.Offset = engine.Vector3{}
-		cs.UpdateTracking(state)
-		cs.OrbitSpeed = orbitSpeed
-		cs.OrbitRadiansRemaining = orbitRadians
-
-	// ── Recording ──────────────────────────────────────────────────────────
-
+func (a *App) dispatchRecordCmd(cmd AppCmd) {
+	switch c := cmd.(type) {
 	case RecordStartCmd:
 		if !a.runtime.RecordingActive {
 			// Native mode has no render texture — capture would always return nil.
@@ -547,7 +557,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			}
 			a.startRecording(c.Path)
 		}
-
 	case RecordPauseCmd:
 		if a.runtime.RecordingActive {
 			a.runtime.RecordingPaused = !a.runtime.RecordingPaused
@@ -557,7 +566,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 				fmt.Println("[REC] Resumed")
 			}
 		}
-
 	case RecordStopCmd:
 		if a.runtime.RecordingActive {
 			a.stopRecording()
@@ -568,9 +576,11 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 				a.syncRenderState()
 			}
 		}
+	}
+}
 
-	// ── Keybindings ─────────────────────────────────────────────────────────
-
+func (a *App) dispatchKeybindCmd(cmd AppCmd) {
+	switch c := cmd.(type) {
 	case ReloadKeymapCmd:
 		newKm, err := input.LoadKeyMap(defaultProfilesDir, c.Path)
 		if err != nil {
@@ -584,7 +594,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		a.runtime.Settings.KeybindsDirty = false
 		a.runtime.Settings.AvailableFiles = nil
 		a.cfg.AppConfig.KeybindingsPath = c.Path
-
 	case SaveKeybindingsCmd:
 		km := a.keyMap.Load()
 		if err := input.WriteKeybindingsFile(c.Path, km, "laptop"); err != nil {
@@ -595,7 +604,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		a.runtime.Settings.KeybindingsPath = c.Path
 		a.runtime.Settings.KeybindsDirty = false
 		a.cfg.AppConfig.KeybindingsPath = c.Path
-
 	case ScanKeybindFilesCmd:
 		files, err := input.ScanKeybindingsDir(c.Dir)
 		if err != nil {
@@ -603,7 +611,6 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 			files = nil
 		}
 		c.RespCh <- files
-
 	case GetKeymapCmd:
 		km := a.keyMap.Load()
 		all := input.AllActions()
