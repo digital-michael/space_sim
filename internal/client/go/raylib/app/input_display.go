@@ -181,12 +181,15 @@ func (a *App) handleInputDisplay(session *runtimeSession, km *input.KeyMap, susp
 		}
 	}
 
-	// hud.toggle / hud.client_list: HUD visibility.
+	// hud.toggle / hud.client_list / hud.info: HUD visibility.
 	if !suspended && km.IsPressed(input.ActionHUDToggle) {
 		a.runtime.HUDVisible = !a.runtime.HUDVisible
 	}
 	if !suspended && km.IsPressed(input.ActionHUDClientList) {
 		a.runtime.HUD.Player = !a.runtime.HUD.Player
+	}
+	if !suspended && km.IsPressed(input.ActionHUDInfo) {
+		a.runtime.HUD.Info = !a.runtime.HUD.Info
 	}
 
 	// sim.pause_toggle: toggle simulation time flow.

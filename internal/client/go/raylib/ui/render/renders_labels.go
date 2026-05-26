@@ -10,21 +10,53 @@ import (
 )
 
 func projectToScreen(objPos rl.Vector3, camera rl.Camera3D, screenWidth, screenHeight int32) (rl.Vector2, bool) {
-	matView := rl.GetCameraMatrix(camera)
-	matProj := rl.MatrixPerspective(
-		engine.CameraFOV*rl.Deg2rad,
-		float32(screenWidth)/float32(screenHeight),
-		engine.CameraNearPlane,
-		engine.CameraFarPlane,
-	)
-	mvp := rl.MatrixMultiply(matProj, matView)
-	// Transform point: clip = MVP * [x, y, z, 1] (column-major matrix layout)
-	cx := mvp.M0*objPos.X + mvp.M4*objPos.Y + mvp.M8*objPos.Z + mvp.M12
-	cy := mvp.M1*objPos.X + mvp.M5*objPos.Y + mvp.M9*objPos.Z + mvp.M13
-	cw := mvp.M3*objPos.X + mvp.M7*objPos.Y + mvp.M11*objPos.Z + mvp.M15
-	if cw <= 0 {
-		return rl.Vector2{}, false // behind or on the camera plane
+	// Manual LookAt + perspective — mirrors testProjectToScreen in labels_test.go.
+	// Avoids rl.GetCameraMatrix / rl.MatrixMultiply which read or depend on Raylib's
+	// internal GL matrix state; that state is overridden to ortho/identity before
+	// DrawObjectLabels is called (interactive.go SetMatrixProjection / SetMatrixModelview).
+
+	// zAxis = normalize(Position - Target) = -forward
+	zx := camera.Position.X - camera.Target.X
+	zy := camera.Position.Y - camera.Target.Y
+	zz := camera.Position.Z - camera.Target.Z
+	if l := float32(math.Sqrt(float64(zx*zx + zy*zy + zz*zz))); l > 0 {
+		zx /= l
+		zy /= l
+		zz /= l
 	}
+
+	// xAxis = normalize(cross(up, zAxis))
+	ux, uy, uz := camera.Up.X, camera.Up.Y, camera.Up.Z
+	xx := uy*zz - uz*zy
+	xy := uz*zx - ux*zz
+	xz := ux*zy - uy*zx
+	if l := float32(math.Sqrt(float64(xx*xx + xy*xy + xz*xz))); l > 0 {
+		xx /= l
+		xy /= l
+		xz /= l
+	}
+
+	// yAxis = cross(zAxis, xAxis)
+	yx := zy*xz - zz*xy
+	yy := zz*xx - zx*xz
+	yz := zx*xy - zy*xx
+
+	// Camera-space coordinates (camera at floating-origin, Position≈0)
+	vx := xx*objPos.X + xy*objPos.Y + xz*objPos.Z
+	vy := yx*objPos.X + yy*objPos.Y + yz*objPos.Z
+	vz := zx*objPos.X + zy*objPos.Y + zz*objPos.Z
+
+	// clip-w = -vz; objects in front have vz < 0 so cw > 0
+	cw := -vz
+	if cw <= 0 {
+		return rl.Vector2{}, false
+	}
+
+	f := float32(1.0 / math.Tan(float64(engine.CameraFOV*rl.Deg2rad)/2.0))
+	aspect := float32(screenWidth) / float32(screenHeight)
+	cx := (f / aspect) * vx
+	cy := f * vy
+
 	return rl.Vector2{
 		X: (cx/cw + 1.0) * 0.5 * float32(screenWidth),
 		Y: (1.0 - cy/cw) * 0.5 * float32(screenHeight),

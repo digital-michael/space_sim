@@ -18,15 +18,30 @@ func (a *App) initWindow() error {
 	}
 	if !a.cfg.NoMSAA {
 		// EGL (used by GLFW's Wayland backend) commonly fails to allocate MSAA
-		// framebuffers on some compositors. When both X11 and Wayland are
-		// available, prefer the X11/GLX backend so MSAA works reliably.
+		// framebuffers on some compositors. When both X11 and Wayland are available
+		// and GLFW_PLATFORM is not already set, prefer X11/GLX so MSAA works reliably.
+		// If GLFW_PLATFORM is already set to a non-x11 value (e.g. "wayland"), we are
+		// committed to EGL and requesting MSAA would crash; skip the hint in that case.
 		_, hasWayland := os.LookupEnv("WAYLAND_DISPLAY")
 		_, hasX11 := os.LookupEnv("DISPLAY")
-		if hasWayland && hasX11 && os.Getenv("GLFW_PLATFORM") == "" {
-			os.Setenv("GLFW_PLATFORM", "x11")
-			log.Println("initWindow: preferring X11/GLX over Wayland/EGL for MSAA compatibility")
+		useMSAA := true
+		if hasWayland {
+			glfwPlatform := os.Getenv("GLFW_PLATFORM")
+			switch {
+			case glfwPlatform == "" && hasX11:
+				os.Setenv("GLFW_PLATFORM", "x11")
+				log.Println("initWindow: preferring X11/GLX over Wayland/EGL for MSAA compatibility")
+			case glfwPlatform == "x11":
+				// user already forced X11 — MSAA is safe
+			default:
+				// Wayland/EGL backend is active; MSAA allocation commonly fails
+				log.Println("initWindow: MSAA disabled on Wayland/EGL (set GLFW_PLATFORM=x11 or pass --no-msaa to suppress)")
+				useMSAA = false
+			}
 		}
-		flags |= rl.FlagMsaa4xHint
+		if useMSAA {
+			flags |= rl.FlagMsaa4xHint
+		}
 	}
 	rl.SetConfigFlags(flags)
 

@@ -83,8 +83,11 @@ const (
 	// Debug
 	ActionUIDebugLabels InputAction = 49
 
+	// HUD per-category toggles
+	ActionHUDInfo InputAction = 50
+
 	// sentinel — must equal last constant + 1
-	actionCount InputAction = 50
+	actionCount InputAction = 51
 )
 
 // actionNames maps each action to its dot-notation vocabulary name.
@@ -143,6 +146,8 @@ var actionNames = map[InputAction]string{
 	ActionNavJump:        "nav.jump",
 
 	ActionUIDebugLabels: "ui.debug_labels",
+
+	ActionHUDInfo: "hud.info",
 }
 
 // nameActions is the reverse of actionNames, built at init.
@@ -196,7 +201,7 @@ func OrderedActions() []InputAction {
 		ActionSimDatasetIncrease, ActionSimDatasetDecrease,
 		ActionSimPauseToggle, ActionSimTrackNext, ActionSimTrackStop,
 		// HUD
-		ActionHUDToggle, ActionHUDClientList,
+		ActionHUDToggle, ActionHUDClientList, ActionHUDInfo,
 		// REPL overlay
 		ActionReplOpen, ActionReplClose, ActionReplHistoryPrev, ActionReplHistoryNext,
 		// Camera
