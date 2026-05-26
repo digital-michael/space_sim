@@ -134,6 +134,10 @@ func (a *App) handleInputSettings(session *runtimeSession, km *input.KeyMap, shi
 			}
 			a.runtime.Settings.SaveAsEditing = false
 		}
+		if rl.IsKeyPressed(rl.KeyEscape) {
+			a.runtime.Settings.SaveAsPath = a.runtime.Settings.SaveAsPathPrev
+			a.runtime.Settings.SaveAsEditing = false
+		}
 		return false
 	}
 
@@ -178,6 +182,12 @@ func (a *App) handleInputSettings(session *runtimeSession, km *input.KeyMap, shi
 			}
 			a.runtime.Settings.AvailableFiles = nil
 		}
+		return false
+	}
+
+	// ESC: close the settings dialog (no sub-state is active at this point).
+	if rl.IsKeyPressed(rl.KeyEscape) {
+		a.runtime.SettingsVisible = false
 		return false
 	}
 
@@ -389,7 +399,30 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 		if rl.IsKeyPressed(rl.KeyEnter) {
 			session.inputState.ConfirmSystemSelection()
 		}
+		if rl.IsKeyPressed(rl.KeyEscape) {
+			session.inputState.CancelSelection()
+		}
 		return false
+	}
+
+	// TAB / SHIFT+TAB: cycle selection mode (Face → Jump → Track → Face...).
+	if rl.IsKeyPressed(rl.KeyTab) {
+		shift := rl.IsKeyDown(rl.KeyLeftShift) || rl.IsKeyDown(rl.KeyRightShift)
+		modes := []ui.SelectionMode{ui.SelectionModeFace, ui.SelectionModeJump, ui.SelectionModeTrack}
+		cur := session.inputState.SelectionMode
+		idx := 0
+		for i, m := range modes {
+			if m == cur {
+				idx = i
+				break
+			}
+		}
+		if shift {
+			idx = (idx + len(modes) - 1) % len(modes)
+		} else {
+			idx = (idx + 1) % len(modes)
+		}
+		session.inputState.SelectionMode = modes[idx]
 	}
 
 	// Text input for filtering.
@@ -483,6 +516,12 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 		}
 	}
 
+	// ESC: cancel the selection dialog.
+	if rl.IsKeyPressed(rl.KeyEscape) {
+		session.inputState.CancelSelection()
+		return false
+	}
+
 	// Enter: confirm selection.
 	if rl.IsKeyPressed(rl.KeyEnter) {
 		selectedIndex, mode := session.inputState.ConfirmSelection()
@@ -515,6 +554,8 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 			}
 			targetObj := state.Objects[actualIndex]
 			switch mode {
+			case ui.SelectionModeFace:
+				session.cameraState.FaceTarget(targetObj.Anim.Position)
 			case ui.SelectionModeJump:
 				session.cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40))
 			case ui.SelectionModeTrack:

@@ -1,23 +1,22 @@
 {
-  "window": {},
-  "render": {},
-  "performance": {},
-  "default_ship_id": "scout_mk1",
-  "client_gravity_enabled": true,
-  "session": {
-    "max_sessions": 100,
-    "idle_timeout_seconds": 30,
-    "admin_secret": ""
+  "window": {
+    "width": 774,
+    "height": 575,
+    "fullscreen": false,
+    "resizable": true
   },
-  "marker_blink_period_s": 1.5,
-  "marker_far_threshold_sim_units": 1.0,
-  "marker_cull_distance_sim_units": 100.0,
-  "label_visible_distance_sim_units": 0.5,
-  "marker_lod": {
-    "near_threshold_su": 0.01,
-    "label_visible_su": 0.5,
-    "sphere_collapse_su": 1.0,
-    "point_sprite_su": 10.0,
-    "cull_su": 100.0
+  "render": {
+    "mode": "native",
+    "width": 0,
+    "height": 0
+  },
+  "performance": {
+    "frustum_culling": true,
+    "lod_enabled": true,
+    "instanced_rendering": true,
+    "spatial_partition": true,
+    "point_rendering": false,
+    "importance_threshold": 0,
+    "use_in_place_swap": true
   }
 }

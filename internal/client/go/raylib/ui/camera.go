@@ -166,6 +166,22 @@ func (c *CameraState) UpdateUpFromRoll() {
 	c.Up = baseUp.Scale(cosR).Add(c.Forward.Cross(baseUp).Scale(sinR)).Normalize()
 }
 
+// FaceTarget rotates the camera to look at targetPos without moving its position.
+// Exits tracking mode if active so the orientation change is not overridden.
+func (c *CameraState) FaceTarget(targetPos engine.Vector3) {
+	if c.Mode == CameraModeTracking {
+		c.StopTracking()
+	}
+	lookDir := targetPos.Sub(c.Position)
+	if lookDir.Length() < 0.01 {
+		return
+	}
+	lookDir = lookDir.Normalize()
+	c.Yaw = math.Atan2(float64(lookDir.X), float64(lookDir.Z))
+	c.Pitch = math.Asin(math.Max(-1.0, math.Min(1.0, float64(lookDir.Y))))
+	c.UpdateForwardFromAngles()
+}
+
 // StartJumpTo initiates a smooth camera jump to a target object.
 func (c *CameraState) StartJumpTo(targetIndex int, targetPos engine.Vector3, viewDistance float64) {
 	c.Mode = CameraModeJumping

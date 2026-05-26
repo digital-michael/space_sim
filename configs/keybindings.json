@@ -4,7 +4,7 @@
   "overrides": [
     {
       "action": "camera.pitch_up",
-      "key": "LEFT_SHIFT",
+      "key": "UP",
       "mods": []
     },
     {
@@ -35,12 +35,16 @@
     {
       "action": "camera.zoom_in",
       "key": "EQUAL",
-      "mods": ["CTRL"]
+      "mods": [
+        "CTRL"
+      ]
     },
     {
       "action": "camera.zoom_out",
       "key": "MINUS",
-      "mods": ["CTRL"]
+      "mods": [
+        "CTRL"
+      ]
     },
     {
       "action": "camera.reset",
@@ -108,11 +112,6 @@
       "mods": []
     },
     {
-      "action": "sim.track_next",
-      "key": "T",
-      "mods": []
-    },
-    {
       "action": "sim.track_stop",
       "key": "ESCAPE",
       "mods": []
@@ -125,11 +124,6 @@
     {
       "action": "hud.client_list",
       "key": "F2",
-      "mods": []
-    },
-    {
-      "action": "nav.child_next",
-      "key": "G",
       "mods": []
     },
     {
@@ -161,6 +155,128 @@
       "action": "repl.history_next",
       "key": "DOWN",
       "mods": []
+    },
+    {
+      "action": "sim.tick_speed_increase",
+      "key": "PERIOD",
+      "mods": [
+        "ALT"
+      ]
+    },
+    {
+      "action": "sim.tick_speed_decrease",
+      "key": "COMMA",
+      "mods": [
+        "ALT"
+      ]
+    },
+    {
+      "action": "sim.dataset_increase",
+      "key": "EQUAL",
+      "mods": [
+        "ALT"
+      ]
+    },
+    {
+      "action": "sim.dataset_decrease",
+      "key": "MINUS",
+      "mods": [
+        "ALT"
+      ]
+    },
+    {
+      "action": "ui.system_selector",
+      "key": "S",
+      "mods": [
+        "SUPER"
+      ]
+    },
+    {
+      "action": "ui.label_cycle",
+      "key": "L",
+      "mods": [
+        "CTRL"
+      ]
+    },
+    {
+      "action": "ui.infra_cycle",
+      "key": "I",
+      "mods": []
+    },
+    {
+      "action": "ui.mouse_mode_toggle",
+      "key": "M",
+      "mods": [
+        "ALT"
+      ]
+    },
+    {
+      "action": "ui.quit",
+      "key": "Q",
+      "mods": [
+        "ALT"
+      ]
+    },
+    {
+      "action": "ui.record_toggle",
+      "key": "R",
+      "mods": [
+        "ALT"
+      ]
+    },
+    {
+      "action": "ui.record_pause",
+      "key": "R",
+      "mods": [
+        "SHIFT",
+        "ALT"
+      ]
+    },
+    {
+      "action": "camera.center",
+      "key": "C",
+      "mods": []
+    },
+    {
+      "action": "nav.child_next",
+      "key": "G",
+      "mods": []
+    },
+    {
+      "action": "nav.parent",
+      "key": "B",
+      "mods": []
+    },
+    {
+      "action": "nav.sibling_next",
+      "key": "TAB",
+      "mods": []
+    },
+    {
+      "action": "nav.sibling_prev",
+      "key": "TAB",
+      "mods": [
+        "SHIFT"
+      ]
+    },
+    {
+      "action": "nav.select",
+      "key": "SLASH",
+      "mods": []
+    },
+    {
+      "action": "ui.debug_labels",
+      "key": "BACKSLASH",
+      "mods": [
+        "CTRL"
+      ]
+    },
+    {
+      "action": "hud.info",
+      "key": "I",
+      "mods": [
+        "CTRL"
+      ]
     }
   ]
 }

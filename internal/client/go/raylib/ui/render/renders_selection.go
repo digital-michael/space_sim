@@ -16,18 +16,17 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		return
 	}
 
-	// Semi-transparent background - responsive to screen size
 	sw := int32(currentScreenWidth())
 	sh := int32(currentScreenHeight())
-	titleFont := scaledInt32(20)
 	hintFont := scaledInt32(12)
 	filterFont := scaledInt32(16)
 	filterHintFont := scaledInt32(14)
-	tabFont := scaledInt32(14)
+	tabFont := scaledInt32(18)
 	itemFont := scaledInt32(20)
 	itemSubFont := scaledInt32(16)
+	catLabelFont := scaledInt32(13)
 	arrowFont := scaledInt32(20)
-	// Panel is 40% of screen width, clamped to reasonable bounds (400-700)
+
 	bgWidth := sw * 40 / 100
 	if bgWidth < scaledInt32(400) {
 		bgWidth = scaledInt32(400)
@@ -35,78 +34,107 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 	if bgWidth > scaledInt32(700) {
 		bgWidth = scaledInt32(700)
 	}
-	// Panel height matches width for square aspect
 	bgHeight := bgWidth
-	// Center on screen
 	bgX := (sw - bgWidth) / 2
 	bgY := (sh - bgHeight) / 2
 	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 200})
 	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
 
-	// Title - show different text based on mode
-	titleText := "SELECT OBJECT"
-	if inputState.SelectionMode == ui.SelectionModeJump {
-		titleText = "SELECT OBJECT TO JUMP TO"
-	} else if inputState.SelectionMode == ui.SelectionModeTrack {
-		titleText = "SELECT OBJECT TO TRACK"
-	} else if inputState.SelectionMode == ui.SelectionModeTrackEquatorial {
-		titleText = "SELECT OBJECT (EQUATORIAL)"
+	// Left sidebar for vertical category tabs
+	tabSidebarW := scaledInt32(155)
+	contentX := bgX + tabSidebarW
+	contentW := bgWidth - tabSidebarW
+
+	// Precompute list startY: bgY + radio(30) + hints(30) + filter(30) + gap(5) + gap(5) + 10 padding = bgY+110
+	// Used for both tab alignment and list rendering.
+	listStartY := bgY + scaledInt32(110)
+
+	// Vertical divider
+	rl.DrawLine(contentX, bgY+1, contentX, bgY+bgHeight-1, rl.Color{R: 70, G: 70, B: 70, A: 255})
+
+	// Category tabs — all categories always shown, active ones highlighted
+	allCategories := []engine.ObjectCategory{
+		engine.CategoryBlackHole,
+		engine.CategoryStar,
+		engine.CategoryPlanet,
+		engine.CategoryDwarfPlanet,
+		engine.CategoryMoon,
+		engine.CategoryAsteroid,
+		engine.CategoryRing,
+		engine.CategoryBelt,
+		engine.CategoryRogue,
+		engine.CategoryArtifact,
 	}
-	rl.DrawText(titleText, bgX+scaledInt32(50), bgY+scaledInt32(10), titleFont, rl.White)
-	rl.DrawText("UP/DOWN: select, LEFT/RIGHT: category, ENTER: confirm, ESC: cancel", bgX+scaledInt32(10), bgY+scaledInt32(40), hintFont, rl.LightGray)
-	rl.DrawText("PgUp/PgDn: page, HOME/END: jump to start/end", bgX+scaledInt32(10), bgY+scaledInt32(55), hintFont, rl.Gray)
+	present := make(map[engine.ObjectCategory]bool, len(state.NavigationOrder))
+	for _, cat := range state.NavigationOrder {
+		present[cat] = true
+	}
+	tabH := scaledInt32(28)
+	tabGap := scaledInt32(3)
+	for i, cat := range allCategories {
+		ty := listStartY + int32(i)*(tabH+tabGap)
+		tx := bgX + scaledInt32(3)
+		tw := tabSidebarW - scaledInt32(6)
+		hasData := present[cat]
+		tabBg := rl.Color{R: 35, G: 35, B: 35, A: 255}
+		textColor := rl.Color{R: 155, G: 155, B: 155, A: 255}
+		if !hasData {
+			tabBg = rl.Color{R: 22, G: 22, B: 22, A: 255}
+			textColor = rl.Color{R: 70, G: 70, B: 70, A: 255}
+		}
+		if cat == inputState.SelectedCategory {
+			tabBg = rl.Color{R: 60, G: 100, B: 145, A: 255}
+			textColor = rl.White
+		}
+		rl.DrawRectangle(tx, ty, tw, tabH, tabBg)
+		rl.DrawRectangleLines(tx, ty, tw, tabH, rl.Color{R: 60, G: 60, B: 60, A: 255})
+		name := categoryDisplayName(cat)
+		rl.DrawText(name, tx+scaledInt32(5), ty+(tabH-tabFont)/2, tabFont, textColor)
+	}
+
+	// Radio buttons: Face / Jump / Track — TAB/SHIFT+TAB cycles.
+	type radioOption struct {
+		label string
+		mode  ui.SelectionMode
+	}
+	radioOptions := []radioOption{
+		{"Face", ui.SelectionModeFace},
+		{"Jump", ui.SelectionModeJump},
+		{"Track", ui.SelectionModeTrack},
+	}
+	radioFont := scaledInt32(18)
+	radioY := bgY + scaledInt32(12)
+	radioSpacing := contentW / int32(len(radioOptions)+1)
+	for i, opt := range radioOptions {
+		selected := inputState.SelectionMode == opt.mode
+		cx := contentX + radioSpacing*int32(i+1)
+		cy := radioY + scaledInt32(9)
+		r := float32(scaledInt32(6))
+		col := rl.Gray
+		if selected {
+			col = rl.White
+		}
+		if selected {
+			rl.DrawCircle(cx, cy, r, col)
+		} else {
+			rl.DrawCircleLines(cx, cy, r, col)
+		}
+		rl.DrawText(opt.label, cx+scaledInt32(10), radioY, radioFont, col)
+	}
+	rl.DrawText("UP/DOWN: select  LEFT/RIGHT: tab  ENTER: confirm  ESC: cancel", contentX+scaledInt32(5), bgY+scaledInt32(40), hintFont, rl.LightGray)
+	rl.DrawText("TAB/SHIFT+TAB: mode    PgUp/PgDn: page    HOME/END: top/end", contentX+scaledInt32(5), bgY+scaledInt32(55), hintFont, rl.Gray)
 
 	// Filter text box
 	filterY := bgY + scaledInt32(75)
 	filterBoxHeight := scaledInt32(25)
 	if inputState.FilterText != "" {
-		rl.DrawRectangle(bgX+scaledInt32(10), filterY, bgWidth-scaledInt32(20), filterBoxHeight, rl.Color{R: 40, G: 40, B: 40, A: 255})
-		rl.DrawRectangleLines(bgX+scaledInt32(10), filterY, bgWidth-scaledInt32(20), filterBoxHeight, rl.Color{R: 100, G: 150, B: 200, A: 255})
-		filterDisplay := "Filter: " + inputState.FilterText + "_"
-		rl.DrawText(filterDisplay, bgX+scaledInt32(15), filterY+scaledInt32(5), filterFont, rl.Green)
+		rl.DrawRectangle(contentX+scaledInt32(5), filterY, contentW-scaledInt32(10), filterBoxHeight, rl.Color{R: 40, G: 40, B: 40, A: 255})
+		rl.DrawRectangleLines(contentX+scaledInt32(5), filterY, contentW-scaledInt32(10), filterBoxHeight, rl.Color{R: 100, G: 150, B: 200, A: 255})
+		rl.DrawText("Filter: "+inputState.FilterText+"_", contentX+scaledInt32(10), filterY+scaledInt32(5), filterFont, rl.Green)
 		filterY += filterBoxHeight + scaledInt32(5)
 	} else {
-		rl.DrawText("Type to filter...", bgX+scaledInt32(15), filterY+scaledInt32(5), filterHintFont, rl.Gray)
+		rl.DrawText("Type to filter...", contentX+scaledInt32(10), filterY+scaledInt32(5), filterHintFont, rl.Gray)
 		filterY += filterBoxHeight + scaledInt32(5)
-	}
-
-	// Category tabs - map display order to ObjectCategory enum values
-	type categoryTab struct {
-		name     string
-		category engine.ObjectCategory
-	}
-	categories := []categoryTab{
-		{"Black Holes", engine.CategoryBlackHole},
-		{"Stars", engine.CategoryStar}, // First tab
-		{"Planets", engine.CategoryPlanet},
-		{"Dwarf Planets", engine.CategoryDwarfPlanet},
-		{"Moons", engine.CategoryMoon},
-		{"Ring Systems", engine.CategoryRing},
-		{"Belts", engine.CategoryBelt}, // Asteroid Belt and Kuiper Belt
-	}
-	// Calculate tab width based on panel width and number of tabs
-	numTabs := int32(len(categories))
-	tabWidth := (bgWidth - scaledInt32(20)) / numTabs // 20 pixels margin
-	if tabWidth < scaledInt32(60) {
-		tabWidth = scaledInt32(60)
-	}
-	tabHeight := scaledInt32(30)
-	tabY := filterY
-
-	for i, cat := range categories {
-		tabX := bgX + scaledInt32(10) + int32(i)*tabWidth
-		tabColor := rl.Color{R: 50, G: 50, B: 50, A: 255}
-		textColor := rl.LightGray
-
-		// Highlight active category
-		if cat.category == inputState.SelectedCategory {
-			tabColor = rl.Color{R: 80, G: 120, B: 160, A: 255}
-			textColor = rl.White
-		}
-
-		rl.DrawRectangle(tabX, tabY, tabWidth-scaledInt32(5), tabHeight, tabColor)
-		rl.DrawRectangleLines(tabX, tabY, tabWidth-scaledInt32(5), tabHeight, rl.White)
-		rl.DrawText(cat.name, tabX+scaledInt32(5), tabY+scaledInt32(8), tabFont, textColor)
 	}
 
 	// Filter objects by category
@@ -114,14 +142,12 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		inputState.FilteredIndices = filterObjectsByCategory(state.Objects, inputState.SelectedCategory)
 	}
 
-	// Object list (filtered by category) - start below the tabs
-	startY := tabY + tabHeight + scaledInt32(10)
+	startY := listStartY
 	lineHeight := scaledInt32(30)
-	listAreaHeight := bgHeight - (startY - bgY) - scaledInt32(10) // Available height for list
+	listAreaHeight := bgHeight - (startY - bgY) - scaledInt32(10)
 	visibleItems := int(listAreaHeight / lineHeight)
 	totalItems := len(inputState.FilteredIndices)
 
-	// Calculate scroll bounds
 	maxScroll := totalItems - visibleItems
 	if maxScroll < 0 {
 		maxScroll = 0
@@ -138,7 +164,6 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 	if currentTime-inputState.LastDistanceUpdate > 5.0 {
 		inputState.DistanceCache = make(map[int]string)
 		for _, idx := range inputState.FilteredIndices {
-			// Skip virtual belt indices
 			if idx < 0 {
 				continue
 			}
@@ -149,66 +174,103 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		inputState.LastDistanceUpdate = currentTime
 	}
 
-	// Render only visible items
+	filterActive := inputState.FilterText != ""
+
+	// Render visible items
 	for i := inputState.ScrollOffset; i < inputState.ScrollOffset+visibleItems && i < totalItems; i++ {
 		actualIndex := inputState.FilteredIndices[i]
 		y := startY + int32(i-inputState.ScrollOffset)*lineHeight
 
-		// Highlight selected
 		if i == inputState.SelectedIndex {
-			rl.DrawRectangle(bgX+scaledInt32(5), y-scaledInt32(2), bgWidth-scaledInt32(10), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
-			rl.DrawText(">", bgX+scaledInt32(15), y+scaledInt32(5), arrowFont, rl.Yellow)
+			rl.DrawRectangle(contentX+scaledInt32(3), y-scaledInt32(2), contentW-scaledInt32(6), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
+			rl.DrawText(">", contentX+scaledInt32(15), y+scaledInt32(5), arrowFont, rl.Yellow)
 		}
 
-		// Handle virtual belt indices
+		// Right edge for dist text: just left of the color swatch (swatch at contentW-28, gap 5)
+		swatchX := contentX + contentW - scaledInt32(28)
+		swatchRect := func(col rl.Color) {
+			rl.DrawRectangleRec(rl.Rectangle{X: float32(swatchX), Y: float32(y + scaledInt32(7)), Width: float32(scaledInt32(16)), Height: float32(scaledInt32(16))}, col)
+		}
+		distRight := swatchX - scaledInt32(5)
+
 		if actualIndex == -1 {
-			// Asteroid Belt
-			rl.DrawText("Asteroid Belt", bgX+scaledInt32(40), y+scaledInt32(5), itemFont, rl.White)
-			rl.DrawText("195-240 AU", bgX+scaledInt32(250), y+scaledInt32(5), itemSubFont, rl.LightGray)
-			rl.DrawRectangleRec(rl.Rectangle{X: float32(bgX + scaledInt32(350)), Y: float32(y + scaledInt32(5)), Width: float32(scaledInt32(20)), Height: float32(scaledInt32(20))}, rl.Color{R: 150, G: 150, B: 150, A: 255})
+			rl.DrawText("Asteroid Belt", contentX+scaledInt32(35), y+scaledInt32(5), itemFont, rl.White)
+			d := "195-240 AU"
+			rl.DrawText(d, distRight-rl.MeasureText(d, itemSubFont), y+scaledInt32(8), itemSubFont, rl.LightGray)
+			swatchRect(rl.Color{R: 150, G: 150, B: 150, A: 255})
 		} else if actualIndex == -2 {
-			// Kuiper Belt
-			rl.DrawText("Kuiper Belt", bgX+scaledInt32(40), y+scaledInt32(5), itemFont, rl.White)
-			rl.DrawText("3000-5000 AU", bgX+scaledInt32(250), y+scaledInt32(5), itemSubFont, rl.LightGray)
-			rl.DrawRectangleRec(rl.Rectangle{X: float32(bgX + scaledInt32(350)), Y: float32(y + scaledInt32(5)), Width: float32(scaledInt32(20)), Height: float32(scaledInt32(20))}, rl.Color{R: 200, G: 150, B: 130, A: 255})
+			rl.DrawText("Kuiper Belt", contentX+scaledInt32(35), y+scaledInt32(5), itemFont, rl.White)
+			d := "3000-5000 AU"
+			rl.DrawText(d, distRight-rl.MeasureText(d, itemSubFont), y+scaledInt32(8), itemSubFont, rl.LightGray)
+			swatchRect(rl.Color{R: 200, G: 150, B: 130, A: 255})
 		} else {
-			// Normal object
 			obj := state.Objects[actualIndex]
-
-			// Object name and info
-			nameText := fmt.Sprintf("%s", obj.Meta.Name)
-			distText := inputState.DistanceCache[actualIndex]
-			if distText == "" {
-				distText = "--- units" // Placeholder until first update
+			nameText := obj.Meta.Name
+			objColor := rl.Color{R: obj.Meta.Color.R, G: obj.Meta.Color.G, B: obj.Meta.Color.B, A: 255}
+			if filterActive {
+				// Cross-category: leading color swatch + name + right-aligned category label
+				rl.DrawRectangleRec(rl.Rectangle{X: float32(contentX + scaledInt32(22)), Y: float32(y + scaledInt32(8)), Width: float32(scaledInt32(14)), Height: float32(scaledInt32(14))}, objColor)
+				rl.DrawText(nameText, contentX+scaledInt32(42), y+scaledInt32(5), itemFont, rl.White)
+				catLabel := categoryShortLabel(obj.Meta.Category)
+				catLabelW := rl.MeasureText(catLabel, catLabelFont)
+				rl.DrawText(catLabel, contentX+contentW-catLabelW-scaledInt32(10), y+scaledInt32(9), catLabelFont, rl.Color{R: 120, G: 190, B: 120, A: 255})
+			} else {
+				// Normal: name + right-aligned dist + color swatch
+				distText := inputState.DistanceCache[actualIndex]
+				if distText == "" {
+					distText = "--- units"
+				}
+				rl.DrawText(nameText, contentX+scaledInt32(35), y+scaledInt32(5), itemFont, rl.White)
+				rl.DrawText(distText, distRight-rl.MeasureText(distText, itemSubFont), y+scaledInt32(8), itemSubFont, rl.LightGray)
+				swatchRect(objColor)
 			}
-
-			rl.DrawText(nameText, bgX+scaledInt32(40), y+scaledInt32(5), itemFont, rl.White)
-			rl.DrawText(distText, bgX+scaledInt32(250), y+scaledInt32(5), itemSubFont, rl.LightGray)
-
-			// Color indicator
-			colorBox := rl.Rectangle{X: float32(bgX + scaledInt32(350)), Y: float32(y + scaledInt32(5)), Width: float32(scaledInt32(20)), Height: float32(scaledInt32(20))}
-			rl.DrawRectangleRec(colorBox, rl.Color{R: obj.Meta.Color.R, G: obj.Meta.Color.G, B: obj.Meta.Color.B, A: 255})
 		}
 	}
 
-	// Draw scroll bar if needed
+	// Scrollbar
 	if totalItems > visibleItems {
-		scrollBarX := bgX + bgWidth - scaledInt32(15)
+		scrollBarX := contentX + contentW - scaledInt32(15)
 		scrollBarY := startY
 		scrollBarHeight := listAreaHeight
 		scrollBarWidth := scaledInt32(10)
-
-		// Scroll bar background
 		rl.DrawRectangle(scrollBarX, scrollBarY, scrollBarWidth, scrollBarHeight, rl.Color{R: 30, G: 30, B: 30, A: 200})
-
-		// Scroll thumb
 		thumbHeight := int32(float32(visibleItems) / float32(totalItems) * float32(scrollBarHeight))
 		if thumbHeight < scaledInt32(20) {
-			thumbHeight = scaledInt32(20) // Minimum thumb size
+			thumbHeight = scaledInt32(20)
 		}
-		thumbY := scrollBarY + int32(float32(inputState.ScrollOffset)/float32(maxScroll)*float32(scrollBarHeight-thumbHeight))
+		thumbY := scrollBarY
+		if maxScroll > 0 {
+			thumbY += int32(float32(inputState.ScrollOffset) / float32(maxScroll) * float32(scrollBarHeight-thumbHeight))
+		}
 		rl.DrawRectangle(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.Color{R: 100, G: 150, B: 200, A: 255})
 		rl.DrawRectangleLines(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.White)
+	}
+}
+
+func categoryDisplayName(cat engine.ObjectCategory) string {
+	switch cat {
+	case engine.CategoryPlanet:
+		return "Planets"
+	case engine.CategoryDwarfPlanet:
+		return "Dwarf Planets"
+	case engine.CategoryMoon:
+		return "Moons"
+	case engine.CategoryAsteroid:
+		return "Asteroids"
+	case engine.CategoryRing:
+		return "Ring Systems"
+	case engine.CategoryStar:
+		return "Stars"
+	case engine.CategoryBelt:
+		return "Belts"
+	case engine.CategoryRogue:
+		return "Rogues"
+	case engine.CategoryArtifact:
+		return "Artifacts"
+	case engine.CategoryBlackHole:
+		return "Black Holes"
+	default:
+		return "Objects"
 	}
 }
 
@@ -445,4 +507,31 @@ func filterObjectsByCategoryAndText(objects []*engine.Object, category engine.Ob
 		}
 	}
 	return indices
+}
+
+func categoryShortLabel(cat engine.ObjectCategory) string {
+	switch cat {
+	case engine.CategoryPlanet:
+		return "planet"
+	case engine.CategoryDwarfPlanet:
+		return "dwarf"
+	case engine.CategoryMoon:
+		return "moon"
+	case engine.CategoryAsteroid:
+		return "asteroid"
+	case engine.CategoryRing:
+		return "ring"
+	case engine.CategoryStar:
+		return "star"
+	case engine.CategoryBelt:
+		return "belt"
+	case engine.CategoryRogue:
+		return "rogue"
+	case engine.CategoryArtifact:
+		return "artifact"
+	case engine.CategoryBlackHole:
+		return "blackhole"
+	default:
+		return "object"
+	}
 }

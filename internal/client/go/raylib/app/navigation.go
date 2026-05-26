@@ -94,20 +94,16 @@ func filterObjectsByCategoryAndText(objects []*engine.Object, category engine.Ob
 		return indices
 	}
 
-	// Normal category filtering
+	// Normal filtering: when text is active search all categories; otherwise
+	// restrict to the selected category tab.
 	for i, obj := range objects {
-		// First check category match
-		if obj.Meta.Category != category {
-			continue
-		}
-
-		// If no filter text, include all objects in category
 		if filterText == "" {
+			if obj.Meta.Category != category {
+				continue
+			}
 			indices = append(indices, i)
 			continue
 		}
-
-		// Check if object name contains the filter text (case-insensitive)
 		lowerName := strings.ToLower(obj.Meta.Name)
 		if strings.Contains(lowerName, lowerFilter) {
 			indices = append(indices, i)
@@ -117,9 +113,10 @@ func filterObjectsByCategoryAndText(objects []*engine.Object, category engine.Ob
 }
 
 // selectionDialogVisibleItems returns the number of list rows visible inside
-// the Jump/Track selection dialog at the current window size.
+// the selection dialog at the current window size.
 // The panel is 40% of screen width, clamped to [400, 700], and square.
-// Fixed header height is 155 px (startY=145 + bottom-padding=10); line height is 30 px.
+// Header height is 120 px (startY=110 + bottom-padding=10); line height is 30 px.
+// Tabs are now vertical on the left sidebar, so no horizontal tab row in the header.
 func selectionDialogVisibleItems() int {
 	bgWidth := int32(rl.GetScreenWidth()) * 40 / 100
 	if bgWidth < 400 {
@@ -128,5 +125,5 @@ func selectionDialogVisibleItems() int {
 	if bgWidth > 700 {
 		bgWidth = 700
 	}
-	return int((bgWidth - 155) / 30)
+	return int((bgWidth - 120) / 30)
 }

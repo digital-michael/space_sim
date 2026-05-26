@@ -7,6 +7,7 @@ type SelectionMode int
 
 const (
 	SelectionModeNone SelectionMode = iota
+	SelectionModeFace            // rotate camera to face target; position unchanged
 	SelectionModeJump
 	SelectionModeTrack
 	SelectionModeTrackEquatorial

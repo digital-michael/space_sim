@@ -243,10 +243,11 @@ func TestSelectionModeValues(t *testing.T) {
 		wantInt int
 	}{
 		{"SelectionModeNone", SelectionModeNone, 0},
-		{"SelectionModeJump", SelectionModeJump, 1},
-		{"SelectionModeTrack", SelectionModeTrack, 2},
-		{"SelectionModeTrackEquatorial", SelectionModeTrackEquatorial, 3},
-		{"SelectionModeSystemSelector", SelectionModeSystemSelector, 4},
+		{"SelectionModeFace", SelectionModeFace, 1},
+		{"SelectionModeJump", SelectionModeJump, 2},
+		{"SelectionModeTrack", SelectionModeTrack, 3},
+		{"SelectionModeTrackEquatorial", SelectionModeTrackEquatorial, 4},
+		{"SelectionModeSystemSelector", SelectionModeSystemSelector, 5},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

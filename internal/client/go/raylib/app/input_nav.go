@@ -10,7 +10,7 @@ import (
 )
 
 // handleInputNav processes object navigation keybindings:
-// child/parent drill (F/B), sibling cycling (TAB), jump (J), and track-next (T).
+// child/parent drill (G/B), sibling cycling (TAB), and the combined selector (/).
 func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationState, km *input.KeyMap, suspended bool) {
 	if suspended {
 		return
@@ -150,18 +150,9 @@ func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationSt
 		}
 	}
 
-	// nav.jump: open jump dialog (free-fly mode only).
-	if km.IsPressed(input.ActionNavJump) && session.cameraState.Mode == ui.CameraModeFree {
+	// nav.select: open the combined Face/Jump/Track selector dialog.
+	if km.IsPressed(input.ActionNavSelect) {
 		session.inputState.StartSelection(ui.SelectionModeJump)
-		session.inputState.FilterText = ""
-		session.inputState.ScrollOffset = 0
-		session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)
-	}
-
-	// sim.track_next: open tracking dialog (free-fly or tracking mode).
-	if km.IsPressed(input.ActionSimTrackNext) &&
-		(session.cameraState.Mode == ui.CameraModeFree || session.cameraState.Mode == ui.CameraModeTracking) {
-		session.inputState.StartSelection(ui.SelectionModeTrack)
 		session.inputState.FilterText = ""
 		session.inputState.ScrollOffset = 0
 		session.inputState.FilteredIndices = filterObjectsByCategoryAndText(state.Objects, session.inputState.SelectedCategory, session.inputState.FilterText)

@@ -6,13 +6,13 @@
       "subtype": "periodic_comet",
       "name": "Halley's Comet",
       "orbit": {
-        "semi_major_axis": 17.8,
+        "semi_major_axis": 1783,
         "eccentricity": 0.967,
-        "inclination": 162.3,
-        "longitude_ascending_node": 58.42,
-        "argument_periapsis": 111.33,
-        "orbital_period": 2765.5,
-        "initial_mean_anomaly": "180"
+        "inclination": 2.8325,
+        "longitude_ascending_node": 1.0196,
+        "argument_periapsis": 1.9433,
+        "orbital_period": 27490,
+        "initial_mean_anomaly": "3.14159"
       },
       "physical": {
         "mass": 2.2e14,

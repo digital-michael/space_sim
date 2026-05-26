@@ -128,6 +128,7 @@ func (s *SimulationState) clone(pool *ObjectPool) *SimulationState {
 		AllocatedDatasets:  make(map[AsteroidDataset]bool, len(s.AllocatedDatasets)),
 		AsteroidBeltConfig: s.AsteroidBeltConfig, // immutable after load
 		KuiperBeltConfig:   s.KuiperBeltConfig,   // immutable after load
+		NavigationOrder:    s.NavigationOrder,     // immutable after load, safe to share
 		NBodyMode:          s.NBodyMode,
 		SystemBarycenter:   s.SystemBarycenter,
 		// SystemSet intentionally NOT copied: the back buffer owns the live

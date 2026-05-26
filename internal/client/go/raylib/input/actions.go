@@ -86,8 +86,11 @@ const (
 	// HUD per-category toggles
 	ActionHUDInfo InputAction = 50
 
+	// Combined object selector (Face / Jump / Track dialog)
+	ActionNavSelect InputAction = 51
+
 	// sentinel — must equal last constant + 1
-	actionCount InputAction = 51
+	actionCount InputAction = 52
 )
 
 // actionNames maps each action to its dot-notation vocabulary name.
@@ -148,6 +151,8 @@ var actionNames = map[InputAction]string{
 	ActionUIDebugLabels: "ui.debug_labels",
 
 	ActionHUDInfo: "hud.info",
+
+	ActionNavSelect: "nav.select",
 }
 
 // nameActions is the reverse of actionNames, built at init.
@@ -211,6 +216,7 @@ func OrderedActions() []InputAction {
 		ActionCameraZoomIn, ActionCameraZoomOut,
 		ActionCameraReset, ActionCameraToggleFreeFly, ActionCameraCenter,
 		// Navigation (tracking-mode hierarchy)
+		ActionNavSelect,
 		ActionNavChildNext, ActionNavParent,
 		ActionNavSiblingNext, ActionNavSiblingPrev,
 		ActionNavJump,

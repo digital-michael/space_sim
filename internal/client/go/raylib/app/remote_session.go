@@ -96,8 +96,10 @@ func deriveNavigationOrder(objects []*engine.Object) []engine.ObjectCategory {
 		engine.CategoryDwarfPlanet,
 		engine.CategoryMoon,
 		engine.CategoryAsteroid,
-		engine.CategoryBelt,
 		engine.CategoryRing,
+		engine.CategoryBelt,
+		engine.CategoryRogue,
+		engine.CategoryArtifact,
 	}
 	present := make(map[engine.ObjectCategory]bool, len(objects))
 	for _, obj := range objects {

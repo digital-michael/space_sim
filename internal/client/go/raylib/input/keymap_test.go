@@ -431,7 +431,7 @@ func TestScanKeybindingsDir_FindsJsonFiles(t *testing.T) {
 // ─── Phase A: OrderedActions ─────────────────────────────────────────────────
 
 func TestOrderedActionsCount(t *testing.T) {
-	// actionCount = 51, so we expect 50 actions (ActionNone excluded).
+	// actionCount = 52, so we expect 51 actions (ActionNone excluded).
 	want := int(actionCount) - 1
 	got := OrderedActions()
 	if len(got) != want {
