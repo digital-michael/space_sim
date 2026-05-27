@@ -36,7 +36,7 @@ func (a *App) handleInputDisplay(session *runtimeSession, km *input.KeyMap, susp
 	if !suspended && km.IsPressed(input.ActionUIMouseModeToggle) {
 		a.runtime.MouseModeEnabled = !a.runtime.MouseModeEnabled
 		if a.runtime.MouseModeEnabled {
-			rl.DisableCursor()
+			disableCursor()
 		} else {
 			rl.EnableCursor()
 		}

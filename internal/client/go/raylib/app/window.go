@@ -56,11 +56,24 @@ func (a *App) initWindow() error {
 	rl.SetTargetFPS(defaultTargetFPS)
 	rl.SetExitKey(0)
 	if a.runtime.MouseModeEnabled {
-		rl.DisableCursor()
+		disableCursor()
 	}
 
 	a.syncWindowState()
 	return nil
+}
+
+// disableCursor hides the cursor for mouse-look mode in a Wayland-safe way.
+// rl.DisableCursor calls glfwSetCursorPos internally, which is unsupported on
+// Wayland and triggers a GLFW platform error that can break keyboard event
+// delivery. On Wayland we fall back to HideCursor (cursor bounded by the
+// window edge but no GLFW pointer-lock, so keyboard input stays stable).
+func disableCursor() {
+	if onWaylandCompositor() {
+		rl.HideCursor()
+	} else {
+		rl.DisableCursor()
+	}
 }
 
 // onWaylandCompositor reports whether the process is running under a Wayland
