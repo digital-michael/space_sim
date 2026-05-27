@@ -21,7 +21,9 @@
       },
       "rendering": {
         "material": "blackhole",
-        "fallback_color": [0, 0, 0, 255]
+        "fallback_color": [0, 0, 0, 255],
+        "disk_tilt": 22,
+        "accretion_energy": 2.8
       },
       "importance": 100
     },

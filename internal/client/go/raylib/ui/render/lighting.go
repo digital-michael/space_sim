@@ -143,6 +143,92 @@ void main() {
 }
 `
 
+// bhFS is the fragment shader for the black hole visual effect.
+// Renders on a large sphere (~7× event horizon radius) centred at the BH.
+// The camera sits at the origin (floating-origin coordinate system), so
+// viewDir = normalize(-fragPos).
+//
+// sinTheta (screen-space normalised radius) drives all ring computations:
+//   0 = centre of BH disk  →  1 = limb of the glow sphere.
+//
+// innerFrac = (2.6 × R_bh) / R_outer  — the critical-impact-parameter radius
+// beyond which captured photons appear; the shadow edge / photon ring lives here.
+// intensity scales brightness with BH mass (passed per-object from Go).
+const bhFS = `#version 330
+in vec3 fragPos;
+in vec3 fragNormal;
+uniform float innerFrac;
+uniform float intensity;
+out vec4 finalColor;
+
+vec3 accrColor(float t) {
+    vec3 hot  = vec3(1.00, 0.96, 0.78);
+    vec3 mid  = vec3(1.00, 0.42, 0.06);
+    vec3 cool = vec3(0.52, 0.08, 0.02);
+    if (t < 0.5) return mix(hot, mid, t * 2.0);
+    return mix(mid, cool, (t - 0.5) * 2.0);
+}
+
+void main() {
+    vec3 viewDir = normalize(-fragPos);
+    vec3 n       = normalize(fragNormal);
+    float cosT   = dot(n, viewDir);
+    if (cosT < 0.0) { finalColor = vec4(0.0); return; }
+    float r = sqrt(max(0.0, 1.0 - cosT * cosT));
+
+    // Shadow interior: output nothing; solid BH sphere and starfield show through.
+    if (r < innerFrac * 0.91) { finalColor = vec4(0.0); return; }
+
+    // Photon ring: narrow bright band at the shadow edge.
+    float ringW = innerFrac * 0.22;
+    float ringD = abs(r - innerFrac);
+    float ringT = pow(max(0.0, 1.0 - ringD / ringW), 1.25);
+    vec3 ringCol = mix(vec3(1.0, 0.97, 0.82), vec3(1.0, 0.62, 0.20), ringD / (ringW + 0.001) * 0.6);
+    ringCol *= ringT * intensity * 5.8;
+
+    // Accretion disk: temperature gradient from shadow edge outward.
+    float aEnd   = 0.70;
+    float aT     = clamp((r - innerFrac) / max(aEnd - innerFrac, 0.001), 0.0, 1.0);
+    float aMask  = step(innerFrac, r) * (1.0 - step(aEnd, r));
+    float aFade  = pow(1.0 - aT, 1.35);
+    vec3  aCol   = accrColor(aT) * aFade * aMask * intensity * 2.4;
+
+    // Relativistic corona: faint blue-purple halo beyond the disk.
+    float hFrac  = max(0.0, r - innerFrac) / max(0.95 - innerFrac, 0.001);
+    float haze   = max(0.0, 1.0 - hFrac * 1.6) * step(innerFrac, r) * intensity * 0.32;
+    vec3  hCol   = vec3(0.16, 0.26, 0.78) * haze;
+
+    vec3  col = ringCol + aCol + hCol;
+    float a   = clamp(length(col) * 0.72, 0.0, 1.0);
+    finalColor = vec4(col, a);
+}
+`
+
+// bhShaderState owns the black hole visual shader.
+type bhShaderState struct {
+	shader       rl.Shader
+	loaded       bool
+	locInnerFrac int32
+	locIntensity int32
+}
+
+func (bh *bhShaderState) load() {
+	if bh.loaded {
+		return
+	}
+	bh.shader = rl.LoadShaderFromMemory(atmoVS, bhFS)
+	bh.locInnerFrac = rl.GetShaderLocation(bh.shader, "innerFrac")
+	bh.locIntensity = rl.GetShaderLocation(bh.shader, "intensity")
+	bh.loaded = true
+}
+
+func (bh *bhShaderState) unload() {
+	if bh.loaded {
+		rl.UnloadShader(bh.shader)
+		bh.loaded = false
+	}
+}
+
 // atmosphereState owns the rim-glow + day/night atmosphere shader.
 type atmosphereState struct {
 	shader          rl.Shader

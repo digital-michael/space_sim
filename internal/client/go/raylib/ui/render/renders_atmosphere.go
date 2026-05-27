@@ -431,25 +431,198 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	rl.EndBlendMode()
 }
 
-// drawBlackHoleGlow renders a subtle additive glow sphere around a black hole.
-// Black holes have no atmosphere but benefit from a faint blue-white halo to
-// make them visible against the starfield and to hint at Hawking/accretion
-// radiation. Two concentric glow shells are drawn: an inner ring at 1.4× the
-// body radius (denser glow) and an outer ring at 2.2× (wider fade).
-// Both use BlendAddColors so they never darken the scene.
-func (r *Renderer) drawBlackHoleGlow(obj *engine.Object, pos rl.Vector3) {
+// drawBlackHoleVisual renders a black hole using a flat accretion disk mesh plus
+// two Fresnel shell halos:
+//
+//   - Flat annular disk (1.5 R → 7 R): temperature gradient from near-white inner
+//     edge (ISCO) to transparent outer rim; angle-dependent (thin line edge-on, full
+//     ellipse face-on).  Skipped when accretion energy is effectively zero.
+//
+//   - Shell 1 (1.6 R): tight photon-ring halo, white-orange Fresnel rim. Always
+//     present — it is a gravitational effect, not an accretion effect.
+//
+//   - Shell 2 (2.2 R): lamppost-corona haze, blue-purple. Scales with accretion energy.
+//
+// Disk tilt priority: BHDiskTilt (rendering JSON) → AxialTilt (physical JSON) → 30° default.
+// Accretion energy priority: BHAccretionEnergy (0 = absent → 1.0 default).
+func (r *Renderer) drawBlackHoleVisual(obj *engine.Object, pos rl.Vector3) {
 	radius := float32(obj.Meta.PhysicalRadius)
 	if radius <= 0 {
 		return
 	}
+
+	if !r.atmosphere.loaded {
+		r.atmosphere.load()
+	}
+	if !r.atmoSphereLoaded {
+		mesh := rl.GenMeshSphere(1.0, 64, 32)
+		r.atmoSphere = rl.LoadModelFromMesh(mesh)
+		r.atmoSphereLoaded = true
+	}
+
+	mats := r.atmoSphere.GetMaterials()
+	if len(mats) > 0 {
+		mats[0].Shader = r.atmosphere.shader
+	}
+
+	lightPos := []float32{r.lighting.PrimaryLightPos[0], r.lighting.PrimaryLightPos[1], r.lighting.PrimaryLightPos[2]}
+	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locLightPos, lightPos, rl.ShaderUniformVec3)
+	selfLum := int32(1)
+	selfLumF := *(*float32)(unsafe.Pointer(&selfLum))
+	rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locSelfLuminous, []float32{selfLumF}, rl.ShaderUniformInt)
+
+	// Mass scale: sqrt(radius/5); reference R=5 → ms=1.0. Clamped [0.5, 2.0].
+	ms := float32(math.Sqrt(float64(radius) / 5.0))
+	if ms < 0.5 {
+		ms = 0.5
+	}
+	if ms > 2.0 {
+		ms = 2.0
+	}
+
+	// Accretion energy: 0 in meta means "not set" → default 1.0.
+	ae := obj.Meta.BHAccretionEnergy
+	if ae <= 0 {
+		ae = 1.0
+	}
+
+	// Disk tilt: explicit rendering override → physical axial_tilt → 30° fallback.
+	diskTilt := obj.Meta.BHDiskTilt
+	if diskTilt == 0 {
+		diskTilt = obj.Meta.AxialTilt
+	}
+	if diskTilt == 0 {
+		diskTilt = 30.0
+	}
+
+	// Fresnel shell halos — 3D presence visible from all viewing angles.
+	type shell struct {
+		mult               float32
+		r, g, b, intensity float32
+		edge               float32
+	}
+	shells := []shell{
+		{1.6, 1.00, 0.72, 0.22, ms * 0.90, 7.5},       // photon ring: always present
+		{2.2, 0.18, 0.28, 0.82, ms * 0.22 * ae, 3.8},  // lamppost corona: scales with accretion
+	}
+
 	rl.BeginBlendMode(rl.BlendAddColors)
 	rl.DisableDepthMask()
-	// Inner shell: tighter, slightly brighter ring.
-	rl.DrawSphereEx(pos, radius*1.4, 24, 16, rl.Color{R: 180, G: 210, B: 255, A: 18})
-	// Outer shell: wider, nearly transparent fade.
-	rl.DrawSphereEx(pos, radius*2.2, 20, 14, rl.Color{R: 140, G: 170, B: 240, A: 8})
+	for _, s := range shells {
+		sr := radius * s.mult
+		r.atmoSphere.Transform = rl.MatrixScale(sr, sr, sr)
+		glowColor := []float32{s.r, s.g, s.b, s.intensity}
+		rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowColor, glowColor, rl.ShaderUniformVec4)
+		rl.SetShaderValue(r.atmosphere.shader, r.atmosphere.locGlowEdge, []float32{s.edge}, rl.ShaderUniformFloat)
+		rl.DrawModel(r.atmoSphere, pos, 1.0, rl.White)
+	}
 	rl.EnableDepthMask()
 	rl.EndBlendMode()
+
+	diskIntensity := ms * 1.2 * ae
+	if diskIntensity > 0.02 {
+		r.drawBHDisk(pos, radius, diskTilt, diskIntensity)
+	}
+}
+
+// drawBHDisk renders a flat annular accretion disk for a black hole.
+// The disk spans innerMult..outerMult of radius in the XZ plane, tilted by
+// tiltDeg degrees around the X axis (matching the AxialTilt convention used by
+// drawRingDisc). A temperature gradient from near-white inner edge (ISCO) to deep
+// red outer rim is applied; intensity is modulated by intensityScale.
+// Drawn with additive blending; does not write to the depth buffer.
+func (r *Renderer) drawBHDisk(pos rl.Vector3, radius, tiltDeg, intensityScale float32) {
+	const (
+		segments    = 72
+		radialBands = 14
+	)
+
+	innerR := radius * 1.5 // ISCO ≈ 3 R_s for Schwarzschild; visual inner edge
+	outerR := radius * 7.0
+	ringRange := outerR - innerR
+
+	// Temperature gradient: innermost band is near-white (~10^7 K), outer bands
+	// cool through orange into dim red.  Values are linear RGB at unit intensity.
+	type bandRGB struct{ r, g, b float32 }
+	gradient := [radialBands]bandRGB{
+		{1.00, 0.97, 0.88}, // 0  innermost — blazing near-white
+		{1.00, 0.90, 0.65}, // 1
+		{1.00, 0.80, 0.42}, // 2
+		{1.00, 0.68, 0.22}, // 3
+		{1.00, 0.55, 0.10}, // 4  orange
+		{1.00, 0.42, 0.05}, // 5
+		{0.90, 0.30, 0.02}, // 6
+		{0.72, 0.19, 0.01}, // 7
+		{0.54, 0.11, 0.00}, // 8
+		{0.38, 0.06, 0.00}, // 9
+		{0.24, 0.03, 0.00}, // 10
+		{0.14, 0.01, 0.00}, // 11
+		{0.07, 0.00, 0.00}, // 12
+		{0.03, 0.00, 0.00}, // 13 outermost — near-black
+	}
+
+	rl.PushMatrix()
+	rl.Translatef(pos.X, pos.Y, pos.Z)
+	if tiltDeg != 0 {
+		rl.Rotatef(tiltDeg, 1, 0, 0)
+	}
+
+	rl.BeginBlendMode(rl.BlendAddColors)
+	rl.DisableDepthMask()
+
+	for band := 0; band < radialBands; band++ {
+		bandInner := innerR + float32(band)/float32(radialBands)*ringRange
+		bandOuter := innerR + float32(band+1)/float32(radialBands)*ringRange
+
+		g := gradient[band]
+		scale := intensityScale * 255.0
+		// Alpha fades quadratically from inner to outer edge so the geometric boundary
+		// of the disk dissolves rather than cutting off as a visible dark ring.
+		t := float32(band) / float32(radialBands)
+		alpha := bhColorByte((1.0 - t) * (1.0 - t) * 255.0)
+		col := rl.Color{
+			R: bhColorByte(g.r * scale),
+			G: bhColorByte(g.g * scale),
+			B: bhColorByte(g.b * scale),
+			A: alpha,
+		}
+
+		for i := 0; i < segments; i++ {
+			angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
+			angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
+
+			cos1 := float32(math.Cos(float64(angle1)))
+			sin1 := float32(math.Sin(float64(angle1)))
+			cos2 := float32(math.Cos(float64(angle2)))
+			sin2 := float32(math.Sin(float64(angle2)))
+
+			p1 := rl.Vector3{X: bandOuter * cos1, Y: 0, Z: bandOuter * sin1}
+			p2 := rl.Vector3{X: bandOuter * cos2, Y: 0, Z: bandOuter * sin2}
+			p3 := rl.Vector3{X: bandInner * cos1, Y: 0, Z: bandInner * sin1}
+			p4 := rl.Vector3{X: bandInner * cos2, Y: 0, Z: bandInner * sin2}
+
+			// Front and back faces so the disk is visible from both sides.
+			rl.DrawTriangle3D(p1, p2, p3, col)
+			rl.DrawTriangle3D(p2, p4, p3, col)
+			rl.DrawTriangle3D(p1, p3, p2, col)
+			rl.DrawTriangle3D(p2, p3, p4, col)
+		}
+	}
+
+	rl.EnableDepthMask()
+	rl.EndBlendMode()
+	rl.PopMatrix()
+}
+
+// bhColorByte clamps a float32 colour value to the [0, 255] uint8 range.
+func bhColorByte(v float32) uint8 {
+	if v <= 0 {
+		return 0
+	}
+	if v >= 255 {
+		return 255
+	}
+	return uint8(v)
 }
 
 // drawGroundPlane draws a grid for spatial reference

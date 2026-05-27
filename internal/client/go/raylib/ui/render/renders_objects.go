@@ -209,7 +209,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 						}
 						r.drawAtmosphereGlow(obj, pos)
 						if obj.Meta.Category == engine.CategoryBlackHole {
-							r.drawBlackHoleGlow(obj, pos)
+							r.drawBlackHoleVisual(obj, pos)
 						}
 						drawnCount++
 						continue
@@ -237,10 +237,10 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				}
 				r.drawAtmosphereGlow(obj, pos)
 				if obj.Meta.Category == engine.CategoryBlackHole {
-					r.drawBlackHoleGlow(obj, pos)
+					r.drawBlackHoleVisual(obj, pos)
 				}
-				// Wireframe
-				if obj.Meta.Material != engine.MaterialEmissive {
+				// Wireframe (skip for stars and black holes — both are smooth bodies)
+				if obj.Meta.Material != engine.MaterialEmissive && obj.Meta.Material != engine.MaterialBlackHole {
 					rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), batch.wireRings, batch.wireSlices,
 						rl.Color{R: 255, G: 255, B: 255, A: 100})
 				}
@@ -418,12 +418,12 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 	}
 	r.drawAtmosphereGlow(obj, pos)
 	if obj.Meta.Category == engine.CategoryBlackHole {
-		r.drawBlackHoleGlow(obj, pos)
+		r.drawBlackHoleVisual(obj, pos)
 	}
 
-	// Draw wireframe for better depth perception (skip for rings and sun)
+	// Draw wireframe for better depth perception (skip for stars and black holes)
 	// Use simpler wireframe for distant objects when LOD is enabled
-	if obj.Meta.Material != engine.MaterialEmissive {
+	if obj.Meta.Material != engine.MaterialEmissive && obj.Meta.Material != engine.MaterialBlackHole {
 		wireRings := int32(8)
 		wireSlices := int32(8)
 		if lodEnabled && distance > 50.0 {

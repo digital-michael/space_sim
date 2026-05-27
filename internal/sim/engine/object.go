@@ -113,6 +113,13 @@ type ObjectMetadata struct {
 	JetRadius float32 // Cone base radius at body surface in sim units
 	JetColor  Color   // Jet emission color
 
+	// Black-hole accretion / visual parameters (MaterialBlackHole only).
+	// BHDiskTilt: accretion disk tilt in degrees; 0 = derive from AxialTilt, fallback 30°.
+	// BHAccretionEnergy: 0 = default (1.0); explicit values scale disk+corona brightness
+	//   (e.g. 0.05 = quiescent, 1.0 = standard, 2.5 = quasar-level).
+	BHDiskTilt        float32
+	BHAccretionEnergy float32
+
 	// Hierarchy
 	ParentName string // Empty for top-level bodies; parent name for moons/rings
 

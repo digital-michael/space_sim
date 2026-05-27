@@ -62,6 +62,12 @@ type Renderer struct {
 	atmoSphere       rl.Model
 	atmoSphereLoaded bool
 
+	// bhShader renders the black hole photon ring + accretion glow visual.
+	// bhSphere is the lazily-loaded high-poly sphere used as the glow volume.
+	bhShader       bhShaderState
+	bhSphere       rl.Model
+	bhSphereLoaded bool
+
 	// infraMode is the current infra ambient-light mode:
 	//   0 = off, 1 = spotlight (FOV-centre ambient boost), 2 = reserved.
 	// cameraForward is the normalised camera look direction, updated each frame
