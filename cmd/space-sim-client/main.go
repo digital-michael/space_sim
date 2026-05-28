@@ -191,8 +191,16 @@ func protoToSnapshot(resp *v1.StreamSnapshotResponse) protocol.WorldSnapshot {
 // parseCategory maps a proto category label to an engine.ObjectCategory.
 func parseCategory(s string) engine.ObjectCategory {
 	switch s {
-	case "star":
-		return engine.CategoryStar
+	case "star", "star_main_sequence":
+		return engine.CategoryStarMainSequence
+	case "star_pre_main":
+		return engine.CategoryStarPreMain
+	case "star_evolved":
+		return engine.CategoryStarEvolved
+	case "substellar":
+		return engine.CategorySubstellar
+	case "stellar_remnant", "blackhole":
+		return engine.CategoryStellarRemnant
 	case "planet":
 		return engine.CategoryPlanet
 	case "dwarf_planet":
@@ -213,13 +221,18 @@ func parseCategory(s string) engine.ObjectCategory {
 // deriveOrder returns a stable NavigationOrder from the object set.
 func deriveOrder(objects []*engine.Object) []engine.ObjectCategory {
 	canonical := []engine.ObjectCategory{
-		engine.CategoryStar,
+		engine.CategoryStarPreMain,
+		engine.CategoryStarMainSequence,
+		engine.CategoryStarEvolved,
+		engine.CategorySubstellar,
+		engine.CategoryStellarRemnant,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,
 		engine.CategoryMoon,
 		engine.CategoryAsteroid,
 		engine.CategoryBelt,
-		engine.CategoryRing,
+		engine.CategoryRogue,
+		engine.CategoryArtifact,
 	}
 	present := make(map[engine.ObjectCategory]bool, len(objects))
 	for _, obj := range objects {

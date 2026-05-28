@@ -2,9 +2,8 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "star_evolved",
       "name": "HDE 226868 Analog",
-      "subtype": "main_sequence",
       "orbit": {
         "semi_major_axis": 0,
         "eccentricity": 0,
@@ -22,19 +21,30 @@
       },
       "rendering": {
         "material": "emissive",
-        "fallback_color": [130, 170, 255, 255]
+        "fallback_color": [
+          130,
+          170,
+          255,
+          255
+        ]
       },
       "importance": 85,
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 270000.0,
         "surface_temperature_k": 30000,
-        "emission_color": [130, 170, 255, 255],
+        "emission_color": [
+          130,
+          170,
+          255,
+          255
+        ],
         "emission_intensity": 1.5
-      }
+      },
+      "spectral_class": "O"
     },
     {
-      "type": "blackhole",
+      "type": "stellar_remnant",
       "name": "Cygnus X-1 Analog BH",
       "parent": "HDE 226868 Analog",
       "orbit": {
@@ -50,15 +60,21 @@
         "rotation_period": 0.0,
         "axial_tilt": 0.0,
         "albedo": 0.0,
-        "albedo_note": "15 solar-mass stellar black hole — Schwarzschild radius ~132 km; visual radius 8 su"
+        "albedo_note": "15 solar-mass stellar black hole \u2014 Schwarzschild radius ~132 km; visual radius 8 su"
       },
       "rendering": {
         "material": "blackhole",
-        "fallback_color": [0, 0, 0, 255],
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
         "disk_tilt": 15,
         "accretion_energy": 1.9
       },
-      "importance": 90
+      "importance": 90,
+      "stellar_variant": "Black Hole"
     }
   ]
 }

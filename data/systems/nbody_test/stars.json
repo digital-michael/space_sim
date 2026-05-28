@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "Test Star",
       "orbit": {
         "semi_major_axis": 0,
@@ -11,23 +11,34 @@
         "orbital_period": 0
       },
       "physical": {
-        "mass": 1.989e30,
+        "mass": 1.989e+30,
         "radius": 27.25,
         "radius_km": 695700,
-        "color": [255, 244, 180, 255]
+        "color": [
+          255,
+          244,
+          180,
+          255
+        ]
       },
       "rendering": {
-        "fallback_color": [255, 244, 180, 255]
+        "fallback_color": [
+          255,
+          244,
+          180,
+          255
+        ]
       },
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 1.0,
         "surface_temperature_k": 5778
       },
-      "importance": 100
+      "importance": 100,
+      "spectral_class": "G"
     },
     {
-      "type": "star",
+      "type": "stellar_remnant",
       "name": "White Dwarf",
       "parent": "Test Star",
       "orbit": {
@@ -41,17 +52,28 @@
         "mass": 1.193e+30,
         "radius": 0.5,
         "radius_km": 7000,
-        "color": [240, 248, 255, 255]
+        "color": [
+          240,
+          248,
+          255,
+          255
+        ]
       },
       "rendering": {
-        "fallback_color": [240, 248, 255, 255]
+        "fallback_color": [
+          240,
+          248,
+          255,
+          255
+        ]
       },
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 0.001,
         "surface_temperature_k": 25000
       },
-      "importance": 90
+      "importance": 90,
+      "stellar_variant": "White Dwarf"
     }
   ]
 }

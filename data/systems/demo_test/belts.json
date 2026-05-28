@@ -1,0 +1,65 @@
+{
+  "schema_version": "2.0",
+  "belts": [
+    {
+      "type": "ring_system",
+      "name": "Faint Ring",
+      "parent": "Demo Planet Faint Rings",
+      "distribution": {
+        "inner_radius": 52,
+        "outer_radius": 85,
+        "thickness": 2
+      },
+      "physical": {
+        "mass": 1e18,
+        "axial_tilt": 6.0
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [195, 185, 172, 90]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Strong Ring Inner",
+      "parent": "Demo Planet Strong Rings",
+      "distribution": {
+        "inner_radius": 63,
+        "outer_radius": 95,
+        "thickness": 3
+      },
+      "physical": {
+        "mass": 5e19,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [215, 200, 168, 210]
+      },
+      "importance": 35
+    },
+    {
+      "type": "ring_system",
+      "name": "Strong Ring Outer",
+      "parent": "Demo Planet Strong Rings",
+      "distribution": {
+        "inner_radius": 100,
+        "outer_radius": 160,
+        "thickness": 5
+      },
+      "physical": {
+        "mass": 2e20,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [200, 180, 148, 175]
+      },
+      "importance": 35
+    }
+  ]
+}

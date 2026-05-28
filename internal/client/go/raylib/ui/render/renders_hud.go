@@ -353,7 +353,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		if o.Meta.ParentName != "" {
 			continue
 		}
-		if o.Meta.Category != engine.CategoryStar && o.Meta.Category != engine.CategoryBlackHole {
+		if !isStarLike(o.Meta.Category) {
 			continue
 		}
 		if o.Meta.Importance > bestImportance || systemCenterName == "Sol" {
@@ -372,7 +372,7 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 	// Determine parent and count siblings
 	parentName := ""
 	for _, o := range state.Objects {
-		if o.Meta.Category == engine.CategoryStar {
+		if isStarLike(o.Meta.Category) {
 			parentName = o.Meta.Name
 			break
 		}
@@ -453,12 +453,28 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 		categoryName = "Moon"
 	case engine.CategoryAsteroid:
 		categoryName = "Asteroid"
-	case engine.CategoryStar:
+	case engine.CategoryStarPreMain:
+		categoryName = "Pre-Main Sequence Star"
+	case engine.CategoryStarMainSequence:
 		categoryName = "Star"
-	case engine.CategoryRing:
-		categoryName = "Ring System"
-	case engine.CategoryBlackHole:
-		categoryName = "Black Hole"
+	case engine.CategoryStarEvolved:
+		categoryName = "Evolved Star"
+	case engine.CategorySubstellar:
+		categoryName = "Substellar Object"
+	case engine.CategoryStellarRemnant:
+		categoryName = "Stellar Remnant"
+	case engine.CategoryRogue:
+		if obj.Meta.StellarVariant != "" {
+			categoryName = formatVariantLabel(obj.Meta.StellarVariant)
+		} else {
+			categoryName = "Rogue Body"
+		}
+	case engine.CategoryArtifact:
+		if obj.Meta.StellarVariant != "" {
+			categoryName = formatVariantLabel(obj.Meta.StellarVariant)
+		} else {
+			categoryName = "Artifact"
+		}
 	}
 
 	// Format mass (scientific notation)

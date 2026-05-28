@@ -10,7 +10,7 @@ func NewSun() *engine.Object {
 	return &engine.Object{
 		Meta: engine.ObjectMetadata{
 			Name:           "Sol",
-			Category:       engine.CategoryStar,
+			Category:       engine.CategoryStarMainSequence,
 			Mass:           1.989e30,
 			PhysicalRadius: 27.25,
 			Color:          engine.Color{R: 245, G: 245, B: 255, A: 255},

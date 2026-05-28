@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "Sirius A",
       "orbit": {
         "semi_major_axis": 0,
@@ -58,10 +58,11 @@
           255
         ],
         "emission_intensity": 25.4
-      }
+      },
+      "spectral_class": "A"
     },
     {
-      "type": "star",
+      "type": "stellar_remnant",
       "name": "Sirius B",
       "parent": "Sirius A",
       "orbit": {
@@ -120,7 +121,8 @@
         ],
         "emission_intensity": 0.0244,
         "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
-      }
+      },
+      "stellar_variant": "White Dwarf"
     }
   ]
 }

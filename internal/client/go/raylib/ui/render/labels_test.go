@@ -256,7 +256,7 @@ func TestLabelSelect_AsteroidsExcluded(t *testing.T) {
 	roid := makeObject("Rock1", engine.CategoryAsteroid, 50, 10, 0, 0)
 	ring := makeObject("Ring1", engine.CategoryRing, 50, 20, 0, 0)
 	belt := makeObject("Belt1", engine.CategoryBelt, 50, 30, 0, 0)
-	star := makeObject("Sol", engine.CategoryStar, 80, 0, 0, 0)
+	star := makeObject("Sol", engine.CategoryStarMainSequence, 80, 0, 0, 0)
 	state := makeState(roid, ring, belt, star)
 	got := selectObjectsForLabels(state, cs, []*engine.Object{roid, ring, belt, star}, ui.LabelModeOn)
 	for _, obj := range got {
@@ -281,7 +281,7 @@ func TestLabelSelect_AsteroidsExcluded(t *testing.T) {
 // TestLabelSelect_StarsAndPlanetsIncluded: standard solar-system objects get labels.
 func TestLabelSelect_StarsAndPlanetsIncluded(t *testing.T) {
 	cs := makeFreeCamera(100, 0, 0) // camera at ~1 AU
-	sol := makeObject("Sol", engine.CategoryStar, 100, 0, 0, 0)
+	sol := makeObject("Sol", engine.CategoryStarMainSequence, 100, 0, 0, 0)
 	earth := makeObject("Earth", engine.CategoryPlanet, 70, 100, 0, 0)
 	moon := makeObject("Moon", engine.CategoryMoon, 40, 101, 0, 0)
 	state := makeState(sol, earth, moon)
@@ -511,7 +511,7 @@ func TestLabelSelect_QuasarScene(t *testing.T) {
 	smbh := &engine.Object{
 		Meta: engine.ObjectMetadata{
 			Name:           "3C 273 Analog SMBH",
-			Category:       engine.CategoryBlackHole,
+			Category:       engine.CategoryStellarRemnant,
 			Importance:     100,
 			PhysicalRadius: 2000,
 			Color:          engine.Color{R: 0, G: 0, B: 0, A: 255},
@@ -522,7 +522,7 @@ func TestLabelSelect_QuasarScene(t *testing.T) {
 	star := &engine.Object{
 		Meta: engine.ObjectMetadata{
 			Name:       "S-Star Q1",
-			Category:   engine.CategoryStar,
+			Category:   engine.CategoryStarMainSequence,
 			Importance: 70,
 			Color:      engine.Color{R: 160, G: 200, B: 255, A: 255},
 		},

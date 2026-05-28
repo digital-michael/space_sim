@@ -11,14 +11,22 @@ func TestObjectCategoryValues(t *testing.T) {
 		got     ObjectCategory
 		wantInt int
 	}{
-		{"CategoryPlanet", CategoryPlanet, 0},
-		{"CategoryDwarfPlanet", CategoryDwarfPlanet, 1},
-		{"CategoryMoon", CategoryMoon, 2},
-		{"CategoryAsteroid", CategoryAsteroid, 3},
-		{"CategoryRing", CategoryRing, 4},
-		{"CategoryStar", CategoryStar, 5},
-		{"CategoryBelt", CategoryBelt, 6},
-		{"CategoryBlackHole", CategoryBlackHole, 9},
+		// Stellar group (0–9; 5–9 reserved)
+		{"CategoryStarPreMain", CategoryStarPreMain, 0},
+		{"CategoryStarMainSequence", CategoryStarMainSequence, 1},
+		{"CategoryStarEvolved", CategoryStarEvolved, 2},
+		{"CategorySubstellar", CategorySubstellar, 3},
+		{"CategoryStellarRemnant", CategoryStellarRemnant, 4},
+		// System body group (10–19; 17–19 reserved)
+		{"CategoryPlanet", CategoryPlanet, 10},
+		{"CategoryDwarfPlanet", CategoryDwarfPlanet, 11},
+		{"CategoryMoon", CategoryMoon, 12},
+		{"CategoryAsteroid", CategoryAsteroid, 13},
+		{"CategoryBelt", CategoryBelt, 14},
+		{"CategoryRogue", CategoryRogue, 15},
+		{"CategoryArtifact", CategoryArtifact, 16},
+		// Internal sentinel
+		{"CategoryRing", CategoryRing, 99},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -32,16 +40,21 @@ func TestObjectCategoryValues(t *testing.T) {
 // TestObjectCategoryCount ensures no new values were silently added or removed.
 // Update this constant intentionally whenever the enum changes.
 func TestObjectCategoryCount(t *testing.T) {
-	const wantCount = 8
+	const wantCount = 13
 	all := []ObjectCategory{
+		CategoryStarPreMain,
+		CategoryStarMainSequence,
+		CategoryStarEvolved,
+		CategorySubstellar,
+		CategoryStellarRemnant,
 		CategoryPlanet,
 		CategoryDwarfPlanet,
 		CategoryMoon,
 		CategoryAsteroid,
-		CategoryRing,
-		CategoryStar,
 		CategoryBelt,
-		CategoryBlackHole,
+		CategoryRogue,
+		CategoryArtifact,
+		CategoryRing,
 	}
 	if len(all) != wantCount {
 		t.Errorf("ObjectCategory enum has %d values, want %d", len(all), wantCount)

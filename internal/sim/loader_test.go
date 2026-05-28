@@ -74,16 +74,11 @@ func TestLoadSystemFromFileCreatesRingSystemFeature(t *testing.T) {
 	if ring.Meta.Color.A != 220 {
 		t.Fatalf("expected ring alpha 220, got %d", ring.Meta.Color.A)
 	}
-	if len(state.NavigationOrder) == 0 || state.NavigationOrder[len(state.NavigationOrder)-1] != engine.CategoryRing {
-		found := false
-		for _, cat := range state.NavigationOrder {
-			if cat == engine.CategoryRing {
-				found = true
-				break
-			}
-		}
-		if !found {
-			t.Fatal("expected navigation order to include ring category")
+	// CategoryRing is an internal sentinel (value 99) and is intentionally
+	// excluded from NavigationOrder — ring systems are not shown as a UI tab.
+	for _, cat := range state.NavigationOrder {
+		if cat == engine.CategoryRing {
+			t.Fatal("CategoryRing should not appear in NavigationOrder")
 		}
 	}
 }

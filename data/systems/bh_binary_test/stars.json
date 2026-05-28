@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "blackhole",
+      "type": "stellar_remnant",
       "name": "BH Alpha",
       "orbit": {
         "semi_major_axis": 0,
@@ -17,18 +17,24 @@
         "rotation_period": 0.0,
         "axial_tilt": 0.0,
         "albedo": 0.0,
-        "albedo_note": "20 solar-mass black hole; primary of merging binary — GW source analog"
+        "albedo_note": "20 solar-mass black hole; primary of merging binary \u2014 GW source analog"
       },
       "rendering": {
         "material": "blackhole",
-        "fallback_color": [0, 0, 0, 255],
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
         "disk_tilt": 65,
         "accretion_energy": 0.04
       },
-      "importance": 90
+      "importance": 90,
+      "stellar_variant": "Black Hole"
     },
     {
-      "type": "blackhole",
+      "type": "stellar_remnant",
       "name": "BH Beta",
       "parent": "BH Alpha",
       "orbit": {
@@ -44,15 +50,21 @@
         "rotation_period": 0.0,
         "axial_tilt": 0.0,
         "albedo": 0.0,
-        "albedo_note": "15 solar-mass black hole; secondary — inspiraling pair"
+        "albedo_note": "15 solar-mass black hole; secondary \u2014 inspiraling pair"
       },
       "rendering": {
         "material": "blackhole",
-        "fallback_color": [0, 0, 0, 255],
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
         "disk_tilt": 52,
         "accretion_energy": 0.04
       },
-      "importance": 88
+      "importance": 88,
+      "stellar_variant": "Black Hole"
     }
   ]
 }

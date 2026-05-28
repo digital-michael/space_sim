@@ -17,7 +17,7 @@ func (a *App) newRemoteRuntimeSession(snapSrc protocol.SnapshotSource, navOrder 
 	cameraState.Position = engine.Vector3{X: 0, Y: 50, Z: -100}
 	cameraState.UpdateForwardFromAngles()
 
-	firstCategory := engine.CategoryStar
+	firstCategory := engine.CategoryStarMainSequence
 	if len(navOrder) > 0 {
 		firstCategory = navOrder[0]
 	}
@@ -74,7 +74,7 @@ waitLoop:
 
 	// Point camera at the first star if one is present in the snapshot.
 	for i, obj := range firstSnap.State.Objects {
-		if obj.Meta.Category == engine.CategoryStar {
+		if engine.IsStarLike(obj.Meta.Category) {
 			session.cameraState.StartTracking(i)
 			session.cameraState.Tracking.Distance = float64(obj.Meta.PhysicalRadius) + 75.0
 			break
@@ -90,13 +90,15 @@ waitLoop:
 // that have at least one object.
 func deriveNavigationOrder(objects []*engine.Object) []engine.ObjectCategory {
 	canonical := []engine.ObjectCategory{
-		engine.CategoryBlackHole,
-		engine.CategoryStar,
+		engine.CategoryStarPreMain,
+		engine.CategoryStarMainSequence,
+		engine.CategoryStarEvolved,
+		engine.CategorySubstellar,
+		engine.CategoryStellarRemnant,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,
 		engine.CategoryMoon,
 		engine.CategoryAsteroid,
-		engine.CategoryRing,
 		engine.CategoryBelt,
 		engine.CategoryRogue,
 		engine.CategoryArtifact,

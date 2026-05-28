@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "Epsilon Indi A",
       "orbit": {
         "semi_major_axis": 0,
@@ -58,10 +58,11 @@
           255
         ],
         "emission_intensity": 0.22
-      }
+      },
+      "spectral_class": "K"
     },
     {
-      "type": "star",
+      "type": "substellar",
       "name": "Epsilon Indi Ba",
       "parent": "Epsilon Indi A",
       "orbit": {
@@ -127,10 +128,12 @@
         ],
         "emission_intensity": 0.00096,
         "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
-      }
+      },
+      "spectral_class": "T",
+      "stellar_variant": "Brown Dwarf"
     },
     {
-      "type": "star",
+      "type": "substellar",
       "name": "Epsilon Indi Bb",
       "parent": "Epsilon Indi Ba",
       "orbit": {
@@ -195,7 +198,9 @@
         ],
         "emission_intensity": 1.5e-05,
         "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
-      }
+      },
+      "spectral_class": "T",
+      "stellar_variant": "Brown Dwarf"
     }
   ]
 }

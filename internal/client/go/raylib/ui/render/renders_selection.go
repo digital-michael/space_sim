@@ -41,7 +41,7 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
 
 	// Left sidebar for vertical category tabs
-	tabSidebarW := scaledInt32(155)
+	tabSidebarW := scaledInt32(172)
 	contentX := bgX + tabSidebarW
 	contentW := bgWidth - tabSidebarW
 
@@ -54,13 +54,15 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 
 	// Category tabs — all categories always shown, active ones highlighted
 	allCategories := []engine.ObjectCategory{
-		engine.CategoryBlackHole,
-		engine.CategoryStar,
+		engine.CategoryStarPreMain,
+		engine.CategoryStarMainSequence,
+		engine.CategoryStarEvolved,
+		engine.CategorySubstellar,
+		engine.CategoryStellarRemnant,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,
 		engine.CategoryMoon,
 		engine.CategoryAsteroid,
-		engine.CategoryRing,
 		engine.CategoryBelt,
 		engine.CategoryRogue,
 		engine.CategoryArtifact,
@@ -205,7 +207,7 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 			swatchRect(rl.Color{R: 200, G: 150, B: 130, A: 255})
 		} else {
 			obj := state.Objects[actualIndex]
-			nameText := obj.Meta.Name
+			nameText := buildObjectDisplayName(obj, inputState.AdvancedInfo)
 			objColor := rl.Color{R: obj.Meta.Color.R, G: obj.Meta.Color.G, B: obj.Meta.Color.B, A: 255}
 			if filterActive {
 				// Cross-category: leading color swatch + name + right-aligned category label
@@ -247,8 +249,47 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 	}
 }
 
+// buildObjectDisplayName returns the display name for an object.
+// When advancedInfo is true, appends the spectral class or stellar variant
+// in parentheses, e.g. "Red Dwarf (M)", "Neutron Star (Pulsar)", "Voyager 1 (Probe)".
+func buildObjectDisplayName(obj *engine.Object, advancedInfo bool) string {
+	name := obj.Meta.Name
+	if !advancedInfo {
+		return name
+	}
+	if obj.Meta.SpectralClass != "" {
+		return name + " (" + obj.Meta.SpectralClass + ")"
+	}
+	if obj.Meta.StellarVariant != "" {
+		return name + " (" + formatVariantLabel(obj.Meta.StellarVariant) + ")"
+	}
+	return name
+}
+
+// formatVariantLabel converts raw subtype strings to readable labels.
+// e.g. "periodic_comet" → "Periodic Comet", "probe" → "Probe".
+func formatVariantLabel(s string) string {
+	words := strings.Split(strings.ReplaceAll(s, "_", " "), " ")
+	for i, w := range words {
+		if len(w) > 0 {
+			words[i] = strings.ToUpper(w[:1]) + w[1:]
+		}
+	}
+	return strings.Join(words, " ")
+}
+
 func categoryDisplayName(cat engine.ObjectCategory) string {
 	switch cat {
+	case engine.CategoryStarPreMain:
+		return "Pre-Main Seq."
+	case engine.CategoryStarMainSequence:
+		return "Main Sequence"
+	case engine.CategoryStarEvolved:
+		return "Evolved Stars"
+	case engine.CategorySubstellar:
+		return "Substellar"
+	case engine.CategoryStellarRemnant:
+		return "Stellar Remnants"
 	case engine.CategoryPlanet:
 		return "Planets"
 	case engine.CategoryDwarfPlanet:
@@ -257,18 +298,12 @@ func categoryDisplayName(cat engine.ObjectCategory) string {
 		return "Moons"
 	case engine.CategoryAsteroid:
 		return "Asteroids"
-	case engine.CategoryRing:
-		return "Ring Systems"
-	case engine.CategoryStar:
-		return "Stars"
 	case engine.CategoryBelt:
 		return "Belts"
 	case engine.CategoryRogue:
-		return "Rogues"
+		return "Rogue/Transient"
 	case engine.CategoryArtifact:
 		return "Artifacts"
-	case engine.CategoryBlackHole:
-		return "Black Holes"
 	default:
 		return "Objects"
 	}
@@ -511,6 +546,16 @@ func filterObjectsByCategoryAndText(objects []*engine.Object, category engine.Ob
 
 func categoryShortLabel(cat engine.ObjectCategory) string {
 	switch cat {
+	case engine.CategoryStarPreMain:
+		return "pre-main"
+	case engine.CategoryStarMainSequence:
+		return "star"
+	case engine.CategoryStarEvolved:
+		return "evolved"
+	case engine.CategorySubstellar:
+		return "substellar"
+	case engine.CategoryStellarRemnant:
+		return "remnant"
 	case engine.CategoryPlanet:
 		return "planet"
 	case engine.CategoryDwarfPlanet:
@@ -519,18 +564,12 @@ func categoryShortLabel(cat engine.ObjectCategory) string {
 		return "moon"
 	case engine.CategoryAsteroid:
 		return "asteroid"
-	case engine.CategoryRing:
-		return "ring"
-	case engine.CategoryStar:
-		return "star"
 	case engine.CategoryBelt:
 		return "belt"
 	case engine.CategoryRogue:
 		return "rogue"
 	case engine.CategoryArtifact:
 		return "artifact"
-	case engine.CategoryBlackHole:
-		return "blackhole"
 	default:
 		return "object"
 	}

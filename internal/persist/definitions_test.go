@@ -14,14 +14,14 @@ func buildTestState() *engine.SimulationState {
 	state := engine.NewSimulationState()
 	state.SecondsPerSecond = 3600.0
 	state.NumWorkers = 2
-	state.NavigationOrder = []engine.ObjectCategory{engine.CategoryStar, engine.CategoryPlanet}
+	state.NavigationOrder = []engine.ObjectCategory{engine.CategoryStarMainSequence, engine.CategoryPlanet}
 	state.AllocatedDatasets[engine.AsteroidDatasetSmall] = true
 	state.CurrentDataset = engine.AsteroidDatasetSmall
 
 	star := &engine.Object{
 		Meta: engine.ObjectMetadata{
 			Name:           "Sol",
-			Category:       engine.CategoryStar,
+			Category:       engine.CategoryStarMainSequence,
 			Mass:           1.989e30,
 			PhysicalRadius: 696_000,
 			Color:          engine.Color{R: 255, G: 255, B: 0, A: 255},

@@ -30,7 +30,7 @@ func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationSt
 					distance float32
 				}
 				var children []ChildInfo
-				isStar := currentObj.Meta.Category == engine.CategoryStar
+				isStar := engine.IsStarLike(currentObj.Meta.Category)
 				for i, obj := range state.Objects {
 					isChild := obj.Visible && obj.Meta.ParentName == currentObj.Meta.Name
 					if !isChild && isStar && obj.Visible && obj.Meta.ParentName == "" &&
@@ -85,7 +85,7 @@ func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationSt
 						fmt.Printf("[DEBUG] No explicit parent, looking for central star\n")
 					}
 					for i, obj := range state.Objects {
-						if obj.Meta.Category == engine.CategoryStar {
+						if engine.IsStarLike(obj.Meta.Category) {
 							if a.cfg.Debug {
 								fmt.Printf("[DEBUG] Found central star: %s\n", obj.Meta.Name)
 							}

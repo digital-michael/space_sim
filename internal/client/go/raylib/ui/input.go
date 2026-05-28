@@ -47,10 +47,11 @@ func NewPerformanceOptions() *PerformanceOptions {
 
 // SettingsState holds all unified settings dialog UI state.
 type SettingsState struct {
-	ActiveTab   int                // 0=System, 1=Display, 2=Performance, 3=Controls
-	SelectedRow int                // focused interactive row within the active tab
-	HUD         HUDState           // Display tab: per-category HUD visibility
-	UIScale     float32            // Display tab: UI scaling factor (persisted)
+	ActiveTab    int                // 0=System, 1=Display, 2=Performance, 3=Controls
+	SelectedRow  int                // focused interactive row within the active tab
+	HUD          HUDState           // Display tab: per-category HUD visibility
+	AdvancedInfo bool               // Display tab: show spectral class / variant parentheticals
+	UIScale      float32            // Display tab: UI scaling factor (persisted)
 	Perf        PerformanceOptions // Performance tab: live options
 
 	// Controls tab — keybinding editor state.
@@ -83,6 +84,7 @@ type InputState struct {
 	ActiveSystemPath    string
 	PendingSystemPath   string
 	SystemStatusMessage string
+	AdvancedInfo        bool // synced from SettingsState; shows spectral class / variant parentheticals
 }
 
 // NewInputState creates an InputState with firstCategory as the active tab.

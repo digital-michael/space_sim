@@ -11,6 +11,9 @@ import (
 	rl "github.com/gen2brain/raylib-go/raylib"
 )
 
+// isStarLike is a package-local alias for engine.IsStarLike.
+func isStarLike(cat engine.ObjectCategory) bool { return engine.IsStarLike(cat) }
+
 // modAlt is the OS-appropriate label for the Alt/Option modifier key.
 // modSuper is the OS-appropriate label for the Super/Command modifier key.
 var (

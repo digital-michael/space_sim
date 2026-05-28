@@ -8,7 +8,7 @@ import (
 
 // testCategoryOrder mirrors the SOL cycle order used in production.
 var testCategoryOrder = []engine.ObjectCategory{
-	engine.CategoryStar,
+	engine.CategoryStarMainSequence,
 	engine.CategoryPlanet,
 	engine.CategoryDwarfPlanet,
 	engine.CategoryMoon,
@@ -22,14 +22,14 @@ func TestCycleCategoryForward(t *testing.T) {
 		start engine.ObjectCategory
 		want  engine.ObjectCategory
 	}{
-		{engine.CategoryStar, engine.CategoryPlanet},
+		{engine.CategoryStarMainSequence, engine.CategoryPlanet},
 		{engine.CategoryPlanet, engine.CategoryDwarfPlanet},
 		{engine.CategoryDwarfPlanet, engine.CategoryMoon},
 		{engine.CategoryMoon, engine.CategoryBelt},
-		{engine.CategoryBelt, engine.CategoryStar},
+		{engine.CategoryBelt, engine.CategoryStarMainSequence},
 	}
 	for _, tt := range steps {
-		inp := NewInputState(engine.CategoryStar)
+		inp := NewInputState(engine.CategoryStarMainSequence)
 		inp.SelectedCategory = tt.start
 		inp.CycleCategory(testCategoryOrder)
 		if inp.SelectedCategory != tt.want {
@@ -45,14 +45,14 @@ func TestCycleCategoryBack(t *testing.T) {
 		start engine.ObjectCategory
 		want  engine.ObjectCategory
 	}{
-		{engine.CategoryStar, engine.CategoryBelt},
+		{engine.CategoryStarMainSequence, engine.CategoryBelt},
 		{engine.CategoryBelt, engine.CategoryMoon},
 		{engine.CategoryMoon, engine.CategoryDwarfPlanet},
 		{engine.CategoryDwarfPlanet, engine.CategoryPlanet},
-		{engine.CategoryPlanet, engine.CategoryStar},
+		{engine.CategoryPlanet, engine.CategoryStarMainSequence},
 	}
 	for _, tt := range steps {
-		inp := NewInputState(engine.CategoryStar)
+		inp := NewInputState(engine.CategoryStarMainSequence)
 		inp.SelectedCategory = tt.start
 		inp.CycleCategoryBack(testCategoryOrder)
 		if inp.SelectedCategory != tt.want {
@@ -63,7 +63,7 @@ func TestCycleCategoryBack(t *testing.T) {
 
 // TestCycleCategoryResetsIndex confirms that cycling always resets SelectedIndex to 0.
 func TestCycleCategoryResetsIndex(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	inp.SelectedIndex = 42
 	inp.CycleCategory(testCategoryOrder)
 	if inp.SelectedIndex != 0 {
@@ -77,45 +77,45 @@ func TestCycleCategoryResetsIndex(t *testing.T) {
 	}
 }
 
-// TestCycleCategoryUnknownFallback verifies that an unrecognised category falls back to CategoryStar.
+// TestCycleCategoryUnknownFallback verifies that an unrecognised category falls back to CategoryStarMainSequence.
 func TestCycleCategoryUnknownFallback(t *testing.T) {
 	for _, unknown := range []engine.ObjectCategory{engine.CategoryAsteroid, engine.CategoryRing} {
-		fwd := NewInputState(engine.CategoryStar)
+		fwd := NewInputState(engine.CategoryStarMainSequence)
 		fwd.SelectedCategory = unknown
 		fwd.CycleCategory(testCategoryOrder)
-		if fwd.SelectedCategory != engine.CategoryStar {
-			t.Errorf("CycleCategory fallback from %v: got %v, want CategoryStar", unknown, fwd.SelectedCategory)
+		if fwd.SelectedCategory != engine.CategoryStarMainSequence {
+			t.Errorf("CycleCategory fallback from %v: got %v, want CategoryStarMainSequence", unknown, fwd.SelectedCategory)
 		}
 
-		bck := NewInputState(engine.CategoryStar)
+		bck := NewInputState(engine.CategoryStarMainSequence)
 		bck.SelectedCategory = unknown
 		bck.CycleCategoryBack(testCategoryOrder)
-		if bck.SelectedCategory != engine.CategoryStar {
-			t.Errorf("CycleCategoryBack fallback from %v: got %v, want CategoryStar", unknown, bck.SelectedCategory)
+		if bck.SelectedCategory != engine.CategoryStarMainSequence {
+			t.Errorf("CycleCategoryBack fallback from %v: got %v, want CategoryStarMainSequence", unknown, bck.SelectedCategory)
 		}
 	}
 }
 
 // TestCycleCategoryFullRound verifies that five forward steps return to the start.
 func TestCycleCategoryFullRound(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	const steps = 5
 	for range steps {
 		inp.CycleCategory(testCategoryOrder)
 	}
-	if inp.SelectedCategory != engine.CategoryStar {
-		t.Errorf("after %d CycleCategory calls, got %v, want CategoryStar", steps, inp.SelectedCategory)
+	if inp.SelectedCategory != engine.CategoryStarMainSequence {
+		t.Errorf("after %d CycleCategory calls, got %v, want CategoryStarMainSequence", steps, inp.SelectedCategory)
 	}
 }
 
 // TestCycleCategoryFullRoundBack verifies that five backward steps return to the start.
 func TestCycleCategoryFullRoundBack(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	const steps = 5
 	for range steps {
 		inp.CycleCategoryBack(testCategoryOrder)
 	}
-	if inp.SelectedCategory != engine.CategoryStar {
-		t.Errorf("after %d CycleCategoryBack calls, got %v, want CategoryStar", steps, inp.SelectedCategory)
+	if inp.SelectedCategory != engine.CategoryStarMainSequence {
+		t.Errorf("after %d CycleCategoryBack calls, got %v, want CategoryStarMainSequence", steps, inp.SelectedCategory)
 	}
 }

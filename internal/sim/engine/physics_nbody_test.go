@@ -27,7 +27,7 @@ func makeSol() *Object {
 	return &Object{
 		Meta: ObjectMetadata{
 			Name:     "Sol",
-			Category: CategoryStar,
+			Category: CategoryStarMainSequence,
 			Mass:     massSol,
 			GM:       GMsol,
 		},

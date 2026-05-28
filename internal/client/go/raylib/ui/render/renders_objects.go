@@ -98,7 +98,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				pointThreshold = engine.PointThresholdPlanet
 			} else if obj.Meta.Category == engine.CategoryMoon {
 				pointThreshold = engine.PointThresholdMoon
-			} else if obj.Meta.Category == engine.CategoryStar {
+			} else if isStarLike(obj.Meta.Category) {
 				pointThreshold = engine.PointThresholdStar
 				pointSize = engine.PointSizeStar
 			}
@@ -208,7 +208,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 							r.lighting.setAmbient(defaultAmbient)
 						}
 						r.drawAtmosphereGlow(obj, pos)
-						if obj.Meta.Category == engine.CategoryBlackHole {
+						if obj.Meta.Material == engine.MaterialBlackHole {
 							r.drawBlackHoleVisual(obj, pos)
 						}
 						drawnCount++
@@ -236,7 +236,7 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 					rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), batch.rings, batch.slices, color)
 				}
 				r.drawAtmosphereGlow(obj, pos)
-				if obj.Meta.Category == engine.CategoryBlackHole {
+				if obj.Meta.Material == engine.MaterialBlackHole {
 					r.drawBlackHoleVisual(obj, pos)
 				}
 				// Wireframe (skip for stars and black holes — both are smooth bodies)
@@ -322,7 +322,7 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 			pointThreshold = engine.PointThresholdPlanet
 		} else if obj.Meta.Category == engine.CategoryMoon {
 			pointThreshold = engine.PointThresholdMoon
-		} else if obj.Meta.Category == engine.CategoryStar {
+		} else if isStarLike(obj.Meta.Category) {
 			pointThreshold = engine.PointThresholdStar
 		}
 
@@ -333,7 +333,7 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 				pointSize = engine.PointSizePlanet
 			} else if obj.Meta.Category == engine.CategoryMoon {
 				pointSize = engine.PointSizeMoon
-			} else if obj.Meta.Category == engine.CategoryStar {
+			} else if isStarLike(obj.Meta.Category) {
 				pointSize = engine.PointSizeStar
 			}
 
@@ -417,7 +417,7 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		rl.DrawSphereEx(pos, float32(obj.Meta.PhysicalRadius), rings, slices, color)
 	}
 	r.drawAtmosphereGlow(obj, pos)
-	if obj.Meta.Category == engine.CategoryBlackHole {
+	if obj.Meta.Material == engine.MaterialBlackHole {
 		r.drawBlackHoleVisual(obj, pos)
 	}
 

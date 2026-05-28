@@ -1,14 +1,19 @@
 {
   "stars": {
     "g_type_star": {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "G-Type Star",
       "importance": 100,
       "physical": {
         "radius": 27.25,
-        "mass": 1.989e30,
+        "mass": 1.989e+30,
         "rotation_period": 648.0,
-        "color": [245, 245, 255, 255],
+        "color": [
+          245,
+          245,
+          255,
+          255
+        ],
         "albedo": 0.0
       },
       "orbit": {
@@ -18,7 +23,8 @@
       },
       "rendering": {
         "material": "emissive"
-      }
+      },
+      "spectral_class": "G"
     }
   }
 }

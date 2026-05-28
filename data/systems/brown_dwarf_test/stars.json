@@ -2,9 +2,8 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "substellar",
       "name": "Luhman 16A Analog",
-      "subtype": "brown_dwarf",
       "orbit": {
         "semi_major_axis": 0,
         "eccentricity": 0,
@@ -22,19 +21,31 @@
       },
       "rendering": {
         "material": "diffuse_thermal",
-        "fallback_color": [90, 20, 50, 255]
+        "fallback_color": [
+          90,
+          20,
+          50,
+          255
+        ]
       },
       "importance": 90,
       "luminosity": {
         "self_luminous": true,
-        "solar_luminosity": 0.000025,
+        "solar_luminosity": 2.5e-05,
         "surface_temperature_k": 1800,
-        "emission_color": [120, 30, 60, 255],
+        "emission_color": [
+          120,
+          30,
+          60,
+          255
+        ],
         "emission_intensity": 0.3
-      }
+      },
+      "spectral_class": "L",
+      "stellar_variant": "Brown Dwarf"
     },
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "M-Dwarf Companion",
       "orbit": {
         "semi_major_axis": 5000,
@@ -53,16 +64,27 @@
       },
       "rendering": {
         "material": "emissive",
-        "fallback_color": [255, 100, 50, 255]
+        "fallback_color": [
+          255,
+          100,
+          50,
+          255
+        ]
       },
       "importance": 75,
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 0.005,
         "surface_temperature_k": 3200,
-        "emission_color": [255, 100, 50, 255],
+        "emission_color": [
+          255,
+          100,
+          50,
+          255
+        ],
         "emission_intensity": 0.8
-      }
+      },
+      "spectral_class": "M"
     }
   ]
 }

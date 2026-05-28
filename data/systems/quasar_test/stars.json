@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "blackhole",
+      "type": "stellar_remnant",
       "name": "3C 273 Analog SMBH",
       "orbit": {
         "semi_major_axis": 0,
@@ -21,14 +21,20 @@
       },
       "rendering": {
         "material": "blackhole",
-        "fallback_color": [0, 0, 0, 255],
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
         "disk_tilt": 22,
         "accretion_energy": 2.8
       },
-      "importance": 100
+      "importance": 100,
+      "stellar_variant": "Quasar"
     },
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "S-Star Q1",
       "parent": "3C 273 Analog SMBH",
       "orbit": {
@@ -49,19 +55,30 @@
       },
       "rendering": {
         "material": "emissive",
-        "fallback_color": [160, 200, 255, 255]
+        "fallback_color": [
+          160,
+          200,
+          255,
+          255
+        ]
       },
       "importance": 50,
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 15000.0,
         "surface_temperature_k": 28000,
-        "emission_color": [160, 200, 255, 255],
+        "emission_color": [
+          160,
+          200,
+          255,
+          255
+        ],
         "emission_intensity": 1.0
-      }
+      },
+      "spectral_class": "O"
     },
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "S-Star Q2",
       "parent": "3C 273 Analog SMBH",
       "orbit": {
@@ -82,16 +99,27 @@
       },
       "rendering": {
         "material": "emissive",
-        "fallback_color": [200, 220, 255, 255]
+        "fallback_color": [
+          200,
+          220,
+          255,
+          255
+        ]
       },
       "importance": 48,
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 8000.0,
         "surface_temperature_k": 25000,
-        "emission_color": [200, 220, 255, 255],
+        "emission_color": [
+          200,
+          220,
+          255,
+          255
+        ],
         "emission_intensity": 1.0
-      }
+      },
+      "spectral_class": "O"
     }
   ]
 }

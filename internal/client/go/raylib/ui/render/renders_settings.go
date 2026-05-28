@@ -225,6 +225,7 @@ func drawSettingsDisplayTab(state *ui.SettingsState, bgX, startY, bgWidth, _ int
 		{"Debug  (stats, screen info)", &state.HUD.Debug},
 		{"Info   (tracking, selection)", &state.HUD.Info},
 		{"Help   (hint bar)", &state.HUD.Help},
+		{"Advanced Info  (spectral class, stellar variants)", &state.AdvancedInfo},
 	}
 
 	mouse := renderMousePosition()
@@ -266,7 +267,7 @@ func drawSettingsDisplayTab(state *ui.SettingsState, bgX, startY, bgWidth, _ int
 	rl.DrawText("RENDERING", bgX+pad, scaleRowY, titleFont, rl.White)
 	scaleRowY += scaledInt32(30)
 
-	if state.SelectedRow == 3 {
+	if state.SelectedRow == 4 {
 		rl.DrawText(">", bgX+pad-scaledInt32(16), scaleRowY, arrowFont, rl.Yellow)
 		rl.DrawRectangle(bgX+2, scaleRowY-2, bgWidth-4, scaledInt32(22), rl.Color{R: 50, G: 100, B: 150, A: 80})
 	}

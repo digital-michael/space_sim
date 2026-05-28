@@ -26,6 +26,16 @@ func resolveColor(primary, secondary [4]uint8) engine.Color {
 	return engine.Color{R: c[0], G: c[1], B: c[2], A: c[3]}
 }
 
+// stellarVariant returns the StellarVariant for a body config.
+// Prefers the explicit stellar_variant field; falls back to the legacy subtype
+// field so existing JSON files continue loading correctly before Phase C migration.
+func stellarVariant(c BodyConfig) string {
+	if c.StellarVariant != "" {
+		return c.StellarVariant
+	}
+	return c.Subtype
+}
+
 func resolveAtmosphereColor(a *AtmosphereConfig) engine.Color {
 	if a == nil || a.ColorHint[3] == 0 {
 		return engine.Color{}
@@ -106,12 +116,16 @@ func LoadSystemFromFile(path string) (*engine.SimulationState, error) {
 		}
 	}
 
-	canonicalOrder := []engine.ObjectCategory{engine.CategoryBlackHole, engine.CategoryStar,
+	canonicalOrder := []engine.ObjectCategory{
+		engine.CategoryStarPreMain,
+		engine.CategoryStarMainSequence,
+		engine.CategoryStarEvolved,
+		engine.CategorySubstellar,
+		engine.CategoryStellarRemnant,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,
 		engine.CategoryMoon,
 		engine.CategoryAsteroid,
-		engine.CategoryRing,
 		engine.CategoryBelt,
 	}
 	for _, cat := range canonicalOrder {
@@ -236,8 +250,16 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 
 	category := engine.CategoryPlanet
 	switch strings.ToLower(config.Type) {
-	case "star":
-		category = engine.CategoryStar
+	case "star_pre_main":
+		category = engine.CategoryStarPreMain
+	case "star", "star_main_sequence":
+		category = engine.CategoryStarMainSequence
+	case "star_evolved":
+		category = engine.CategoryStarEvolved
+	case "substellar", "brown_dwarf":
+		category = engine.CategorySubstellar
+	case "stellar_remnant", "blackhole", "white_dwarf", "neutron_star":
+		category = engine.CategoryStellarRemnant
 	case "dwarf_planet":
 		category = engine.CategoryDwarfPlanet
 	case "moon":
@@ -250,8 +272,6 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 		category = engine.CategoryRogue
 	case "artifact":
 		category = engine.CategoryArtifact
-	case "blackhole":
-		category = engine.CategoryBlackHole
 	}
 
 	initialAngle := float32(0)
@@ -287,7 +307,8 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 		Meta: engine.ObjectMetadata{
 			Name:             config.Name,
 			Category:         category,
-			Subtype:          config.Subtype,
+			SpectralClass:  config.SpectralClass,
+			StellarVariant: stellarVariant(config),
 			Mass:             config.Physical.Mass,
 			GM:               engine.G_sim * config.Physical.Mass,
 			PhysicalRadius:   config.Physical.Radius,
@@ -842,13 +863,15 @@ func LoadSystemFromDir(dir string) (*engine.SimulationState, error) {
 
 	// Build NavigationOrder from seen categories in canonical order.
 	canonicalOrder := []engine.ObjectCategory{
-		engine.CategoryBlackHole,
-		engine.CategoryStar,
+		engine.CategoryStarPreMain,
+		engine.CategoryStarMainSequence,
+		engine.CategoryStarEvolved,
+		engine.CategorySubstellar,
+		engine.CategoryStellarRemnant,
 		engine.CategoryPlanet,
 		engine.CategoryDwarfPlanet,
 		engine.CategoryMoon,
 		engine.CategoryAsteroid,
-		engine.CategoryRing,
 		engine.CategoryBelt,
 		engine.CategoryRogue,
 		engine.CategoryArtifact,

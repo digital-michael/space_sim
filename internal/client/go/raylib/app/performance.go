@@ -84,7 +84,7 @@ func (a *App) runPerformanceTest(sim *simlib.World, cameraState *ui.CameraState,
 	starState := sim.GetState().LockFront()
 	starName := ""
 	for _, obj := range starState.Objects {
-		if obj.Meta.Category == engine.CategoryStar {
+		if engine.IsStarLike(obj.Meta.Category) {
 			starName = obj.Meta.Name
 			break
 		}

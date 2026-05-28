@@ -132,12 +132,18 @@ func categoryLabel(c engine.ObjectCategory) string {
 		return "asteroid"
 	case engine.CategoryRing:
 		return "ring"
-	case engine.CategoryStar:
+	case engine.CategoryStarPreMain:
+		return "star_pre_main"
+	case engine.CategoryStarMainSequence:
 		return "star"
+	case engine.CategoryStarEvolved:
+		return "star_evolved"
+	case engine.CategorySubstellar:
+		return "substellar"
+	case engine.CategoryStellarRemnant:
+		return "stellar_remnant"
 	case engine.CategoryBelt:
 		return "belt"
-	case engine.CategoryBlackHole:
-		return "blackhole"
 	default:
 		return "unknown"
 	}

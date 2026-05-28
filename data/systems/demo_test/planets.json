@@ -1,0 +1,117 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Demo Planet",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [25000, 0, 0],
+        "velocity_override": [0, 0, 0]
+      },
+      "physical": {
+        "radius": 20,
+        "mass": 6e24,
+        "rotation_period": 24.0,
+        "axial_tilt": 12.0,
+        "albedo": 0.3
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "fallback_color": [105, 135, 185, 255]
+      },
+      "importance": 75
+    },
+    {
+      "type": "planet",
+      "name": "Demo Planet Moons",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [30000, 0, 0],
+        "velocity_override": [0, 0, 0]
+      },
+      "physical": {
+        "radius": 25,
+        "mass": 1.2e25,
+        "rotation_period": 18.0,
+        "axial_tilt": 20.0,
+        "albedo": 0.35
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/earthmap1k.jpg",
+        "night_texture_image": "data/assets/textures/earth_nightmap.jpg",
+        "fallback_color": [75, 110, 165, 255]
+      },
+      "importance": 77,
+      "atmosphere": {
+        "thickness_km": 200,
+        "principal_chemicals": ["nitrogen", "oxygen"],
+        "cloud_coverage": 0.4,
+        "cloud_composition": ["water"],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Demo Planet Faint Rings",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [35000, 0, 0],
+        "velocity_override": [0, 0, 0]
+      },
+      "physical": {
+        "radius": 25,
+        "mass": 8e24,
+        "rotation_period": 14.0,
+        "axial_tilt": 6.0,
+        "albedo": 0.25
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "fallback_color": [185, 168, 142, 255]
+      },
+      "importance": 77
+    },
+    {
+      "type": "planet",
+      "name": "Demo Planet Strong Rings",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [40000, 0, 0],
+        "velocity_override": [0, 0, 0]
+      },
+      "physical": {
+        "radius": 30,
+        "mass": 5.7e26,
+        "rotation_period": 10.7,
+        "axial_tilt": 26.7,
+        "albedo": 0.47
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/saturnmap.jpg",
+        "fallback_color": [215, 195, 145, 255]
+      },
+      "importance": 80
+    }
+  ]
+}

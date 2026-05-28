@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "Epsilon Eridani",
       "orbit": {
         "semi_major_axis": 0,
@@ -58,7 +58,8 @@
           255
         ],
         "emission_intensity": 0.34
-      }
+      },
+      "spectral_class": "K"
     }
   ]
 }

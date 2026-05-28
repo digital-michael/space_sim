@@ -18,17 +18,31 @@ const (
 type ObjectCategory int
 
 const (
-	CategoryPlanet      ObjectCategory = iota // 0
-	CategoryDwarfPlanet                       // 1
-	CategoryMoon                              // 2
-	CategoryAsteroid                          // 3
-	CategoryRing                              // 4
-	CategoryStar                              // 5
-	CategoryBelt        ObjectCategory = 6    // Virtual: asteroid/Kuiper belts
-	CategoryRogue       ObjectCategory = 7    // Comets, interstellar objects, high-eccentricity bodies
-	CategoryArtifact    ObjectCategory = 8    // Human-made or alien-made durable objects (F-008/F-034)
-	CategoryBlackHole   ObjectCategory = 9    // Black holes: stellar, intermediate, SMBH, quasar, blazar
+	// Stellar categories (0–9); slots 5–9 reserved for future stellar additions.
+	CategoryStarPreMain      ObjectCategory = 0 // Protostar, T Tauri star
+	CategoryStarMainSequence ObjectCategory = 1 // Red Dwarf (M) through Blue (O)
+	CategoryStarEvolved      ObjectCategory = 2 // Giants, Supergiants, Wolf-Rayet
+	CategorySubstellar       ObjectCategory = 3 // Brown Dwarf (L/T/Y); failed stars
+	CategoryStellarRemnant   ObjectCategory = 4 // White Dwarf, Neutron Star, Black Hole
+
+	// System body categories (10–19); slots 17–19 reserved for future additions.
+	CategoryPlanet      ObjectCategory = 10
+	CategoryDwarfPlanet ObjectCategory = 11
+	CategoryMoon        ObjectCategory = 12
+	CategoryAsteroid    ObjectCategory = 13
+	CategoryBelt        ObjectCategory = 14 // Virtual: asteroid/Kuiper belts
+	CategoryRogue       ObjectCategory = 15 // Comets, rogue planets, interstellar objects
+	CategoryArtifact    ObjectCategory = 16 // Human-made or alien-made durable objects (F-008/F-034)
+
+	// Internal sentinel — never shown as a UI tab.
+	CategoryRing ObjectCategory = 99 // Ring systems; excluded from navigation order
 )
+
+// IsStarLike reports whether a category belongs to the stellar group
+// (pre-main, main sequence, evolved, substellar, or stellar remnant).
+func IsStarLike(cat ObjectCategory) bool {
+	return cat >= CategoryStarPreMain && cat <= CategoryStellarRemnant
+}
 
 // AsteroidDataset represents a LOD level for asteroid populations.
 type AsteroidDataset int
@@ -103,10 +117,13 @@ type ObjectMetadata struct {
 	OrbitRadius float32 // Circular orbital distance
 	OrbitSpeed  float32 // Angular velocity in radians/second
 
-	// Stellar subtype (optional, within type:"star" or type:"blackhole")
-	// Examples: "pulsar", "magnetar", "white_dwarf", "neutron_star", "brown_dwarf",
-	// "quasar", "blazar", "main_sequence"
-	Subtype string
+	// Stellar classification (optional). Used by the Advanced Info display toggle.
+	// SpectralClass: spectral or luminosity class label shown in parentheses
+	//   e.g. "M", "G", "K", "III", "L/T/Y", "Ia"
+	// StellarVariant: named variant within a category shown in parentheses
+	//   e.g. "Pulsar", "Magnetar", "White Dwarf", "Black Hole", "Quasar"
+	SpectralClass  string
+	StellarVariant string
 
 	// Relativistic jet parameters (set by relativistic_jet feature; 0 = no jets)
 	JetLength float32 // Total length of each jet arm in sim units

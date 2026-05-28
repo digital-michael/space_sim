@@ -8,7 +8,7 @@ import (
 
 // TestNewInputStateDefaults verifies the zero-value contract of NewInputState.
 func TestNewInputStateDefaults(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 
 	if inp.SelectionActive {
 		t.Error("SelectionActive should be false by default")
@@ -19,7 +19,7 @@ func TestNewInputStateDefaults(t *testing.T) {
 	if inp.SelectionMode != SelectionModeNone {
 		t.Errorf("SelectionMode = %v, want SelectionModeNone", inp.SelectionMode)
 	}
-	if inp.SelectedCategory != engine.CategoryStar {
+	if inp.SelectedCategory != engine.CategoryStarMainSequence {
 		t.Errorf("SelectedCategory = %v, want CategoryStar", inp.SelectedCategory)
 	}
 	if inp.FilteredIndices == nil {
@@ -41,7 +41,7 @@ func TestNewInputStateDefaults(t *testing.T) {
 
 // TestStartSelection verifies that StartSelection sets the expected fields.
 func TestStartSelection(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 
 	inp.StartSelection(SelectionModeJump)
 
@@ -58,7 +58,7 @@ func TestStartSelection(t *testing.T) {
 
 // TestCancelSelection verifies that CancelSelection clears selection state.
 func TestCancelSelection(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	inp.StartSelection(SelectionModeTrack)
 
 	inp.CancelSelection()
@@ -76,7 +76,7 @@ func TestCancelSelection(t *testing.T) {
 
 // TestMainWindowInputSuspended verifies modal dialogs suspend main-window controls.
 func TestMainWindowInputSuspended(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 
 	if inp.MainWindowInputSuspended() {
 		t.Fatal("MainWindowInputSuspended should be false without an active dialog")
@@ -100,7 +100,7 @@ func TestMainWindowInputSuspended(t *testing.T) {
 
 // TestConfirmSelectionReturnsValues verifies ConfirmSelection returns the current index and mode.
 func TestConfirmSelectionReturnsValues(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	inp.StartSelection(SelectionModeTrackEquatorial)
 	inp.SelectedIndex = 7
 
@@ -124,7 +124,7 @@ func TestConfirmSelectionReturnsValues(t *testing.T) {
 }
 
 func TestOpenSystemSelectorPrefersActivePath(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	options := []SystemOption{
 		{Label: "solar_system.json", Path: "data/systems/solar_system.json"},
 		{Label: "alpha_centauri_system.json", Path: "data/systems/alpha_centauri_system.json"},
@@ -147,7 +147,7 @@ func TestOpenSystemSelectorPrefersActivePath(t *testing.T) {
 }
 
 func TestConfirmSystemSelectionQueuesReload(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	inp.OpenSystemSelector([]SystemOption{
 		{Label: "solar_system.json", Path: "data/systems/solar_system.json"},
 		{Label: "alpha_centauri_system.json", Path: "data/systems/alpha_centauri_system.json"},
@@ -171,7 +171,7 @@ func TestConfirmSystemSelectionQueuesReload(t *testing.T) {
 }
 
 func TestConfirmSystemSelectionCancelsForActivePath(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	inp.OpenSystemSelector([]SystemOption{
 		{Label: "solar_system.json", Path: "data/systems/solar_system.json"},
 	}, "data/systems/solar_system.json")
@@ -194,7 +194,7 @@ func TestConfirmSystemSelectionCancelsForActivePath(t *testing.T) {
 
 // TestSelectNext verifies SelectNext increments up to maxIndex and no further.
 func TestSelectNext(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	inp.StartSelection(SelectionModeJump)
 
 	inp.SelectNext(2)
@@ -215,7 +215,7 @@ func TestSelectNext(t *testing.T) {
 
 // TestSelectPrevious verifies SelectPrevious decrements down to 0 and no further.
 func TestSelectPrevious(t *testing.T) {
-	inp := NewInputState(engine.CategoryStar)
+	inp := NewInputState(engine.CategoryStarMainSequence)
 	inp.StartSelection(SelectionModeJump)
 	inp.SelectedIndex = 2
 

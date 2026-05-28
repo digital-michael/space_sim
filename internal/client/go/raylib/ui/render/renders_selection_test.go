@@ -22,7 +22,7 @@ func TestFilterByCategory_Empty(t *testing.T) {
 func TestFilterByCategory_PlanetsOnly(t *testing.T) {
 	objs := []*engine.Object{
 		selObj("Earth", engine.CategoryPlanet),
-		selObj("Sol", engine.CategoryStar),
+		selObj("Sol", engine.CategoryStarMainSequence),
 		selObj("Mars", engine.CategoryPlanet),
 	}
 	got := filterObjectsByCategory(objs, engine.CategoryPlanet)
@@ -33,7 +33,7 @@ func TestFilterByCategory_PlanetsOnly(t *testing.T) {
 
 func TestFilterByCategory_NoMatch(t *testing.T) {
 	objs := []*engine.Object{selObj("Earth", engine.CategoryPlanet)}
-	got := filterObjectsByCategory(objs, engine.CategoryStar)
+	got := filterObjectsByCategory(objs, engine.CategoryStarMainSequence)
 	if len(got) != 0 {
 		t.Errorf("got %v, want []", got)
 	}
@@ -76,7 +76,7 @@ func TestFilterByCatAndText_EmptyFilter(t *testing.T) {
 	objs := []*engine.Object{
 		selObj("Earth", engine.CategoryPlanet),
 		selObj("Mars", engine.CategoryPlanet),
-		selObj("Sol", engine.CategoryStar),
+		selObj("Sol", engine.CategoryStarMainSequence),
 	}
 	got := filterObjectsByCategoryAndText(objs, engine.CategoryPlanet, "")
 	if len(got) != 2 || got[0] != 0 || got[1] != 1 {

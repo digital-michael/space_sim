@@ -176,7 +176,7 @@ func selectObjectsForLabels(state *engine.SimulationState, cameraState *ui.Camer
 		}
 
 		// Boost priority for stars
-		if obj.Meta.Category == engine.CategoryStar {
+		if isStarLike(obj.Meta.Category) {
 			priority += 500.0
 		}
 

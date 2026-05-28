@@ -2,9 +2,8 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "stellar_remnant",
       "name": "SGR 1806-20",
-      "subtype": "magnetar",
       "orbit": {
         "semi_major_axis": 0,
         "eccentricity": 0,
@@ -22,16 +21,27 @@
       },
       "rendering": {
         "material": "neutron_star",
-        "fallback_color": [255, 160, 100, 255]
+        "fallback_color": [
+          255,
+          160,
+          100,
+          255
+        ]
       },
       "importance": 95,
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 10.0,
         "surface_temperature_k": 800000,
-        "emission_color": [255, 180, 120, 255],
+        "emission_color": [
+          255,
+          180,
+          120,
+          255
+        ],
         "emission_intensity": 3.0
-      }
+      },
+      "stellar_variant": "Magnetar"
     }
   ]
 }

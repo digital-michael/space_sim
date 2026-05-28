@@ -66,26 +66,16 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 	solIndex := -1
 	var starRadius float32
 	for i, obj := range initialState.Objects {
-		if obj.Meta.Category == engine.CategoryStar {
+		if engine.IsStarLike(obj.Meta.Category) {
 			solIndex = i
 			starRadius = obj.Meta.PhysicalRadius
 			break
 		}
 	}
-	// Fall back to first black hole if no star present
-	if solIndex < 0 {
-		for i, obj := range initialState.Objects {
-			if obj.Meta.Category == engine.CategoryBlackHole {
-				solIndex = i
-				starRadius = obj.Meta.PhysicalRadius
-				break
-			}
-		}
-	}
 	navigationOrder := initialState.NavigationOrder
 	sim.GetState().UnlockFront()
 
-	firstCategory := engine.CategoryStar
+	firstCategory := engine.CategoryStarMainSequence
 	if len(navigationOrder) > 0 {
 		firstCategory = navigationOrder[0]
 	}

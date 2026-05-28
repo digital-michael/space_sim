@@ -2,7 +2,7 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "Alpha Centauri A",
       "orbit": {
         "semi_major_axis": 0,
@@ -58,10 +58,11 @@
           255
         ],
         "emission_intensity": 1.519
-      }
+      },
+      "spectral_class": "G"
     },
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "Alpha Centauri B",
       "parent": "Alpha Centauri A",
       "orbit": {
@@ -120,10 +121,11 @@
           255
         ],
         "emission_intensity": 0.5
-      }
+      },
+      "spectral_class": "K"
     },
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "Proxima Centauri",
       "parent": "Alpha Centauri A",
       "orbit": {
@@ -183,7 +185,8 @@
         ],
         "emission_intensity": 0.00155,
         "render_note": "TODO: perceptual intensity boost required; physical emission_intensity too low for direct rendering"
-      }
+      },
+      "spectral_class": "M"
     }
   ]
 }

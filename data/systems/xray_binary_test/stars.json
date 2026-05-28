@@ -2,9 +2,8 @@
   "schema_version": "2.0",
   "bodies": [
     {
-      "type": "star",
+      "type": "star_main_sequence",
       "name": "O-Star Companion",
-      "subtype": "main_sequence",
       "orbit": {
         "semi_major_axis": 0,
         "eccentricity": 0,
@@ -21,21 +20,31 @@
       },
       "rendering": {
         "material": "emissive",
-        "fallback_color": [140, 180, 255, 255]
+        "fallback_color": [
+          140,
+          180,
+          255,
+          255
+        ]
       },
       "importance": 85,
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 100000.0,
         "surface_temperature_k": 40000,
-        "emission_color": [140, 180, 255, 255],
+        "emission_color": [
+          140,
+          180,
+          255,
+          255
+        ],
         "emission_intensity": 1.5
-      }
+      },
+      "spectral_class": "O"
     },
     {
-      "type": "star",
+      "type": "stellar_remnant",
       "name": "Accreting Neutron Star",
-      "subtype": "neutron_star",
       "parent": "O-Star Companion",
       "orbit": {
         "semi_major_axis": 50,
@@ -54,16 +63,27 @@
       },
       "rendering": {
         "material": "neutron_star",
-        "fallback_color": [180, 230, 255, 255]
+        "fallback_color": [
+          180,
+          230,
+          255,
+          255
+        ]
       },
       "importance": 90,
       "luminosity": {
         "self_luminous": true,
         "solar_luminosity": 100000.0,
         "surface_temperature_k": 1000000,
-        "emission_color": [180, 230, 255, 255],
+        "emission_color": [
+          180,
+          230,
+          255,
+          255
+        ],
         "emission_intensity": 3.0
-      }
+      },
+      "stellar_variant": "Neutron Star"
     }
   ]
 }

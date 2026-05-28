@@ -1,0 +1,487 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "substellar",
+      "name": "Demo Brown Dwarf",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          46000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 8,
+        "mass": 3.2e+28,
+        "rotation_period": 8.0,
+        "axial_tilt": 5.0,
+        "albedo": 0.08,
+        "albedo_note": "~30 Jupiter-mass sub-stellar object; T-dwarf boundary, T_eff ~1600 K"
+      },
+      "rendering": {
+        "material": "diffuse_thermal",
+        "fallback_color": [
+          95,
+          22,
+          55,
+          255
+        ]
+      },
+      "importance": 80,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 2e-05,
+        "surface_temperature_k": 1600,
+        "emission_color": [
+          110,
+          25,
+          58,
+          255
+        ],
+        "emission_intensity": 0.22
+      },
+      "spectral_class": "L",
+      "stellar_variant": "Brown Dwarf"
+    },
+    {
+      "type": "star_main_sequence",
+      "name": "Demo Red Dwarf",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          52000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 18,
+        "mass": 3.2e+29,
+        "rotation_period": 45.0,
+        "axial_tilt": 3.0,
+        "albedo": 1.0,
+        "albedo_note": "M3V-type red dwarf; ~0.3 solar mass, ~0.35 solar radius"
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [
+          255,
+          75,
+          28,
+          255
+        ]
+      },
+      "importance": 82,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 0.009,
+        "surface_temperature_k": 3200,
+        "emission_color": [
+          255,
+          80,
+          32,
+          255
+        ],
+        "emission_intensity": 0.85
+      },
+      "spectral_class": "M"
+    },
+    {
+      "type": "star_main_sequence",
+      "name": "Demo G-Type Star",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          58000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 35,
+        "mass": 1.989e+30,
+        "rotation_period": 25.0,
+        "axial_tilt": 7.25,
+        "albedo": 1.0,
+        "albedo_note": "G2V solar analog; 1 solar mass, 1 solar radius"
+      },
+      "rendering": {
+        "material": "emissive",
+        "texture_image": "data/assets/textures/sunmap.jpg",
+        "fallback_color": [
+          255,
+          228,
+          145,
+          255
+        ]
+      },
+      "importance": 85,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 1.0,
+        "surface_temperature_k": 5778,
+        "emission_color": [
+          255,
+          235,
+          165,
+          255
+        ],
+        "emission_intensity": 1.5
+      },
+      "spectral_class": "G"
+    },
+    {
+      "type": "star_evolved",
+      "name": "Demo Orange Giant",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          65000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 90,
+        "mass": 2.985e+30,
+        "rotation_period": 120.0,
+        "axial_tilt": 4.0,
+        "albedo": 1.0,
+        "albedo_note": "K2 III evolved giant; ~1.5 solar mass, ~13 solar radii, T_eff ~4500 K"
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [
+          255,
+          148,
+          50,
+          255
+        ]
+      },
+      "importance": 85,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 50.0,
+        "surface_temperature_k": 4500,
+        "emission_color": [
+          255,
+          155,
+          55,
+          255
+        ],
+        "emission_intensity": 1.8
+      },
+      "spectral_class": "K"
+    },
+    {
+      "type": "star_evolved",
+      "name": "Demo Red Giant",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          76000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 220,
+        "mass": 3.978e+30,
+        "rotation_period": 500.0,
+        "axial_tilt": 2.0,
+        "albedo": 1.0,
+        "albedo_note": "M2 III asymptotic giant branch; ~2 solar mass, ~100 solar radii, T_eff ~3500 K"
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [
+          255,
+          88,
+          28,
+          255
+        ]
+      },
+      "importance": 87,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 800.0,
+        "surface_temperature_k": 3500,
+        "emission_color": [
+          255,
+          95,
+          32,
+          255
+        ],
+        "emission_intensity": 2.0
+      },
+      "spectral_class": "M"
+    },
+    {
+      "type": "star_evolved",
+      "name": "Demo Blue Supergiant",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          92000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 450,
+        "mass": 5.967e+31,
+        "rotation_period": 6.0,
+        "axial_tilt": 10.0,
+        "albedo": 1.0,
+        "albedo_note": "B0 Ia blue supergiant; ~30 solar mass, ~65 solar radii, T_eff ~25000 K"
+      },
+      "rendering": {
+        "material": "emissive",
+        "fallback_color": [
+          148,
+          178,
+          255,
+          255
+        ]
+      },
+      "importance": 90,
+      "luminosity": {
+        "self_luminous": true,
+        "solar_luminosity": 250000.0,
+        "surface_temperature_k": 25000,
+        "emission_color": [
+          150,
+          180,
+          255,
+          255
+        ],
+        "emission_intensity": 2.5
+      },
+      "spectral_class": "B"
+    },
+    {
+      "type": "stellar_remnant",
+      "name": "Demo BH Plain",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          110000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 20,
+        "mass": 2.984e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.0,
+        "albedo_note": "quiescent black hole \u2014 photon ring always present, no accretion activity"
+      },
+      "rendering": {
+        "material": "blackhole",
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "disk_tilt": 30,
+        "accretion_energy": 0.0
+      },
+      "importance": 88,
+      "stellar_variant": "Black Hole"
+    },
+    {
+      "type": "stellar_remnant",
+      "name": "Demo BH Photon Ring",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          117000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 20,
+        "mass": 2.984e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.0,
+        "albedo_note": "low-activity BH \u2014 photon ring + lamppost corona, disk formation just beginning"
+      },
+      "rendering": {
+        "material": "blackhole",
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "disk_tilt": 25,
+        "accretion_energy": 0.1
+      },
+      "importance": 88,
+      "stellar_variant": "Black Hole"
+    },
+    {
+      "type": "stellar_remnant",
+      "name": "Demo BH Faint Disk",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          124000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 20,
+        "mass": 2.984e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.0,
+        "albedo_note": "moderate-activity BH \u2014 faint outer disk bands visible with photon ring + corona"
+      },
+      "rendering": {
+        "material": "blackhole",
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "disk_tilt": 20,
+        "accretion_energy": 0.55
+      },
+      "importance": 88,
+      "stellar_variant": "Black Hole"
+    },
+    {
+      "type": "stellar_remnant",
+      "name": "Demo BH Strong Disk",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [
+          131000,
+          0,
+          0
+        ],
+        "velocity_override": [
+          0,
+          0,
+          0
+        ]
+      },
+      "physical": {
+        "radius": 20,
+        "mass": 2.984e+31,
+        "rotation_period": 0.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.0,
+        "albedo_note": "high-activity BH \u2014 full accretion disk white-to-red gradient, bright corona and photon ring"
+      },
+      "rendering": {
+        "material": "blackhole",
+        "fallback_color": [
+          0,
+          0,
+          0,
+          255
+        ],
+        "disk_tilt": 15,
+        "accretion_energy": 2.2
+      },
+      "importance": 90,
+      "stellar_variant": "Black Hole"
+    }
+  ]
+}

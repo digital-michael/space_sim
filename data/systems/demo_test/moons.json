@@ -1,0 +1,106 @@
+{
+  "schema_version": "2.0",
+  "bodies": [
+    {
+      "type": "moon",
+      "name": "Demo Moon",
+      "orbit": {
+        "semi_major_axis": 0,
+        "eccentricity": 0,
+        "inclination": 0,
+        "orbital_period": 0,
+        "initial_mean_anomaly": "0",
+        "position_override": [10000, 0, 0],
+        "velocity_override": [0, 0, 0]
+      },
+      "physical": {
+        "radius": 4,
+        "mass": 7.3e22,
+        "rotation_period": 655.0,
+        "axial_tilt": 1.5,
+        "albedo": 0.12
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/moonmap1k.jpg",
+        "fallback_color": [180, 172, 162, 255]
+      },
+      "importance": 72
+    },
+    {
+      "type": "moon",
+      "name": "Dwarf Moon I",
+      "parent": "Demo Dwarf Planet II",
+      "orbit": {
+        "semi_major_axis": 35,
+        "eccentricity": 0.02,
+        "inclination": 0.1,
+        "orbital_period": 380.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2,
+        "mass": 1.5e20,
+        "rotation_period": 380.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.09
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "fallback_color": [160, 148, 136, 255]
+      },
+      "importance": 60
+    },
+    {
+      "type": "moon",
+      "name": "Planet Moon I",
+      "parent": "Demo Planet Moons",
+      "orbit": {
+        "semi_major_axis": 80,
+        "eccentricity": 0.01,
+        "inclination": 0.05,
+        "orbital_period": 720.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 3,
+        "mass": 5e20,
+        "rotation_period": 720.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.13
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/moonmap1k.jpg",
+        "fallback_color": [175, 165, 155, 255]
+      },
+      "importance": 62
+    },
+    {
+      "type": "moon",
+      "name": "Planet Moon II",
+      "parent": "Demo Planet Moons",
+      "orbit": {
+        "semi_major_axis": 150,
+        "eccentricity": 0.04,
+        "inclination": 0.12,
+        "orbital_period": 1850.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 2,
+        "mass": 2e20,
+        "rotation_period": 1850.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.09
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "fallback_color": [148, 138, 128, 255]
+      },
+      "importance": 58
+    }
+  ]
+}

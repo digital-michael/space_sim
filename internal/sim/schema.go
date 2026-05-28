@@ -21,10 +21,12 @@ type SystemConfig struct {
 
 // BodyConfig defines a celestial body (star, planet, moon, dwarf planet, rogue, artifact).
 type BodyConfig struct {
-	Type       string            `json:"type"`
-	Name       string            `json:"name"`
-	Subtype    string            `json:"subtype,omitempty"` // rogue/artifact subtype (e.g. "periodic", "probe")
-	Parent     string            `json:"parent,omitempty"`
+	Type           string            `json:"type"`
+	Name           string            `json:"name"`
+	Subtype        string            `json:"subtype,omitempty"`         // rogue/artifact subtype (e.g. "periodic", "probe")
+	SpectralClass  string            `json:"spectral_class,omitempty"`  // e.g. "M", "G", "K", "III", "L/T/Y"
+	StellarVariant string            `json:"stellar_variant,omitempty"` // e.g. "Pulsar", "Magnetar", "White Dwarf", "Black Hole"
+	Parent         string            `json:"parent,omitempty"`
 	Faction    string            `json:"faction,omitempty"` // artifact faction id (F-035, Phase 2)
 	Template   string            `json:"template,omitempty"`
 	Overrides  map[string]any    `json:"overrides,omitempty"`

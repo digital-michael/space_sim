@@ -47,6 +47,9 @@ func (a *App) handleInputTrackStop(session *runtimeSession) bool {
 // handleInputSettings processes keyboard input for the settings dialog.
 // Returns true only if the application should quit (never from this path).
 func (a *App) handleInputSettings(session *runtimeSession, km *input.KeyMap, shiftHeld bool) bool {
+	// Sync AdvancedInfo each frame so mouse clicks in the renderer take effect immediately.
+	session.inputState.AdvancedInfo = a.runtime.Settings.AdvancedInfo
+
 	// Keybind capture mode: intercept the next key press for rebinding.
 	if a.runtime.Settings.KeybindCapture >= 0 {
 		action := input.InputAction(a.runtime.Settings.KeybindCapture)
@@ -202,7 +205,7 @@ func (a *App) handleInputSettings(session *runtimeSession, km *input.KeyMap, shi
 	}
 
 	// Up/Down: navigate rows within current tab.
-	tabRowMax := [4]int{0, 3, 6, 49}
+	tabRowMax := [4]int{0, 4, 6, 49}
 	if a.runtime.Settings.ActiveTab > 0 {
 		if rl.IsKeyPressed(rl.KeyUp) && a.runtime.Settings.SelectedRow > 0 {
 			a.runtime.Settings.SelectedRow--
@@ -226,6 +229,9 @@ func (a *App) handleInputSettings(session *runtimeSession, km *input.KeyMap, shi
 			case 2:
 				a.runtime.Settings.HUD.Help = !a.runtime.Settings.HUD.Help
 				a.runtime.HUD.Help = a.runtime.Settings.HUD.Help
+			case 3:
+				a.runtime.Settings.AdvancedInfo = !a.runtime.Settings.AdvancedInfo
+				session.inputState.AdvancedInfo = a.runtime.Settings.AdvancedInfo
 			}
 		case 2:
 			switch a.runtime.Settings.SelectedRow {
@@ -283,8 +289,8 @@ func (a *App) handleInputSettings(session *runtimeSession, km *input.KeyMap, shi
 		}
 	}
 
-	// Left/Right: UIScale (Display tab, row 3).
-	if a.runtime.Settings.ActiveTab == 1 && a.runtime.Settings.SelectedRow == 3 {
+	// Left/Right: UIScale (Display tab, row 4).
+	if a.runtime.Settings.ActiveTab == 1 && a.runtime.Settings.SelectedRow == 4 {
 		scales := []float32{0.5, 0.75, 1.0, 1.25, 1.5, 2.0}
 		current := a.runtime.Settings.UIScale
 		if current <= 0 {
