@@ -104,6 +104,12 @@ func (km *KeyMap) IsPressed(action InputAction) bool {
 		return false
 	}
 	// All required modifiers must have been held when the key was pressed.
+	// For bindings with no required modifiers, also require that no modifiers
+	// were held — otherwise bare-key actions fire alongside modifier combos
+	// that share the same physical key (e.g. "/" and "CTRL+/").
+	if b.mods == 0 {
+		return storedMods == 0
+	}
 	return storedMods&b.mods == b.mods
 }
 

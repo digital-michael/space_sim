@@ -89,8 +89,11 @@ const (
 	// Combined object selector (Face / Jump / Track dialog)
 	ActionNavSelect InputAction = 51
 
+	// Script browser — open the in-app script file picker
+	ActionUIScriptBrowser InputAction = 52
+
 	// sentinel — must equal last constant + 1
-	actionCount InputAction = 52
+	actionCount InputAction = 53
 )
 
 // actionNames maps each action to its dot-notation vocabulary name.
@@ -153,6 +156,8 @@ var actionNames = map[InputAction]string{
 	ActionHUDInfo: "hud.info",
 
 	ActionNavSelect: "nav.select",
+
+	ActionUIScriptBrowser: "ui.script_browser",
 }
 
 // nameActions is the reverse of actionNames, built at init.
@@ -196,7 +201,7 @@ func OrderedActions() []InputAction {
 	return []InputAction{
 		// Application
 		ActionUISettings, ActionUIFullscreen,
-		ActionUISystemSelector, ActionUILabelCycle, ActionUIInfraCycle,
+		ActionUISystemSelector, ActionUIScriptBrowser, ActionUILabelCycle, ActionUIInfraCycle,
 		ActionUIMouseModeToggle, ActionUIQuit,
 		ActionUIRecordToggle, ActionUIRecordPause,
 		ActionUIDebugLabels,

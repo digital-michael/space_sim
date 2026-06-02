@@ -12,6 +12,7 @@ const (
 	SelectionModeTrack
 	SelectionModeTrackEquatorial
 	SelectionModeSystemSelector
+	SelectionModeScripts // in-app script file browser
 )
 
 // SystemOption describes one runtime-loadable system entry for the selector UI.
@@ -87,6 +88,10 @@ type InputState struct {
 	PendingSystemPath   string
 	SystemStatusMessage string
 	AdvancedInfo        bool // synced from SettingsState; shows spectral class / variant parentheticals
+
+	// Script browser state
+	ScriptOptions     []string // sorted list of script file paths
+	PendingScriptPath string   // path confirmed but not yet consumed
 }
 
 // NewInputState creates an InputState with firstCategory as the active tab.
@@ -214,6 +219,36 @@ func (i *InputState) SetSystemSelectorStatus(message string) {
 		return
 	}
 	i.SystemStatusMessage = message
+}
+
+// OpenScriptSelector activates the script file browser.
+func (i *InputState) OpenScriptSelector(scripts []string) {
+	i.SelectionActive = true
+	i.SelectionMode = SelectionModeScripts
+	i.ScriptOptions = scripts
+	i.PendingScriptPath = ""
+	i.ScrollOffset = 0
+	i.SelectedIndex = 0
+	if len(scripts) == 0 {
+		i.SelectedIndex = -1
+	}
+}
+
+// ConfirmScriptSelection returns the selected script path and resets selector state.
+// Returns ("", false) when nothing is selected.
+func (i *InputState) ConfirmScriptSelection() (string, bool) {
+	if i == nil || i.SelectionMode != SelectionModeScripts {
+		return "", false
+	}
+	if i.SelectedIndex < 0 || i.SelectedIndex >= len(i.ScriptOptions) {
+		return "", false
+	}
+	path := i.ScriptOptions[i.SelectedIndex]
+	i.PendingScriptPath = path
+	i.SelectionActive = false
+	i.SelectionMode = SelectionModeNone
+	i.ScriptOptions = i.ScriptOptions[:0]
+	return path, true
 }
 
 func (i *InputState) resetSelectorState() {

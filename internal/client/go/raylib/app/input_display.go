@@ -17,6 +17,10 @@ func (a *App) handleInputDisplay(session *runtimeSession, km *input.KeyMap, susp
 		a.openSystemSelector(session.inputState)
 		return false
 	}
+	if !suspended && km.IsPressed(input.ActionUIScriptBrowser) {
+		a.openScriptSelector(session.inputState)
+		return false
+	}
 	if !suspended && km.IsPressed(input.ActionUILabelCycle) {
 		switch a.runtime.LabelMode {
 		case ui.LabelModeOff:

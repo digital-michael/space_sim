@@ -15,6 +15,10 @@ func drawSelectionUI(state *engine.SimulationState, inputState *ui.InputState) {
 		drawSystemSelectorUI(inputState)
 		return
 	}
+	if inputState.SelectionMode == ui.SelectionModeScripts {
+		drawScriptSelectorUI(inputState)
+		return
+	}
 
 	sw := int32(currentScreenWidth())
 	sh := int32(currentScreenHeight())
@@ -442,6 +446,96 @@ func drawSystemSelectorUI(inputState *ui.InputState) {
 	}
 	if statusText != "" {
 		rl.DrawText(statusText, bgX+scaledInt32(18), bgY+bgHeight-scaledInt32(34), statusFont, rl.LightGray)
+	}
+}
+
+func drawScriptSelectorUI(inputState *ui.InputState) {
+	sw := int32(currentScreenWidth())
+	sh := int32(currentScreenHeight())
+	titleFont := scaledInt32(20)
+	hintFont := scaledInt32(12)
+	itemFont := scaledInt32(18)
+	statusFont := scaledInt32(14)
+	arrowFont := scaledInt32(20)
+
+	bgWidth := sw * 40 / 100
+	if bgWidth < scaledInt32(420) {
+		bgWidth = scaledInt32(420)
+	}
+	if bgWidth > scaledInt32(760) {
+		bgWidth = scaledInt32(760)
+	}
+	bgHeight := bgWidth
+	bgX := (sw - bgWidth) / 2
+	bgY := (sh - bgHeight) / 2
+
+	rl.DrawRectangle(bgX, bgY, bgWidth, bgHeight, rl.Color{R: 0, G: 0, B: 0, A: 210})
+	rl.DrawRectangleLines(bgX, bgY, bgWidth, bgHeight, rl.White)
+
+	rl.DrawText("RUN SCRIPT", bgX+scaledInt32(18), bgY+scaledInt32(12), titleFont, rl.White)
+	rl.DrawText("UP/DOWN: select   ENTER: run   ESC: cancel", bgX+scaledInt32(18), bgY+scaledInt32(42), hintFont, rl.LightGray)
+	rl.DrawText("CTRL+/: open this browser", bgX+scaledInt32(18), bgY+scaledInt32(58), hintFont, rl.Gray)
+
+	listStartY := bgY + scaledInt32(86)
+	lineHeight := scaledInt32(32)
+	listHeight := bgHeight - scaledInt32(140)
+	pageSize := int(listHeight / lineHeight)
+	if pageSize < 1 {
+		pageSize = 1
+	}
+
+	scripts := inputState.ScriptOptions
+	totalItems := len(scripts)
+	maxScroll := totalItems - pageSize
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if inputState.ScrollOffset > maxScroll {
+		inputState.ScrollOffset = maxScroll
+	}
+	if inputState.ScrollOffset < 0 {
+		inputState.ScrollOffset = 0
+	}
+
+	if totalItems == 0 {
+		rl.DrawText("No scripts found in scripts/", bgX+scaledInt32(18), listStartY, itemFont, rl.LightGray)
+	} else {
+		for idx := inputState.ScrollOffset; idx < inputState.ScrollOffset+pageSize && idx < totalItems; idx++ {
+			path := scripts[idx]
+			// Show just the filename without directory prefix.
+			label := path
+			if slash := strings.LastIndex(path, "/"); slash >= 0 {
+				label = path[slash+1:]
+			}
+			y := listStartY + int32(idx-inputState.ScrollOffset)*lineHeight
+			if idx == inputState.SelectedIndex {
+				rl.DrawRectangle(bgX+scaledInt32(10), y-scaledInt32(2), bgWidth-scaledInt32(20), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
+				rl.DrawText(">", bgX+scaledInt32(18), y+scaledInt32(4), arrowFont, rl.Yellow)
+			}
+			rl.DrawText(label, bgX+scaledInt32(44), y+scaledInt32(4), itemFont, rl.White)
+		}
+	}
+
+	if totalItems > pageSize {
+		scrollBarX := bgX + bgWidth - scaledInt32(15)
+		scrollBarY := listStartY
+		scrollBarWidth := scaledInt32(10)
+		scrollBarHeight := listHeight
+		rl.DrawRectangle(scrollBarX, scrollBarY, scrollBarWidth, scrollBarHeight, rl.Color{R: 30, G: 30, B: 30, A: 200})
+		thumbHeight := int32(float32(pageSize) / float32(totalItems) * float32(scrollBarHeight))
+		if thumbHeight < scaledInt32(20) {
+			thumbHeight = scaledInt32(20)
+		}
+		thumbY := scrollBarY
+		if maxScroll > 0 {
+			thumbY += int32(float32(inputState.ScrollOffset) / float32(maxScroll) * float32(scrollBarHeight-thumbHeight))
+		}
+		rl.DrawRectangle(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.Color{R: 100, G: 150, B: 200, A: 255})
+		rl.DrawRectangleLines(scrollBarX, thumbY, scrollBarWidth, thumbHeight, rl.White)
+	}
+
+	if inputState.SelectedIndex >= 0 && inputState.SelectedIndex < totalItems {
+		rl.DrawText("Press ENTER to run the selected script.", bgX+scaledInt32(18), bgY+bgHeight-scaledInt32(34), statusFont, rl.LightGray)
 	}
 }
 

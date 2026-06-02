@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/digital-michael/space_sim/internal/client/commands"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/input"
 	spatial "github.com/digital-michael/space_sim/internal/client/go/raylib/spatial"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
@@ -287,6 +288,77 @@ func (a *App) dispatchCmd(session *runtimeSession, snap protocol.WorldSnapshot, 
 		a.dispatchRecordCmd(cmd)
 	case ReloadKeymapCmd, SaveKeybindingsCmd, ScanKeybindFilesCmd, GetKeymapCmd:
 		a.dispatchKeybindCmd(cmd)
+	case ScriptLineCmd:
+		a.dispatchScriptCmd(session, snap, cmd.(ScriptLineCmd))
+	}
+}
+
+// dispatchScriptCmd parses a raw REPL text line forwarded by the script runner
+// goroutine and dispatches it as the appropriate AppCmd. Only commands that
+// have a direct in-app equivalent are handled; unrecognised lines are silently
+// skipped. This runs on the OS main thread and has full access to session state.
+func (a *App) dispatchScriptCmd(session *runtimeSession, snap protocol.WorldSnapshot, c ScriptLineCmd) {
+	cmd, err := commands.Parse(c.Line)
+	if err != nil {
+		return
+	}
+	cs := session.cameraState
+	state := snap.State
+	is := session.inputState
+
+	switch v := cmd.(type) {
+	case commands.CameraTrack:
+		dispatchCameraCmd(cs, state, CameraTrackCmd{Name: v.Name})
+
+	case commands.NavJump:
+		// Reuse the existing dispatch which resolves names against state.
+		dispatchNavCmd(cs, state, JumpToCmd{Names: v.Names})
+
+	case commands.SystemLoad:
+		dispatchSystemCmd(is, LoadSystemCmd{Path: normalizeSystemConfigPath("data/systems/" + v.Label)})
+
+	case commands.HUD:
+		a.runtime.HUD.Debug = v.Visible
+		a.runtime.HUD.Info = v.Visible
+		a.runtime.HUD.Help = v.Visible
+
+	case commands.HUDCategory:
+		switch strings.ToLower(v.Category) {
+		case "debug":
+			a.runtime.HUD.Debug = v.Visible
+		case "info":
+			a.runtime.HUD.Info = v.Visible
+		case "help":
+			a.runtime.HUD.Help = v.Visible
+		}
+
+	case commands.Labels:
+		switch strings.ToLower(v.Mode) {
+		case "on":
+			a.runtime.LabelMode = ui.LabelModeOn
+		case "off":
+			a.runtime.LabelMode = ui.LabelModeOff
+		case "nearest":
+			a.runtime.LabelMode = ui.LabelModeNearest
+		}
+
+	case commands.SetSpeed:
+		if session.sim != nil {
+			session.sim.GetState().GetBack().SecondsPerSecond = v.SecondsPerSecond
+		}
+
+	case commands.Pause:
+		if session.sim != nil {
+			session.sim.GetState().GetBack().SecondsPerSecond = 0
+		}
+
+	case commands.Resume:
+		if session.sim != nil && session.sim.GetState().GetBack().SecondsPerSecond == 0 {
+			session.sim.GetState().GetBack().SecondsPerSecond = float32(a.cfg.SimTimeScale)
+		}
+
+	case commands.WindowFullscreen:
+		a.dispatchWindowCmd(WindowFullscreenCmd{On: v.On})
 	}
 }
 

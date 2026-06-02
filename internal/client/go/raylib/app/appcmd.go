@@ -260,3 +260,9 @@ func (GetKeymapCmd) isAppCmd()        {}
 func (RecordStartCmd) isAppCmd()      {}
 func (RecordPauseCmd) isAppCmd()      {}
 func (RecordStopCmd) isAppCmd()       {}
+
+// ScriptLineCmd carries a single raw REPL text line from the script-runner
+// goroutine to the OS main thread for parsing and dispatch.
+type ScriptLineCmd struct{ Line string }
+
+func (ScriptLineCmd) isAppCmd() {}

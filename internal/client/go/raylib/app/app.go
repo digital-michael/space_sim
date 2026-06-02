@@ -55,6 +55,15 @@ type App struct {
 	// state, so CLI flags (--render-scale, --render-size) do not soil the
 	// saved configuration.
 	savedRenderConfig RenderConfig
+
+	// scriptCancel stops the currently running in-app script goroutine.
+	// Nil when no script is active.
+	scriptCancel context.CancelFunc
+
+	// runCtx is the application-lifetime context set by Run.
+	// Used by subsystems (e.g. script runner) that need a cancellable context
+	// but are called from deep in the render loop where ctx is not threaded through.
+	runCtx context.Context
 }
 
 // New constructs the application from validated configuration.
@@ -122,6 +131,7 @@ func (a *App) World() *worldpkg.World {
 
 // Run executes the application on the current thread.
 func (a *App) Run(ctx context.Context) error {
+	a.runCtx = ctx
 	if a.cfg.Debug {
 		logFile, err := os.OpenFile("performance_debug.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {

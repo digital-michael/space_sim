@@ -372,6 +372,62 @@ func skipSeparator(opts []ui.SystemOption, idx, dir int) int {
 // handleInputSelection processes keyboard input for the object-selection overlay.
 // Returns true only if the application should quit (never from this path).
 func (a *App) handleInputSelection(session *runtimeSession, state *engine.SimulationState, km *input.KeyMap) bool {
+	// Script browser sub-mode.
+	if session.inputState.SelectionMode == ui.SelectionModeScripts {
+		is := session.inputState
+		maxIndex := len(is.ScriptOptions) - 1
+		pageSize := 10
+
+		if rl.IsKeyPressed(rl.KeyUp) {
+			is.SelectPrevious()
+			if is.SelectedIndex < is.ScrollOffset {
+				is.ScrollOffset = is.SelectedIndex
+			}
+		}
+		if rl.IsKeyPressed(rl.KeyDown) {
+			is.SelectNext(maxIndex)
+			if is.SelectedIndex >= is.ScrollOffset+pageSize {
+				is.ScrollOffset = is.SelectedIndex - pageSize + 1
+			}
+		}
+		if rl.IsKeyPressed(rl.KeyPageUp) {
+			is.SelectedIndex -= pageSize
+			if is.SelectedIndex < 0 {
+				is.SelectedIndex = 0
+			}
+			is.ScrollOffset = is.SelectedIndex
+		}
+		if rl.IsKeyPressed(rl.KeyPageDown) {
+			is.SelectedIndex += pageSize
+			if is.SelectedIndex > maxIndex {
+				is.SelectedIndex = maxIndex
+			}
+			if is.SelectedIndex >= is.ScrollOffset+pageSize {
+				is.ScrollOffset = is.SelectedIndex - pageSize + 1
+			}
+		}
+		if rl.IsKeyPressed(rl.KeyHome) {
+			is.SelectedIndex = 0
+			is.ScrollOffset = 0
+		}
+		if rl.IsKeyPressed(rl.KeyEnd) {
+			is.SelectedIndex = maxIndex
+			is.ScrollOffset = maxIndex - pageSize + 1
+			if is.ScrollOffset < 0 {
+				is.ScrollOffset = 0
+			}
+		}
+		if rl.IsKeyPressed(rl.KeyEnter) {
+			if path, ok := is.ConfirmScriptSelection(); ok {
+				a.startScript(a.runCtx, path)
+			}
+		}
+		if rl.IsKeyPressed(rl.KeyEscape) {
+			is.CancelSelection()
+		}
+		return false
+	}
+
 	// System-selector sub-mode.
 	if session.inputState.SelectionMode == ui.SelectionModeSystemSelector {
 		maxIndex := len(session.inputState.SystemOptions) - 1
