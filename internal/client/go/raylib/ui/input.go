@@ -15,10 +15,12 @@ const (
 )
 
 // SystemOption describes one runtime-loadable system entry for the selector UI.
+// IsSeparator marks a non-selectable divider row (e.g. between real and test systems).
 type SystemOption struct {
 	Label       string
 	DisplayName string
 	Path        string
+	IsSeparator bool
 }
 
 // PerformanceOptions holds runtime rendering/physics optimisation settings.

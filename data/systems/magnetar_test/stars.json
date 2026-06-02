@@ -12,34 +12,35 @@
         "initial_mean_anomaly": "0"
       },
       "physical": {
-        "radius": 2,
+        "radius": 0.2,
         "mass": 3.978e+30,
         "rotation_period": 7.56,
         "axial_tilt": 0.0,
-        "albedo": 1.0,
-        "albedo_note": "2 solar-mass magnetar; surface magnetic field ~10^15 G; rotation 7.56 s"
+        "albedo": 0.0,
+        "albedo_note": "2 solar-mass magnetar; B~10¹⁵ G; quiescent luminosity ~30 L☉ from magnetic decay heating"
       },
       "rendering": {
         "material": "neutron_star",
         "fallback_color": [
-          255,
-          160,
-          100,
+          60,
+          25,
+          10,
           255
-        ]
+        ],
+        "pulse_period": 7.56
       },
       "importance": 95,
       "luminosity": {
         "self_luminous": true,
-        "solar_luminosity": 10.0,
+        "solar_luminosity": 30.0,
         "surface_temperature_k": 800000,
         "emission_color": [
-          255,
           180,
-          120,
+          80,
+          40,
           255
         ],
-        "emission_intensity": 3.0
+        "emission_intensity": 1.2
       },
       "stellar_variant": "Magnetar"
     }

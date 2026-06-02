@@ -28,7 +28,7 @@ func (a *App) handleInputCamera(session *runtimeSession, state *engine.Simulatio
 		} else if session.cameraState.Mode == ui.CameraModeTracking {
 			idx := session.cameraState.Tracking.TargetIndex
 			if idx >= 0 && idx < len(state.Objects) {
-				session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(state.Objects[idx].Meta.PhysicalRadius, 0.40)
+				session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(state.Objects[idx].Meta.ViewRadius(), 0.40)
 			}
 		}
 	}
@@ -37,7 +37,7 @@ func (a *App) handleInputCamera(session *runtimeSession, state *engine.Simulatio
 		idx := session.cameraState.Tracking.TargetIndex
 		if idx >= 0 && idx < len(state.Objects) {
 			session.cameraState.StartTracking(idx)
-			session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(state.Objects[idx].Meta.PhysicalRadius, 0.40)
+			session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(state.Objects[idx].Meta.ViewRadius(), 0.40)
 		}
 	}
 }

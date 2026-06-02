@@ -351,8 +351,9 @@ func createBodyFromConfig(config BodyConfig, templates *TemplateLibrary, rng *ra
 			OrbitSpeed:  orbitalSpeed,
 			ParentName:  config.Parent,
 
-			BHDiskTilt:        config.Rendering.DiskTilt,
-			BHAccretionEnergy: config.Rendering.AccretionEnergy,
+			DiskTilt:        config.Rendering.DiskTilt,
+			AccretionEnergy: config.Rendering.AccretionEnergy,
+			PulsePeriod:     config.Rendering.PulsePeriod,
 		},
 		Anim: engine.AnimationState{
 			Position:     engine.Vector3{X: initialX, Y: 0, Z: initialZ},

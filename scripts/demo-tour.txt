@@ -1,0 +1,127 @@
+/*
+
+Demo Tour — smallest to largest showcase
+
+Visits every body in demo_test in sequence, spending ~5 seconds at each.
+HUD info and labels are enabled throughout.
+
+Usage:
+  space-sim-repl --script scripts/demo-tour.txt
+
+Load the demo_test system first:
+  system load demo_test
+
+*/
+
+hud on
+hud info on
+labels on
+sync on
+
+window full on
+
+set $speed    80.0   // nav jump travel speed
+set $orbspd   18.0   // orbit angular speed (deg/sec)
+set $orbs     0.25   // quarter-orbit sweep per stop
+set $dwell    5.0    // dwell time after orbit (seconds)
+
+sleep 1.5
+
+// ── 1. Single asteroid ──────────────────────────────────────────────────────
+nav jump "Demo Asteroid" $speed
+orbit "Demo Asteroid" $orbspd $orbs
+sleep $dwell
+
+// ── 2. Asteroid group ───────────────────────────────────────────────────────
+nav jump "Asteroid Group A" $speed
+orbit "Asteroid Group A" $orbspd $orbs
+sleep $dwell
+
+// ── 3. Standalone moon ──────────────────────────────────────────────────────
+nav jump "Demo Moon" $speed
+orbit "Demo Moon" $orbspd $orbs
+sleep $dwell
+
+// ── 4. Dwarf planet (untextured) ────────────────────────────────────────────
+nav jump "Demo Dwarf Planet" $speed
+orbit "Demo Dwarf Planet" $orbspd $orbs
+sleep $dwell
+
+// ── 5. Dwarf planet with moon ───────────────────────────────────────────────
+nav jump "Demo Dwarf Planet II" $speed
+orbit "Demo Dwarf Planet II" $orbspd $orbs
+sleep $dwell
+
+// ── 6. Planet (plain, untextured) ───────────────────────────────────────────
+nav jump "Demo Planet" $speed
+orbit "Demo Planet" $orbspd $orbs
+sleep $dwell
+
+// ── 7. Planet with moons ────────────────────────────────────────────────────
+nav jump "Demo Planet Moons" $speed
+orbit "Demo Planet Moons" $orbspd $orbs
+sleep $dwell
+
+// ── 8. Planet with faint rings ──────────────────────────────────────────────
+nav jump "Demo Planet Faint Rings" $speed
+orbit "Demo Planet Faint Rings" $orbspd $orbs
+sleep $dwell
+
+// ── 9. Planet with strong rings ─────────────────────────────────────────────
+nav jump "Demo Planet Strong Rings" $speed
+orbit "Demo Planet Strong Rings" $orbspd $orbs
+sleep $dwell
+
+// ── 10a. Brown dwarf ────────────────────────────────────────────────────────
+nav jump "Demo Brown Dwarf" $speed
+orbit "Demo Brown Dwarf" $orbspd $orbs
+sleep $dwell
+
+// ── 10b. Red dwarf ──────────────────────────────────────────────────────────
+nav jump "Demo Red Dwarf" $speed
+orbit "Demo Red Dwarf" $orbspd $orbs
+sleep $dwell
+
+// ── 10c. G-type star (sun-like, textured) ───────────────────────────────────
+nav jump "Demo G-Type Star" $speed
+orbit "Demo G-Type Star" $orbspd $orbs
+sleep $dwell
+
+// ── 10d. Orange giant ───────────────────────────────────────────────────────
+nav jump "Demo Orange Giant" $speed
+orbit "Demo Orange Giant" $orbspd $orbs
+sleep $dwell
+
+// ── 10e. Red giant ──────────────────────────────────────────────────────────
+nav jump "Demo Red Giant" $speed
+orbit "Demo Red Giant" $orbspd $orbs
+sleep $dwell
+
+// ── 10f. Blue supergiant ────────────────────────────────────────────────────
+nav jump "Demo Blue Supergiant" $speed
+orbit "Demo Blue Supergiant" $orbspd $orbs
+sleep $dwell
+
+// ── 11. Black hole — plain (photon ring only) ───────────────────────────────
+nav jump "Demo BH Plain" $speed
+orbit "Demo BH Plain" $orbspd $orbs
+sleep $dwell
+
+// ── 12. Black hole — photon ring + corona ───────────────────────────────────
+nav jump "Demo BH Photon Ring" $speed
+orbit "Demo BH Photon Ring" $orbspd $orbs
+sleep $dwell
+
+// ── 13. Black hole — photon ring + corona + faint disk ──────────────────────
+nav jump "Demo BH Faint Disk" $speed
+orbit "Demo BH Faint Disk" $orbspd $orbs
+sleep $dwell
+
+// ── 14. Black hole — full strong accretion disk ─────────────────────────────
+nav jump "Demo BH Strong Disk" $speed
+orbit "Demo BH Strong Disk" $orbspd $orbs
+sleep $dwell
+
+sleep 2.0
+
+sync off

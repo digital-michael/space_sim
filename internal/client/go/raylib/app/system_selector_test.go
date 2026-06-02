@@ -49,6 +49,72 @@ func TestDiscoverSystemOptionsFromDirFiltersAndSorts(t *testing.T) {
 	}
 }
 
+func TestDiscoverSystemOptionsPartitionsTestSystems(t *testing.T) {
+	tempDir := t.TempDir()
+
+	// Create two real systems and two test systems as directories.
+	for _, dir := range []string{"zeta_system", "alpha_system", "nbody_test", "demo_test"} {
+		if err := os.Mkdir(filepath.Join(tempDir, dir), 0755); err != nil {
+			t.Fatalf("Mkdir(%q) failed: %v", dir, err)
+		}
+		manifest := filepath.Join(tempDir, dir, "system.json")
+		content := `{"name":"` + dir + `"}`
+		if err := os.WriteFile(manifest, []byte(content), 0644); err != nil {
+			t.Fatalf("WriteFile(%q) failed: %v", manifest, err)
+		}
+	}
+
+	options, err := discoverSystemOptionsFromDir(tempDir)
+	if err != nil {
+		t.Fatalf("discoverSystemOptionsFromDir() error = %v", err)
+	}
+	// Expect: alpha_system, zeta_system, separator, demo_test, nbody_test
+	if len(options) != 5 {
+		t.Fatalf("len(options) = %d, want 5", len(options))
+	}
+	if options[0].Label != "alpha_system" {
+		t.Errorf("options[0].Label = %q, want alpha_system", options[0].Label)
+	}
+	if options[1].Label != "zeta_system" {
+		t.Errorf("options[1].Label = %q, want zeta_system", options[1].Label)
+	}
+	if !options[2].IsSeparator {
+		t.Errorf("options[2].IsSeparator = false, want true")
+	}
+	if options[3].Label != "demo_test" {
+		t.Errorf("options[3].Label = %q, want demo_test", options[3].Label)
+	}
+	if options[4].Label != "nbody_test" {
+		t.Errorf("options[4].Label = %q, want nbody_test", options[4].Label)
+	}
+}
+
+func TestDiscoverSystemOptionsNoSeparatorWhenNoTestSystems(t *testing.T) {
+	tempDir := t.TempDir()
+
+	for _, dir := range []string{"beta_system", "alpha_system"} {
+		if err := os.Mkdir(filepath.Join(tempDir, dir), 0755); err != nil {
+			t.Fatalf("Mkdir(%q) failed: %v", dir, err)
+		}
+		if err := os.WriteFile(filepath.Join(tempDir, dir, "system.json"), []byte(`{"name":"`+dir+`"}`), 0644); err != nil {
+			t.Fatalf("WriteFile failed: %v", err)
+		}
+	}
+
+	options, err := discoverSystemOptionsFromDir(tempDir)
+	if err != nil {
+		t.Fatalf("discoverSystemOptionsFromDir() error = %v", err)
+	}
+	if len(options) != 2 {
+		t.Fatalf("len(options) = %d, want 2 (no separator)", len(options))
+	}
+	for _, opt := range options {
+		if opt.IsSeparator {
+			t.Error("unexpected separator when no test systems exist")
+		}
+	}
+}
+
 func TestNewRuntimeSessionReturnsErrorForMissingSystem(t *testing.T) {
 	missingPath := filepath.Join(t.TempDir(), "missing_system.json")
 	a := &App{cfg: Config{SystemConfig: missingPath}}

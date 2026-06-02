@@ -3,7 +3,7 @@
 ## Last Updated
 2026-04-10
 
-## Table of Contexts
+## Table of Contents
 1. Description
 2. Goals
 3. Scope

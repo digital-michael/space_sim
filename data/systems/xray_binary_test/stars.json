@@ -54,7 +54,7 @@
         "initial_mean_anomaly": "random"
       },
       "physical": {
-        "radius": 2,
+        "radius": 0.3,
         "mass": 2.785e+30,
         "rotation_period": 0.0,
         "axial_tilt": 0.0,
@@ -68,12 +68,15 @@
           230,
           255,
           255
-        ]
+        ],
+        "disk_tilt": 12,
+        "accretion_energy": 0.9,
+        "pulse_period": 1.5
       },
       "importance": 90,
       "luminosity": {
         "self_luminous": true,
-        "solar_luminosity": 100000.0,
+        "solar_luminosity": 50000.0,
         "surface_temperature_k": 1000000,
         "emission_color": [
           180,

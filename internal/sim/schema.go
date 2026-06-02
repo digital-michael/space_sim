@@ -83,9 +83,12 @@ type RenderingConfig struct {
 	Shader            string     `json:"shader,omitempty"`
 	LODLevels         []LODLevel `json:"lod_levels,omitempty"`
 
-	// Black-hole visual overrides (ignored for non-BH materials).
+	// Accretion disk overrides (black hole and neutron star materials).
 	DiskTilt        float32 `json:"disk_tilt,omitempty"`
 	AccretionEnergy float32 `json:"accretion_energy,omitempty"`
+
+	// Pulsar lighthouse effect: rotation period in seconds (neutron star only; 0 = no pulse).
+	PulsePeriod float32 `json:"pulse_period,omitempty"`
 }
 
 // LODLevel defines rendering detail at different distances.

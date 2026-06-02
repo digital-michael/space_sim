@@ -121,18 +121,13 @@ For each violation found: state **accepted** (rationale + future TD note) or **c
 ## Project Tools
 
 All project-specific MCP tools are served by `tools/write_file_server.py` and
-registered in `.vscode/mcp.json`. See [`tools/mcp.json`](../tools/mcp.json) for
-the full tool registry and [`docs/tools/write-file-mcp.md`](../docs/tools/write-file-mcp.md)
+registered in `.vscode/mcp.json`. See [`docs/tools/write-file-mcp.md`](../docs/tools/write-file-mcp.md)
 for enable/disable/extend instructions.
 
 ### `write_file`
 
-Replaces the built-in `create_file` tool, which has a confirmed bug (writes
-lines in reverse order).
-
-**When creating a new file, always use `write_file` instead of `create_file`.**
-
-If `write_file` is not available (server not loaded), use the fallback pattern:
+Available when the MCP server is loaded. Useful for agents that lack native
+file-creation tools. If `write_file` is not available, use the fallback pattern:
 1. `echo 'package x' > path/to/file.go` to create a minimal stub.
 2. `replace_string_in_file` to fill in the full content.
 

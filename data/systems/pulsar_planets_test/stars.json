@@ -12,19 +12,19 @@
         "initial_mean_anomaly": "0"
       },
       "physical": {
-        "radius": 2,
+        "radius": 0.2,
         "mass": 2.785e+30,
         "rotation_period": 0.00621,
         "axial_tilt": 0.0,
-        "albedo": 1.0,
-        "albedo_note": "millisecond pulsar \u2014 spin period 6.22 ms; visual radius 2 su"
+        "albedo": 0.0,
+        "albedo_note": "millisecond pulsar \u2014 spin period 6.22 ms; recycled; dim thermally cooling surface"
       },
       "rendering": {
         "material": "neutron_star",
         "fallback_color": [
-          200,
-          240,
-          255,
+          12,
+          15,
+          25,
           255
         ]
       },
@@ -34,12 +34,12 @@
         "solar_luminosity": 0.0001,
         "surface_temperature_k": 300000,
         "emission_color": [
-          200,
-          240,
-          255,
+          30,
+          45,
+          80,
           255
         ],
-        "emission_intensity": 2.5
+        "emission_intensity": 0.3
       },
       "stellar_variant": "Pulsar"
     }

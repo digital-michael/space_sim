@@ -5,7 +5,7 @@
 Single source of truth for project goals, known requirements, and the prioritized implementation plan. Draws from `todo.md` (work items) and session planning discussions. This document describes *what* and *why*; `todo.md` carries the *how* (work items, acceptance criteria, decisions).
 
 ## Last Updated
-2026-05-24
+2026-05-28
 
 ---
 
@@ -86,17 +86,19 @@ Items are ordered by the agreed priority sequence. Dependencies are noted per it
 
 | Phase | Steps | Focus | Status |
 |-------|-------|-------|--------|
-| A | 4 | Input cleanup + keybinding gap closure (TD-001 + F-032) | ✅ Complete |
+| A | 4 | Input cleanup + keybinding gap closure (TD-001 + F-032) | ✅ Complete (2026-05-22) |
 | B | 4a | Ship definition catalog (F-033 Phase 1) | ✅ Complete (2026-05-20) |
-| C | 4b | Kinematic movement + player as ship (F-022 Phase 1 + §9) | ✅ Complete (2026-05-20) |
-| D | 4c | Player physical marker (F-021 Phase 1) | ✅ Complete |
-| E | 5 | Multi-client session registry (F-020 Phase 1) | ✅ Complete |
-| Pre-H | — | System data structure (F-034 Phase 1) | 📋 Not started — **next up** |
-| H | — | N-body barycenter (F-013) | 📋 Not started — after F-034 |
-| I | — | Game Definition (F-035 Phase 1) | 📋 Not started |
+| C | 4b | Kinematic movement + player as ship (F-022 Phase 1 + §9) | ✅ Complete (2026-05-25) |
+| D | 4c | Player physical marker (F-021 Phase 1) | ✅ Complete (2026-05-22) |
+| E | 5 | Multi-client session registry (F-020 all phases) | ✅ Complete |
+| Pre-H | — | System data structure (F-034 Phase 1) | ✅ Complete (2026-05-24) |
+| H | — | N-body barycenter (F-013) | ✅ Complete (2026-05-24) |
+| — | — | Tech debt batch (TD-003 – TD-009) | ✅ Complete (2026-05-25) |
+| — | — | Stellar classification + Advanced Info toggle | ✅ Complete (2026-05-28) |
+| I | — | Game Definition (F-035 Phase 1) | 📋 Not started — **next up** |
 | J | — | Playable Scenario (F-036 Phase 1) | 📋 Not started |
 | K | — | HUD Profiles (F-038 Phase 1, absorbs F-024) | 📋 Not started |
-| F | 6, 7 | Network split + IAAM (F-010, F-011) | 📋 Not started |
+| F | 6, 7 | Network split + IAAM (F-010, F-011) | 🔄 In progress (F-010 Group A+B done) |
 | L | — | AI/NPC Console Phase 1 (F-037) | 📋 Not started — after F-038 Phase 1 |
 | G+ | — | Object model expansion (F-009; F-008 absorbed by F-034) | 📋 Not started |
 
@@ -104,7 +106,7 @@ Items are ordered by the agreed priority sequence. Dependencies are noted per it
 
 ### Step 0 — F-034 Phase 1: System Data Directory Structure
 **Phase**: Pre-H (data foundation; must precede F-013)
-**Status**: 📋 Not started
+**Status**: ✅ Complete (2026-05-24, commit 37db8f5)
 **Why before F-013**: The N-body implementation needs a dedicated test system (`nbody_test/`) that can only be defined cleanly in the new directory layout. Starting F-013 against the monolithic single-file format creates a migration burden mid-physics work.
 **Spec**: [f034-system-data-structure-spec.md](f034-system-data-structure-spec.md)
 
@@ -122,7 +124,7 @@ Delivers:
 
 ### Step 1 — F-013: N-Body Barycenter Integration
 **Phase**: H (foundation; after F-034)
-**Status**: 📋 Not started — implementation plan complete ([f013-nbody-plan.md](f013-nbody-plan.md))  
+**Status**: ✅ Complete (2026-05-24, commit 37db8f5) — leapfrog N-body, barycenter, force accumulator implemented. Camera barycenter tracking deferred to F-022 Ph2.  
 **Independent**: Yes — self-contained to `internal/sim/engine/physics.go`  
 **Why first**: Physics accuracy is a stated project goal (G1). Validating correctness in a single-process model before distributing (F-010, F-012) avoids compounding errors. Also informs DEF-001's `float64` position requirement and F-012's partition strategy.
 
@@ -135,7 +137,7 @@ Key decisions to make during design:
 
 ### Step 2 — F-001: Camera Collision Prevention
 **Phase**: Pre-A (quick win; pull into any gap)
-**Status**: 📋 Not started  
+**Status**: ✅ Complete (2026-05-21)  
 **Independent**: Yes — contained to `UpdateTracking` and `UpdateJump` in `camera.go`  
 **Why here**: 30-minute fix; affects every recording and demo session from this point forward. No benefit to deferring.
 
@@ -165,7 +167,7 @@ func (a *App) updateCameraState(session *runtimeSession, dt float32) float32
 
 ### Step 4a — F-033 Phase 1: Ship Definition Catalog
 **Phase**: B — Ship Data Layer
-**Status**: 📋 Not started  
+**Status**: ✅ Complete (2026-05-20)  
 **Independent from F-020**: Yes — `ShipInstance` attaches to `runtimeSession` for the direct binary now; migrates to `ClientSession` (F-020) later.  
 **Why before F-022**: F-022 kinematic movement reads thrust acceleration and turning rate from `ShipInstance`. Without F-033, F-022 uses the stub `ShipProfile` values which are unrated and produce an arcade-feel ship.
 
@@ -182,7 +184,7 @@ Delivers:
 
 ### Step 4b — F-022 Phase 1 + §9: Kinematic Movement + Player as Ship
 **Phase**: C — Player Movement
-**Status**: 📋 Not started  
+**Status**: ✅ Complete (2026-05-25, Phase 1+2; Phase 3 NPC automation deferred)  
 **Depends on**: TD-001 (cleaner call sites), F-033 Phase 1 (ship ratings), F-023 Phase 1 (thrust/turn bindings wired via F-032)  
 **Independent from F-020**: Yes — single-player movement works in `space-sim-direct` directly.
 
@@ -200,7 +202,7 @@ Delivers:
 
 ### Step 4c — F-021 Phase 1: Player Physical Marker
 **Phase**: D — Visual Confirmation
-**Status**: 📋 Not started  
+**Status**: ✅ Complete (2026-05-22, Phase 1; Phase 2-3 pending)  
 **Depends on**: F-020 Phase 1 OR runtimeSession position for single-player  
 **Can ship for single-player without F-020**: Yes — render a blinking sphere at `runtimeSession.ShipInstance.Position` in `renders.go`.
 
@@ -213,9 +215,9 @@ Delivers:
 
 ---
 
-### Step 5 — F-020 Phase 1: Multi-Client Session Registry
+### Step 5 — F-020: Multi-Client Session Registry
 **Phase**: E — Multi-Client Foundation
-**Status**: 📋 Not started  
+**Status**: ✅ Complete — all phases (Phase 3: admin kick/teleport)  
 **Depends on**: Steps 4/4a/4b (ship and movement proven in single-player first)  
 **Independent from F-010**: Yes — the session registry is the in-process data structure; F-010 is the separate-process networking layer.
 
@@ -225,7 +227,7 @@ Migrates `runtimeSession.ShipInstance` → `ClientSession.ShipInstance` when thi
 
 ### Step 6 — F-010: Multi-Machine Architecture (Option B split)
 **Phase**: F — Network Split
-**Status**: 📋 Not started  
+**Status**: 🔄 In progress (Group A headless server + Group B client subscriber done; admin REPL + bandwidth mitigations pending)  
 **Depends on**: TD-001, F-020  
 **Independent from**: F-013, DEF-001, visual group
 

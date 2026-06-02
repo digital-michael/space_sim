@@ -51,6 +51,10 @@ type InstanceBatch struct {
 
 // drawObjectsInstanced draws objects using batching to reduce draw calls
 func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engine.Vector3, simTime float64, pointRenderingEnabled bool, lodEnabled bool, importanceThreshold int) int {
+	// Pre-compute per-BH effective accretion energy and disk outer multiplier,
+	// accounting for tidal truncation and energy boost from companion BH proximity.
+	r.updateBHInteraction(objects)
+
 	// Build a name→radius map so ring shadow computation can look up the host
 	// planet's physical radius without accessing the full object list per ring.
 	parentRadius := make(map[string]float32, len(objects))
@@ -211,6 +215,9 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 						if obj.Meta.Material == engine.MaterialBlackHole {
 							r.drawBlackHoleVisual(obj, pos)
 						}
+						if obj.Meta.Material == engine.MaterialNeutronStar {
+							r.drawNeutronStarVisual(obj, pos)
+						}
 						drawnCount++
 						continue
 					}
@@ -239,8 +246,13 @@ func drawObjectsInstanced(r *Renderer, objects []*engine.Object, cameraPos engin
 				if obj.Meta.Material == engine.MaterialBlackHole {
 					r.drawBlackHoleVisual(obj, pos)
 				}
-				// Wireframe (skip for stars and black holes — both are smooth bodies)
-				if obj.Meta.Material != engine.MaterialEmissive && obj.Meta.Material != engine.MaterialBlackHole {
+				if obj.Meta.Material == engine.MaterialNeutronStar {
+					r.drawNeutronStarVisual(obj, pos)
+				}
+				// Wireframe (skip for emissive, black holes, and neutron stars — smooth self-luminous bodies)
+				if obj.Meta.Material != engine.MaterialEmissive &&
+					obj.Meta.Material != engine.MaterialBlackHole &&
+					obj.Meta.Material != engine.MaterialNeutronStar {
 					rl.DrawSphereWires(pos, float32(obj.Meta.PhysicalRadius), batch.wireRings, batch.wireSlices,
 						rl.Color{R: 255, G: 255, B: 255, A: 100})
 				}
@@ -306,6 +318,24 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 		G: obj.Meta.Color.G,
 		B: obj.Meta.Color.B,
 		A: obj.Meta.Color.A,
+	}
+
+	// Pulsar lighthouse effect: sharp brightness pulse once per rotation period.
+	// A narrow half-sine spike (8% of period) with 65% base brightness gives the
+	// characteristic lighthouse sweep without the star appearing to switch off entirely.
+	if obj.Meta.Material == engine.MaterialNeutronStar && obj.Meta.PulsePeriod > 0 {
+		t := rl.GetTime()
+		phase := math.Mod(t, float64(obj.Meta.PulsePeriod)) / float64(obj.Meta.PulsePeriod)
+		const pulseWidth = 0.08
+		var brightness float32
+		if phase < pulseWidth {
+			brightness = 0.65 + 0.35*float32(math.Sin(phase/pulseWidth*math.Pi))
+		} else {
+			brightness = 0.65
+		}
+		color.R = uint8(math.Min(255, float64(color.R)*float64(brightness)))
+		color.G = uint8(math.Min(255, float64(color.G)*float64(brightness)))
+		color.B = uint8(math.Min(255, float64(color.B)*float64(brightness)))
 	}
 
 	// Calculate distance from camera (used by both point rendering and LOD)
@@ -420,10 +450,14 @@ func drawObject(r *Renderer, obj *engine.Object, cameraPos engine.Vector3, simTi
 	if obj.Meta.Material == engine.MaterialBlackHole {
 		r.drawBlackHoleVisual(obj, pos)
 	}
+	if obj.Meta.Material == engine.MaterialNeutronStar {
+		r.drawNeutronStarVisual(obj, pos)
+	}
 
-	// Draw wireframe for better depth perception (skip for stars and black holes)
-	// Use simpler wireframe for distant objects when LOD is enabled
-	if obj.Meta.Material != engine.MaterialEmissive && obj.Meta.Material != engine.MaterialBlackHole {
+	// Skip wireframe for emissive, black holes, and neutron stars — all smooth self-luminous bodies.
+	if obj.Meta.Material != engine.MaterialEmissive &&
+		obj.Meta.Material != engine.MaterialBlackHole &&
+		obj.Meta.Material != engine.MaterialNeutronStar {
 		wireRings := int32(8)
 		wireSlices := int32(8)
 		if lodEnabled && distance > 50.0 {

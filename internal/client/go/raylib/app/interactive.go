@@ -354,7 +354,7 @@ func dispatchCameraCmd(cs *ui.CameraState, state *engine.SimulationState, cmd Ap
 			target := findBodyByName(state, c.Name)
 			if target >= 0 {
 				cs.StartTracking(target)
-				cs.Tracking.Distance = ui.CalculateAutoZoomDistance(state.Objects[target].Meta.PhysicalRadius, 0.40)
+				cs.Tracking.Distance = ui.CalculateAutoZoomDistance(state.Objects[target].Meta.ViewRadius(), 0.40)
 			} else {
 				log.Printf("CameraTrackCmd: body %q not found in snapshot", c.Name)
 			}
@@ -390,7 +390,7 @@ func dispatchCameraCmd(cs *ui.CameraState, state *engine.SimulationState, cmd Ap
 		}
 		obj := state.Objects[idx]
 		cs.StartTracking(idx)
-		cs.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+		cs.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.ViewRadius(), 0.40)
 		cs.Tracking.Offset = engine.Vector3{}
 		cs.UpdateTracking(state)
 		cs.OrbitSpeed = orbitSpeed
@@ -422,7 +422,7 @@ func dispatchNavCmd(cs *ui.CameraState, state *engine.SimulationState, cmd AppCm
 				targets = append(targets, ui.JumpTarget{
 					TargetIndex: idx,
 					TargetPos:   obj.Anim.Position,
-					ViewDist:    ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40),
+					ViewDist:    ui.CalculateAutoZoomDistance(obj.Meta.ViewRadius(), 0.40),
 				})
 			} else {
 				log.Printf("JumpToCmd: body %q not found, skipping", name)

@@ -85,6 +85,13 @@ type Renderer struct {
 	skyModel       rl.Model
 	skyLoaded      bool // true once load was attempted (even if it failed)
 	skyModelLoaded bool // true if the model is ready to draw
+
+	// Per-frame BH disk interaction cache. Populated once per frame by
+	// updateBHInteraction before the main draw loop. Keyed by object name.
+	// bhEffectiveAccretion: effective accretion energy including tidal boost from companions.
+	// bhEffectiveDiskMult: disk outer-radius multiplier (≤7) after Roche truncation.
+	bhEffectiveAccretion map[string]float32
+	bhEffectiveDiskMult  map[string]float32
 }
 
 // modelKey indexes the model cache.

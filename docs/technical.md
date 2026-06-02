@@ -4,7 +4,7 @@
 Describe the simulation and rendering architecture for Space Sim at a level readable by an informed engineer or advanced user. Covers the current Keplerian simulation, all planned physics models, comparative computational costs, the performance options available in the UI, and how future roadmap features interact with each simulation approach.
 
 ## Last Updated
-2026-03-30
+2026-05-28
 
 ## Table of Contents
 1. Performance Options
@@ -104,9 +104,9 @@ This model is highly efficient per object because it requires no numerical integ
 
 One fundamental limitation of pure Keplerian mechanics is that orbits are modeled as fixed ellipses around a stationary parent. In reality, two bodies of comparable mass orbit their shared center of mass (barycenter) rather than one body orbiting the other. For most solar system pairs — planet around Sun, moon around planet — the barycenter lies well inside the larger body, and Keplerian mechanics is visually indistinguishable from barycentric. For a few cases (Pluto–Charon, the Sun–Jupiter system, binary stars) the barycenter displacement is physically significant.
 
-### 2.2 Planned Simulator — Barycenter (Center-of-Mass) Mechanics
+### 2.2 Implemented Simulator — N-Body / Barycenter Mechanics (F-013, complete 2026-05-24)
 
-The Barycenter simulator adds a second physics mode for designated body pairs. Rather than treating one body as a fixed anchor and the other as a satellite, both bodies orbit a computed center of mass point that lies between them on the line joining their centers. The COM position is:
+F-013 implemented leapfrog N-body integration for all named bodies (planets, moons, stars, dwarf planets). Belt particles remain Keplerian. NBodyPos/Vel/Acc fields are on `AnimationState`; `GravSet` and `BuildSystemSet` drive force accumulation. For two-body barycenter motion, both bodies orbit their mutual center of mass. The COM position is:
 
 $$\text{COM} = \frac{m_1 \cdot \vec{r_1} + m_2 \cdot \vec{r_2}}{m_1 + m_2}$$
 

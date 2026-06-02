@@ -1,37 +1,4 @@
 {
   "schema_version": "2.0",
-  "features": [
-    {
-      "type": "photon_ring",
-      "name": "Cygnus BH Photon Ring",
-      "parent": "Cygnus X-1 Analog BH",
-      "distribution": {
-        "inner_radius": 8.2,
-        "outer_radius": 8.8
-      },
-      "physical": {
-        "color": [255, 248, 180, 230]
-      },
-      "rendering": {
-        "material": "emissive"
-      },
-      "importance": 70
-    },
-    {
-      "type": "accretion_disk",
-      "name": "Cygnus BH Accretion Disk",
-      "parent": "Cygnus X-1 Analog BH",
-      "distribution": {
-        "inner_radius": 9,
-        "outer_radius": 80
-      },
-      "physical": {
-        "color": [255, 100, 30, 200]
-      },
-      "rendering": {
-        "material": "emissive"
-      },
-      "importance": 65
-    }
-  ]
+  "features": []
 }

@@ -353,6 +353,22 @@ func (a *App) handleInputSettings(session *runtimeSession, km *input.KeyMap, shi
 	return false
 }
 
+// skipSeparator steps idx in the given direction (±1) past any separator slots.
+// Returns the adjusted index, clamped to [0, len(opts)-1].
+func skipSeparator(opts []ui.SystemOption, idx, dir int) int {
+	max := len(opts) - 1
+	for idx >= 0 && idx <= max && opts[idx].IsSeparator {
+		idx += dir
+	}
+	if idx < 0 {
+		return 0
+	}
+	if idx > max {
+		return max
+	}
+	return idx
+}
+
 // handleInputSelection processes keyboard input for the object-selection overlay.
 // Returns true only if the application should quit (never from this path).
 func (a *App) handleInputSelection(session *runtimeSession, state *engine.SimulationState, km *input.KeyMap) bool {
@@ -360,15 +376,18 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 	if session.inputState.SelectionMode == ui.SelectionModeSystemSelector {
 		maxIndex := len(session.inputState.SystemOptions) - 1
 		pageSize := 10
+		opts := session.inputState.SystemOptions
 
 		if rl.IsKeyPressed(rl.KeyUp) {
 			session.inputState.SelectPrevious()
+			session.inputState.SelectedIndex = skipSeparator(opts, session.inputState.SelectedIndex, -1)
 			if session.inputState.SelectedIndex < session.inputState.ScrollOffset {
 				session.inputState.ScrollOffset = session.inputState.SelectedIndex
 			}
 		}
 		if rl.IsKeyPressed(rl.KeyDown) {
 			session.inputState.SelectNext(maxIndex)
+			session.inputState.SelectedIndex = skipSeparator(opts, session.inputState.SelectedIndex, 1)
 			if session.inputState.SelectedIndex >= session.inputState.ScrollOffset+pageSize {
 				session.inputState.ScrollOffset = session.inputState.SelectedIndex - pageSize + 1
 			}
@@ -378,6 +397,7 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 			if session.inputState.SelectedIndex < 0 {
 				session.inputState.SelectedIndex = 0
 			}
+			session.inputState.SelectedIndex = skipSeparator(opts, session.inputState.SelectedIndex, -1)
 			session.inputState.ScrollOffset = session.inputState.SelectedIndex
 		}
 		if rl.IsKeyPressed(rl.KeyPageDown) {
@@ -385,6 +405,7 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 			if session.inputState.SelectedIndex > maxIndex {
 				session.inputState.SelectedIndex = maxIndex
 			}
+			session.inputState.SelectedIndex = skipSeparator(opts, session.inputState.SelectedIndex, 1)
 			if session.inputState.SelectedIndex >= session.inputState.ScrollOffset+pageSize {
 				session.inputState.ScrollOffset = session.inputState.SelectedIndex - pageSize + 1
 			}
@@ -396,8 +417,8 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 			session.inputState.ScrollOffset = 0
 		}
 		if rl.IsKeyPressed(rl.KeyEnd) {
-			session.inputState.SelectedIndex = maxIndex
-			session.inputState.ScrollOffset = maxIndex - pageSize + 1
+			session.inputState.SelectedIndex = skipSeparator(opts, maxIndex, -1)
+			session.inputState.ScrollOffset = session.inputState.SelectedIndex - pageSize + 1
 			if session.inputState.ScrollOffset < 0 {
 				session.inputState.ScrollOffset = 0
 			}
@@ -563,13 +584,13 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 			case ui.SelectionModeFace:
 				session.cameraState.FaceTarget(targetObj.Anim.Position)
 			case ui.SelectionModeJump:
-				session.cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40))
+				session.cameraState.StartJumpTo(actualIndex, targetObj.Anim.Position, ui.CalculateAutoZoomDistance(targetObj.Meta.ViewRadius(), 0.40))
 			case ui.SelectionModeTrack:
 				session.cameraState.StartTracking(actualIndex)
-				session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
+				session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(targetObj.Meta.ViewRadius(), 0.40)
 			case ui.SelectionModeTrackEquatorial:
 				session.cameraState.StartTrackingEquatorial(actualIndex)
-				session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(targetObj.Meta.PhysicalRadius, 0.40)
+				session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(targetObj.Meta.ViewRadius(), 0.40)
 			}
 		}
 	}

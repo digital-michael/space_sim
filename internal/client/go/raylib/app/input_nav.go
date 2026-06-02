@@ -57,7 +57,7 @@ func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationSt
 						fmt.Printf("[DEBUG] Tracking closest child: %s\n", child.Meta.Name)
 					}
 					session.cameraState.StartTracking(children[0].index)
-					session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(child.Meta.PhysicalRadius, 0.40)
+					session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(child.Meta.ViewRadius(), 0.40)
 				}
 			}
 		}
@@ -76,7 +76,7 @@ func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationSt
 								fmt.Printf("[DEBUG] Found parent: %s\n", obj.Meta.Name)
 							}
 							session.cameraState.StartTracking(i)
-							session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+							session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.ViewRadius(), 0.40)
 							break
 						}
 					}
@@ -90,7 +90,7 @@ func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationSt
 								fmt.Printf("[DEBUG] Found central star: %s\n", obj.Meta.Name)
 							}
 							session.cameraState.StartTracking(i)
-							session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.PhysicalRadius, 0.40)
+							session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(obj.Meta.ViewRadius(), 0.40)
 							break
 						}
 					}
@@ -143,7 +143,7 @@ func (a *App) handleInputNav(session *runtimeSession, state *engine.SimulationSt
 						}
 						nextObj := state.Objects[siblings[nextPos]]
 						session.cameraState.StartTracking(siblings[nextPos])
-						session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(nextObj.Meta.PhysicalRadius, 0.40)
+						session.cameraState.Tracking.Distance = ui.CalculateAutoZoomDistance(nextObj.Meta.ViewRadius(), 0.40)
 					}
 				}
 			}

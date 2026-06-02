@@ -431,6 +431,67 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 	rl.EndBlendMode()
 }
 
+// updateBHInteraction pre-computes per-BH effective accretion energy and disk outer
+// multiplier for the current frame. For each pair of black holes whose disk radii
+// overlap, it applies Roche-lobe truncation (each disk cut to half the separation)
+// and a small tidal-heating boost to accretion energy. Results are stored in the
+// Renderer's bhEffectiveAccretion and bhEffectiveDiskMult maps, keyed by object name,
+// and read by drawBlackHoleVisual during the same frame.
+func (r *Renderer) updateBHInteraction(objects []*engine.Object) {
+	const diskOuterMult = float32(7.0)
+
+	r.bhEffectiveAccretion = make(map[string]float32, 4)
+	r.bhEffectiveDiskMult = make(map[string]float32, 4)
+
+	type bhEntry struct {
+		name   string
+		pos    engine.Vector3
+		radius float32
+		ae     float32
+	}
+	var bhs []bhEntry
+	for _, obj := range objects {
+		if obj.Meta.Material == engine.MaterialBlackHole {
+			ae := obj.Meta.AccretionEnergy
+			if ae <= 0 {
+				ae = 1.0
+			}
+			bhs = append(bhs, bhEntry{obj.Meta.Name, obj.Anim.Position, obj.Meta.PhysicalRadius, ae})
+		}
+	}
+
+	for _, bh := range bhs {
+		r.bhEffectiveAccretion[bh.name] = bh.ae
+		r.bhEffectiveDiskMult[bh.name] = diskOuterMult
+	}
+
+	for i := 0; i < len(bhs); i++ {
+		for j := i + 1; j < len(bhs); j++ {
+			a, b := bhs[i], bhs[j]
+			dx := a.pos.X - b.pos.X
+			dy := a.pos.Y - b.pos.Y
+			dz := a.pos.Z - b.pos.Z
+			sep := float32(math.Sqrt(float64(dx*dx + dy*dy + dz*dz)))
+
+			combinedOuter := (a.radius + b.radius) * diskOuterMult
+			if sep >= combinedOuter {
+				continue
+			}
+
+			// Roche-lobe truncation: each disk cut to half the separation.
+			halfSep := sep * 0.5
+			r.bhEffectiveDiskMult[a.name] = min32(r.bhEffectiveDiskMult[a.name], halfSep/a.radius)
+			r.bhEffectiveDiskMult[b.name] = min32(r.bhEffectiveDiskMult[b.name], halfSep/b.radius)
+
+			// Tidal heating: overlap fraction boosts each disk's effective AE.
+			overlapFrac := (combinedOuter - sep) / combinedOuter
+			boost := overlapFrac * 0.3
+			r.bhEffectiveAccretion[a.name] = r.bhEffectiveAccretion[a.name] + b.ae*boost
+			r.bhEffectiveAccretion[b.name] = r.bhEffectiveAccretion[b.name] + a.ae*boost
+		}
+	}
+}
+
 // drawBlackHoleVisual renders a black hole using a flat accretion disk mesh plus
 // two Fresnel shell halos:
 //
@@ -443,8 +504,8 @@ func (r *Renderer) drawAtmosphereGlow(obj *engine.Object, pos rl.Vector3) {
 //
 //   - Shell 2 (2.2 R): lamppost-corona haze, blue-purple. Scales with accretion energy.
 //
-// Disk tilt priority: BHDiskTilt (rendering JSON) → AxialTilt (physical JSON) → 30° default.
-// Accretion energy priority: BHAccretionEnergy (0 = absent → 1.0 default).
+// Disk tilt priority: DiskTilt (rendering JSON) → AxialTilt (physical JSON) → 30° default.
+// Accretion energy priority: AccretionEnergy (0 = absent → 1.0 default).
 func (r *Renderer) drawBlackHoleVisual(obj *engine.Object, pos rl.Vector3) {
 	radius := float32(obj.Meta.PhysicalRadius)
 	if radius <= 0 {
@@ -481,19 +542,34 @@ func (r *Renderer) drawBlackHoleVisual(obj *engine.Object, pos rl.Vector3) {
 	}
 
 	// Accretion energy: 0 in meta means "not set" → default 1.0.
-	ae := obj.Meta.BHAccretionEnergy
+	ae := obj.Meta.AccretionEnergy
 	if ae <= 0 {
 		ae = 1.0
 	}
 
 	// Disk tilt: explicit rendering override → physical axial_tilt → 30° fallback.
-	diskTilt := obj.Meta.BHDiskTilt
+	diskTilt := obj.Meta.DiskTilt
 	if diskTilt == 0 {
 		diskTilt = obj.Meta.AxialTilt
 	}
 	if diskTilt == 0 {
 		diskTilt = 30.0
 	}
+
+	// Apply per-frame interaction cache: effective AE boosted by companion tidal heating,
+	// disk outer mult truncated by Roche lobe if a companion BH is close.
+	if v, ok := r.bhEffectiveAccretion[obj.Meta.Name]; ok {
+		ae = v
+	}
+	diskOuterMult := float32(7.0)
+	if v, ok := r.bhEffectiveDiskMult[obj.Meta.Name]; ok {
+		diskOuterMult = v
+	}
+
+	// Corona intensity uses quadratic scaling for ae < 1 so quiescent BHs are nearly
+	// invisible — the corona only becomes prominent when accretion is energetic.
+	// Above ae=1 the relationship is linear to preserve bright quasar halos.
+	coronaAE := ae * min32(ae, 1.0) // ae²  for ae≤1, ae for ae>1
 
 	// Fresnel shell halos — 3D presence visible from all viewing angles.
 	type shell struct {
@@ -502,8 +578,8 @@ func (r *Renderer) drawBlackHoleVisual(obj *engine.Object, pos rl.Vector3) {
 		edge               float32
 	}
 	shells := []shell{
-		{1.6, 1.00, 0.72, 0.22, ms * 0.90, 7.5},       // photon ring: always present
-		{2.2, 0.18, 0.28, 0.82, ms * 0.22 * ae, 3.8},  // lamppost corona: scales with accretion
+		{1.6, 1.00, 0.72, 0.22, ms * 0.70, 7.5},              // photon ring: gravitational — always present, reduced prominence
+		{2.2, 0.18, 0.28, 0.82, ms * 0.22 * coronaAE, 3.8},  // lamppost corona: dim unless energised
 	}
 
 	rl.BeginBlendMode(rl.BlendAddColors)
@@ -521,30 +597,39 @@ func (r *Renderer) drawBlackHoleVisual(obj *engine.Object, pos rl.Vector3) {
 
 	diskIntensity := ms * 1.2 * ae
 	if diskIntensity > 0.02 {
-		r.drawBHDisk(pos, radius, diskTilt, diskIntensity)
+		r.drawBHDisk(pos, radius, diskTilt, diskIntensity, diskOuterMult)
 	}
 }
 
+// min32 returns the smaller of two float32 values.
+func min32(a, b float32) float32 {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 // drawBHDisk renders a flat annular accretion disk for a black hole.
-// The disk spans innerMult..outerMult of radius in the XZ plane, tilted by
-// tiltDeg degrees around the X axis (matching the AxialTilt convention used by
-// drawRingDisc). A temperature gradient from near-white inner edge (ISCO) to deep
-// red outer rim is applied; intensity is modulated by intensityScale.
+// The disk spans 1.5R..outerMult*R in the XZ plane, tilted by tiltDeg degrees.
+// outerMult is normally 7.0 but may be reduced by Roche-lobe truncation when
+// a companion BH is nearby. A temperature gradient from near-white inner edge
+// (ISCO) to deep red outer rim is applied; intensity is modulated by intensityScale.
 // Drawn with additive blending; does not write to the depth buffer.
-func (r *Renderer) drawBHDisk(pos rl.Vector3, radius, tiltDeg, intensityScale float32) {
+func (r *Renderer) drawBHDisk(pos rl.Vector3, radius, tiltDeg, intensityScale, outerMult float32) {
 	const (
 		segments    = 72
 		radialBands = 14
 	)
 
 	innerR := radius * 1.5 // ISCO ≈ 3 R_s for Schwarzschild; visual inner edge
-	outerR := radius * 7.0
+	outerR := radius * outerMult
 	ringRange := outerR - innerR
 
-	// Temperature gradient: innermost band is near-white (~10^7 K), outer bands
-	// cool through orange into dim red.  Values are linear RGB at unit intensity.
+	// Temperature gradient stops: one per radial band edge (radialBands+1 values).
+	// Adjacent stops are interpolated per-vertex by the GPU, giving a continuous
+	// colour field instead of discrete flat-coloured rings.
 	type bandRGB struct{ r, g, b float32 }
-	gradient := [radialBands]bandRGB{
+	stops := [radialBands + 1]bandRGB{
 		{1.00, 0.97, 0.88}, // 0  innermost — blazing near-white
 		{1.00, 0.90, 0.65}, // 1
 		{1.00, 0.80, 0.42}, // 2
@@ -558,8 +643,155 @@ func (r *Renderer) drawBHDisk(pos rl.Vector3, radius, tiltDeg, intensityScale fl
 		{0.24, 0.03, 0.00}, // 10
 		{0.14, 0.01, 0.00}, // 11
 		{0.07, 0.00, 0.00}, // 12
-		{0.03, 0.00, 0.00}, // 13 outermost — near-black
+		{0.03, 0.00, 0.00}, // 13
+		{0.00, 0.00, 0.00}, // 14 outermost — fades to transparent black
 	}
+
+	rl.PushMatrix()
+	rl.Translatef(pos.X, pos.Y, pos.Z)
+	if tiltDeg != 0 {
+		rl.Rotatef(tiltDeg, 1, 0, 0)
+	}
+
+	scale := intensityScale * 255.0
+
+	rl.BeginBlendMode(rl.BlendAddColors)
+	rl.DisableDepthMask()
+
+	// Per-vertex colour submission lets the GPU interpolate continuously across
+	// each radial band — no discrete rings.  Each quad's inner vertices receive
+	// stops[band] and outer vertices receive stops[band+1]; alpha fades
+	// quadratically so the outer rim dissolves rather than hard-cutting.
+	rl.Begin(rl.Triangles)
+	for band := 0; band < radialBands; band++ {
+		bandInner := innerR + float32(band)/float32(radialBands)*ringRange
+		bandOuter := innerR + float32(band+1)/float32(radialBands)*ringRange
+
+		tIn := float32(band) / float32(radialBands)
+		tOut := float32(band+1) / float32(radialBands)
+		aIn := bhColorByte((1.0 - tIn) * (1.0 - tIn) * 255.0)
+		aOut := bhColorByte((1.0 - tOut) * (1.0 - tOut) * 255.0)
+		sIn := stops[band]
+		sOut := stops[band+1]
+		rIn := bhColorByte(sIn.r * scale)
+		gIn := bhColorByte(sIn.g * scale)
+		bIn := bhColorByte(sIn.b * scale)
+		rOut := bhColorByte(sOut.r * scale)
+		gOut := bhColorByte(sOut.g * scale)
+		bOut := bhColorByte(sOut.b * scale)
+
+		for i := 0; i < segments; i++ {
+			angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
+			angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
+			cos1 := float32(math.Cos(float64(angle1)))
+			sin1 := float32(math.Sin(float64(angle1)))
+			cos2 := float32(math.Cos(float64(angle2)))
+			sin2 := float32(math.Sin(float64(angle2)))
+
+			ox1, oz1 := bandOuter*cos1, bandOuter*sin1
+			ox2, oz2 := bandOuter*cos2, bandOuter*sin2
+			ix1, iz1 := bandInner*cos1, bandInner*sin1
+			ix2, iz2 := bandInner*cos2, bandInner*sin2
+
+			// Front face
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox1, 0, oz1)
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix2, 0, iz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+
+			// Back face (reversed winding)
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox1, 0, oz1)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix2, 0, iz2)
+		}
+	}
+	rl.End()
+
+	rl.EnableDepthMask()
+	rl.EndBlendMode()
+	rl.PopMatrix()
+}
+
+// drawNeutronStarVisual renders an accreting neutron star's accretion disk.
+// Unlike a black hole there is no photon ring or Fresnel lensing halo — just
+// the flat plasma disk, whose inner edge sits at the neutron star surface.
+// The gradient runs hotter/bluer than the BH disk: the boundary layer where
+// infalling matter hits the hard surface reaches ~10⁸ K.
+func (r *Renderer) drawNeutronStarVisual(obj *engine.Object, pos rl.Vector3) {
+	radius := float32(obj.Meta.PhysicalRadius)
+	if radius <= 0 {
+		return
+	}
+
+	ae := obj.Meta.AccretionEnergy
+	if ae <= 0 {
+		return // no accretion disk for isolated neutron stars
+	}
+	diskTilt := obj.Meta.DiskTilt
+	if diskTilt == 0 {
+		diskTilt = obj.Meta.AxialTilt
+	}
+	if diskTilt == 0 {
+		diskTilt = 20.0
+	}
+
+	ms := float32(math.Sqrt(float64(radius) / 2.0))
+	if ms < 0.5 {
+		ms = 0.5
+	}
+	if ms > 2.0 {
+		ms = 2.0
+	}
+
+	diskIntensity := ms * 1.0 * ae
+	if diskIntensity > 0.02 {
+		r.drawNSDisk(pos, radius, diskTilt, diskIntensity)
+	}
+}
+
+// drawNSDisk renders the flat accretion disk for a neutron star.
+// The inner edge begins at 1.1 R (the NS surface with thin boundary layer);
+// the outer disk extends to 8 R.  The temperature gradient is hotter and
+// bluer than a black hole disk: the hard-surface boundary layer dominates
+// the inner emission.
+func (r *Renderer) drawNSDisk(pos rl.Vector3, radius, tiltDeg, intensityScale float32) {
+	const (
+		segments    = 72
+		radialBands = 14
+	)
+
+	innerR := radius * 1.1
+	outerR := radius * 8.0
+	ringRange := outerR - innerR
+
+	// NS boundary-layer gradient: blazing blue-white inner edge cooling outward.
+	type bandRGB struct{ r, g, b float32 }
+	stops := [radialBands + 1]bandRGB{
+		{0.85, 0.95, 1.00}, // 0  innermost — blue-white boundary layer
+		{0.90, 0.97, 1.00}, // 1
+		{0.95, 0.98, 1.00}, // 2
+		{1.00, 0.98, 0.95}, // 3  near-white
+		{1.00, 0.95, 0.82}, // 4
+		{1.00, 0.88, 0.65}, // 5  warm white
+		{1.00, 0.78, 0.45}, // 6
+		{1.00, 0.65, 0.22}, // 7  orange
+		{1.00, 0.50, 0.08}, // 8
+		{0.85, 0.34, 0.02}, // 9
+		{0.62, 0.20, 0.01}, // 10
+		{0.38, 0.09, 0.00}, // 11
+		{0.18, 0.03, 0.00}, // 12
+		{0.06, 0.00, 0.00}, // 13
+		{0.00, 0.00, 0.00}, // 14 outermost — fades to transparent black
+	}
+
+	scale := intensityScale * 255.0
 
 	rl.PushMatrix()
 	rl.Translatef(pos.X, pos.Y, pos.Z)
@@ -570,44 +802,57 @@ func (r *Renderer) drawBHDisk(pos rl.Vector3, radius, tiltDeg, intensityScale fl
 	rl.BeginBlendMode(rl.BlendAddColors)
 	rl.DisableDepthMask()
 
+	rl.Begin(rl.Triangles)
 	for band := 0; band < radialBands; band++ {
 		bandInner := innerR + float32(band)/float32(radialBands)*ringRange
 		bandOuter := innerR + float32(band+1)/float32(radialBands)*ringRange
 
-		g := gradient[band]
-		scale := intensityScale * 255.0
-		// Alpha fades quadratically from inner to outer edge so the geometric boundary
-		// of the disk dissolves rather than cutting off as a visible dark ring.
-		t := float32(band) / float32(radialBands)
-		alpha := bhColorByte((1.0 - t) * (1.0 - t) * 255.0)
-		col := rl.Color{
-			R: bhColorByte(g.r * scale),
-			G: bhColorByte(g.g * scale),
-			B: bhColorByte(g.b * scale),
-			A: alpha,
-		}
+		tIn := float32(band) / float32(radialBands)
+		tOut := float32(band+1) / float32(radialBands)
+		aIn := bhColorByte((1.0 - tIn) * (1.0 - tIn) * 255.0)
+		aOut := bhColorByte((1.0 - tOut) * (1.0 - tOut) * 255.0)
+		sIn := stops[band]
+		sOut := stops[band+1]
+		rIn := bhColorByte(sIn.r * scale)
+		gIn := bhColorByte(sIn.g * scale)
+		bIn := bhColorByte(sIn.b * scale)
+		rOut := bhColorByte(sOut.r * scale)
+		gOut := bhColorByte(sOut.g * scale)
+		bOut := bhColorByte(sOut.b * scale)
 
 		for i := 0; i < segments; i++ {
 			angle1 := float32(i) * 2.0 * math.Pi / float32(segments)
 			angle2 := float32(i+1) * 2.0 * math.Pi / float32(segments)
-
 			cos1 := float32(math.Cos(float64(angle1)))
 			sin1 := float32(math.Sin(float64(angle1)))
 			cos2 := float32(math.Cos(float64(angle2)))
 			sin2 := float32(math.Sin(float64(angle2)))
 
-			p1 := rl.Vector3{X: bandOuter * cos1, Y: 0, Z: bandOuter * sin1}
-			p2 := rl.Vector3{X: bandOuter * cos2, Y: 0, Z: bandOuter * sin2}
-			p3 := rl.Vector3{X: bandInner * cos1, Y: 0, Z: bandInner * sin1}
-			p4 := rl.Vector3{X: bandInner * cos2, Y: 0, Z: bandInner * sin2}
+			ox1, oz1 := bandOuter*cos1, bandOuter*sin1
+			ox2, oz2 := bandOuter*cos2, bandOuter*sin2
+			ix1, iz1 := bandInner*cos1, bandInner*sin1
+			ix2, iz2 := bandInner*cos2, bandInner*sin2
 
-			// Front and back faces so the disk is visible from both sides.
-			rl.DrawTriangle3D(p1, p2, p3, col)
-			rl.DrawTriangle3D(p2, p4, p3, col)
-			rl.DrawTriangle3D(p1, p3, p2, col)
-			rl.DrawTriangle3D(p2, p3, p4, col)
+			// Front face
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox1, 0, oz1)
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix2, 0, iz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+
+			// Back face (reversed winding)
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox1, 0, oz1)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+
+			rl.Color4ub(rOut, gOut, bOut, aOut); rl.Vertex3f(ox2, 0, oz2)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix1, 0, iz1)
+			rl.Color4ub(rIn, gIn, bIn, aIn);     rl.Vertex3f(ix2, 0, iz2)
 		}
 	}
+	rl.End()
 
 	rl.EnableDepthMask()
 	rl.EndBlendMode()

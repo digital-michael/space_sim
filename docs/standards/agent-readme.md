@@ -4,7 +4,7 @@
 Provide a high-signal, agent-oriented map of this repository so an LLM Agent can understand the architecture, runtime behavior, data model, validation surface, and operational constraints before making changes.
 
 ## Last Updated
-2026-03-30
+2026-05-28
 
 ## Table of Contents
 1. Mission and Defaults
@@ -236,7 +236,13 @@ The current layout preserves the useful intent of the completed `main.go` refact
 
 ### Key Enums and Stable Concepts
 
-- `ObjectCategory`: `Planet`, `DwarfPlanet`, `Moon`, `Asteroid`, `Ring`, `Star`, `Belt`.
+- `ObjectCategory`: 12 values in two groups, plus one internal sentinel.
+  - Stellar (0–4): `StarPreMain`, `StarMainSequence`, `StarEvolved`, `Substellar`, `StellarRemnant`.
+    Slots 5–9 reserved for future stellar additions.
+  - System (10–16): `Planet`, `DwarfPlanet`, `Moon`, `Asteroid`, `Belt`, `Rogue`, `Artifact`.
+    Slots 17–19 reserved for future system additions.
+  - Sentinel (99): `Ring` — internal only, never shown as a UI tab.
+  - `engine.IsStarLike(cat)` returns true for categories 0–4.
 - `AsteroidDataset`: `Small`, `Medium`, `Large`, `Huge`.
 - `SelectionMode`: `None`, `Jump`, `Track`, `TrackEquatorial`, `Performance`.
 - `CameraMode`: free navigation, jump transition, and tracking.
@@ -264,7 +270,7 @@ Primary top-level JSON structures:
 
 ## 6. User Interface Command Groups
 
-These groups are derived from [internal/space/app/input.go](../../internal/space/app/input.go) and are the fastest way for an agent to orient itself to user-facing behavior.
+These groups are derived from [internal/client/go/raylib/app/](../../internal/client/go/raylib/app/) and are the fastest way for an agent to orient itself to user-facing behavior.
 
 ### App and Display Controls
 
@@ -317,16 +323,24 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 
 ### Go Unit Tests Present Today
 
-- [internal/space/belts_test.go](../../internal/space/belts_test.go)
-	- validates orbital-period handling for procedurally generated belt objects.
-- [internal/space/engine/objectcategory_test.go](../../internal/space/engine/objectcategory_test.go)
-	- locks enum values and enum count.
-- [internal/space/ui/input_test.go](../../internal/space/ui/input_test.go)
+- [internal/sim/loader_test.go](../../internal/sim/loader_test.go)
+	- validates system loading, ring feature creation, and navigation order construction.
+- [internal/sim/engine/objectcategory_test.go](../../internal/sim/engine/objectcategory_test.go)
+	- locks enum integer values and enum count (13 values including ring sentinel).
+- [internal/sim/engine/physics_nbody_test.go](../../internal/sim/engine/physics_nbody_test.go)
+	- N-body orbit period, energy conservation, Moon orbit, barycenter, and test-particle tests.
+- [internal/client/go/raylib/ui/input_test.go](../../internal/client/go/raylib/ui/input_test.go)
 	- validates selection-state defaults, transitions, dialog input suspension state, and runtime system selector state behavior.
-- [internal/space/ui/cycle_test.go](../../internal/space/ui/cycle_test.go)
+- [internal/client/go/raylib/ui/cycle_test.go](../../internal/client/go/raylib/ui/cycle_test.go)
 	- validates category cycling behavior.
-- [internal/space/app/system_selector_test.go](../../internal/space/app/system_selector_test.go)
+- [internal/client/go/raylib/app/system_selector_test.go](../../internal/client/go/raylib/app/system_selector_test.go)
 	- validates runtime system discovery ordering/filtering and safe session-creation failure handling.
+- [internal/client/go/raylib/ui/render/renders_selection_test.go](../../internal/client/go/raylib/ui/render/renders_selection_test.go)
+	- validates object filtering by category and text.
+- [internal/client/go/raylib/ui/render/labels_test.go](../../internal/client/go/raylib/ui/render/labels_test.go)
+	- validates label priority, selection, and quasar-scene exclusion logic.
+- [internal/persist/definitions_test.go](../../internal/persist/definitions_test.go)
+	- validates round-trip save/load of simulation state definitions.
 
 ### Command-Level Validation
 
@@ -346,7 +360,6 @@ These groups are derived from [internal/space/app/input.go](../../internal/space
 High-value docs to consult first:
 
 - [README.md](../../README.md): repository scope and common commands.
-- [internal/space/package.md](../../internal/space/package.md): detailed package boundaries and architecture.
 - [data/README.md](../../data/README.md): JSON layout and schema guidance.
 - [docs/README.md](../README.md): documentation index and folder guide.
 - [docs/history/lessons-learned.md](../history/lessons-learned.md): defect history and performance/debugging lessons.

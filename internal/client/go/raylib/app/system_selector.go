@@ -86,16 +86,43 @@ func discoverSystemOptionsFromDir(dir string) ([]ui.SystemOption, error) {
 		})
 	}
 
-	sort.Slice(options, func(i, j int) bool {
-		left := strings.ToLower(options[i].DisplayName)
-		right := strings.ToLower(options[j].DisplayName)
-		if left == right {
-			return options[i].Label < options[j].Label
+	var regular, test []ui.SystemOption
+	for _, opt := range options {
+		if isTestSystem(opt.Label) {
+			test = append(test, opt)
+		} else {
+			regular = append(regular, opt)
 		}
-		return left < right
-	})
+	}
 
-	return options, nil
+	byDisplayName := func(slice []ui.SystemOption) {
+		sort.Slice(slice, func(i, j int) bool {
+			l := strings.ToLower(slice[i].DisplayName)
+			r := strings.ToLower(slice[j].DisplayName)
+			if l == r {
+				return slice[i].Label < slice[j].Label
+			}
+			return l < r
+		})
+	}
+	byDisplayName(regular)
+	byDisplayName(test)
+
+	if len(regular) > 0 && len(test) > 0 {
+		out := make([]ui.SystemOption, 0, len(regular)+1+len(test))
+		out = append(out, regular...)
+		out = append(out, ui.SystemOption{IsSeparator: true})
+		out = append(out, test...)
+		return out, nil
+	}
+	return append(regular, test...), nil
+}
+
+// isTestSystem reports whether a system directory or file name is a test system.
+// Matches names whose base (extension stripped) ends with "_test".
+func isTestSystem(label string) bool {
+	base := strings.TrimSuffix(label, filepath.Ext(label))
+	return strings.HasSuffix(base, "_test")
 }
 
 func discoverRuntimeSystemOptions() ([]ui.SystemOption, error) {

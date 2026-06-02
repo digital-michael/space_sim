@@ -462,7 +462,11 @@ func drawTrackingInfo(state *engine.SimulationState, cameraState *ui.CameraState
 	case engine.CategorySubstellar:
 		categoryName = "Substellar Object"
 	case engine.CategoryStellarRemnant:
-		categoryName = "Stellar Remnant"
+		if obj.Meta.StellarVariant != "" {
+			categoryName = formatVariantLabel(obj.Meta.StellarVariant)
+		} else {
+			categoryName = "Stellar Remnant"
+		}
 	case engine.CategoryRogue:
 		if obj.Meta.StellarVariant != "" {
 			categoryName = formatVariantLabel(obj.Meta.StellarVariant)

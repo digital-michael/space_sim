@@ -55,19 +55,19 @@
         "initial_mean_anomaly": "random"
       },
       "physical": {
-        "radius": 2,
+        "radius": 0.2,
         "mass": 2.785e+30,
         "rotation_period": 0.0,
         "axial_tilt": 0.0,
-        "albedo": 1.0,
-        "albedo_note": "1.4 solar-mass neutron star \u2014 physical radius ~2 su for visibility (real ~0.003 su)"
+        "albedo": 0.0,
+        "albedo_note": "1.4 solar-mass neutron star \u2014 cooling, non-accreting; radius 0.2 su (real ~7\u00d710\u207b\u2075 su)"
       },
       "rendering": {
         "material": "neutron_star",
         "fallback_color": [
-          180,
-          220,
-          255,
+          15,
+          18,
+          30,
           255
         ]
       },
@@ -77,12 +77,12 @@
         "solar_luminosity": 0.001,
         "surface_temperature_k": 600000,
         "emission_color": [
-          180,
-          220,
-          255,
+          40,
+          55,
+          90,
           255
         ],
-        "emission_intensity": 2.0
+        "emission_intensity": 0.4
       },
       "stellar_variant": "Neutron Star"
     },

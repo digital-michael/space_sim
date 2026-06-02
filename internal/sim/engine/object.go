@@ -44,6 +44,19 @@ func IsStarLike(cat ObjectCategory) bool {
 	return cat >= CategoryStarPreMain && cat <= CategoryStellarRemnant
 }
 
+// ViewRadius returns the effective radius used for camera auto-zoom distance
+// calculations. For black holes, using PhysicalRadius directly places the camera
+// inside the accretion disk (outer edge = 7×radius). A multiplier of 1.5 targets
+// a camera distance of ~9×radius — just outside the disk outer edge — giving a
+// clear view of the disk structure without being embedded in it or too far away.
+// For all other bodies it is PhysicalRadius unchanged.
+func (m *ObjectMetadata) ViewRadius() float32 {
+	if m.Material == MaterialBlackHole {
+		return m.PhysicalRadius * 1.5
+	}
+	return m.PhysicalRadius
+}
+
 // AsteroidDataset represents a LOD level for asteroid populations.
 type AsteroidDataset int
 
@@ -130,12 +143,16 @@ type ObjectMetadata struct {
 	JetRadius float32 // Cone base radius at body surface in sim units
 	JetColor  Color   // Jet emission color
 
-	// Black-hole accretion / visual parameters (MaterialBlackHole only).
-	// BHDiskTilt: accretion disk tilt in degrees; 0 = derive from AxialTilt, fallback 30°.
-	// BHAccretionEnergy: 0 = default (1.0); explicit values scale disk+corona brightness
+	// Accretion disk / visual parameters (MaterialBlackHole and MaterialNeutronStar).
+	// DiskTilt: disk tilt in degrees; 0 = derive from AxialTilt, fallback 30°.
+	// AccretionEnergy: 0 = default (1.0); scales disk brightness
 	//   (e.g. 0.05 = quiescent, 1.0 = standard, 2.5 = quasar-level).
-	BHDiskTilt        float32
-	BHAccretionEnergy float32
+	DiskTilt        float32
+	AccretionEnergy float32
+
+	// PulsePeriod: rotation period for pulsar lighthouse effect in seconds.
+	// 0 = no pulse. Applies to MaterialNeutronStar only.
+	PulsePeriod float32
 
 	// Hierarchy
 	ParentName string // Empty for top-level bodies; parent name for moons/rings

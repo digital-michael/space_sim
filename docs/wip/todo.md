@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-25 (TD-008 complete; repl::exec + dispatchCmd split into domain sub-dispatchers)
+2026-05-28 (stellar classification system: 12-tab selection dialog, SpectralClass/StellarVariant fields, Advanced Info toggle)
 
 ## Table of Contents
 1. How to Use This File
@@ -112,18 +112,7 @@ Planning Documents
 
 ## 3. Active Work
 
-### Phase 3 (session) - SnapshotBroadcaster
-
-**Value**: Wires the physics loop to the server broadcast layer. After each engine tick the snapshot flows from `World.Snapshot()` through `protocol.Broadcaster` to all registered subscribers, enabling future gRPC and multi-client fan-out without coupling the renderer to `*World`.
-**Status**: ✅ Complete — 2026-04-02
-**Depends on**: Phase 1, Phase 2
-
-#### Work Items
-
-- [x] Add `protocol.Broadcaster` and `protocol.Subscriber` types with thread-safe register/unregister/push
-- [x] Add broadcaster tests (concurrent push, unregister, no-op unregister)
-- [x] Add `broadcaster *protocol.Broadcaster` field to `App`; initialize in `New()`; expose `RegisterSubscriber`
-- [x] Push each `WorldSnapshot` to `app.broadcaster` in the interactive render loop
+No active in-flight items. Next up: **F-035 Phase 1** (Game Definition — themes and factions). See §7 Recommended Ordering.
 
 ## 4. Planned Phases
 

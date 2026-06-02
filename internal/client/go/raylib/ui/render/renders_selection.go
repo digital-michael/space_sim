@@ -382,6 +382,16 @@ func drawSystemSelectorUI(inputState *ui.InputState) {
 			option := inputState.SystemOptions[idx]
 			y := listStartY + int32(idx-inputState.ScrollOffset)*lineHeight
 
+			if option.IsSeparator {
+				midY := y + lineHeight/2
+				rl.DrawLine(bgX+scaledInt32(10), midY, bgX+bgWidth-scaledInt32(10), midY, rl.Color{R: 65, G: 65, B: 65, A: 255})
+				sepLabel := "── Test Systems ──"
+				sepW := rl.MeasureText(sepLabel, hintFont)
+				rl.DrawRectangle(bgX+(bgWidth-sepW)/2-scaledInt32(4), midY-hintFont/2-scaledInt32(1), sepW+scaledInt32(8), hintFont+scaledInt32(2), rl.Color{R: 0, G: 0, B: 0, A: 210})
+				rl.DrawText(sepLabel, bgX+(bgWidth-sepW)/2, midY-hintFont/2, hintFont, rl.Color{R: 110, G: 110, B: 110, A: 255})
+				continue
+			}
+
 			if idx == inputState.SelectedIndex {
 				rl.DrawRectangle(bgX+scaledInt32(10), y-scaledInt32(2), bgWidth-scaledInt32(20), lineHeight-scaledInt32(2), rl.Color{R: 50, G: 100, B: 150, A: 255})
 				rl.DrawText(">", bgX+scaledInt32(18), y+scaledInt32(4), arrowFont, rl.Yellow)
