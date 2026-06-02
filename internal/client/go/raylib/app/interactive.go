@@ -315,7 +315,11 @@ func (a *App) dispatchScriptCmd(session *runtimeSession, snap protocol.WorldSnap
 		dispatchNavCmd(cs, state, JumpToCmd{Names: v.Names})
 
 	case commands.SystemLoad:
-		dispatchSystemCmd(is, LoadSystemCmd{Path: normalizeSystemConfigPath("data/systems/" + v.Label)})
+		// Strip any path prefix or .json extension the label may carry so we
+		// never double-prepend "data/systems/" or fall through to the legacy
+		// flat-file format (which no longer exists after the F-034 migration).
+		label := filepath.Base(strings.TrimSuffix(v.Label, ".json"))
+		dispatchSystemCmd(is, LoadSystemCmd{Path: normalizeSystemConfigPath(filepath.Join("data", "systems", label))})
 
 	case commands.HUD:
 		a.runtime.HUD.Debug = v.Visible
