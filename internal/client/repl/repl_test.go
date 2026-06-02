@@ -13,6 +13,8 @@ import (
 	v1 "github.com/digital-michael/space_sim/api/gen/spacesim/v1"
 	"github.com/digital-michael/space_sim/api/gen/spacesim/v1/spacesimv1connect"
 	"github.com/google/uuid"
+
+	"github.com/digital-michael/space_sim/internal/client/script"
 )
 
 // ─── Stub server handlers ────────────────────────────────────────────────
@@ -678,19 +680,19 @@ func TestParseForHeader(t *testing.T) {
 		{"foreach planets as X:", "", "", "", false}, // wrong keyword
 	}
 	for _, c := range cases {
-		h, ok := parseForHeader(c.input)
+		h, ok := script.ParseForHeader(c.input)
 		if ok != c.ok {
-			t.Errorf("parseForHeader(%q): ok=%v want %v", c.input, ok, c.ok)
+			t.Errorf("script.ParseForHeader(%q): ok=%v want %v", c.input, ok, c.ok)
 			continue
 		}
-		if ok && h.group != c.group {
-			t.Errorf("parseForHeader(%q): group=%q want %q", c.input, h.group, c.group)
+		if ok && h.Group != c.group {
+			t.Errorf("script.ParseForHeader(%q): group=%q want %q", c.input, h.Group, c.group)
 		}
-		if ok && h.varName != c.varName {
-			t.Errorf("parseForHeader(%q): varName=%q want %q", c.input, h.varName, c.varName)
+		if ok && h.VarName != c.varName {
+			t.Errorf("script.ParseForHeader(%q): varName=%q want %q", c.input, h.VarName, c.varName)
 		}
-		if ok && h.sliceSpec != c.sliceSpec {
-			t.Errorf("parseForHeader(%q): sliceSpec=%q want %q", c.input, h.sliceSpec, c.sliceSpec)
+		if ok && h.SliceSpec != c.sliceSpec {
+			t.Errorf("script.ParseForHeader(%q): sliceSpec=%q want %q", c.input, h.SliceSpec, c.sliceSpec)
 		}
 	}
 }
@@ -876,9 +878,9 @@ func TestStripLineComment_RemovesTrailingComment(t *testing.T) {
 		{"setspeed 5 // a // b", "setspeed 5"},     // only first // matters
 	}
 	for _, c := range cases {
-		got := stripLineComment(c.in)
+		got := script.StripLineComment(c.in)
 		if got != c.want {
-			t.Errorf("stripLineComment(%q) = %q, want %q", c.in, got, c.want)
+			t.Errorf("script.StripLineComment(%q) = %q, want %q", c.in, got, c.want)
 		}
 	}
 }
@@ -966,24 +968,24 @@ func TestApplyForSlice(t *testing.T) {
 		{"[1]", nil, true},                                           // missing colon
 	}
 	for _, c := range cases {
-		got, err := applyForSlice(names, c.spec)
+		got, err := script.ApplyForSlice(names, c.spec)
 		if c.wantErr {
 			if err == nil {
-				t.Errorf("applyForSlice(%q): expected error, got %v", c.spec, got)
+				t.Errorf("script.ApplyForSlice(%q): expected error, got %v", c.spec, got)
 			}
 			continue
 		}
 		if err != nil {
-			t.Errorf("applyForSlice(%q): unexpected error: %v", c.spec, err)
+			t.Errorf("script.ApplyForSlice(%q): unexpected error: %v", c.spec, err)
 			continue
 		}
 		if len(got) != len(c.want) {
-			t.Errorf("applyForSlice(%q): len=%d want %d  got=%v", c.spec, len(got), len(c.want), got)
+			t.Errorf("script.ApplyForSlice(%q): len=%d want %d  got=%v", c.spec, len(got), len(c.want), got)
 			continue
 		}
 		for i := range got {
 			if got[i] != c.want[i] {
-				t.Errorf("applyForSlice(%q)[%d]: %q want %q", c.spec, i, got[i], c.want[i])
+				t.Errorf("script.ApplyForSlice(%q)[%d]: %q want %q", c.spec, i, got[i], c.want[i])
 			}
 		}
 	}
@@ -1030,50 +1032,50 @@ func TestREPL_ForLoop_Slice_LastN(t *testing.T) {
 // ─── set $var tests ───────────────────────────────────────────────────────────
 
 func TestParseSetVar_SpaceSeparated(t *testing.T) {
-	name, val, ok := parseSetVar("set $speed 15")
+	name, val, ok := script.ParseSetVar("set $speed 15")
 	if !ok || name != "$speed" || val != "15" {
 		t.Errorf("got (%q, %q, %v), want ($speed, 15, true)", name, val, ok)
 	}
 }
 
 func TestParseSetVar_EqualsSeparated(t *testing.T) {
-	name, val, ok := parseSetVar("set $orbit_count=1")
+	name, val, ok := script.ParseSetVar("set $orbit_count=1")
 	if !ok || name != "$orbit_count" || val != "1" {
 		t.Errorf("got (%q, %q, %v), want ($orbit_count, 1, true)", name, val, ok)
 	}
 }
 
 func TestParseSetVar_ColonEqualsSeparated(t *testing.T) {
-	name, val, ok := parseSetVar("set $target:=Earth")
+	name, val, ok := script.ParseSetVar("set $target:=Earth")
 	if !ok || name != "$target" || val != "Earth" {
 		t.Errorf("got (%q, %q, %v), want ($target, Earth, true)", name, val, ok)
 	}
 }
 
 func TestParseSetVar_QuotedValue(t *testing.T) {
-	name, val, ok := parseSetVar(`set $target "Alpha Centauri A"`)
+	name, val, ok := script.ParseSetVar(`set $target "Alpha Centauri A"`)
 	if !ok || name != "$target" || val != "Alpha Centauri A" {
 		t.Errorf("got (%q, %q, %v), want ($target, Alpha Centauri A, true)", name, val, ok)
 	}
 }
 
 func TestParseSetVar_NoSigil_NotMatched(t *testing.T) {
-	_, _, ok := parseSetVar("set speed 15")
+	_, _, ok := script.ParseSetVar("set speed 15")
 	if ok {
 		t.Error("expected no match for set without sigil")
 	}
 }
 
 func TestParseSetVar_NotSetLine(t *testing.T) {
-	_, _, ok := parseSetVar("setspeed 15")
+	_, _, ok := script.ParseSetVar("setspeed 15")
 	if ok {
 		t.Error("expected no match for 'setspeed'")
 	}
 }
 
 func TestExpandVars_Basic(t *testing.T) {
-	r := &REPL{vars: map[string]string{"$speed": "15", "$target": "Earth"}}
-	got := r.expandVars("orbit $target $speed 1")
+	vars := map[string]string{"$speed": "15", "$target": "Earth"}
+	got := script.ExpandVars("orbit $target $speed 1", vars)
 	want := "orbit Earth 15 1"
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
@@ -1081,9 +1083,8 @@ func TestExpandVars_Basic(t *testing.T) {
 }
 
 func TestExpandVars_LongestFirst(t *testing.T) {
-	// $speed_max must not accidentally match before $speed is tried.
-	r := &REPL{vars: map[string]string{"$speed": "10", "$speed_max": "30"}}
-	got := r.expandVars("orbit Earth $speed_max 1")
+	vars := map[string]string{"$speed": "10", "$speed_max": "30"}
+	got := script.ExpandVars("orbit Earth $speed_max 1", vars)
 	want := "orbit Earth 30 1"
 	if got != want {
 		t.Errorf("got %q, want %q", got, want)
@@ -1091,9 +1092,8 @@ func TestExpandVars_LongestFirst(t *testing.T) {
 }
 
 func TestExpandVars_NoVars_Passthrough(t *testing.T) {
-	r := &REPL{vars: make(map[string]string)}
 	line := "orbit Earth 15 1"
-	if got := r.expandVars(line); got != line {
+	if got := script.ExpandVars(line, nil); got != line {
 		t.Errorf("expected passthrough, got %q", got)
 	}
 }

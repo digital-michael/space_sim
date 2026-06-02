@@ -23,6 +23,7 @@ import (
 	v1 "github.com/digital-michael/space_sim/api/gen/spacesim/v1"
 	"github.com/digital-michael/space_sim/api/gen/spacesim/v1/spacesimv1connect"
 	"github.com/digital-michael/space_sim/internal/client/commands"
+	"github.com/digital-michael/space_sim/internal/client/script"
 )
 
 // REPL holds the live ConnectRPC client connections and executes parsed
@@ -115,27 +116,27 @@ func (r *REPL) Run(ctx context.Context, in io.Reader) error {
 		}
 
 		// set $name value — store before any substitution so the RHS is literal.
-		if name, val, ok := parseSetVar(line); ok {
+		if name, val, ok := script.ParseSetVar(line); ok {
 			r.vars[name] = val
 			r.printf("set %s = %q\n", name, val)
 			continue
 		}
 
 		// Expand $vars before any further processing.
-		line = r.expandVars(line)
+		line = script.ExpandVars(line, r.vars)
 
 		// For-loop block — three accepted forms:
 		//   for $v in bodies           (all named bodies)
 		//   for $v in planets          (specific group)
 		//   for <group>[slice] as $v:  (legacy form — kept for existing scripts)
 		//   for <n>                    (count loop)
-		if fh, ok := parseForHeader(line); ok {
+		if fh, ok := script.ParseForHeader(line); ok {
 			var done bool
 			var err error
-			if fh.isCount {
-				done, err = r.runCountLoop(ctx, lr, fh.count)
+			if fh.IsCount {
+				done, err = r.runCountLoop(ctx, lr, fh.Count)
 			} else {
-				done, err = r.runForLoop(ctx, lr, fh.group, fh.varName, fh.sliceSpec)
+				done, err = r.runForLoop(ctx, lr, fh.Group, fh.VarName, fh.SliceSpec)
 			}
 			if err != nil {
 				r.printf("error: %v\n", err)
@@ -165,160 +166,8 @@ func (r *REPL) Run(ctx context.Context, in io.Reader) error {
 	}
 }
 
-// groupToCategory maps human-friendly for-loop group names to the body
-// category strings used in snapshot data.
-var groupToCategory = map[string]string{
-	"stars":         "star",
-	"star":          "star",
-	"planets":       "planet",
-	"planet":        "planet",
-	"dwarf_planets": "dwarf_planet",
-	"dwarf_planet":  "dwarf_planet",
-	"moons":         "moon",
-	"moon":          "moon",
-	"asteroids":     "asteroid",
-	"asteroid":      "asteroid",
-	"systems":       "system",
-	"system":        "system",
-}
-
-// forHeader is the parsed result of a for-loop header line.
-type forHeader struct {
-	// Count loop: "for <n>"
-	isCount bool
-	count   int
-	// Iteration loop
-	group     string // normalised group name
-	varName   string // e.g. "$p" or "X"
-	sliceSpec string // e.g. "[3:]"
-}
-
-// parseForHeader recognises all accepted for-loop header forms:
-//
-//	for $v in bodies           — all named bodies
-//	for $v in bodies planets   — bodies of a specific group
-//	for $v in planets          — shorthand: group only (no 'bodies' keyword)
-//	for <group>[slice] as $v:  — legacy form
-//	for <n>                    — count loop (n ≥ 1)
-//
-// Returns (forHeader, true) on success.
-func parseForHeader(line string) (forHeader, bool) {
-	stripped := strings.TrimSuffix(strings.TrimSpace(line), ":")
-	fields := strings.Fields(stripped)
-	if len(fields) == 0 || !strings.EqualFold(fields[0], "for") {
-		return forHeader{}, false
-	}
-	args := fields[1:]
-	if len(args) == 0 {
-		return forHeader{}, false
-	}
-
-	// Count loop: "for <n>"
-	if len(args) == 1 {
-		n, err := strconv.Atoi(args[0])
-		if err == nil && n >= 1 {
-			return forHeader{isCount: true, count: n}, true
-		}
-		// Single non-numeric arg is not a valid header.
-		return forHeader{}, false
-	}
-
-	// "for $v in <group>" or "for $v in bodies [group]"
-	if strings.EqualFold(args[1], "in") {
-		varName := args[0]
-		if len(args) < 3 {
-			return forHeader{}, false
-		}
-		groupToken := strings.ToLower(args[2])
-		var sliceSpec string
-		if idx := strings.IndexByte(groupToken, '['); idx != -1 {
-			sliceSpec = groupToken[idx:]
-			groupToken = groupToken[:idx]
-		}
-		// "for $v in bodies" or "for $v in bodies <group>"
-		if groupToken == "bodies" {
-			if len(args) >= 4 {
-				cat := strings.ToLower(args[3])
-				if idx := strings.IndexByte(cat, '['); idx != -1 {
-					sliceSpec = cat[idx:]
-					cat = cat[:idx]
-				}
-				return forHeader{group: cat, varName: varName, sliceSpec: sliceSpec}, true
-			}
-			// bare "bodies" = all named bodies
-			return forHeader{group: "bodies", varName: varName, sliceSpec: sliceSpec}, true
-		}
-		return forHeader{group: groupToken, varName: varName, sliceSpec: sliceSpec}, true
-	}
-
-	// Legacy form: "for <group>[slice] as <var>"
-	if len(args) == 3 && strings.EqualFold(args[1], "as") {
-		groupToken := strings.ToLower(args[0])
-		var sliceSpec string
-		if idx := strings.IndexByte(groupToken, '['); idx != -1 {
-			sliceSpec = groupToken[idx:]
-			groupToken = groupToken[:idx]
-		}
-		return forHeader{group: groupToken, varName: args[2], sliceSpec: sliceSpec}, true
-	}
-
-	return forHeader{}, false
-}
-
-// applyForSlice restricts names to the sub-range described by spec.
-// Supported forms: [start:] [:end] [start:end] [-n:] (negative start = from end).
-// Negative end values are not supported and return an error.
-func applyForSlice(names []string, spec string) ([]string, error) {
-	if spec == "" {
-		return names, nil
-	}
-	n := len(names)
-	if !strings.HasPrefix(spec, "[") || !strings.HasSuffix(spec, "]") {
-		return nil, fmt.Errorf("for: invalid slice spec %q", spec)
-	}
-	inner := spec[1 : len(spec)-1]
-	parts := strings.SplitN(inner, ":", 2)
-	if len(parts) != 2 {
-		return nil, fmt.Errorf("for: slice spec must contain ':' (got %q)", spec)
-	}
-	start := 0
-	end := n
-	if parts[0] != "" {
-		v, err := strconv.Atoi(parts[0])
-		if err != nil {
-			return nil, fmt.Errorf("for: invalid slice start %q", parts[0])
-		}
-		if v < 0 {
-			start = n + v
-		} else {
-			start = v
-		}
-	}
-	if parts[1] != "" {
-		v, err := strconv.Atoi(parts[1])
-		if err != nil {
-			return nil, fmt.Errorf("for: invalid slice end %q", parts[1])
-		}
-		if v < 0 {
-			return nil, fmt.Errorf("for: negative end not supported (use negative start for last-N, e.g. [-5:])")
-		}
-		end = v
-	}
-	// Clamp to valid range.
-	if start < 0 {
-		start = 0
-	}
-	if start > n {
-		start = n
-	}
-	if end > n {
-		end = n
-	}
-	if end < start {
-		end = start
-	}
-	return names[start:end], nil
-}
+// groupToCategory and ForHeader are defined in internal/client/script.
+// Add new group names or loop header forms there — not here.
 
 // collectLoopBody reads lines from lr until a blank line or "endfor" at depth 0,
 // or EOF. A blank line at depth 0 acts as a terminator so interactive scripts
@@ -344,7 +193,7 @@ func (r *REPL) collectLoopBody(lr *lineReader) ([]string, error) {
 		}
 
 		// Detect nested for headers to increment depth.
-		if _, isFor := parseForHeader(bl); isFor {
+		if _, isFor := script.ParseForHeader(bl); isFor {
 			depth++
 		}
 		// Detect endfor.
@@ -378,20 +227,20 @@ func (r *REPL) execLoopBody(ctx context.Context, body []string, varName, name st
 	i := 0
 	for i < len(body) {
 		rawLine := body[i]
-		expanded := strings.ReplaceAll(r.expandVars(rawLine), varName, name)
+		expanded := strings.ReplaceAll(script.ExpandVars(rawLine, r.vars), varName, name)
 
 		// Nested for loop: collect its sub-body from the remaining slice.
-		if fh, ok := parseForHeader(expanded); ok {
+		if fh, ok := script.ParseForHeader(expanded); ok {
 			sub, after, err := extractNestedBody(body, i+1)
 			if err != nil {
 				r.printf("error: %v\n", err)
 				return false, nil
 			}
 			var done bool
-			if fh.isCount {
-				done, err = r.execCountLoopInline(ctx, sub, varName, name, fh.count)
+			if fh.IsCount {
+				done, err = r.execCountLoopInline(ctx, sub, varName, name, fh.Count)
 			} else {
-				done, err = r.execForLoopInline(ctx, sub, varName, name, fh.group, fh.varName, fh.sliceSpec)
+				done, err = r.execForLoopInline(ctx, sub, varName, name, fh.Group, fh.VarName, fh.SliceSpec)
 			}
 			if err != nil {
 				r.printf("error: %v\n", err)
@@ -438,7 +287,7 @@ func extractNestedBody(body []string, start int) ([]string, int, error) {
 	depth := 0
 	for i := start; i < len(body); i++ {
 		line := strings.TrimSpace(body[i])
-		if _, ok := parseForHeader(line); ok {
+		if _, ok := script.ParseForHeader(line); ok {
 			depth++
 		}
 		if strings.EqualFold(line, "endfor") {
@@ -458,7 +307,7 @@ func (r *REPL) execForLoopInline(ctx context.Context, sub []string, outerVar, ou
 	var category string
 	if !allBodies {
 		var ok bool
-		category, ok = groupToCategory[group]
+		category, ok = script.GroupToCategory[group]
 		if !ok {
 			return false, fmt.Errorf("for: unknown group %q", group)
 		}
@@ -473,7 +322,7 @@ func (r *REPL) execForLoopInline(ctx context.Context, sub []string, outerVar, ou
 	if err != nil {
 		return false, err
 	}
-	names, err = applyForSlice(names, sliceSpec)
+	names, err = script.ApplyForSlice(names, sliceSpec)
 	if err != nil {
 		return false, err
 	}
@@ -521,7 +370,7 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName, s
 	var category string
 	if !allBodies {
 		var ok bool
-		category, ok = groupToCategory[group]
+		category, ok = script.GroupToCategory[group]
 		if !ok {
 			validGroups := "bodies, stars, planets, dwarf_planets, moons, asteroids, systems"
 			return false, fmt.Errorf("for: unknown group %q — valid groups: %s", group, validGroups)
@@ -551,7 +400,7 @@ func (r *REPL) runForLoop(ctx context.Context, lr *lineReader, group, varName, s
 		return false, nil
 	}
 
-	names, err = applyForSlice(names, sliceSpec)
+	names, err = script.ApplyForSlice(names, sliceSpec)
 	if err != nil {
 		return false, err
 	}
@@ -668,79 +517,12 @@ func (r *REPL) forLoopItems(ctx context.Context, category string) ([]string, err
 	return names, nil
 }
 
-// parseSetVar parses a "set $name value" line.
-// Accepts: "set $name value", "set $name=value", "set $name:=value".
-// The value has surrounding quotes stripped if present.
-// Returns (name, value, true) on success; ("", "", false) if not a set line.
-func parseSetVar(line string) (name, value string, ok bool) {
-	lower := strings.ToLower(strings.TrimSpace(line))
-	if !strings.HasPrefix(lower, "set ") {
-		return "", "", false
-	}
-	rest := strings.TrimSpace(line[4:])
-	if !strings.HasPrefix(rest, "$") {
-		return "", "", false
-	}
-	// Find the first separator: ":=", "=", or whitespace.
-	var rawName, rawVal string
-	if idx := strings.Index(rest, ":="); idx > 0 {
-		rawName = rest[:idx]
-		rawVal = strings.TrimSpace(rest[idx+2:])
-	} else if idx := strings.IndexAny(rest, "= \t"); idx > 0 {
-		rawName = rest[:idx]
-		rawVal = strings.TrimSpace(strings.TrimLeft(rest[idx:], "= \t"))
-	} else {
-		// "set $name" with no value — store empty string
-		rawName = rest
-		rawVal = ""
-	}
-	// Strip outer quotes from value.
-	if len(rawVal) >= 2 && rawVal[0] == '"' && rawVal[len(rawVal)-1] == '"' {
-		rawVal = rawVal[1 : len(rawVal)-1]
-	}
-	return rawName, rawVal, true
-}
-
-// expandVars replaces every occurrence of a stored $name variable in line
-// with its value. Longer names are substituted first to avoid prefix collisions
-// (e.g. $speed_max before $speed).
-func (r *REPL) expandVars(line string) string {
-	if len(r.vars) == 0 || !strings.Contains(line, "$") {
-		return line
-	}
-	// Sort keys longest-first so $speed_max is replaced before $speed.
-	keys := make([]string, 0, len(r.vars))
-	for k := range r.vars {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool { return len(keys[i]) > len(keys[j]) })
-	for _, k := range keys {
-		line = strings.ReplaceAll(line, k, r.vars[k])
-	}
-	return line
-}
-
-// stripLineComment removes everything from the first unquoted "//" to end of
-// line. "//" that appears inside a double-quoted token is preserved.
-func stripLineComment(line string) string {
-	inQuote := false
-	for i := 0; i < len(line); i++ {
-		if line[i] == '"' {
-			inQuote = !inQuote
-		}
-		if !inQuote && i+1 < len(line) && line[i] == '/' && line[i+1] == '/' {
-			return strings.TrimRight(line[:i], " \t")
-		}
-	}
-	return line
-}
-
 // stripComments removes // line comments and /* … */ block comments from line.
 // When a block comment is not closed on the same line, additional lines are
 // consumed from lr until "*/" is found (or EOF).
 // Returns the processed line trimmed of whitespace.
 func stripComments(line string, lr *lineReader) (string, error) {
-	line = stripLineComment(line)
+	line = script.StripLineComment(line)
 	for strings.Contains(line, "/*") {
 		start := strings.Index(line, "/*")
 		pre := strings.TrimRight(line[:start], " \t")

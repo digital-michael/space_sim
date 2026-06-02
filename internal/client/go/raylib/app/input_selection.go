@@ -419,7 +419,8 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 		}
 		if rl.IsKeyPressed(rl.KeyEnter) {
 			if path, ok := is.ConfirmScriptSelection(); ok {
-				a.startScript(a.runCtx, path)
+				snap := session.sim.LatestSnapshot()
+				a.startScript(a.runCtx, path, snap)
 			}
 		}
 		if rl.IsKeyPressed(rl.KeyEscape) {
