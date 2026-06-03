@@ -36,6 +36,7 @@ func main() {
 	addr := flag.String("addr", ":8080", "TCP address to listen on")
 	systemConfig := flag.String("system-config", "", "path to system JSON (empty = solar system)")
 	simSpeed := flag.Float64("sim-speed", 3600, "simulated seconds per real second")
+	scriptPath := flag.String("script", "", "admin script to execute on startup (path to .txt file)")
 	flag.Parse()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -90,6 +91,9 @@ func main() {
 			}
 		}
 	}()
+
+	// ── Admin REPL (stdin + optional startup script) ─────────────────────
+	go runAdminREPL(ctx, w, stop, *scriptPath)
 
 	// ── Start HTTP/gRPC server ────────────────────────────────────────────
 	srvDone := make(chan error, 1)

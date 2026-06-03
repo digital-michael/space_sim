@@ -419,7 +419,9 @@ func (a *App) handleInputSelection(session *runtimeSession, state *engine.Simula
 		}
 		if rl.IsKeyPressed(rl.KeyEnter) {
 			if path, ok := is.ConfirmScriptSelection(); ok {
-				snap := session.sim.LatestSnapshot()
+				// Use snapSrc (always non-nil) so this works in both local
+				// and remote-renderer mode (where session.sim is nil).
+				snap := session.snapSrc.LatestSnapshot()
 				a.startScript(a.runCtx, path, snap)
 			}
 		}
