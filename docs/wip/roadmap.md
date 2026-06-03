@@ -5,7 +5,7 @@
 Single source of truth for project goals, known requirements, and the prioritized implementation plan. Draws from `todo.md` (work items) and session planning discussions. This document describes *what* and *why*; `todo.md` carries the *how* (work items, acceptance criteria, decisions).
 
 ## Last Updated
-2026-05-28
+2026-06-02
 
 ---
 
@@ -95,6 +95,8 @@ Items are ordered by the agreed priority sequence. Dependencies are noted per it
 | H | — | N-body barycenter (F-013) | ✅ Complete (2026-05-24) |
 | — | — | Tech debt batch (TD-003 – TD-009) | ✅ Complete (2026-05-25) |
 | — | — | Stellar classification + Advanced Info toggle | ✅ Complete (2026-05-28) |
+| — | — | Stellar remnant physics overhaul (NS sizing, BH corona, disk interaction) | ✅ Complete (2026-06-01) |
+| — | 25 | In-app script browser + single-source script package (F-019) | ✅ Complete (2026-06-02) |
 | I | — | Game Definition (F-035 Phase 1) | 📋 Not started — **next up** |
 | J | — | Playable Scenario (F-036 Phase 1) | 📋 Not started |
 | K | — | HUD Profiles (F-038 Phase 1, absorbs F-024) | 📋 Not started |

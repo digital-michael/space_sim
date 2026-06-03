@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-05-28 (stellar classification system: 12-tab selection dialog, SpectralClass/StellarVariant fields, Advanced Info toggle)
+2026-06-02 (F-019 complete: in-app script browser, single-source script package, stellar remnant physics overhaul)
 
 ## Table of Contents
 1. How to Use This File
@@ -60,7 +60,7 @@ Planning Documents
 	F-016 Wire Rendering Data Pipeline (Schema → Engine → Renderer)
 	F-017 Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
 	F-018 Object Annotations HUD (outlines, axes, orbital paths, labels)
-	F-019 Run Scripts from UI
+	F-019 Run Scripts from UI ✅ Complete (2026-06-02)
 	F-020 Multi-Client gRPC Session Layer ✅ All phases complete (Phase 3: admin kick/teleport)
 	F-021 Client Physical Marker 🔄 Phase 1 complete (Phase 2 pending)
 	F-022 Client Locomotion and Physics 🔄 Phase 1+2 complete (Phase 3 NPC automation deferred)
@@ -112,7 +112,7 @@ Planning Documents
 
 ## 3. Active Work
 
-No active in-flight items. Next up: **F-035 Phase 1** (Game Definition — themes and factions). See §7 Recommended Ordering.
+No active in-flight items. Next up: **F-010 remainder** (admin REPL + bandwidth mitigations) or **F-035 Phase 1** (Game Definition — themes and factions). See §7 Recommended Ordering.
 
 ## 4. Planned Phases
 
@@ -332,7 +332,7 @@ This is the current best-guess execution sequence integrating dependency order, 
 | 22 | **F-003** Textures on planets/moons (already ✅) | Group 2 visual |
 | 23 | **F-012** Federated compute | Long-term exploratory; F-010, F-011, F-013 must be stable |
 | 24 | **F-018** Object annotations HUD | High value, low risk; no engine changes |
-| 25 | **F-019** Run scripts from UI | Builds directly on REPL; requires TD-004 and TD-008 complete |
+| 25 | ~~**F-019**~~ Run scripts from UI | ✅ 2026-06-02 |
 | — | **4.7** Belt overlap/speed uniqueness | ⏸ Deferred — cosmetic only, insert whenever bandwidth allows |
 
 ### Steps Completed (archived here for ordering context)
@@ -1054,30 +1054,20 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 
 ### F-019 — Run Scripts from UI
 
-**Value**: Allow the user to browse and execute REPL script files from within the running application without switching to a terminal, lowering the barrier to replaying scripted camera tours and simulation sequences.
-**Status**: 📋 Not started
-**Priority**: Medium — useful for demos and automation; builds directly on the existing REPL and `scripts/` directory
-**Depends on**: Existing REPL command dispatch (`internal/client/repl/`), existing `scripts/` directory layout, `SelectionMode` dialog infrastructure in the UI
+**Value**: Allow the user to browse and execute REPL script files from within the running application without switching to a terminal.
+**Status**: ✅ Complete — 2026-06-02
+**Depends on**: TD-004 ✅, TD-008 ✅
 
-#### Feature Scope
+#### What Was Delivered
 
-- A script-browser dialog (reuses the existing selection-dialog UX pattern) lists `.txt` script files found in the `scripts/` directory at runtime.
-- The user navigates the list with arrow keys and presses Enter to execute the selected script.
-- Script execution feeds each line through the existing REPL command parser; output is shown in the console / HUD banner.
-- A `Cmd+R` or dedicated key opens the dialog; Esc cancels without executing.
-- The REPL `run <path>` command continues to work for programmatic use.
-
-#### Work Items
-
-- [ ] Scan `scripts/` directory at session start and on dialog open; build a sorted list of `*.txt` files
-- [ ] Add `SelectionModeScripts` to the `SelectionMode` enum in `ui/input.go`
-- [ ] Add script-browser dialog render path in `renders.go` (mirrors the system-selector dialog pattern)
-- [ ] Wire key binding to open the dialog (`Cmd+R` suggested — not currently bound to an interactive action)
-- [ ] On confirm, read the selected file line-by-line and dispatch each line through the REPL command parser via `AppCmd`
-- [ ] Surface execution progress in the HUD welcome banner ("Running: solar-tour.txt…")
-- [ ] Add `run <path>` REPL command if not already present; TAB-complete script names from `scripts/`
-- [ ] Add script browser entry to help screen in `drawHelpScreen`
-- [ ] Acceptance: user can open dialog, select `solar-tour.txt`, and the camera tour executes without terminal interaction
+- `CTRL+/` opens the script browser dialog (scrollable list of `scripts/*.txt`)
+- `SelectionModeScripts` + `drawScriptSelectorUI` (mirrors system selector UX)
+- `script_runner.go` goroutine: calls `script.Expand()` for full upfront expansion, dispatches via `ScriptLineCmd`; `sleep` handled locally
+- `internal/client/script/` package: single-source script language (`ParseSetVar`, `ExpandVars`, `ParseForHeader`, `ApplyForSlice`, `StripLineComment`, `Expand`, `GroupToCategory`) shared by both `space-sim-direct` and `space-sim-repl`
+- `dispatchScriptCmd` handles: `track`, `nav jump`, `system load`, `hud`, `labels`, `setspeed`, `pause`, `resume`, `window fullscreen`
+- Modifier key fix: bare-key actions no longer fire alongside modifier combos on the same key
+- Path fix: `system load` strips double `data/systems/` prefix and legacy `.json` extension
+- 22 unit + integration tests in `internal/client/script/script_test.go`
 
 ---
 
