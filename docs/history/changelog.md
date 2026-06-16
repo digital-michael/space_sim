@@ -4,7 +4,7 @@
 Capture completed work after it leaves the active backlog. This is a concise delivery history, not a full commit log.
 
 ## Last Updated
-2026-04-26
+2026-06-15
 
 ## Table of Contents
 1. How to Use This File
@@ -25,6 +25,19 @@ Capture completed work after it leaves the active backlog. This is a concise del
 	3.6 Phase 6 - gRPC Integration
 	3.7 Phase 7 - Additional Pool Types
 	3.8 UX Polish - Rendering, Camera, and Config
+4. 2026-05 Delivered Work
+	4.1 Multi-Client Session Registry (F-020 Phase 1)
+	4.2 Player Physical Marker (F-021 Phase 1)
+	4.3 Ship Definition (F-033 Phase 1)
+	4.4 Client Kinematic Movement (F-022 Phase 1)
+	4.5 Keyboard Configuration (F-023 Phase 1) + Keybindings Wired (F-032)
+	4.6 N-Body Barycenter (F-013 Phase 1) + Client Gravity (F-022 Phase 2)
+	4.7 System Data Directory Structure (F-034 Phase 1)
+	4.8 Tech Debt Batch (TD-003 through TD-009)
+5. 2026-06 Delivered Work
+	5.1 Run Scripts from UI (F-019)
+	5.2 F-010 Admin REPL + F-020 Phase 3 Admin Controls
+	5.3 LLM Agent Collaboration Framework Retrofit
 
 ## 1. How to Use This File
 
@@ -253,3 +266,125 @@ Validation snapshot:
 - **DEF-004 closed**: Objects clipping at specific camera distance was entirely explained by the existing floating-origin fix (DEF-001). Remaining point/sphere pop tracked as DEF-002.
 - **F-004 complete**: Milky Way equirectangular skysphere background rendered via `DrawSky()`. Sphere radius 5.0 su (not 180,000 — large radius causes float32 clip-space precision loss that silently discards all triangles). Depth test + depth mask disabled during sky draw. Negative-X scale for winding flip; UV fix `new_u = 1−old_v, new_v = 1−old_u`. Texture: `data/assets/textures/starfield_8k.jpg` (8k_stars_milky_way, CC BY 4.0). Always lit at full brightness via Raylib's default flat shader.
 - Set initial tracking camera distance to star surface + 0.75 AU
+## 4. 2026-05 Delivered Work
+
+### 4.1 Multi-Client Session Registry — F-020 Phase 1
+
+**End Date**: 2026-05-20
+
+- `SessionService` proto RPCs: `RegisterClient`, `UnregisterClient`, `ListSessions`
+- Per-client identity: name, role, color (palette-assigned), UUID, timestamp
+- Session registry with conflict-resolution policy; `list sessions` REPL command
+
+### 4.2 Player Physical Marker — F-021 Phase 1
+
+**End Date**: 2026-05-22
+
+- Blinking sphere rendered at each connected client's position in player color
+- Label overlay (player name); screen-space minimum size so marker never disappears at distance
+- Wired to session registry; marker appears/disappears on register/unregister
+
+### 4.3 Ship Definition — F-033 Phase 1
+
+**End Date**: 2026-05-20
+
+- `ShipDefinition`, `ShipCatalog`, `ShipInstance` types; loaded from `data/ships/*.json`
+- Transponder identity assigned at registration; `ship_id` added to `RegisterClientRequest`
+- Three bundled ship files; session registry gains `ShipInstance` field
+
+### 4.4 Client Kinematic Movement — F-022 Phase 1
+
+**End Date**: 2026-05-20
+
+- `MovementService` proto; four movement modes: drift, thrusters, impulse, superluminal
+- Client position tracked server-side; position streamed to all clients via `WorldSnapshot`
+
+### 4.5 Keyboard Configuration + Keybindings Wired — F-023 Phase 1 + F-032
+
+**End Date**: 2026-05-22
+
+- `InputAction` enum; `KeyMap` type; laptop and mouse+keyboard stock profiles
+- `handleInput` refactored to route through `km.IsPressed(action)` / `km.IsDown(action)`
+- F-032 closed: all vocabulary actions wired; dialog nav intentionally hardcoded
+- `go test ./...` passes; race detector clean
+
+### 4.6 N-Body Barycenter + Client Gravity — F-013 Phase 1 + F-022 Phase 2
+
+**End Date**: 2026-05-24 / 2026-05-25
+
+- N-body force integration with barycenter output per bound group; `float64` positions in physics layer
+- Named bodies (planets, moons, stars) use full N-body force sums; Keplerian belt particles unchanged
+- F-022 Phase 2: client ship positions receive N-body gravity pass (leapfrog integration)
+- Camera barycenter tracking deferred to F-022 Phase 3
+
+### 4.7 System Data Directory Structure — F-034 Phase 1
+
+**End Date**: 2026-05-24
+
+- Per-system directory layout with `system.json` manifest; typed sub-files (`bodies.json`, `features.json`, etc.)
+- `LoadSystemFromDir`; migration script converts existing monolithic files
+- `nbody_test` system added; rogue and artifact Keplerian rendering (fallback sphere)
+- Absorbs and closes F-008
+
+### 4.8 Tech Debt Batch
+
+**End Date**: 2026-05-25
+
+| Item | Outcome |
+|------|---------|
+| TD-001 | Collapsed `handleInput` / `updateCameraState` parameter lists |
+| TD-002 | Decoupled sim tick from render/input loop |
+| TD-003 | Deleted `legacy_helpers.go` dead code |
+| TD-004 | `commands.go` rewritten as table-driven parser |
+| TD-005 | `renders.go` split into focused files by concern |
+| TD-006 | `CameraState` sub-structs extracted |
+| TD-007 | `handleInput` + `updateCameraState` split |
+| TD-008 | `repl::exec` + `dispatchCmd` split into domain sub-dispatchers |
+| TD-009 | N-body and physics coverage baseline (physics_nbody_test.go); world tick/pause/resume tests deferred |
+
+---
+
+## 5. 2026-06 Delivered Work
+
+### 5.1 Run Scripts from UI — F-019
+
+**End Date**: 2026-06-02
+
+- `Ctrl+/` opens script browser dialog (scrollable list of `scripts/*.txt`)
+- `SelectionModeScripts` + `drawScriptSelectorUI` (mirrors system selector UX)
+- `script_runner.go` goroutine: calls `script.Expand()` for full upfront expansion, dispatches via `ScriptLineCmd`
+- `internal/client/script/` package: single-source script language shared by `space-sim-direct` and `space-sim-repl`
+- `dispatchScriptCmd`: handles `track`, `nav jump`, `system load`, `hud`, `labels`, `setspeed`, `pause`, `resume`, `window fullscreen`
+- Modifier-key fix: bare-key actions no longer fire alongside modifier combos
+- 22 unit + integration tests in `internal/client/script/script_test.go`
+
+### 5.2 F-010 Admin REPL + F-020 Phase 3 Admin Controls
+
+**End Date**: 2026-06-02
+
+- Server-side admin REPL (stdin loop) for `space-sim-server` — simulation commands (setspeed, pause, load, etc.) via admin-only terminal
+- Script language consistency: `space-sim-repl` and `space-sim-direct` now share `internal/client/script/` (single source)
+- Path fix: `system load` strips double `data/systems/` prefix and `.json` suffix
+- F-020 Phase 3 complete: admin kick and teleport controls wired to session registry via admin REPL
+
+### 5.3 LLM Agent Collaboration Framework Retrofit
+
+**End Date**: 2026-06-15
+
+Enrolled space_sim in the LLM Agent Collaboration Framework (Team mode). Established `photon-datum` as a new domain in `llm-agent-domains/`.
+
+| Artifact | Change |
+|----------|--------|
+| `.llm-framework.yml` | Created at project root; points to `llm-agent-framework` + `photon-datum` domain |
+| `docs/governance/README.md` | 12-step session-start load order with profile boundaries (minimal/standard/full) |
+| `docs/governance/lessons-learned.md` | Framework-format index pointing to both lessons files; no content duplication |
+| `docs/governance/agent-assignment-template.md` | Template copy for future assignments |
+| `docs/governance/session-context.md` | Session handoff template; pre-filled with space_sim paths |
+| `docs/governance/agent-assignment.md` | Active assignment tracking the retrofit (all 12 units complete) |
+| `llm-agent-domains/photon-datum/` | New domain: README, governance-overlay (operating modes), library/go overlay (IoC guidance) |
+| `llm-agent-domains/photon-datum/space_sim/README.md` | Repo context: load order, package map, architectural boundaries, git rules |
+| `docs/standards/agent-readme.md` | Addendum: Current-State Package Map (24 packages, layer classification, composition rules) |
+| `CLAUDE.md` | Thinned to bridge pointer + Claude Code tool notes |
+| `.github/copilot-instructions.md` | Thinned to bridge pointer + Copilot tool notes |
+| `docs/standards/guidance.md` | Reduced to space_sim-unique content (commit format, doc rules, performance note) |
+| `docs/standards/coding-standards.md` | Reduced to space_sim-unique content; IoC section moved to `photon-datum/library/go/` |

@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-06-02 (F-019 complete: in-app script browser, single-source script package, stellar remnant physics overhaul)
+2026-06-15 (LLM Agent Collaboration Framework retrofit complete; F-020 all phases complete; F-039, TD-010, TD-011 added)
 
 ## Table of Contents
 1. How to Use This File
@@ -80,6 +80,7 @@ Planning Documents
 	F-036 Playable Scenario 📋
 	F-037 AI/NPC Console 📋
 	F-038 HUD Profiles (supersedes F-024) 📋
+	F-039 Support Multiple, Concurrent Simulations 📋
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -91,6 +92,8 @@ Planning Documents
 	TD-007 handleInput + updateCameraState Split
 	TD-008 repl::exec + dispatchCmd Split
 	TD-009 physics.go + world.go Coverage Baseline ✅ Complete (2026-05-24)
+	TD-010 Verify Isolation of Data Model from Simulation Engine
+	TD-011 Isolate General Simulation Engine from space_sim-Specific Features
 9. Related Docs
 
 ## 1. How to Use This File
@@ -112,7 +115,7 @@ Planning Documents
 
 ## 3. Active Work
 
-No active in-flight items. Next up: **F-010 remainder** (admin REPL + bandwidth mitigations) or **F-035 Phase 1** (Game Definition — themes and factions). See §7 Recommended Ordering.
+No active in-flight items. **F-010 admin REPL complete** (2026-06-02); bandwidth mitigations remain. Next up: **F-010 bandwidth mitigations**, **F-035 Phase 1** (Game Definition), or **F-039** (concurrent simulations). See §7 Recommended Ordering.
 
 ## 4. Planned Phases
 
@@ -747,7 +750,7 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 ### F-010 — Multi-Machine Architecture (Option B: headless server + network clients)
 
 **Value**: Run the simulator and gRPC server on a remote/headless machine; connect one or more Raylib renderer clients over the network. Each client has an independent camera POV. Simulation commands are admin-only via a server-side REPL.
-**Status**: � In Progress — Start Date: 2026-05-20
+**Status**: 🔄 In Progress — Admin REPL complete 2026-06-02. Bandwidth mitigations not started.
 **Priority**: High architectural — gates multi-client, multi-machine, and federated compute goals
 **Depends on**: F-011 (IAAM — need identity before multi-client commands make sense)
 
@@ -764,7 +767,7 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 
 **Group A — `cmd/space-sim-server` (headless)**
 - [x] New entrypoint: no Raylib imports; starts `World`, starts gRPC server, blocks
-- [ ] Server-side admin REPL (stdin loop or dedicated port) for simulation commands (setspeed, pause, load, etc.)
+- [x] Server-side admin REPL (stdin loop or dedicated port) for simulation commands (setspeed, pause, load, etc.) — complete 2026-06-02
 - [x] Expose existing `SimulationService`, `WorldService`, and other handlers unchanged
 
 **Group B — `cmd/space-sim-client` (Raylib renderer)**
@@ -1074,7 +1077,7 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 ### F-020 — Multi-Client gRPC Session Layer
 
 **Value**: Allow up to 100 concurrent REPL clients to connect to a single `space-sim-grpc` process. Each client has a stable session identity (name, role, color, UUID), and the server tracks all sessions in a registry. Conflict resolution policy defined. IAAM integration reserved as a future slot.
-**Status**: � Phase 2 complete — 2026-05-20. Phase 3–4 not started.
+**Status**: ✅ All phases complete — Phase 3 (admin controls, kick/teleport) complete 2026-06-02 via F-010 admin REPL. Phase 4 (IAAM) reserved pending F-011.
 **Priority**: High — foundational for all multiplayer features; F-021 through F-024 depend on it
 **Depends on**: Phase 6 gRPC transport (complete)
 **Spec**: [f020-multi-client-spec.md](f020-multi-client-spec.md)
@@ -1105,7 +1108,7 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 ### F-022 — Client Locomotion and Physics
 
 **Value**: Connected clients can navigate the world using four movement types (drift, thrusters, impulse, superluminal). Client ships respond to gravity from all named bodies (requires F-013). NPC clients are server-driven.
-**Status**: 📋 Not started
+**Status**: 🔄 Phase 1+2 complete — Phase 1 kinematic movement 2026-05-20; Phase 2 N-body gravity 2026-05-25. Phase 3 (NPC automation) deferred.
 **Priority**: High — required for a playable multi-client experience
 **Depends on**: F-020 Phase 1; F-013 for gravity (Phase 2 only)
 **Spec**: [f022-client-movement-spec.md](f022-client-movement-spec.md)
@@ -1120,7 +1123,7 @@ Exoplanet systems are excluded — orbital phases are not observationally constr
 ### F-023 — Keyboard Configuration
 
 **Value**: Replace hardcoded key constants with a hardware-profile-aware, fully user-remappable binding system. Stock profiles for laptop, full keyboard, mouse+keyboard, and numpad. Hot-reload from `configs/keybindings.json`. Conflict detection at load time. Fulfills F-006 and F-007.
-**Status**: 📋 Not started
+**Status**: ✅ Phase 1 complete (2026-05-22) — InputAction enum, KeyMap, laptop + mouse-keyboard profiles, handleInput refactor. Phase 2–3 not started.
 **Priority**: High — required for F-022 movement controls; also cleans up TD-001 surface
 **Depends on**: TD-001 (recommended cleanup before this); no hard blockers
 **Spec**: [f023-keyboard-config-spec.md](f023-keyboard-config-spec.md)
@@ -1413,6 +1416,48 @@ Full spec: [`docs/wip/f033-ship-definition-spec.md`](f033-ship-definition-spec.m
 **Summary of phases**:
 - Phase 1: All 5 profiles functional; `configs/hud_profiles.json`; per-panel toggles; Spectral text-only; pre-IAAM graceful degradation; F-024 absorbed
 - Phase 2: IAAM role enforcement; panel state persistence; Spectral render-to-texture viewport
+
+### F-039 — Support Multiple, Concurrent Simulations
+
+**Value**: Allow a single server process to host multiple independent simulation instances simultaneously. Enables isolated test environments, multi-scenario operation, AI/NPC sandboxing, and is the execution model prerequisite for federated compute (F-012). Each simulation has its own world state, tick loop, broadcaster, and client registry; instances are addressable by ID.
+**Status**: 📋 Not started
+**Priority**: Medium — unlocks federated compute (F-012) and multi-scenario AI sandbox; no hard blockers but depends on stable F-010 deployment model
+**Depends on**: F-010 (stable server/client split), F-020 (session registry must be per-simulation)
+
+#### Phases
+- Phase 1: `SimulationManager` — create, destroy, list named simulation instances; each instance owns its World, event loop, broadcaster, and session registry
+- Phase 2: Client targeting — clients specify simulation ID at connect time; admin can move clients between instances
+- Phase 3: Cross-instance events — broadcast or route events between simulation instances (prerequisite for F-012 federated partitioning)
+
+
+
+### TD-010 — Verify Isolation of Data Model from Simulation Engine
+
+**Value**: Confirm (and enforce where needed) that the data model layer — celestial body structs, JSON schemas, system definitions — carries no import dependency on the simulation engine (`internal/sim/engine`, `internal/server/`). Violations indicate hidden coupling that makes the data model untestable in isolation and will cause friction when multiple simulation instances (F-039) need to share or fork data.
+**Status**: 📋 Not started
+**Priority**: Medium — pre-condition for clean F-039 design; also validates the §1 Architectural Boundary Rule in coding-standards.md
+
+#### Work Items
+- [ ] Run `go list -deps` on data-model packages; confirm no transitive engine import
+- [ ] Document the boundary contract: which packages are "data only" and what they are permitted to import
+- [ ] If violations found: refactor to extract shared types into a neutral package; no engine logic in data packages
+- [ ] Add import-boundary test (`TestImportBoundary`) to CI to prevent regression
+
+---
+
+### TD-011 — Isolate General Simulation Engine Behaviors from space_sim-Specific Features
+
+**Value**: The simulation engine (`internal/sim/engine`) currently mixes domain-agnostic physics (N-body integration, Keplerian orbits, barycenter computation) with space_sim-specific concerns (solar system body types, belt generation, artifact categories). Separating them would allow the engine to be reused or instantiated multiple times (F-039) without carrying space_sim domain assumptions, and would make the engine independently testable.
+**Status**: 📋 Not started
+**Priority**: Medium — architectural cleanup; directly enables F-039 and long-term F-012
+
+#### Work Items
+- [ ] Audit `internal/sim/engine` for domain-specific assumptions (hardcoded body type names, belt logic, solar-system-specific constants)
+- [ ] Define what "generic engine" means: a set of interfaces + pure physics functions with no knowledge of body categories
+- [ ] Propose a package split: `internal/sim/engine` (generic) vs `internal/sim/solar` or `internal/sim/domain` (space_sim-specific extensions)
+- [ ] Validate the split against F-039 and F-012 requirements before implementing
+
+
 
 ---
 
