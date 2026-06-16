@@ -390,3 +390,55 @@ When making changes, default to this workflow:
 4. Update docs when behavior, contracts, or operating procedures change.
 5. Remove temporary work or promote it into a maintained script/doc location.
 6. Treat architecture boundaries as intentional unless the user explicitly asks to redesign them.
+
+---
+
+## Current-State Package Map
+
+> Agent-facing orientation addendum. Use this section for fast spatial orientation without reading the full document above.
+
+### Layer Classification
+
+| Package | Layer | Notes |
+|---|---|---|
+| `cmd/space-sim-direct/` | 1 — CLI/Bootstrap | Thin entry point; no business logic |
+| `cmd/space-sim-grpc/` | 1 — CLI/Bootstrap | gRPC-coupled entry point (Phase 6b) |
+| `cmd/space-sim-repl/` | 1 — CLI/Bootstrap | REPL binary entry point |
+| `internal/client/go/raylib/app/` | 2 — App Orchestration (Client) | Window, session, input dispatch, runtime modes |
+| `internal/api/` | 3 — API Contract | Transport-agnostic ports; no imports from sim/client/server |
+| `api/proto/spacesim/v1/` | 3 — Wire Protocol | Protobuf source (public) |
+| `api/gen/spacesim/v1/` | 3 — Wire Protocol | Generated Go types — never edit by hand |
+| `internal/transport/grpc/` | 3 — Transport | ConnectRPC HTTP server, handlers, middleware |
+| `internal/sim/` | 4 — Domain/Runtime (Server) | JSON loading, SOL bodies, belt generation |
+| `internal/sim/world/` | 4 — Domain/Runtime (Server) | Simulation process driver |
+| `internal/sim/engine/` | 5 — Engine | Physics, object model, double-buffer; stdlib-only |
+| `internal/server/pool/` | 4 — Server Infrastructure | ObjectPool interface + implementations |
+| `internal/server/runtime/` | 4 — Server Infrastructure | Runtime environment, state, query APIs |
+| `internal/server/routines/` | 4 — Server Infrastructure | Routine registration and lifecycle |
+| `internal/server/eventqueue/` | 4 — Server Infrastructure | Per-GUID FIFO event queues |
+| `internal/server/eventloop/` | 4 — Server Infrastructure | Multi-threaded worker pool, frame loop |
+| `internal/client/go/raylib/ui/` | 6 — UI State | Camera and selection state |
+| `internal/client/go/raylib/ui/render/` | 7 — Renderer | Raylib scene + overlay drawing |
+| `internal/client/go/raylib/spatial/` | 6 — UI State | Frustum culling, spatial helpers |
+| `internal/client/commands/` | Client REPL | Typed command set |
+| `internal/client/repl/` | Client REPL | Interactive REPL |
+| `internal/persist/` | Persistence | Save/load simulation state definitions |
+| `configs/` | Configuration | App JSON defaults |
+| `data/systems/`, `data/bodies/`, `data/assets/` | Data | JSON content; templates; textures |
+
+### External Reusable Components
+
+*Reach for these before re-implementing. No sibling photon-datum repos yet.*
+
+| Component | What It Provides |
+|---|---|
+| `connectrpc.com/connect` | ConnectRPC transport — already wired in `internal/transport/grpc/` |
+| `github.com/gen2brain/raylib-go/raylib` | Raylib bindings — already wired under `internal/client/go/raylib/` |
+
+### Composition Rules
+
+1. **Simulation state mutations through named methods only.** Never set `SimulationState` fields directly from outside the owning package. See `coding-standards.md §7.8 S2`.
+2. **Thin bootstrap pattern for all entry points.** `main()` parses flags, loads config, wires dependencies, runs. No business logic.
+3. **Raylib imports stay under `internal/client/go/raylib/`.** No Raylib imports elsewhere in the tree.
+4. **Generated proto code is never edited by hand.** Regenerate with `make proto`.
+5. **Double-buffer: clone on swap** when buffers hold complex synchronized state. Never pointer-exchange across a multi-step write. See `docs/history/lessons-learned-double-buffering.md`.
