@@ -1,0 +1,11 @@
+# LLM Framework Configuration
+# template-version: 1.0.0
+
+# Required: path to the infrastructure repo (read-only)
+infrastructure: ~/Projects/active/llm-agent-framework
+
+# Team/domain profile for photon-datum projects
+team: ~/Projects/active/llm-agent-domains/photon-datum
+
+# Resolution order (most specific wins):
+#   personal > team > infrastructure
