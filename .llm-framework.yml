@@ -1,11 +1,21 @@
 # LLM Framework Configuration
 # template-version: 1.0.0
+# operating-mode: Full
 
 # Required: path to the infrastructure repo (read-only)
-infrastructure: ~/Projects/active/llm-agent-framework
+infrastructure: ~/Documents/Entities/frameworks/llm-agent-framework
 
-# Team/domain profile for photon-datum projects
-team: ~/Projects/active/llm-agent-domains/photon-datum
+# Team/domain profile for HobbyPro projects (moved out of photon-datum — this
+# project is not a photon-datum publishing concern, it's a personal/hobby-scale
+# effort grouped physically at ~/Documents/Entities/HobbyPro/)
+team: ~/Documents/Entities/frameworks/llm-agent-domains/HobbyPro
+
+# Personal profile: private, cross-project, cross-repo regardless of solo/team domain.
+# personal_identity is a stable resolution key — not an OS login name, not tied to
+# any one git platform's username. See llm-agent-personal/README.md for the
+# per-platform username mapping if ever needed.
+personal: ~/Documents/Entities/frameworks/llm-agent-personal
+personal_identity: digital-michael
 
 # Resolution order (most specific wins):
 #   personal > team > infrastructure
