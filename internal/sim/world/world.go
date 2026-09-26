@@ -22,6 +22,11 @@ type World struct {
 	beltConfigs   []*engine.FeatureConfig // belt feature configs for count queries
 	snapshotStore atomic.Value            // stores protocol.WorldSnapshot; written by sim goroutine
 	systemPath    string                  // resolved path of the loaded system
+
+	// snapshotGate, when set, decides whether the post-tick hook builds a
+	// snapshot at all. Injected rather than imported: the world must not know
+	// what a subscriber is, only whether anything is listening.
+	snapshotGate atomic.Value // stores func() bool
 }
 
 // DefaultSystemPath is the system loaded when no path is supplied.
@@ -171,11 +176,44 @@ func NewWorld(hz float64, configPath string) (*World, error) {
 	// holding the front lock, eliminating the mutex contention that caused
 	// the input-latency symptom described in TD-002.
 	inner.SetPostTickHook(func() {
+		// Building a snapshot is an O(objects) deep clone. Skip it entirely when
+		// nothing is listening: on the default system that is 717 objects copied
+		// 60 times a second for no consumer.
+		if !w.snapshotWanted() {
+			return
+		}
 		snap := w.Snapshot() // clone on sim goroutine; main thread load is O(1)
 		w.snapshotStore.Store(snap)
 	})
 
 	return w, nil
+}
+
+// SetSnapshotGate installs a predicate deciding whether post-tick snapshots are
+// built. Pass nil to always build, which is the default and what standalone mode
+// wants, since its render loop is the consumer.
+//
+// A headless server passes a predicate over its subscriber count, so an
+// unobserved simulation stops paying for snapshots it will throw away.
+func (w *World) SetSnapshotGate(gate func() bool) {
+	if gate == nil {
+		w.snapshotGate.Store((func() bool)(nil))
+		return
+	}
+	w.snapshotGate.Store(gate)
+}
+
+// snapshotWanted reports whether a snapshot should be built this tick.
+func (w *World) snapshotWanted() bool {
+	v := w.snapshotGate.Load()
+	if v == nil {
+		return true
+	}
+	gate, _ := v.(func() bool)
+	if gate == nil {
+		return true
+	}
+	return gate()
 }
 
 // GetAsteroidCount returns the total number of belt objects for the given

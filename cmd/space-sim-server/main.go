@@ -135,6 +135,13 @@ func main() {
 		IdleTimeout: 60 * time.Second,
 	}
 
+	// Stop paying for snapshots nobody consumes. This gates the O(objects) deep
+	// clone on the sim goroutine, which is the dominant idle cost — not the
+	// fan-out, which is trivial. Keyed on SUBSCRIBERS rather than sessions: an
+	// admin observing without streaming creates no demand for the simulation to
+	// advance (F-041 D7) but must still receive snapshots if it is streaming.
+	w.SetSnapshotGate(func() bool { return worldHandler.StreamCount() > 0 })
+
 	// ── Start simulation ──────────────────────────────────────────────────
 	simCtx, simCancel := context.WithCancel(ctx)
 	defer simCancel()
