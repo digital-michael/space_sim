@@ -1,0 +1,213 @@
+{
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Mercury",
+      "orbit": {
+        "semi_major_axis": 39,
+        "eccentricity": 0.206,
+        "inclination": 0.122173,
+        "longitude_ascending_node": 0.843392,
+        "argument_periapsis": 0.508274,
+        "orbital_period": 87.969,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.19,
+        "mass": 3.301e+23,
+        "rotation_period": 1407.6,
+        "axial_tilt": 0.034,
+        "albedo": 0.068
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/mercurymap.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          167,
+          167,
+          167,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 600,
+        "principal_chemicals": [
+          "oxygen",
+          "sodium",
+          "hydrogen",
+          "helium",
+          "potassium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Venus",
+      "orbit": {
+        "semi_major_axis": 72,
+        "eccentricity": 0.007,
+        "inclination": 0.059341,
+        "longitude_ascending_node": 1.33843,
+        "argument_periapsis": 0.955317,
+        "orbital_period": 224.701,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.48,
+        "mass": 4.867e+24,
+        "rotation_period": 5832.5,
+        "axial_tilt": 177.4,
+        "albedo": 0.689
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/venusmap.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          255,
+          227,
+          132,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 250,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "nitrogen",
+          "sulfur_dioxide"
+        ],
+        "cloud_coverage": 1.0,
+        "cloud_composition": [
+          "sulfuric_acid_droplets",
+          "sulfur_dioxide"
+        ],
+        "color_hint": [
+          255,
+          210,
+          120,
+          210
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Earth",
+      "orbit": {
+        "semi_major_axis": 100,
+        "eccentricity": 0.017,
+        "inclination": 0.0,
+        "longitude_ascending_node": 0.0,
+        "argument_periapsis": 1.796158,
+        "orbital_period": 365.256,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.5,
+        "mass": 5.972e+24,
+        "rotation_period": 24.0,
+        "axial_tilt": 23.4,
+        "albedo": 0.306
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/earthmap1k.jpg",
+        "night_texture_image": "data/assets/textures/earth_nightmap.jpg",
+        "color_map": "data/assets/textures/earthbump1k.jpg",
+        "ring_colors_map": null,
+        "fallback_color": [
+          100,
+          149,
+          237,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 100,
+        "principal_chemicals": [
+          "nitrogen",
+          "oxygen",
+          "argon",
+          "water_vapor",
+          "carbon_dioxide"
+        ],
+        "cloud_coverage": 0.67,
+        "cloud_composition": [
+          "water_ice_crystals",
+          "liquid_water_droplets"
+        ],
+        "color_hint": [
+          120,
+          180,
+          255,
+          160
+        ]
+      }
+    },
+    {
+      "type": "planet",
+      "name": "Mars",
+      "orbit": {
+        "semi_major_axis": 152,
+        "eccentricity": 0.093,
+        "inclination": 0.032289,
+        "longitude_ascending_node": 0.865398,
+        "argument_periapsis": 5.001154,
+        "orbital_period": 686.98,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.27,
+        "mass": 6.417e+23,
+        "rotation_period": 24.6,
+        "axial_tilt": 25.2,
+        "albedo": 0.17
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/mars_1k_color.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          193,
+          68,
+          14,
+          255
+        ]
+      },
+      "importance": 80,
+      "atmosphere": {
+        "thickness_km": 11,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "argon",
+          "nitrogen",
+          "oxygen",
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.1,
+        "cloud_composition": [
+          "water_ice",
+          "carbon_dioxide_ice",
+          "dust"
+        ],
+        "color_hint": [
+          210,
+          140,
+          90,
+          120
+        ]
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

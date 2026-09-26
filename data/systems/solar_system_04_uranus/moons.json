@@ -1,0 +1,1058 @@
+{
+  "bodies": [
+    {
+      "type": "moon",
+      "name": "Cordelia",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.3,
+        "eccentricity": 0,
+        "inclination": 0.001484,
+        "orbital_period": 0.335,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.02,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 8.04,
+        "albedo": 0.07
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          190,
+          190,
+          195,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Ophelia",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.4,
+        "eccentricity": 0,
+        "inclination": 0.001815,
+        "orbital_period": 0.376,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 9.024,
+        "albedo": 0.07
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          192,
+          192,
+          197,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Bianca",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.5,
+        "eccentricity": 0,
+        "inclination": 0.003368,
+        "orbital_period": 0.435,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.025,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 10.44,
+        "albedo": 0.065
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          194,
+          194,
+          199,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Cressida",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.6,
+        "eccentricity": 0,
+        "inclination": 0.000105,
+        "orbital_period": 0.464,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.04,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 11.136,
+        "albedo": 0.069
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          196,
+          196,
+          201,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Desdemona",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.7,
+        "eccentricity": 0,
+        "inclination": 0.001972,
+        "orbital_period": 0.474,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.032,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 11.376,
+        "albedo": 0.069
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          193,
+          193,
+          198,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Juliet",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.75,
+        "eccentricity": 0,
+        "inclination": 0.001134,
+        "orbital_period": 0.493,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.047,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 11.832,
+        "albedo": 0.075
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          198,
+          198,
+          203,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Portia",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.8,
+        "eccentricity": 0,
+        "inclination": 0.00103,
+        "orbital_period": 0.513,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.068,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 12.312,
+        "albedo": 0.069
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          197,
+          197,
+          202,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Rosalind",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.85,
+        "eccentricity": 0,
+        "inclination": 0.004869,
+        "orbital_period": 0.558,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.036,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 13.392,
+        "albedo": 0.072
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          195,
+          195,
+          200,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Cupid",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.88,
+        "eccentricity": 0,
+        "inclination": 0.001745,
+        "orbital_period": 0.618,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.009,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 14.832,
+        "albedo": 0.07
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          191,
+          191,
+          196,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Belinda",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.9,
+        "eccentricity": 0,
+        "inclination": 0.000541,
+        "orbital_period": 0.624,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.04,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 14.976,
+        "albedo": 0.068
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          199,
+          199,
+          204,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Perdita",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.92,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 0.638,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.013,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 15.312,
+        "albedo": 0.07
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          192,
+          192,
+          197,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Puck",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.95,
+        "eccentricity": 0,
+        "inclination": 0.005568,
+        "orbital_period": 0.762,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.081,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 18.288,
+        "albedo": 0.11
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          200,
+          195,
+          195,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Mab",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 1.98,
+        "eccentricity": 0,
+        "inclination": 0.002339,
+        "orbital_period": 0.923,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.012,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 22.152,
+        "albedo": 0.1
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          193,
+          193,
+          198,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Miranda",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 2,
+        "eccentricity": 0,
+        "inclination": 0.073862,
+        "orbital_period": 1.413,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.023,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 33.912,
+        "albedo": 0.32
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          195,
+          195,
+          200,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Ariel",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 2.6,
+        "eccentricity": 0,
+        "inclination": 0.004538,
+        "orbital_period": 2.52,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.058,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 60.48,
+        "albedo": 0.39
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          205,
+          205,
+          210,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Umbriel",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 3.3,
+        "eccentricity": 0,
+        "inclination": 0.003578,
+        "orbital_period": 4.144,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.058,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 99.456,
+        "albedo": 0.21
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          160,
+          165,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Titania",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 4.2,
+        "eccentricity": 0,
+        "inclination": 0.005934,
+        "orbital_period": 8.706,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.078,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 208.944,
+        "albedo": 0.27
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          210,
+          205,
+          205,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Oberon",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 5.2,
+        "eccentricity": 0,
+        "inclination": 0.001012,
+        "orbital_period": 13.463,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.076,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 323.112,
+        "albedo": 0.23
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          205,
+          200,
+          200,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Francisco",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 6.5,
+        "eccentricity": 0,
+        "inclination": 2.57087,
+        "orbital_period": 266.56,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.011,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 266.56,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          170,
+          165,
+          165,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Caliban",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 7,
+        "eccentricity": 0,
+        "inclination": 2.469641,
+        "orbital_period": 579.73,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.036,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 579.73,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          165,
+          160,
+          160,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Stephano",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 7.3,
+        "eccentricity": 0,
+        "inclination": 2.509783,
+        "orbital_period": 677.36,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.016,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 677.36,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          168,
+          163,
+          163,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Trinculo",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 7.5,
+        "eccentricity": 0,
+        "inclination": 2.919936,
+        "orbital_period": 758.1,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.009,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 758.1,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          166,
+          161,
+          161,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Sycorax",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8,
+        "eccentricity": 0,
+        "inclination": 2.782055,
+        "orbital_period": 1288.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.075,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 1288.3,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          172,
+          167,
+          167,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Margaret",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8.3,
+        "eccentricity": 0,
+        "inclination": 1.001819,
+        "orbital_period": 1687.01,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.01,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 1687.01,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          167,
+          162,
+          162,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Prospero",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8.5,
+        "eccentricity": 0,
+        "inclination": 2.64941,
+        "orbital_period": 1978.29,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.025,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 1978.29,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          169,
+          164,
+          164,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Setebos",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 8.8,
+        "eccentricity": 0,
+        "inclination": 2.761111,
+        "orbital_period": 2225.21,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.024,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 2225.21,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          171,
+          166,
+          166,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Ferdinand",
+      "parent": "Uranus",
+      "orbit": {
+        "semi_major_axis": 9,
+        "eccentricity": 0,
+        "inclination": 2.963569,
+        "orbital_period": 2887.21,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.01,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 2887.21,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          168,
+          163,
+          163,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

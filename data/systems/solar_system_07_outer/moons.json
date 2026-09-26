@@ -1,0 +1,356 @@
+{
+  "bodies": [
+    {
+      "type": "moon",
+      "name": "Dysnomia",
+      "parent": "Eris",
+      "orbit": {
+        "semi_major_axis": 0.5,
+        "eccentricity": 0,
+        "inclination": 1.064651,
+        "orbital_period": 15.774,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.035,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 378.576,
+        "albedo": 0.04
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          225,
+          225,
+          235,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Hi'iaka",
+      "parent": "Haumea",
+      "orbit": {
+        "semi_major_axis": 0.6,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 49.12,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.016,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 1178.88,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          205,
+          215,
+          225,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Namaka",
+      "parent": "Haumea",
+      "orbit": {
+        "semi_major_axis": 0.4,
+        "eccentricity": 0,
+        "inclination": 0.232129,
+        "orbital_period": 18.28,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.008,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 438.72,
+        "albedo": 0.6
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          195,
+          205,
+          215,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "MK2",
+      "parent": "Makemake",
+      "orbit": {
+        "semi_major_axis": 0.35,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 12.4,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.008,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 297.6,
+        "albedo": 0.04
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          185,
+          165,
+          145,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Vanth",
+      "parent": "Orcus",
+      "orbit": {
+        "semi_major_axis": 0.4,
+        "eccentricity": 0,
+        "inclination": 1.832596,
+        "orbital_period": 12.44,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.022,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 298.56,
+        "albedo": 0.08
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          205,
+          200,
+          195,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Weywot",
+      "parent": "Quaoar",
+      "orbit": {
+        "semi_major_axis": 0.35,
+        "eccentricity": 0,
+        "inclination": 0.244346,
+        "orbital_period": 12.438,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.009,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 298.512,
+        "albedo": 0.1
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          175,
+          170,
+          165,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Xiangliu",
+      "parent": "Gonggong",
+      "orbit": {
+        "semi_major_axis": 0.4,
+        "eccentricity": 0,
+        "inclination": 1.396263,
+        "orbital_period": 25.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.012,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 600.0,
+        "albedo": 0.05
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          195,
+          95,
+          95,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Actaea",
+      "parent": "Salacia",
+      "orbit": {
+        "semi_major_axis": 0.35,
+        "eccentricity": 0,
+        "inclination": 0.411898,
+        "orbital_period": 12.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.014,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 300.0,
+        "albedo": 0.04
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          190,
+          185,
+          180,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Ilmar\u00eb",
+      "parent": "Varda",
+      "orbit": {
+        "semi_major_axis": 0.3,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 10.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.013,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 240.0,
+        "albedo": 0.1
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          210,
+          205,
+          200,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

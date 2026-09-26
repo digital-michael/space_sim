@@ -1,0 +1,127 @@
+{
+  "bodies": [
+    {
+      "type": "moon",
+      "name": "Moon",
+      "parent": "Earth",
+      "orbit": {
+        "semi_major_axis": 1.5,
+        "eccentricity": 0,
+        "inclination": 0.089797,
+        "orbital_period": 27.322,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.136,
+        "mass": 7.342e+22,
+        "rotation_period": 655.7,
+        "axial_tilt": 6.7,
+        "albedo": 0.136
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/moonmap1k.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          200,
+          200,
+          210,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "sodium",
+          "potassium",
+          "water_vapor",
+          "helium"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Phobos",
+      "parent": "Mars",
+      "orbit": {
+        "semi_major_axis": 0.5,
+        "eccentricity": 0,
+        "inclination": 0.019076,
+        "orbital_period": 0.31891,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.011,
+        "mass": 10659000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 7.654,
+        "albedo": 0.071
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          170,
+          160,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Deimos",
+      "parent": "Mars",
+      "orbit": {
+        "semi_major_axis": 0.8,
+        "eccentricity": 0,
+        "inclination": 0.031259,
+        "orbital_period": 1.26244,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.006,
+        "mass": 1476200000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 30.299,
+        "albedo": 0.068
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          175,
+          165,
+          155,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

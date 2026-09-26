@@ -1,0 +1,93 @@
+{
+  "belts": [
+    {
+      "type": "asteroid_belt",
+      "name": "Main Asteroid Belt",
+      "parent": "Sol",
+      "distribution": {
+        "inner_radius": 195,
+        "outer_radius": 240,
+        "thickness": 15,
+        "density_profile": "uniform"
+      },
+      "procedural": {
+        "seed": 42,
+        "size_range": [
+          0.05,
+          0.25
+        ],
+        "color_palette": [
+          [
+            128,
+            128,
+            128,
+            255
+          ]
+        ],
+        "color_variation": 0.1,
+        "shape_model": "sphere"
+      },
+      "count_levels": [
+        200,
+        1200,
+        2400,
+        24000
+      ],
+      "object_types": {
+        "large": {
+          "count_by_level": [
+            200,
+            200,
+            400,
+            4000
+          ],
+          "size_range": [
+            0.15,
+            0.25
+          ],
+          "importance_by_level": [
+            15,
+            12,
+            10,
+            8
+          ],
+          "description": "100+ km diameter asteroids"
+        },
+        "medium": {
+          "count_by_level": [
+            0,
+            1000,
+            2000,
+            20000
+          ],
+          "size_range": [
+            0.05,
+            0.13
+          ],
+          "importance_by_level": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "description": "30-100 km diameter asteroids"
+        }
+      },
+      "orbital_mechanics": {
+        "use_kepler_law": true,
+        "distance_to_au_ratio": 100,
+        "eccentricity_range": [
+          0.0,
+          0.05
+        ],
+        "inclination_range": [
+          0.0,
+          0.0
+        ]
+      },
+      "physical": {},
+      "rendering": {}
+    }
+  ],
+  "schema_version": "2.0"
+}

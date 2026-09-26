@@ -1,0 +1,53 @@
+{
+  "belts": [
+    {
+      "type": "ring_system",
+      "name": "Neptune-Ring-Galle",
+      "parent": "Neptune",
+      "distribution": {
+        "inner_radius": 1.65,
+        "outer_radius": 1.7
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          110,
+          110,
+          130,
+          80
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Neptune-Ring-Adams",
+      "parent": "Neptune",
+      "distribution": {
+        "inner_radius": 2.45,
+        "outer_radius": 2.55
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 28.3
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          130,
+          130,
+          150,
+          100
+        ]
+      },
+      "importance": 30
+    }
+  ],
+  "schema_version": "2.0"
+}

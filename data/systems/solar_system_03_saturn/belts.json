@@ -1,0 +1,101 @@
+{
+  "belts": [
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-D",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 2.6,
+        "outer_radius": 3.0
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          210,
+          190,
+          140,
+          180
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-C",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 3.0,
+        "outer_radius": 3.8
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          230,
+          210,
+          160,
+          200
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-B",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 3.8,
+        "outer_radius": 4.7
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          245,
+          225,
+          180,
+          240
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Saturn-Ring-A",
+      "parent": "Saturn",
+      "distribution": {
+        "inner_radius": 4.9,
+        "outer_radius": 5.6
+      },
+      "physical": {
+        "mass": 15000000000000000000,
+        "axial_tilt": 26.7
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": "data/assets/textures/saturnringcolor.jpg",
+        "fallback_color": [
+          240,
+          220,
+          175,
+          220
+        ]
+      },
+      "importance": 30
+    }
+  ],
+  "schema_version": "2.0"
+}

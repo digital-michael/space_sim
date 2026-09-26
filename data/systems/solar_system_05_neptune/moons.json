@@ -1,0 +1,563 @@
+{
+  "bodies": [
+    {
+      "type": "moon",
+      "name": "Naiad",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 1.8,
+        "eccentricity": 0,
+        "inclination": 0.081856,
+        "orbital_period": 0.294,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.033,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 7.056,
+        "albedo": 0.072
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          230,
+          225,
+          230,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Thalassa",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2,
+        "eccentricity": 0,
+        "inclination": 0.002356,
+        "orbital_period": 0.311,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.041,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 7.464,
+        "albedo": 0.091
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          232,
+          227,
+          232,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Despina",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2.2,
+        "eccentricity": 0,
+        "inclination": 0.001187,
+        "orbital_period": 0.335,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.075,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 8.04,
+        "albedo": 0.09
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          235,
+          230,
+          235,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Galatea",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2.5,
+        "eccentricity": 0,
+        "inclination": 0.000942,
+        "orbital_period": 0.429,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.088,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 10.296,
+        "albedo": 0.079
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          237,
+          232,
+          237,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Larissa",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 2.8,
+        "eccentricity": 0,
+        "inclination": 0.004381,
+        "orbital_period": 0.555,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.097,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 13.32,
+        "albedo": 0.091
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          234,
+          229,
+          234,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Hippocamp",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 3,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 0.95,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.018,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 22.8,
+        "albedo": 0.08
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          233,
+          228,
+          233,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Proteus",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 3.2,
+        "eccentricity": 0,
+        "inclination": 0.009146,
+        "orbital_period": 1.122,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.21,
+        "mass": 100000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 26.928,
+        "albedo": 0.096
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          230,
+          225,
+          230,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Triton",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 3.5,
+        "eccentricity": 0,
+        "inclination": 2.73816,
+        "orbital_period": 5.877,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.106,
+        "mass": 2.14e+22,
+        "rotation_period": 141.0,
+        "axial_tilt": 0.0,
+        "albedo": 0.76
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          240,
+          230,
+          240,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 110,
+        "principal_chemicals": [
+          "nitrogen",
+          "methane",
+          "carbon_monoxide"
+        ],
+        "cloud_coverage": 0.05,
+        "cloud_composition": [
+          "nitrogen_ice",
+          "methane_ice"
+        ],
+        "color_hint": [
+          200,
+          200,
+          220,
+          60
+        ]
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Nereid",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 5.5,
+        "eccentricity": 0,
+        "inclination": 0.126187,
+        "orbital_period": 360.14,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.17,
+        "mass": 100000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 360.14,
+        "albedo": 0.155
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          220,
+          215,
+          220,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Halimede",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 7,
+        "eccentricity": 0,
+        "inclination": 1.970477,
+        "orbital_period": 1879.71,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.031,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 1879.71,
+        "albedo": 0.16
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          200,
+          195,
+          200,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Sao",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 7.5,
+        "eccentricity": 0,
+        "inclination": 0.846485,
+        "orbital_period": 2912.72,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.022,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 2912.72,
+        "albedo": 0.157
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          205,
+          200,
+          205,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Laomedeia",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 7.8,
+        "eccentricity": 0,
+        "inclination": 0.624828,
+        "orbital_period": 3171.33,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 3171.33,
+        "albedo": 0.157
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          202,
+          197,
+          202,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Psamathe",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 8.5,
+        "eccentricity": 0,
+        "inclination": 2.398082,
+        "orbital_period": 9115.91,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.02,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 9115.91,
+        "albedo": 0.1
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          208,
+          203,
+          208,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Neso",
+      "parent": "Neptune",
+      "orbit": {
+        "semi_major_axis": 9,
+        "eccentricity": 0,
+        "inclination": 2.380629,
+        "orbital_period": 9740.73,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.03,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 9740.73,
+        "albedo": 0.1
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          210,
+          205,
+          210,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

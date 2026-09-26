@@ -1,0 +1,59 @@
+{
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Uranus",
+      "orbit": {
+        "semi_major_axis": 960,
+        "eccentricity": 0.046,
+        "inclination": 0.013963,
+        "longitude_ascending_node": 1.291544,
+        "argument_periapsis": 1.684246,
+        "orbital_period": 30688.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 1,
+        "radius_km": 25559,
+        "mass": 8.681e+25,
+        "rotation_period": 17.2,
+        "axial_tilt": 97.8,
+        "albedo": 0.488
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/uranusmap.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          175,
+          238,
+          238,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 600,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane"
+        ],
+        "cloud_coverage": 0.95,
+        "cloud_composition": [
+          "methane_ice",
+          "hydrogen_sulfide",
+          "water_ice"
+        ],
+        "color_hint": [
+          150,
+          210,
+          230,
+          200
+        ]
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

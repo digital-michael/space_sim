@@ -1,0 +1,200 @@
+{
+  "bodies": [
+    {
+      "type": "moon",
+      "name": "Charon",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.3,
+        "eccentricity": 0,
+        "inclination": 0.001396,
+        "orbital_period": 6.387,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.06,
+        "mass": 50000000000000000,
+        "rotation_period": 153.3,
+        "axial_tilt": 122.5,
+        "albedo": 0.35
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          210,
+          205,
+          200,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Styx",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.6,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 20.16,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.005,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 483.84,
+        "albedo": 0.65
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          205,
+          200,
+          195,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Nix",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.75,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 24.85,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.018,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 596.4,
+        "albedo": 0.56
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          215,
+          210,
+          205,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Kerberos",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 0.9,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 32.17,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.008,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 772.08,
+        "albedo": 0.56
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          200,
+          195,
+          190,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Hydra",
+      "parent": "Pluto",
+      "orbit": {
+        "semi_major_axis": 1.05,
+        "eccentricity": 0,
+        "inclination": 0.0,
+        "orbital_period": 38.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 916.8,
+        "albedo": 0.83
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          220,
+          215,
+          210,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

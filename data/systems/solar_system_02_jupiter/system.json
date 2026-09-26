@@ -1,0 +1,17 @@
+{
+  "decomposed_from": "solar_system",
+  "files": {
+    "belts": "belts.json",
+    "moons": "moons.json",
+    "planets": "planets.json",
+    "stars": "stars.json"
+  },
+  "name": "Solar System 02 — Jupiter",
+  "scale_factor": 50,
+  "schema_version": "2.0",
+  "simulation": {
+    "default_time_scale": 1,
+    "nbody_mode": "keplerian"
+  },
+  "system_version": "2.0"
+}

@@ -1,0 +1,110 @@
+{
+  "belts": [
+    {
+      "type": "kuiper_belt",
+      "name": "Kuiper Belt",
+      "parent": "Sol",
+      "distribution": {
+        "inner_radius": 3000,
+        "outer_radius": 5000,
+        "thickness": 50,
+        "density_profile": "classical_belt",
+        "classical_belt_range": [
+          4200,
+          4800
+        ],
+        "classical_belt_probability": 0.6
+      },
+      "procedural": {
+        "seed": 43,
+        "size_range": [
+          0.05,
+          0.3
+        ],
+        "color_palette": [
+          [
+            180,
+            140,
+            120,
+            255
+          ],
+          [
+            220,
+            180,
+            160,
+            255
+          ],
+          [
+            200,
+            160,
+            140,
+            255
+          ]
+        ],
+        "color_variation": 0.15,
+        "shape_model": "sphere"
+      },
+      "count_levels": [
+        200,
+        1200,
+        2400,
+        24000
+      ],
+      "object_types": {
+        "large": {
+          "count_by_level": [
+            200,
+            200,
+            400,
+            4000
+          ],
+          "size_range": [
+            0.15,
+            0.3
+          ],
+          "importance_by_level": [
+            15,
+            12,
+            10,
+            8
+          ],
+          "description": "100-300 km diameter KBOs (dwarf planet candidates)"
+        },
+        "medium": {
+          "count_by_level": [
+            0,
+            1000,
+            2000,
+            20000
+          ],
+          "size_range": [
+            0.05,
+            0.15
+          ],
+          "importance_by_level": [
+            10,
+            8,
+            6,
+            4
+          ],
+          "description": "30-100 km diameter KBOs"
+        }
+      },
+      "orbital_mechanics": {
+        "use_kepler_law": true,
+        "distance_to_au_ratio": 100,
+        "eccentricity_range": [
+          0.01,
+          0.16
+        ],
+        "inclination_range": [
+          -0.15,
+          0.15
+        ]
+      },
+      "physical": {},
+      "rendering": {}
+    }
+  ],
+  "schema_version": "2.0"
+}

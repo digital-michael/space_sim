@@ -1,0 +1,53 @@
+{
+  "belts": [
+    {
+      "type": "ring_system",
+      "name": "Uranus-Ring-6",
+      "parent": "Uranus",
+      "distribution": {
+        "inner_radius": 1.65,
+        "outer_radius": 1.68
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          100,
+          100,
+          100,
+          100
+        ]
+      },
+      "importance": 30
+    },
+    {
+      "type": "ring_system",
+      "name": "Uranus-Ring-Epsilon",
+      "parent": "Uranus",
+      "distribution": {
+        "inner_radius": 1.95,
+        "outer_radius": 2.05
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 97.8
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          120,
+          120,
+          120,
+          140
+        ]
+      },
+      "importance": 30
+    }
+  ],
+  "schema_version": "2.0"
+}

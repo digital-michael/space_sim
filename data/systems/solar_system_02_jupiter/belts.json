@@ -1,0 +1,29 @@
+{
+  "belts": [
+    {
+      "type": "ring_system",
+      "name": "Jupiter-Ring-Main",
+      "parent": "Jupiter",
+      "distribution": {
+        "inner_radius": 3.2,
+        "outer_radius": 3.8
+      },
+      "physical": {
+        "mass": 10000000000000000000,
+        "axial_tilt": 3.1
+      },
+      "rendering": {
+        "material": "diffuse",
+        "ring_colors_map": null,
+        "fallback_color": [
+          180,
+          160,
+          140,
+          60
+        ]
+      },
+      "importance": 30
+    }
+  ],
+  "schema_version": "2.0"
+}

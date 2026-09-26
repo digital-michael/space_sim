@@ -1,0 +1,69 @@
+{
+  "bodies": [
+    {
+      "type": "planet",
+      "name": "Neptune",
+      "orbit": {
+        "semi_major_axis": 1505,
+        "eccentricity": 0.009,
+        "inclination": 0.030892,
+        "longitude_ascending_node": 2.300524,
+        "argument_periapsis": 4.770057,
+        "orbital_period": 60182.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.98,
+        "radius_km": 24622,
+        "mass": 1.024e+26,
+        "rotation_period": 16.1,
+        "axial_tilt": 28.3,
+        "albedo": 0.442
+      },
+      "rendering": {
+        "material": "diffuse_thermal",
+        "texture_image": "data/assets/textures/neptunemap.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          99,
+          133,
+          255,
+          255
+        ]
+      },
+      "importance": 70,
+      "atmosphere": {
+        "thickness_km": 600,
+        "principal_chemicals": [
+          "hydrogen",
+          "helium",
+          "methane"
+        ],
+        "cloud_coverage": 0.8,
+        "cloud_composition": [
+          "methane_ice",
+          "hydrogen_sulfide"
+        ],
+        "color_hint": [
+          50,
+          90,
+          220,
+          200
+        ]
+      },
+      "luminosity": {
+        "self_luminous": false,
+        "internal_heat_flux_w_m2": 0.433,
+        "emission_color": [
+          80,
+          110,
+          240,
+          255
+        ],
+        "emission_intensity": 0.004
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

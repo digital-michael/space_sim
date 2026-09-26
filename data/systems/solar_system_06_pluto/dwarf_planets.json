@@ -1,0 +1,58 @@
+{
+  "bodies": [
+    {
+      "type": "dwarf_planet",
+      "name": "Pluto",
+      "orbit": {
+        "semi_major_axis": 2460,
+        "eccentricity": 0.248,
+        "inclination": 0.298451,
+        "longitude_ascending_node": 1.924955,
+        "argument_periapsis": 1.98576,
+        "orbital_period": 90560.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.093,
+        "mass": 1.309e+22,
+        "rotation_period": 153.3,
+        "axial_tilt": 122.5,
+        "albedo": 0.52
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": "data/assets/textures/plutomap1k.jpg",
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          220,
+          200,
+          180,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 200,
+        "principal_chemicals": [
+          "nitrogen",
+          "methane",
+          "carbon_monoxide"
+        ],
+        "cloud_coverage": 0.05,
+        "cloud_composition": [
+          "nitrogen_ice",
+          "methane_ice",
+          "tholins"
+        ],
+        "color_hint": [
+          205,
+          185,
+          165,
+          80
+        ]
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

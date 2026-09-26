@@ -1,0 +1,47 @@
+{
+  "bodies": [
+    {
+      "type": "dwarf_planet",
+      "name": "Ceres",
+      "orbit": {
+        "semi_major_axis": 173.5,
+        "eccentricity": 0.076,
+        "inclination": 0.184,
+        "orbital_period": 1681.0,
+        "initial_mean_anomaly": "random",
+        "longitude_ascending_node": 1.402,
+        "argument_periapsis": 1.285
+      },
+      "physical": {
+        "radius": 0.047,
+        "mass": 938400000000000000000,
+        "rotation_period": 9.1,
+        "axial_tilt": 4.0,
+        "albedo": 0.09
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          150,
+          140,
+          255
+        ]
+      },
+      "importance": 50,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "water_vapor"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}

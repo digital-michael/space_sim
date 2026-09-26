@@ -1,0 +1,3738 @@
+{
+  "bodies": [
+    {
+      "type": "moon",
+      "name": "Metis",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 2.5,
+        "eccentricity": 0,
+        "inclination": 0.001047,
+        "orbital_period": 0.295,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.021,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 7.08,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          170,
+          165,
+          160,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Adrastea",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 2.6,
+        "eccentricity": 0,
+        "inclination": 0.000524,
+        "orbital_period": 0.298,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.01,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 7.152,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          175,
+          170,
+          165,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Amalthea",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 2.8,
+        "eccentricity": 0,
+        "inclination": 0.006528,
+        "orbital_period": 0.498,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.083,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 11.952,
+        "albedo": 0.09
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          185,
+          100,
+          90,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Thebe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 3,
+        "eccentricity": 0,
+        "inclination": 0.01885,
+        "orbital_period": 0.675,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.049,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 16.2,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          180,
+          175,
+          170,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Io",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 3.5,
+        "eccentricity": 0,
+        "inclination": 0.000873,
+        "orbital_period": 1.769,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.143,
+        "mass": 8.93e+22,
+        "rotation_period": 42.5,
+        "axial_tilt": 0.0,
+        "albedo": 0.63
+      },
+      "rendering": {
+        "material": "diffuse_thermal",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          240,
+          230,
+          100,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 100,
+        "principal_chemicals": [
+          "sulfur_dioxide",
+          "sulfur",
+          "sodium_chloride"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": [
+          255,
+          230,
+          100,
+          60
+        ]
+      },
+      "luminosity": {
+        "self_luminous": false,
+        "internal_heat_flux_w_m2": 2.5,
+        "emission_color": [
+          255,
+          140,
+          20,
+          255
+        ],
+        "emission_intensity": 0.008
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Europa",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 4.2,
+        "eccentricity": 0,
+        "inclination": 0.008221,
+        "orbital_period": 3.551,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.122,
+        "mass": 4.8e+22,
+        "rotation_period": 85.2,
+        "axial_tilt": 0.1,
+        "albedo": 0.68
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          220,
+          230,
+          240,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "oxygen"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Ganymede",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 5,
+        "eccentricity": 0,
+        "inclination": 0.00356,
+        "orbital_period": 7.155,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.206,
+        "mass": 1.48e+23,
+        "rotation_period": 171.7,
+        "axial_tilt": 0.2,
+        "albedo": 0.43
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          180,
+          175,
+          165,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "oxygen",
+          "ozone"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Callisto",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 6.2,
+        "eccentricity": 0,
+        "inclination": 0.003351,
+        "orbital_period": 16.689,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.189,
+        "mass": 1.08e+23,
+        "rotation_period": 400.5,
+        "axial_tilt": 0.0,
+        "albedo": 0.17
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          150,
+          145,
+          140,
+          255
+        ]
+      },
+      "importance": 60,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [
+          "carbon_dioxide",
+          "oxygen"
+        ],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Themisto",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 7.5,
+        "eccentricity": 0,
+        "inclination": 0.751888,
+        "orbital_period": 130.02,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 130.02,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          165,
+          160,
+          155,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Leda",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 9,
+        "eccentricity": 0,
+        "inclination": 0.479267,
+        "orbital_period": 238.72,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.005,
+        "mass": 500000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 238.72,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          155,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Himalia",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 9.5,
+        "eccentricity": 0,
+        "inclination": 0.479966,
+        "orbital_period": 250.56,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.067,
+        "mass": 50000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 250.56,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          170,
+          165,
+          160,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Lysithea",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 9.8,
+        "eccentricity": 0,
+        "inclination": 0.493928,
+        "orbital_period": 259.22,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.018,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 259.22,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          165,
+          160,
+          155,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Elara",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 10,
+        "eccentricity": 0,
+        "inclination": 0.518188,
+        "orbital_period": 259.65,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.043,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 259.65,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          168,
+          163,
+          158,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Dia",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 10.2,
+        "eccentricity": 0,
+        "inclination": 0.481536,
+        "orbital_period": 287.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 287.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Carpo",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 11.5,
+        "eccentricity": 0,
+        "inclination": 0.901113,
+        "orbital_period": 456.1,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 456.1,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          163,
+          158,
+          153,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Orthosie",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12,
+        "eccentricity": 0,
+        "inclination": 2.546435,
+        "orbital_period": 622.56,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 622.56,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Euanthe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12.2,
+        "eccentricity": 0,
+        "inclination": 2.598795,
+        "orbital_period": 620.64,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 620.64,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Thione",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12.3,
+        "eccentricity": 0,
+        "inclination": 2.593559,
+        "orbital_period": 627.21,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 627.21,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          154,
+          149,
+          144,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Euporie",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 12.5,
+        "eccentricity": 0,
+        "inclination": 2.54469,
+        "orbital_period": 550.74,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 550.74,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          155,
+          150,
+          145,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Ananke",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13,
+        "eccentricity": 0,
+        "inclination": 2.598795,
+        "orbital_period": 629.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.014,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 629.77,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Hermippe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.1,
+        "eccentricity": 0,
+        "inclination": 2.630211,
+        "orbital_period": 633.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 633.9,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Praxidike",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.3,
+        "eccentricity": 0,
+        "inclination": 2.595305,
+        "orbital_period": 625.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 625.3,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          161,
+          156,
+          151,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Thelxinoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.4,
+        "eccentricity": 0,
+        "inclination": 2.642428,
+        "orbital_period": 628.09,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 628.09,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Helike",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.5,
+        "eccentricity": 0,
+        "inclination": 2.70177,
+        "orbital_period": 634.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 634.77,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Iocaste",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.7,
+        "eccentricity": 0,
+        "inclination": 2.607522,
+        "orbital_period": 631.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 631.5,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Aitne",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.8,
+        "eccentricity": 0,
+        "inclination": 2.881539,
+        "orbital_period": 730.18,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 730.18,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Erinome",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 13.9,
+        "eccentricity": 0,
+        "inclination": 2.878048,
+        "orbital_period": 728.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 728.3,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Taygete",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14,
+        "eccentricity": 0,
+        "inclination": 2.883284,
+        "orbital_period": 732.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 732.2,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          163,
+          158,
+          153,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Carme",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14,
+        "eccentricity": 0,
+        "inclination": 2.878048,
+        "orbital_period": 734.17,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.023,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 734.17,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          155,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Chaldene",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.1,
+        "eccentricity": 0,
+        "inclination": 2.886775,
+        "orbital_period": 723.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 723.8,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          161,
+          156,
+          151,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Kalyke",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.2,
+        "eccentricity": 0,
+        "inclination": 2.883284,
+        "orbital_period": 742.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 742.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          164,
+          159,
+          154,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Isonoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.3,
+        "eccentricity": 0,
+        "inclination": 2.881539,
+        "orbital_period": 726.23,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 726.23,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          155,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Kale",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.4,
+        "eccentricity": 0,
+        "inclination": 2.879793,
+        "orbital_period": 729.47,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 729.47,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Eirene",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.5,
+        "eccentricity": 0,
+        "inclination": 2.878048,
+        "orbital_period": 728.3,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 728.3,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Kallichore",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.6,
+        "eccentricity": 0,
+        "inclination": 2.867576,
+        "orbital_period": 717.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 717.8,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Pasithee",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.7,
+        "eccentricity": 0,
+        "inclination": 2.881539,
+        "orbital_period": 719.44,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 719.44,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Eukelade",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.8,
+        "eccentricity": 0,
+        "inclination": 2.88852,
+        "orbital_period": 746.4,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 746.4,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          161,
+          156,
+          151,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Arche",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 14.9,
+        "eccentricity": 0,
+        "inclination": 2.879793,
+        "orbital_period": 723.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 723.9,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Pasiphae",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15,
+        "eccentricity": 0,
+        "inclination": 2.642428,
+        "orbital_period": 743.63,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.03,
+        "mass": 10000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 743.63,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Sponde",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.1,
+        "eccentricity": 0,
+        "inclination": 2.635447,
+        "orbital_period": 748.34,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 748.34,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          155,
+          150,
+          145,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Autonoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.2,
+        "eccentricity": 0,
+        "inclination": 2.659882,
+        "orbital_period": 761.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 761.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Megaclite",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.3,
+        "eccentricity": 0,
+        "inclination": 2.666863,
+        "orbital_period": 752.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.003,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 752.8,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          155,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Callirrhoe",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.4,
+        "eccentricity": 0,
+        "inclination": 2.567379,
+        "orbital_period": 758.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.004,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 758.77,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          163,
+          158,
+          153,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Cyllene",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.5,
+        "eccentricity": 0,
+        "inclination": 2.624975,
+        "orbital_period": 737.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 737.8,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Sinope",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.5,
+        "eccentricity": 0,
+        "inclination": 2.759366,
+        "orbital_period": 758.9,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.019,
+        "mass": 2000000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 758.9,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Aoede",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.6,
+        "eccentricity": 0,
+        "inclination": 2.762856,
+        "orbital_period": 761.5,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 761.5,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Kore",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 15.7,
+        "eccentricity": 0,
+        "inclination": 2.659882,
+        "orbital_period": 776.02,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 776.02,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16,
+        "eccentricity": 0,
+        "inclination": 2.67908,
+        "orbital_period": 981.55,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 981.55,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          154,
+          149,
+          144,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.1,
+        "eccentricity": 0,
+        "inclination": 2.583087,
+        "orbital_period": 583.88,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 583.88,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          155,
+          150,
+          145,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.2,
+        "eccentricity": 0,
+        "inclination": 2.600541,
+        "orbital_period": 723.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 723.2,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J5",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.3,
+        "eccentricity": 0,
+        "inclination": 2.879793,
+        "orbital_period": 738.73,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 738.73,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J9",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.4,
+        "eccentricity": 0,
+        "inclination": 2.878048,
+        "orbital_period": 683.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 683.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J10",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.5,
+        "eccentricity": 0,
+        "inclination": 2.878048,
+        "orbital_period": 716.25,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 716.25,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J12",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.6,
+        "eccentricity": 0,
+        "inclination": 2.54469,
+        "orbital_period": 489.72,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 489.72,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          155,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J15",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.7,
+        "eccentricity": 0,
+        "inclination": 2.530727,
+        "orbital_period": 689.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 689.77,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J16",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.8,
+        "eccentricity": 0,
+        "inclination": 2.617994,
+        "orbital_period": 616.33,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 616.33,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          155,
+          150,
+          145,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J18",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 16.9,
+        "eccentricity": 0,
+        "inclination": 2.583087,
+        "orbital_period": 596.58,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 596.58,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J19",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17,
+        "eccentricity": 0,
+        "inclination": 2.844887,
+        "orbital_period": 740.43,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 740.43,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          161,
+          156,
+          151,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2003 J23",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.1,
+        "eccentricity": 0,
+        "inclination": 2.600541,
+        "orbital_period": 732.45,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 732.45,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2010 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.2,
+        "eccentricity": 0,
+        "inclination": 2.848377,
+        "orbital_period": 723.2,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 723.2,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2010 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.3,
+        "eccentricity": 0,
+        "inclination": 2.64941,
+        "orbital_period": 726.8,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 726.8,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2011 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.4,
+        "eccentricity": 0,
+        "inclination": 2.841396,
+        "orbital_period": 582.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 582.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2011 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.5,
+        "eccentricity": 0,
+        "inclination": 2.59705,
+        "orbital_period": 726.1,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 726.1,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          154,
+          149,
+          144,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2016 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.6,
+        "eccentricity": 0,
+        "inclination": 2.43997,
+        "orbital_period": 603.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 603.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          155,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2016 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.7,
+        "eccentricity": 0,
+        "inclination": 2.879793,
+        "orbital_period": 632.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 632.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.8,
+        "eccentricity": 0,
+        "inclination": 2.604031,
+        "orbital_period": 734.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 734.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          163,
+          158,
+          153,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 17.9,
+        "eccentricity": 0,
+        "inclination": 2.876303,
+        "orbital_period": 723.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 723.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18,
+        "eccentricity": 0,
+        "inclination": 2.617994,
+        "orbital_period": 732.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 732.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J5",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.1,
+        "eccentricity": 0,
+        "inclination": 2.881539,
+        "orbital_period": 690.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 690.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          161,
+          156,
+          151,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J6",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.2,
+        "eccentricity": 0,
+        "inclination": 2.605777,
+        "orbital_period": 612.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 612.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          155,
+          150,
+          145,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J7",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.3,
+        "eccentricity": 0,
+        "inclination": 2.853613,
+        "orbital_period": 724.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 724.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          158,
+          153,
+          148,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J8",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.4,
+        "eccentricity": 0,
+        "inclination": 2.872812,
+        "orbital_period": 621.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 621.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          156,
+          151,
+          146,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2017 J9",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.5,
+        "eccentricity": 0,
+        "inclination": 2.659882,
+        "orbital_period": 733.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 733.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Pandia",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.6,
+        "eccentricity": 0,
+        "inclination": 0.49131,
+        "orbital_period": 251.77,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 251.77,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          164,
+          159,
+          154,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Philophrosyne",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.7,
+        "eccentricity": 0,
+        "inclination": 2.530727,
+        "orbital_period": 689.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 689.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          157,
+          152,
+          147,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Eupheme",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.8,
+        "eccentricity": 0,
+        "inclination": 2.598795,
+        "orbital_period": 584.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 584.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          159,
+          154,
+          149,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Valetudo",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 18.9,
+        "eccentricity": 0,
+        "inclination": 0.591841,
+        "orbital_period": 532.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 532.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          160,
+          155,
+          150,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "Ersa",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19,
+        "eccentricity": 0,
+        "inclination": 0.534245,
+        "orbital_period": 250.23,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.002,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 250.23,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          165,
+          160,
+          155,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.1,
+        "eccentricity": 0,
+        "inclination": 2.642428,
+        "orbital_period": 730.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 730.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          164,
+          159,
+          154,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.2,
+        "eccentricity": 0,
+        "inclination": 2.588323,
+        "orbital_period": 628.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 628.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.3,
+        "eccentricity": 0,
+        "inclination": 2.665118,
+        "orbital_period": 583.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 583.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          166,
+          161,
+          156,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2018 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.4,
+        "eccentricity": 0,
+        "inclination": 2.871067,
+        "orbital_period": 720.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 720.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          163,
+          158,
+          153,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.5,
+        "eccentricity": 0,
+        "inclination": 2.617994,
+        "orbital_period": 726.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 726.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          165,
+          160,
+          155,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.6,
+        "eccentricity": 0,
+        "inclination": 2.879793,
+        "orbital_period": 688.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 688.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          167,
+          162,
+          157,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.7,
+        "eccentricity": 0,
+        "inclination": 2.609267,
+        "orbital_period": 732.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 732.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          161,
+          156,
+          151,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.8,
+        "eccentricity": 0,
+        "inclination": 2.874557,
+        "orbital_period": 620.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 620.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          168,
+          163,
+          158,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J5",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 19.9,
+        "eccentricity": 0,
+        "inclination": 2.59705,
+        "orbital_period": 734.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 734.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          164,
+          159,
+          154,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2021 J6",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20,
+        "eccentricity": 0,
+        "inclination": 2.860595,
+        "orbital_period": 735.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 735.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          162,
+          157,
+          152,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2022 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.1,
+        "eccentricity": 0,
+        "inclination": 2.6529,
+        "orbital_period": 728.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 728.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          166,
+          161,
+          156,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2022 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.2,
+        "eccentricity": 0,
+        "inclination": 2.878048,
+        "orbital_period": 730.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 730.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          163,
+          158,
+          153,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2022 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.3,
+        "eccentricity": 0,
+        "inclination": 2.614503,
+        "orbital_period": 732.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 732.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          165,
+          160,
+          155,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J1",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.4,
+        "eccentricity": 0,
+        "inclination": 2.62323,
+        "orbital_period": 725.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 725.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          167,
+          162,
+          157,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J2",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.5,
+        "eccentricity": 0,
+        "inclination": 2.883284,
+        "orbital_period": 729.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 729.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          161,
+          156,
+          151,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J3",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.6,
+        "eccentricity": 0,
+        "inclination": 2.593559,
+        "orbital_period": 731.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 731.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          168,
+          163,
+          158,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    },
+    {
+      "type": "moon",
+      "name": "S/2023 J4",
+      "parent": "Jupiter",
+      "orbit": {
+        "semi_major_axis": 20.7,
+        "eccentricity": 0,
+        "inclination": 2.858849,
+        "orbital_period": 733.0,
+        "initial_mean_anomaly": "random"
+      },
+      "physical": {
+        "radius": 0.001,
+        "mass": 100000000000000,
+        "axial_tilt": 0.0,
+        "rotation_period": 733.0,
+        "albedo": 0.06
+      },
+      "rendering": {
+        "material": "diffuse",
+        "texture_image": null,
+        "color_map": null,
+        "ring_colors_map": null,
+        "fallback_color": [
+          164,
+          159,
+          154,
+          255
+        ]
+      },
+      "importance": 40,
+      "atmosphere": {
+        "thickness_km": 0,
+        "principal_chemicals": [],
+        "cloud_coverage": 0.0,
+        "cloud_composition": [],
+        "color_hint": null
+      }
+    }
+  ],
+  "schema_version": "2.0"
+}
