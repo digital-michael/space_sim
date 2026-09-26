@@ -4,7 +4,7 @@
 Capture the major implementation defects, debugging discoveries, performance findings, and follow-up recommendations uncovered while building and stabilizing the performance testing workflow.
 
 ## Last Updated
-2026-05-22
+2026-09-22
 
 ## Table of Contents
 1. Session Overview
@@ -2416,3 +2416,181 @@ Convert world-space positions to camera-relative coordinates just before the GPU
 
 **Corollary**: When producing a sequencing recommendation from a tech debt report, identify which items are extension points for planned features. Those items belong in the foundational batch even if they appear simple or non-blocking by structural dependency alone.
 
+
+---
+
+### 41. **Unanchored `.gitignore` Patterns Silently Hide Source — and `git status` Confirms the Wrong Thing** [GIT, TOOLING, DATA-LOSS]
+
+**Date**: 2026-09-22
+
+**Context**: The binary consolidation introduced `cmd/space-sim/` and `cmd/space-sim-admin/`. Both contained real source and had **never been tracked by git**. `git status cmd/space-sim` reported `working tree clean` — not "untracked". The Makefile referenced `./cmd/space-sim`, so a fresh clone could not build, and a single `git clean -fdx` would have destroyed 12 KB of unique work that existed on exactly one disk.
+
+**Root Cause**: `.gitignore` contained the bare patterns `space-sim` and `space-sim-*`. A gitignore pattern with no leading `/` and no embedded slash matches a file **or directory** of that name at *any* depth. Written to ignore built binaries, they also matched the source directories. Two further instances of the same pattern-scope bug were then found in the same file:
+
+- `*.pb.go` with the negation `!api/proto/*.pb.go`, but generated protobuf lands in `api/gen/`. So `session.pb.go` and `simulation.pb.go` were ignored, even though both `agent-readme.md §2` and the domain README state that directory *is* committed. A fresh clone got ConnectRPC handler interfaces with no message types.
+- `output/` ignored a directory that `docs/wip/todo.md` cites five times as the authoritative fix-steps source for TD-003…TD-010.
+
+**Fix**: Anchor with a leading `/` — `/space-sim`, `/space-sim-*` — which still catches stray root-level binaries (verified: two such binaries, 8 MB and 18 MB, were present) while no longer matching `cmd/space-sim*`. Repoint the negation to `!api/gen/**/*.pb.go`.
+
+**Rule**: Anchor ignore patterns intended for a specific location with a leading `/`. When files that should be tracked appear absent, diagnose with `git check-ignore -v <path>` — **not** `git status`, which reports an ignored directory as clean and therefore confirms the wrong conclusion. When one pattern-scope bug is found in an ignore file, audit every other pattern in it; this class travels in groups because they are written in the same careless pass.
+
+---
+
+### 42. **Feature Status in Docs Diverged From Code in Both Directions** [PROCESS, DOCS]
+
+**Date**: 2026-09-22
+
+**Context**: An audit of F-020 was requested because checkboxes were suspected stale. `docs/wip/todo.md` claimed "F-020 ✅ All phases complete". `docs/wip/f020-multi-client-spec.md` had Phase 1 *and* Phase 2 work items entirely unticked. **Neither was correct.** The server layer, registry, 8 RPCs, 12 registry tests, and admin-REPL participation were all complete; the graphical client had never joined the session layer at all, and `runtimeSession.sessionID` was a field that was declared, documented, read twice, and never assigned.
+
+**Root Cause**: Checkboxes were updated per-feature rather than per-item, so a partially-delivered feature was marked either wholly done or wholly undone depending on which document was edited last.
+
+**Rule**: Determine feature status by reading code — handler implementations, callers, wiring — not by reading either the roadmap or the spec. When the two disagree, that is a signal both are stale, not that one is authoritative. Record the audit result somewhere queryable (Ledger) rather than re-deriving it next session.
+
+---
+
+### 43. **A Claim About *Why* Code Exists Must Be Verified Before It Is Recorded or Acted On** [AGENT, FABRICATION]
+
+**Date**: 2026-09-22
+
+**Context**: A ticket asserted that `cmd/space-sim-direct/debug_tracker.go` "backed the CTRL+\ debug.log tooling (commit 3b0662d)". This was inferred purely from the commit subject containing the words "debug" and "tool". It was false. The practitioner read the ticket and instructed "it was silently dropped, let's get it back in" — acting on a fabricated premise.
+
+**Root Cause**: Plausibility was substituted for verification. `git show --stat 3b0662d` shows 11 files, none of them `debug_tracker.go`; that commit built `DumpLabelDebug` in `renders_labels_debug.go`, which is alive and wired at `interactive.go:189`. Grepping for callers showed `DebugTracker` also alive in `internal/client/go/raylib/app/`, wired at four sites. The `cmd/` copy was a **dead duplicate**, so omitting it from the consolidated binary had been correct. Meanwhile the *real* defect went unnoticed: the live tracker's doc comments promise logging ("logs whenever Earth or Moon visibility changes") but both methods emit nothing — `LogRenderDecision` had bare `return` statements where the log calls used to be.
+
+**Fix**: Verified before acting, reported the error to the practitioner, corrected the ticket, and deleted the inert tracker instead of restoring a dead duplicate.
+
+**Rule**: Before recording *why* a piece of code exists, verify with `git show --stat` on the named commit and a grep for callers. A commit-subject keyword match is not evidence. Separately: **a doc comment describing behaviour is a claim, not a fact** — code whose comment promises logging it does not perform is a defect hiding behind its own documentation.
+
+---
+
+### 44. **Probe the Actual Code Path; Do Not Infer Capability From a Different Client's Failure** [AGENT, VERIFICATION]
+
+**Date**: 2026-09-22
+
+**Context**: `buf curl --protocol grpc --http2-prior-knowledge` failed against `space-sim-server` with "frame too large, note that the frame header looked like an HTTP/1.1 header". `server.go:69` carries a note that h2c is not wired for cleartext HTTP/2. Since `cmd/space-sim` builds its snapshot client with `connect.WithGRPC()`, the conclusion drawn was that the remote renderer's snapshot stream must be silently failing and the client was rendering an empty world.
+
+**Root Cause**: The inference chained two unverified steps — that one client's transport failure implies another's, and that a documented limitation is currently binding. A throwaway probe replicating `cmd/space-sim`'s exact client construction received **717 bodies per frame immediately**, over both gRPC and Connect protocols. The remote client was fully functional; the practitioner's report had been accurate all along.
+
+**Rule**: When assessing whether a code path works, exercise *that* path — a short probe replicating the real client's construction costs minutes and is decisive. Do not generalize from a different tool's failure, and do not treat a comment describing a limitation as proof the limitation currently bites. The same probe did surface a genuine finding: `SystemService` and `SessionService` return 404 on the headless server, which mattered far more than the imagined streaming failure.
+
+---
+
+### 45. **Dogfood Against Real Content — Synthetic Fixtures Encode Your Assumptions** [TESTING]
+
+**Date**: 2026-09-22
+
+**Context**: The asset-bundle builder passed nine tests against synthetic fixture trees. A tenth test built from the repository's actual `data/` tree failed immediately, asserting `data/systems/solar_system.json` was present. It is not: F-034 moved systems to per-system **directories** — `data/systems/solar_system/` holds `system.json`, `stars.json`, `planets.json`, `moons.json`, `dwarf_planets.json`, `belts.json`, `rogues.json`, `artifacts.json` — 22 such directories. The builder was correct; the fixture and the assertion both encoded a stale mental model of the layout.
+
+**A second instance in the same session**: a test needed an archive exceeding one 64 KiB chunk, so it wrote 300 KiB of filler generated as `byte(i*7%251)` with a comment calling it "incompressible-ish". It is perfectly periodic; deflate reduced the whole archive to 2,357 bytes and the test failed. The fixture did not test what its own comment claimed.
+
+**Fix**: Corrected the assertion to the real layout, and replaced the filler with a seeded `math/rand` stream — genuinely incompressible, still deterministic. Consequence for downstream work: the client must call `sim.LoadSystemFromDir`, not `LoadSystemFromFile`.
+
+**Rule**: Add at least one test that runs against real repository content, skipping cleanly when absent. Synthetic fixtures verify the code against the author's beliefs; real content verifies it against the project. When a fixture's comment asserts a property the test depends on (incompressible, oversized, malformed), assert that property rather than assuming the construction achieves it.
+
+---
+
+### 46. **Deterministic Archives Require Explicit Normalization, and You Must Hash What You Will Verify** [GO, ZIP, CACHING]
+
+**Date**: 2026-09-22
+
+**Context**: The content bundle is cached by content hash, so identical content must always produce an identical hash — otherwise every client's cache is invalidated on each server restart. Zip archives embed modification times and permission bits, and directory-walk order is not guaranteed stable.
+
+**Fix**: Sort entries by path, stamp a fixed modification time of 1980-01-01 (the earliest instant the zip format represents without clamping, since the MS-DOS date field cannot encode pre-1980), and stamp a fixed `0644` mode. Verified reproducible across separate processes: the same hash appeared in an in-process test and in a live server's startup log.
+
+**The second half matters as much**: hash the **archive bytes**, not a digest computed over logical file contents. Hashing logical content would force the client to unpack before it could verify, meaning hostile or corrupt payloads get extracted first. Hashing the bytes lets verification precede unpacking entirely.
+
+**Rule**: For any content-addressed artifact, normalize every source of nondeterminism explicitly — ordering, timestamps, permissions — and hash the exact byte stream the consumer will verify, so verification can happen before parsing or extraction.
+
+---
+
+### 47. **A Headless Server With No Observers Still Saturates Cores** [PERFORMANCE, OPS]
+
+**Date**: 2026-09-22
+
+**Context**: The practitioner reported the machine heating up. `ps -Ao pid,pcpu,etime,args -r` showed `./bin/space-sim-server --addr :9090` at **140–142% CPU for 1 hour 8 minutes** with no client attached — a `make run-server` left behind after the renderer was closed.
+
+**Root Cause**: No idle detection anywhere. The physics worker pool and the 30 Hz snapshot-push goroutine run at full rate regardless of whether any client is streaming, any session is registered, or any admin is connected. Each tick clones the front buffer across ~717 objects and pushes it to an empty subscriber list. This is a deployment characteristic, not a stray-process accident: F-010's goal is servers on remote boxes, and as written every such box saturates multiple cores permanently from startup.
+
+**Open question** (deliberately not resolved unilaterally): a simulation arguably *should* advance without observers — world time is meaningful on its own and a reconnecting client expects the world to have moved on. Whether this is a defect is the practitioner's call. If it is, the cheapest fix is skipping the snapshot clone and push when the subscriber list is empty.
+
+**Rule**: For any long-running server process, decide explicitly whether work continues with zero consumers and record the decision. Additionally, when starting a server during development, check for an existing listener first — an agent-started second instance briefly ran alongside this one, doubling the load.
+
+---
+
+### 48. **Server-Side Transport Coupled to the Client App Causes a Functional Gap, Not Just a Smell** [ARCHITECTURE, BOUNDARIES]
+
+**Date**: 2026-09-22
+
+**Context**: Probing a running `space-sim-server` found that only **2 of 11 services** are reachable. `SimulationService` and `WorldService` work; `SystemService/GetActiveSystem`, `SystemService/ListSystems`, and `SessionService/RegisterClient` all return `unimplemented / 404`. The admin REPL constructs clients for both missing services and calls them, so those commands are broken against the headless server despite being recorded as delivered.
+
+**Root Cause**: Two distinct causes behind one symptom, requiring different fixes.
+- `SystemHandler` imports `rayapp "internal/client/go/raylib/app"` and is constructed with `func(rayapp.AppCmd) bool`, routing `GetActiveSystem` and `LoadSystem` through the Raylib app's main-thread command channel. A headless server has no Raylib app, so the handler *cannot* be registered. This violates the project's own hard constraint that server-side code must not import `internal/client/*`.
+- `SessionHandler` by contrast depends only on `session.Registry` and is fully headless-compatible. Its absence is pure oversight. `cmd/space-sim-server` registers services inline with a comment about omitting "render-client concerns" — correct for Window/Camera/Navigation, but System and Session are server concerns that got swept out with them.
+
+Also found: `grpcserver.New` / `grpcserver.Handlers` register all services correctly but are **dead code** — nothing calls them. The deleted `cmd/space-sim-grpc` presumably did; the headless server reimplemented a minimal subset inline instead of reusing it.
+
+**Rule**: A boundary violation that makes a component unusable in a supported topology is a functional defect, not a style issue — treat it as such when prioritizing. The authoritative owner of "which system is loaded" is `world.World`, not the renderer; that belongs behind a port in `internal/api` implemented by both topologies. When a binary reimplements shared wiring inline "to avoid nil panics", the omissions become invisible — prefer explicit per-service registration decisions over a silently narrowed copy.
+
+---
+
+### 49. **The File That Bootstraps Every Session Had Entirely Stale Paths — and the Discrepancy Was Worked Around Instead of Flagged** [PROCESS, GOVERNANCE]
+
+**Date**: 2026-09-22
+
+**Context**: `CLAUDE.md` directs every new session to read `docs/governance/README.md` first to obtain the framework load order. All six framework paths in that table were wrong on two axes simultaneously: the base directory (`~/Projects/active/` instead of `~/Documents/Entities/frameworks/`) and the domain (`photon-datum` instead of `HobbyPro`, which this project left on 2026-07-29).
+
+**The process failure, which matters more than the stale paths**: at session start the discrepancy between that table and `.llm-framework.yml` was noticed, silently resolved in favour of the config file, and never mentioned. The session proceeded correctly but the defect survived untouched — and it would have misdirected every future session, plus any agent that trusted the table over the config.
+
+**Compounding effect**: the table also omitted the personal profile entirely, listing no step for it at all. As a direct result the personal profile was not loaded at session start; it was loaded only when the practitioner explicitly asked for it, partway in. That changed how the rest of the session was conducted. The omission in the bootstrap document caused a real behavioural difference, not a paperwork gap.
+
+**Fix**: Repointed all paths, corrected the domain name, and added an explicit note that the personal profile loads every session regardless of profile — including the warning that `personal_identity: digital-michael` is a resolution key and not a filename, since searching for `digital-michael.md` is what produced the wrong "no personal profile exists" conclusion.
+
+**Rule**: When a governance or bootstrap document disagrees with the live configuration, **say so immediately and fix it** — do not quietly prefer the correct source and move on. Working around a stale instruction leaves it in place to misdirect the next reader. Treat the session-start load order as load-bearing code: if following it literally would produce the wrong behaviour, that is a defect with the same standing as a broken build.
+
+---
+
+### 50. **A "User Config vs Shipped Content" Split Must Be Checked Against the Loader, Not Assumed From the Directory Name** [ARCHITECTURE, TESTING]
+
+**Date**: 2026-09-22
+
+**Context**: F-040's bundle deliberately excluded `data/profiles/` on the stated grounds that keybinding hardware profiles are "client-local user configuration" and a server must not overwrite a user's input preferences. That reasoning sounded principled and was written into the spec as a locked decision.
+
+**Root Cause**: It was a misreading of the directory. `input.LoadKeyMap(profilesDir, configPath)` tolerates a missing `configPath` (`errors.Is(err, os.ErrNotExist)` is explicitly allowed) but treats the profile file as **mandatory** and returns an error if it is absent. So `data/profiles/*.json` are *shipped hardware profiles* — application content, with no user edits in them — while the user's genuine customization lives in a separate keybindings config file that the bundle never touches. Excluding profiles protected nothing and removed something startup requires.
+
+**How it was caught**: not by review. The spec's acceptance criterion "copy only the built binary to a directory with no `data/` and no repo checkout" was executed literally. The client fetched the bundle in 40 ms, loaded metadata for 717 bodies, and then died: `error: keybindings: reading profile "data/profiles/laptop.json": no such file or directory`. Every unit test passed both before and after the fix, because none of them started the application.
+
+**Fix**: Included `data/profiles/` in the bundle, added `Config.profilesDir()` to resolve it against the asset root, and **inverted the two tests that had asserted exclusion** — they now assert profiles are present and that changing one changes the bundle hash. The spec's D5 was corrected in place rather than left standing as a misleading locked decision.
+
+**Rule**: Before classifying a directory as user configuration or shipped content, read the code that loads it and check whether it is optional or mandatory. A mandatory input is content by definition, whatever its name suggests. More generally: an end-to-end test that runs the real binary in the real deployment shape catches a class of error that no amount of unit testing will, because unit tests never execute startup. Write that test first and run it literally.
+
+---
+
+### 51. **`pkill -f` Matched Nothing Because the Process Was Launched by a Relative Path** [OPS]
+
+**Date**: 2026-09-22
+
+**Context**: After verifying the isolated client, cleanup used `pkill -f "isolated/space-sim"` — the path the binary had been built to. It reported success and a subsequent check showed the server plus **two** client processes still running, hours after the earlier incident where a forgotten server held ~140% CPU for over an hour.
+
+**Root Cause**: The clients were started as `./space-sim --server localhost:9096` from inside that directory, so their command line contains `./space-sim`, not `isolated/space-sim`. The pattern never matched and `pkill` exited without killing anything — silently, since killing zero processes is not an error.
+
+**Fix**: Killed by PID. Cleanup now verifies with `pgrep -fl` afterwards rather than trusting the kill.
+
+**Rule**: Never trust a pattern-based kill. Match on how the process was actually invoked (`ps -o args`), or capture the PID at launch, and always verify afterwards with `pgrep`. For this project specifically: a leftover `space-sim-server` saturates multiple cores indefinitely, so an unverified cleanup has a real and immediate cost.
+
+---
+
+### 52. **A Terse Answer to a Structural Question Carries Less Information Than the Architecture It Will Shape** [PROCESS, DESIGN]
+
+**Date**: 2026-09-25
+
+**Context**: During the F-039 design discussion, a two-option architecture question — several simulations inside one process, or one simulation per process — was answered with the single phrase *"returns a list"*. That was read as "one process hosts many simulations", and two exchanges of design followed on that basis, heading toward a shape that required a `simulation_id` parameter on `StreamSnapshot`, `SetSpeed`, `GetSpeed`, `GetSimulationTime`, `LoadSystem`, session registration, and per-simulation snapshot routing.
+
+**Root Cause**: The phrase most directly answered a narrower question that had been asked in the same message — what shape the *status response* takes. It was treated as settling the process model as well. Re-reading the practitioner's *later* answers as a set rather than incrementally showed a simpler reading satisfied all of them: "connect to the simulation as it is now", host-scoped uniqueness, "last in loses", and a transition animation making inter-system travel *feel* seamless rather than requiring technical continuity. One simulation per process satisfied every one of those and avoided the proto churn entirely.
+
+**Fix**: Stopped before writing the spec, stated the alternative reading with the evidence for it, and asked for confirmation. The eventual resolution was better than either candidate: make addressing process-agnostic — names are host-scoped and a run-file maps name to `(pid, port)` — so a process may host one simulation or many and clients cannot tell the difference. The question stopped needing an answer.
+
+**Rules**:
+1. A one-line answer to a structural question should be restated for confirmation **before** it propagates into design, because the cost of the misreading scales with how much is built on it.
+2. When several answers accumulate over a conversation, re-read them **as a set**. Incremental interpretation lets an early misreading survive, since each new answer gets fitted to the existing assumption rather than tested against it.
+3. **Refusing to write a specification on a premise already in doubt is correct.** An internally consistent document aimed at the wrong architecture is worse than no document — it looks finished, gets reviewed as finished, and buries the assumption that was actually load-bearing.
+
+**Corollary observed in the same session**: the most useful design contributions were *semantic*, not structural. A proposed 3 × 5 option matrix collapsed to three values plus one orthogonal flag, and every removal came from defining a term — "active" rather than "connected", resume-at-sim-time, internal versus external NPCs — not from cutting a feature. When an option list feels bloated, look for the undefined term generating the options.
