@@ -4,7 +4,7 @@
 Capture the major implementation defects, debugging discoveries, performance findings, and follow-up recommendations uncovered while building and stabilizing the performance testing workflow.
 
 ## Last Updated
-2026-09-22
+2026-09-26
 
 ## Table of Contents
 1. Session Overview
@@ -2594,3 +2594,43 @@ Also found: `grpcserver.New` / `grpcserver.Handlers` register all services corre
 3. **Refusing to write a specification on a premise already in doubt is correct.** An internally consistent document aimed at the wrong architecture is worse than no document — it looks finished, gets reviewed as finished, and buries the assumption that was actually load-bearing.
 
 **Corollary observed in the same session**: the most useful design contributions were *semantic*, not structural. A proposed 3 × 5 option matrix collapsed to three values plus one orthogonal flag, and every removal came from defining a term — "active" rather than "connected", resume-at-sim-time, internal versus external NPCs — not from cutting a feature. When an option list feels bloated, look for the undefined term generating the options.
+
+---
+
+### 53. **A Conditional Raylib Draw Fails Silently — Instrument the Decision, Do Not Reason About It** [RAYLIB, DEBUGGING]
+
+**Date**: 2026-09-26
+
+**Context**: Two clients connected with distinct names and colours, and neither rendered the other's label. The symptom — "no label appears" — is produced identically by at least five unrelated causes: the data was never sent, never received, filtered out by a distance cutoff, projected off-screen, or drawn somewhere invisible. Raylib reports none of them. `rl.DrawText` at coordinates outside the viewport is not an error, and a loop that `continue`s past every element looks exactly like a loop that was never called.
+
+**Root Cause of the wasted effort**: three successive hypotheses, each plausible and each wrong, were pursued before anything was instrumented.
+
+1. *The palette was broken* — real, and fixed, but not the cause. Sequential allocation over a 3.6°-per-step hue palette gave the first two clients indistinguishable reds.
+2. *Lesson S-5 had been violated* — 2D primitives drawn inside `BeginMode3D`. Checked: the ordering was already correct, spheres inside, labels after `EndMode3D`.
+3. *The label was being mutated in the snapshot path* — the wire was dumped and proved correct: both sessions, distinct labels, distinct colours, distinct positions.
+
+Only after all three did a diagnostic get added. It answered the question on the first run, and the actual cause was geometric: with spawns scattered per spec, the two clients were **~105° apart as seen from the star**, and both cameras opened at the same default orientation, so each peer sat outside the other's frustum.
+
+**Fix**: a bounded, `--debug`-gated diagnostic inside the label pass logging, per session, the distance, the projected screen coordinates, and which branch skipped it. Plus a peer-set log on the client so "not sent", "not received", and "not drawn" became three distinguishable states.
+
+**Rule**: for any Raylib draw guarded by conditionals — distance cutoffs, frustum culling, off-screen rejection, visibility flags — add a bounded diagnostic that logs the decision per element *before* forming a theory about why nothing appears. The renderer will not tell you it skipped something. Three wrong hypotheses cost more than the instrumentation would have, and the instrumentation is now permanent and reusable.
+
+**Corollary**: "I cannot see X" is never a rendering bug report until the data reaching the renderer has been printed. Two of the three wrong hypotheses were about code paths that turned out to be correct; the one measurement that mattered (what the wire carried) took one command.
+
+---
+
+### 54. **World-Distance Thresholds Are the Wrong Model in a Floating-Origin Renderer** [RAYLIB, ARCHITECTURE]
+
+**Date**: 2026-09-26
+
+**Context**: Client markers used two world-space distance constants inherited from the F-021 Phase 1 spec defaults: `markerCullDistanceSU = 100` and `markerLabelVisibleDistSU = 0.5`. The remote camera opens roughly 102 sim units from the origin, so the cull distance was marginal and the label threshold was exceeded by **200×**. Markers and labels could never be seen at any realistic viewing distance.
+
+**Two distinct problems, and the second is the durable one.**
+
+**Problem one — the values contradicted the spec's own intent.** F-021 §3 requires a marker to render at a fixed screen-space minimum radius "so the marker remains visible regardless of zoom level", and §4.2 requires the own-marker to be "always visible regardless of distance". A 100 su cap contradicts both. A test asserted the 100 su maximum and cited it as a spec limit; the spec states no such limit. **The test was guarding an implementation artifact while describing it as a requirement** — and it passed while the feature was unusable.
+
+**Problem two — a world distance is the wrong unit.** What decides whether a marker is worth drawing is its *angular* size and whether it projects on-screen, not how many sim units away it is. The renderer already had both of the right mechanisms: a screen-space minimum radius that keeps a distant marker visible, and an off-screen rejection test. The world-distance cutoffs were a third, redundant, and wrongly-scaled gate layered on top. This is the same error as sizing body visibility in pixels rather than arcseconds: a distance in world units does not survive a change of view scale.
+
+**The floating-origin trap that makes this easy to get wrong.** Since the DEF-001 fix the camera sits at `rl.Vector3{}` and every position handed to Raylib is camera-relative, while `cameraState.Position` remains a *world* position. So two coordinate spaces coexist, and a projection must pair camera-relative coordinates with the zeroed camera. Passing a world position to `GetWorldToScreenEx`, or comparing a camera-relative distance against a threshold that was chosen in world terms, both produce plausible-looking numbers and wrong results.
+
+**Rule**: in a floating-origin renderer, express visibility thresholds in screen or angular terms, not world distance. When a world-space constant is unavoidable, state which coordinate space it lives in at the definition site. And when a test asserts a magic number, make it assert the *invariant* the number was chosen to satisfy — otherwise the test will outlive the reason and defend the wrong behaviour.

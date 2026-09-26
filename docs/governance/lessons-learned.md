@@ -4,7 +4,7 @@
 Framework-format index of all lessons-learned sources for this repository. This file is an index — do not duplicate lesson content here. Follow the pointers to the authoritative source files.
 
 ## Last Updated
-2026-09-22
+2026-09-26
 
 ## Table of Contents
 1. Source Files
@@ -19,7 +19,7 @@ Framework-format index of all lessons-learned sources for this repository. This 
 
 | File | Topic | Sessions Covered |
 |---|---|---|
-| [`docs/history/lessons-learned.md`](../history/lessons-learned.md) | Performance testing, profiling methodology, visibility system bugs, UI rendering, Raylib constraints, recording/video, multi-client session layer (F-020), concurrency patterns, gitignore scope defects, F-040 asset bundle, transport boundary violations | Feb–May 2026, Sep 2026 |
+| [`docs/history/lessons-learned.md`](../history/lessons-learned.md) | Performance testing, profiling methodology, visibility system bugs, UI rendering, Raylib constraints, recording/video, multi-client session layer (F-020), concurrency patterns, gitignore scope defects, F-040 asset bundle, transport boundary violations, Raylib conditional-draw diagnosis, floating-origin thresholds | Feb–May 2026, Sep 2026 |
 | [`docs/history/lessons-learned-double-buffering.md`](../history/lessons-learned-double-buffering.md) | Double-buffer clone discipline, Go pointer semantics, cross-thread deadlocks, visibility synchronization, type safety in graphics | Feb–Mar 2026 |
 
 ---
@@ -47,6 +47,7 @@ Key recurring patterns where agent behavior has been corrected or validated. See
 | A-15 | Restate a terse answer to a structural question before it shapes design; re-read accumulated answers as a set, not incrementally | lessons-learned.md #52 |
 | A-16 | Never write a spec on a premise already in doubt — a consistent document aimed at the wrong architecture reviews as finished and buries the load-bearing assumption | lessons-learned.md #52 |
 | A-17 | When an option matrix feels bloated, find the undefined term generating the options; semantic clarification collapses design surface faster than feature-cutting | lessons-learned.md #52 |
+| A-18 | A test asserting a magic number will outlive the reason and defend the wrong behaviour — assert the invariant the number was chosen to satisfy | lessons-learned.md #54 |
 
 ---
 
@@ -79,6 +80,8 @@ Key recurring patterns where agent behavior has been corrected or validated. See
 | S-11 | `space-sim-server` registers only 2 of 11 services; `SystemService` cannot be registered headless because `SystemHandler` is coupled to the Raylib app's command channel | lessons-learned.md #48 |
 | S-12 | The server speaks Connect over HTTP/1.1; h2c is not wired (`server.go:69`). `buf curl` needs `--schema api/proto`, and `--http2-prior-knowledge` fails — but `connect.WithGRPC()` clients stream fine | lessons-learned.md #44 |
 | S-13 | Deflate crushes periodic data — a fixture needing incompressible bytes must use a seeded PRNG, not an arithmetic pattern | lessons-learned.md #45 |
+| S-14 | A conditional Raylib draw fails silently — instrument the per-element decision before theorising about why nothing appears | lessons-learned.md #53 |
+| S-15 | In a floating-origin renderer, visibility thresholds belong in screen/angular terms, not world distance; two coordinate spaces coexist and both look plausible | lessons-learned.md #54 |
 
 ---
 
