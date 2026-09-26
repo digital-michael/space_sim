@@ -10,6 +10,13 @@ template-version: 1.0.0
 **Related ADR(s):** None
 **Change risk level:** Low
 
+> **Domain note (2026-09-22):** this assignment was executed while space_sim belonged to the
+> `photon-datum` domain. The project moved to `HobbyPro` on 2026-07-29, and the framework root moved
+> to `~/Documents/Entities/frameworks/`. The completion records and checklists below deliberately
+> retain the original `photon-datum` paths as an accurate record of what was done at the time;
+> forward-looking guidance in this document has been repointed to `HobbyPro`. The authoritative
+> current load order is `docs/governance/README.md`.
+
 ---
 
 ## Goals
@@ -17,7 +24,7 @@ template-version: 1.0.0
 - space_sim is enrolled in the framework: `.llm-framework.yml` exists at the project root with correct paths
 - `docs/governance/` contains the four required files: load-order README, lessons-learned index, assignment template, session-context template
 - Existing lessons (`docs/history/lessons-learned.md`, `docs/history/lessons-learned-double-buffering.md`) are indexed — not duplicated — into the framework format
-- `llm-agent-domains/photon-datum/space_sim/README.md` exists with session-start load order, package map quick-reference, and external components table
+- `llm-agent-domains/HobbyPro/space_sim/README.md` exists with session-start load order, package map quick-reference, and external components table
 - `docs/standards/agent-readme.md` receives a `## Current-State Package Map` addendum with layer classification, composition rules, and external reusable components
 - `CLAUDE.md` is thinned to a bridge file + Claude Code-specific material; substantive content migrated to appropriate framework locations
 - `docs/standards/guidance.md` and `docs/standards/coding-standards.md` are reduced to space_sim-unique content; framework-covered content removed
@@ -28,7 +35,7 @@ template-version: 1.0.0
 
 - `llm-agent-framework` is **read-only** — no writes, no modifications
 - Do not restructure or rewrite existing `docs/` content beyond targeted reductions — additive changes or explicit removals only
-- Do not write agent behavior rules into `docs/governance/` — those belong in `llm-agent-domains/photon-datum/space_sim/README.md`
+- Do not write agent behavior rules into `docs/governance/` — those belong in `llm-agent-domains/HobbyPro/space_sim/README.md`
 - `CLAUDE.md` must not be deleted — thin to a bridge file (Claude Code auto-injects it; deleting it breaks Claude Code sessions)
 - All declared paths in `.llm-framework.yml` must exist before writing the file
 
@@ -102,7 +109,7 @@ All other content removed — it now lives in the framework layer.
 | §9 Code and Design Guidance | Remove most; keep only the performance emphasis paragraph |
 | §10 Temporary Artifact Rules | Remove — covered by framework |
 | §11 Agent Default Behavior | Remove — covered by framework collaboration-directives + assignment-workflow |
-| §11.1 Branch Check Rule | Already migrated to `photon-datum/space_sim/README.md` — remove from guidance.md |
+| §11.1 Branch Check Rule | Already migrated to `HobbyPro/space_sim/README.md` — remove from guidance.md |
 
 Proposed outcome: guidance.md retains §7 (commit format), §8 (doc rules), and one paragraph from §9. Updated Purpose and ToC.
 
@@ -135,7 +142,7 @@ No automated tests apply (docs + config only). Validation is structural:
 - Every path in `.llm-framework.yml` and `docs/governance/README.md` resolves to an existing file
 - `docs/governance/lessons-learned.md` has a pointer row for each existing lessons file; no content is duplicated
 - `CLAUDE.md` retains its bridge role and remains non-empty
-- `llm-agent-domains/photon-datum/space_sim/README.md` is loadable as a session-start document (all referenced paths resolve)
+- `llm-agent-domains/HobbyPro/space_sim/README.md` is loadable as a session-start document (all referenced paths resolve)
 - `docs/standards/guidance.md` and `docs/standards/coding-standards.md` contain no content already covered verbatim by the framework
 
 ---

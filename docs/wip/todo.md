@@ -4,7 +4,7 @@
 Track active and future work for Space Sim in one operational backlog. Keep this file focused on work that is not yet done.
 
 ## Last Updated
-2026-06-15 (LLM Agent Collaboration Framework retrofit complete; F-020 all phases complete; F-039, TD-010, TD-011 added)
+2026-09-25 (F-040 complete; F-041/F-042/F-043 registered; F-039 design settled — see Ledger)
 
 ## Table of Contents
 1. How to Use This File
@@ -43,6 +43,8 @@ Planning Documents
 	[f036-playable-scenario-spec.md](f036-playable-scenario-spec.md) — F-036 playable scenario spec
 	[f037-ai-npc-console-spec.md](f037-ai-npc-console-spec.md) — F-037 AI/NPC console spec
 	[f038-hud-profiles-spec.md](f038-hud-profiles-spec.md) — F-038 HUD profiles spec (supersedes F-024)
+	[f040-remote-client-assets-spec.md](f040-remote-client-assets-spec.md) — F-040 remote client asset bundle spec (self-contained remote client)
+	[f041-simulation-cost-and-presence-spec.md](f041-simulation-cost-and-presence-spec.md) — F-041 simulation cost + player presence spec (Active/Away, --idle lifecycle)
 	F-002 REPL: track <object> and track stop ✅
 	F-003 Texture/Bitmap Rendering
 	F-004 Procedural Star Field Background
@@ -61,7 +63,7 @@ Planning Documents
 	F-017 Realistic Lighting (Shadows, Atmosphere, Bloom, PBR)
 	F-018 Object Annotations HUD (outlines, axes, orbital paths, labels)
 	F-019 Run Scripts from UI ✅ Complete (2026-06-02)
-	F-020 Multi-Client gRPC Session Layer ✅ All phases complete (Phase 3: admin kick/teleport)
+	F-020 Multi-Client gRPC Session Layer 🔄 Server + admin REPL complete; graphical client never joined (audit 2026-09-22 — see Ledger)
 	F-021 Client Physical Marker 🔄 Phase 1 complete (Phase 2 pending)
 	F-022 Client Locomotion and Physics 🔄 Phase 1+2 complete (Phase 3 NPC automation deferred)
 	F-023 Keyboard Configuration ✅ Phase 1 complete (2026-05-22)
@@ -81,6 +83,10 @@ Planning Documents
 	F-037 AI/NPC Console 📋
 	F-038 HUD Profiles (supersedes F-024) 📋
 	F-039 Support Multiple, Concurrent Simulations 📋
+	F-040 Remote Client Asset Bundle (self-contained remote client; prerequisite for true F-010) ✅ Complete (2026-09-24)
+	F-041 Simulation Cost and Player Presence (Active/Away, --idle=suspend default; gates F-039 and F-012) 📋
+	F-042 Server Instance Management (run-files, port conflict + PID, singleton, --status; host registry for F-039 uniqueness) 📋
+	F-043 Spatial Decomposition (local-origin environments + transport modes; authoring tool near-term, feature future) 📋
 7. Recommended Ordering
 8. Tech Debt
 	TD-001 Collapse handleInput / updateCameraState Param Lists
@@ -115,7 +121,7 @@ Planning Documents
 
 ## 3. Active Work
 
-No active in-flight items. **F-010 admin REPL complete** (2026-06-02); bandwidth mitigations remain. Next up: **F-010 bandwidth mitigations**, **F-035 Phase 1** (Game Definition), or **F-039** (concurrent simulations). See §7 Recommended Ordering.
+No active in-flight items. **Binary consolidation complete** (2026-06-17): three binaries with clear roles (`space-sim`, `space-sim-server`, `space-sim-admin`). Next up: **F-010 bandwidth mitigations**, **sim-control over gRPC in `--server` mode** (TODO in `cmd/space-sim/main.go`), **F-035 Phase 1** (Game Definition), or **F-039** (concurrent simulations). See §7 Recommended Ordering.
 
 ## 4. Planned Phases
 
@@ -208,11 +214,14 @@ No active in-flight items. **F-010 admin REPL complete** (2026-06-02); bandwidth
 **Start Date**: 2026-04-03
 **Depends on**: Phase 1 through Phase 5
 
-#### Binary Model
+#### Binary Model (as of 2026-06-17 — consolidated)
 
-- `space-sim-direct` — Raylib client + in-process server. No network transport. Current working binary.
-- `space-sim-grpc` (Phase 6 target, Option A) — Raylib client + embedded ConnectRPC server in one process. Client dials `localhost`. Full wire path without two processes.
-- Option B (future) — Split into `space-sim-server` and `space-sim-client`. Player identification and registration handled on gRPC connection. JS/browser client connects to the same server binary.
+- `space-sim` — Raylib renderer. No flags = embedded standalone sim. `--server host:port` = remote-renderer mode connecting to `space-sim-server` over gRPC.
+- `space-sim-server` — headless sim + gRPC on `:9090`. Single entry point for all multi-machine topologies.
+- `space-sim-admin` — control REPL connecting to `space-sim-server` (was `space-sim-repl`).
+- *(retired)* `space-sim-grpc` — embedded sim + renderer + gRPC server; role covered by `space-sim-server` + `space-sim`.
+- *(retired)* `space-sim-client` — merged into `space-sim --server`.
+- *(retired)* `space-sim-repl` — renamed to `space-sim-admin`.
 
 #### Decisions
 
@@ -770,10 +779,18 @@ Prioritized by dependency order and user-visible value. Items lower in the list 
 - [x] Server-side admin REPL (stdin loop or dedicated port) for simulation commands (setspeed, pause, load, etc.) — complete 2026-06-02
 - [x] Expose existing `SimulationService`, `WorldService`, and other handlers unchanged
 
-**Group B — `cmd/space-sim-client` (Raylib renderer)**
+**Group B — `cmd/space-sim` with `--server` (Raylib renderer)**
 - [x] Subscribe to `WorldService.StreamSnapshot` over gRPC; store latest snapshot in an `atomic.Pointer`
 - [x] Render loop reads from atomic pointer instead of calling `sim.Snapshot()` locally
-- [x] All simulation command RPCs removed from client — camera, nav, window controls remain local
+- [x] Camera, nav, window controls remain local (no round-trip to server)
+- [ ] Sim-control commands (`setspeed`, `pause`, `system load`) dispatch to `SimulationService` gRPC when `--server` is set (currently TODO in `cmd/space-sim/main.go`)
+
+**Sim-control in remote-renderer mode** (`TODO(F-020)` in `cmd/space-sim/main.go`)
+- [ ] When `--server` is set, `setspeed`, `pause`, `resume`, `system load` must dispatch to `SimulationService` gRPC rather than being silently dropped (currently `session.sim` is nil in this path)
+- [ ] Wire a `SimulationServiceClient` into `App` for remote dispatch alongside `RunWithSnapshot`
+
+**`--local-server` convenience mode** (future)
+- [ ] `space-sim --local-server`: spawn `space-sim-server` as a managed child process, negotiate a loopback port, and connect automatically. Requires process lifecycle management (spawn, health-check, teardown). Deferred — the workflow "start server, then start space-sim --server localhost:9090" is the near-term path.
 
 **Bandwidth mitigations**
 - [ ] **POV frustum filtering**: client sends its current view frustum to the server each frame; server includes only objects within (or near) that frustum in the snapshot. Reuses existing `internal/client/go/raylib/spatial/` frustum logic, moved server-side.
