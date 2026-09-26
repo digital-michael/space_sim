@@ -45,10 +45,13 @@ configs/*local*.json
 configs/*override*.json
 
 # Build artifacts
+# Generated protobuf lands in api/gen/ and is committed (regenerate with `make proto`).
 *.pb.go
-!api/proto/*.pb.go
-space-sim
-space-sim-*
+!api/gen/**/*.pb.go
+# Anchored to the repo root: these match stray built binaries here, NOT the
+# source packages cmd/space-sim/ and cmd/space-sim-admin/.
+/space-sim
+/space-sim-*
 performance_debug.log
 output/
 SCRATCH FILE.md
