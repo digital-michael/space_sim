@@ -63,6 +63,18 @@ func (h *WorldHandler) StreamSnapshot(ctx context.Context, req *connect.Request[
 	}
 }
 
+// StreamCount reports how many snapshot streams are currently attached.
+//
+// This is the SUBSCRIBER population, which is not the same as the registered
+// session population: a renderer subscribes without registering today, and an
+// admin may register without subscribing. Callers deciding simulation lifecycle
+// should be explicit about which one they mean.
+func (h *WorldHandler) StreamCount() int {
+	h.mu.RLock()
+	defer h.mu.RUnlock()
+	return len(h.streams)
+}
+
 func (h *WorldHandler) addStream(ch chan protocol.WorldSnapshot) {
 	h.mu.Lock()
 	defer h.mu.Unlock()

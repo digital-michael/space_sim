@@ -110,12 +110,35 @@ func TestMarkerSphereRadiusZeroScreenHeight(t *testing.T) {
 
 // ── LOD / cull constants ─────────────────────────────────────────────────────
 
-func TestMarkerCullDistanceSane(t *testing.T) {
+// The cull distance must span the system, not cap at a close-range value.
+//
+// This test previously asserted a maximum of 100 su, citing it as a spec limit.
+// The F-021 spec states no such limit: §3 requires a marker to render at a fixed
+// screen-space minimum "so the marker remains visible regardless of zoom level",
+// and §4.2 requires the own-marker to be "always visible regardless of distance".
+// A 100 su cap contradicted both — the remote camera starts ~102 su from the
+// origin, so markers were culled before ever being seen. The old assertion was
+// guarding an implementation artifact and describing it as a requirement.
+func TestMarkerCullDistanceSpansTheSystem(t *testing.T) {
 	if markerCullDistanceSU <= 0 {
 		t.Fatal("markerCullDistanceSU must be positive")
 	}
-	if markerCullDistanceSU > 200 {
-		t.Fatalf("markerCullDistanceSU = %v unexpectedly large (spec max: 100)", markerCullDistanceSU)
+	// Neptune orbits at ~1505 su in the bundled solar system, so anything below
+	// that hides markers across most of the system.
+	const neptuneSU = 1505.0
+	if markerCullDistanceSU < neptuneSU {
+		t.Errorf("markerCullDistanceSU = %v; must be at least %v to keep markers visible across the system",
+			markerCullDistanceSU, neptuneSU)
+	}
+}
+
+// Labels follow the markers: a threshold that hides them at ordinary viewing
+// distance makes the label feature inert. The spec's 0.5 su default (§4.1) is
+// explicitly configurable and was sized for close-range viewing.
+func TestMarkerLabelDistanceIsUsableAtSystemScale(t *testing.T) {
+	if markerLabelVisibleDistSU < markerFarThresholdSU {
+		t.Errorf("markerLabelVisibleDistSU = %v is below the far-camera threshold %v, so labels would only ever appear in the near regime",
+			markerLabelVisibleDistSU, markerFarThresholdSU)
 	}
 }
 

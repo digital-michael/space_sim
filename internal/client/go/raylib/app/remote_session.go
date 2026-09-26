@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"math"
 	"time"
 
 	ui "github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
@@ -28,6 +29,7 @@ func (a *App) newRemoteRuntimeSession(snapSrc protocol.SnapshotSource, navOrder 
 		cameraState:     cameraState,
 		inputState:      ui.NewInputState(firstCategory),
 		navigationOrder: navOrder,
+		sessionID:       a.cfg.SessionID,
 	}
 }
 
@@ -72,16 +74,23 @@ waitLoop:
 
 	session := a.newRemoteRuntimeSession(snapSrc, navOrder)
 
-	// Point camera at the first star if one is present in the snapshot.
-	for i, obj := range firstSnap.State.Objects {
-		if engine.IsStarLike(obj.Meta.Category) {
-			session.cameraState.StartTracking(i)
-			session.cameraState.Tracking.Distance = float64(obj.Meta.PhysicalRadius) + 75.0
-			break
+	// Open looking at where this client actually is, falling back to the star.
+	//
+	// Tracking the star meant every client opened pointing at the same place
+	// regardless of where it spawned — and with spawns scattered across the
+	// system, a peer ~100 degrees away was outside the frustum and appeared to be
+	// missing entirely.
+	if !a.placeCameraAtOwnSpawn(session, firstSnap) {
+		for i, obj := range firstSnap.State.Objects {
+			if engine.IsStarLike(obj.Meta.Category) {
+				session.cameraState.StartTracking(i)
+				session.cameraState.Tracking.Distance = float64(obj.Meta.PhysicalRadius) + 75.0
+				break
+			}
 		}
 	}
 
-	a.startKeybindingsWatcher(ctx, defaultProfilesDir, a.cfg.keybindingsPath())
+	a.startKeybindingsWatcher(ctx, a.cfg.profilesDir(), a.cfg.keybindingsPath())
 	return a.runInteractive(ctx, session)
 }
 
@@ -114,4 +123,49 @@ func deriveNavigationOrder(objects []*engine.Object) []engine.ObjectCategory {
 		}
 	}
 	return order
+}
+
+// placeCameraAtOwnSpawn positions the camera just outside this client's own spawn
+// point, looking inward through it toward the system origin. Reports whether it
+// could — it needs a registered session that has reached the snapshot.
+//
+// Looking inward is deliberate: the spawn point, anything clustered near it, and
+// the star all fall ahead of the camera, so a new client sees its surroundings
+// rather than empty space.
+func (a *App) placeCameraAtOwnSpawn(session *runtimeSession, snap protocol.WorldSnapshot) bool {
+	if a.cfg.SessionID == "" {
+		return false
+	}
+
+	var own *protocol.ClientSessionSnapshot
+	for i := range snap.ClientSessions {
+		if snap.ClientSessions[i].SessionID == a.cfg.SessionID {
+			own = &snap.ClientSessions[i]
+			break
+		}
+	}
+	if own == nil {
+		return false
+	}
+
+	px, py, pz := own.Position[0], own.Position[1], own.Position[2]
+	r := math.Sqrt(px*px + py*py + pz*pz)
+	if r == 0 {
+		return false // at the origin, which is inside the star; the star fallback is better
+	}
+
+	const standoffSU = 25.0
+	nx, ny, nz := px/r, py/r, pz/r
+
+	session.cameraState.Mode = ui.CameraModeFree
+	session.cameraState.Position = engine.Vector3{
+		X: float32(px + nx*standoffSU),
+		Y: float32(py + ny*standoffSU),
+		Z: float32(pz + nz*standoffSU),
+	}
+	// Face back down the radial, i.e. toward the origin.
+	session.cameraState.Pitch = math.Asin(-ny)
+	session.cameraState.Yaw = math.Atan2(-nx, -nz)
+	session.cameraState.UpdateForwardFromAngles()
+	return true
 }

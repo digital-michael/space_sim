@@ -17,6 +17,23 @@ func DefaultAppConfigPathFor(appName string) string {
 	return filepath.Join(home, appName+".json")
 }
 
+// DefaultKeybindingsPathFor returns the per-user keybindings config location.
+//
+// It sits beside the app config in the home directory rather than under the
+// working directory, so a client launched from anywhere reads and writes the
+// same file. The old working-directory-relative location meant a rebind saved
+// while running from /tmp landed in /tmp/configs/ and was invisible next launch.
+//
+// Falls back to the legacy relative path only when the home directory cannot be
+// determined.
+func DefaultKeybindingsPathFor(appName string) string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return defaultKeybindingsPath
+	}
+	return filepath.Join(home, appName+"-keybindings.json")
+}
+
 // LoadAppConfig loads persisted app/window config. Missing files fall back to defaults.
 func LoadAppConfig(path string) (AppConfig, error) {
 	cfg := AppConfig{

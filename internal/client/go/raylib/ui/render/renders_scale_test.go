@@ -58,14 +58,14 @@ func TestScaledInt32MinClamp(t *testing.T) {
 }
 
 func TestNewRendererHasNoTarget(t *testing.T) {
-	r := New(true, true)
+	r := New(true, true, "")
 	if r.HasRenderTarget() {
 		t.Error("new Renderer should have no render target")
 	}
 }
 
 func TestDisableRenderTargetOnNewRenderer(t *testing.T) {
-	r := New(true, true)
+	r := New(true, true, "")
 	r.DisableRenderTarget() // no-op when no target
 	if r.HasRenderTarget() {
 		t.Error("render target should remain disabled")

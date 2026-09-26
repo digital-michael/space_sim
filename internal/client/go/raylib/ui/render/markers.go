@@ -2,6 +2,7 @@ package render
 
 import (
 	"hash/fnv"
+	"log"
 	"math"
 
 	"github.com/digital-michael/space_sim/internal/protocol"
@@ -13,13 +14,27 @@ import (
 // Configurable via configs/app.json in a future pass; values below match the
 // spec defaults (see docs/wip/f021-physical-marker-spec.md §4).
 const (
-	markerBlinkPeriodS       = 1.5   // seconds per full blink cycle
-	markerNearRadius         = 0.001 // world-space radius when camera is close (sim units)
-	markerFarThresholdSU     = 1.0   // camera distance (sim units) above which screen-space minimum is enforced
-	markerCullDistanceSU     = 100.0 // markers beyond this distance (sim units) are not drawn
-	markerScreenMinPx        = 4.0   // minimum screen-space pixel radius at any distance
-	markerOwnOpacity         = 0.30  // opacity multiplier applied to the local client's own marker
-	markerLabelVisibleDistSU = 0.5   // labels are hidden when the camera is farther than this (sim units)
+	markerBlinkPeriodS   = 1.5   // seconds per full blink cycle
+	markerNearRadius     = 0.001 // world-space radius when camera is close (sim units)
+	markerFarThresholdSU = 1.0   // camera distance (sim units) above which screen-space minimum is enforced
+	markerScreenMinPx    = 4.0   // minimum screen-space pixel radius at any distance
+	markerOwnOpacity     = 0.30  // opacity multiplier applied to the local client's own marker
+
+	// These two were F-021 Phase 1 defaults sized for a marker viewed from close
+	// range — 100 su and 0.5 su. At system scale they made markers and labels
+	// impossible to see: the remote camera starts roughly 102 su from the origin,
+	// so the cull distance was marginal and the label threshold was exceeded by
+	// 200x. Raised to span the system (Neptune sits at ~1505 su).
+	//
+	// A fixed world distance is the wrong model here, for the same reason a pixel
+	// threshold is the wrong unit for body visibility: what decides whether a
+	// marker is worth drawing is its ANGULAR size and its screen position, not how
+	// many sim units away it is. The screen-space minimum radius above already
+	// keeps a distant marker visible, and off-screen culling already discards what
+	// cannot be seen — so these should become angular thresholds rather than
+	// larger constants.
+	markerCullDistanceSU     = 5000.0
+	markerLabelVisibleDistSU = 5000.0
 )
 
 // markerPhaseOffset returns a deterministic per-session blink phase offset
@@ -127,6 +142,14 @@ func (r *Renderer) DrawClientMarkers(
 //
 // Labels are skipped for sessions farther than markerLabelVisibleDistSU from
 // the camera and for sessions with an empty Label field.
+// markerLabelDiagBudget bounds the one-shot label diagnostic so enabling it
+// cannot flood a 60 fps loop. Set MarkerLabelDiag to enable.
+var markerLabelDiagBudget = 12
+
+// MarkerLabelDiag, when true, logs why each client marker label was drawn or
+// skipped, for a bounded number of frames. Enabled by the --debug flag.
+var MarkerLabelDiag bool
+
 func (r *Renderer) DrawClientMarkerLabels(
 	sessions []protocol.ClientSessionSnapshot,
 	camPos engine.Vector3,
@@ -142,8 +165,18 @@ func (r *Renderer) DrawClientMarkerLabels(
 	fontSize := scaledInt32(14)
 	labelRiseY := scaledInt32(24) // pixels above projected center
 
+	diag := MarkerLabelDiag && markerLabelDiagBudget > 0
+	if diag {
+		markerLabelDiagBudget--
+		log.Printf("[markerdiag] frame: %d session(s), screen %dx%d, camPos=(%.2f,%.2f,%.2f)",
+			len(sessions), screenW, screenH, camPos.X, camPos.Y, camPos.Z)
+	}
+
 	for _, s := range sessions {
 		if s.Label == "" {
+			if diag {
+				log.Printf("[markerdiag]   SKIP empty label, session=%s", s.SessionID)
+			}
 			continue
 		}
 
@@ -153,6 +186,9 @@ func (r *Renderer) DrawClientMarkerLabels(
 		dist := math.Sqrt(relX*relX + relY*relY + relZ*relZ)
 
 		if dist > markerLabelVisibleDistSU {
+			if diag {
+				log.Printf("[markerdiag]   SKIP %q: dist %.2f > cutoff %.2f", s.Label, dist, markerLabelVisibleDistSU)
+			}
 			continue
 		}
 
@@ -162,7 +198,16 @@ func (r *Renderer) DrawClientMarkerLabels(
 		// Skip if the projected point is far off-screen (behind camera or clipped).
 		if screen.X < -500 || screen.X > float32(screenW+500) ||
 			screen.Y < -500 || screen.Y > float32(screenH+500) {
+			if diag {
+				log.Printf("[markerdiag]   SKIP %q: off-screen at (%.0f,%.0f), dist %.2f, rel=(%.2f,%.2f,%.2f)",
+					s.Label, screen.X, screen.Y, dist, relX, relY, relZ)
+			}
 			continue
+		}
+
+		if diag {
+			log.Printf("[markerdiag]   DRAW %q at (%.0f,%.0f), dist %.2f, colour #%02x%02x%02x",
+				s.Label, screen.X, screen.Y, dist, s.Color[0], s.Color[1], s.Color[2])
 		}
 
 		label := s.Label

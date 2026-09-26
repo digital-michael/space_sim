@@ -21,7 +21,6 @@ type runtimeSession struct {
 	snapSrc         protocol.SnapshotSource
 	cameraState     *ui.CameraState
 	inputState      *ui.InputState
-	debugTracker    *DebugTracker
 	navigationOrder []engine.ObjectCategory
 	ship            *ship.ShipInstance
 	driftMode       bool // move.drift_toggle: when true thrust keys are ignored
@@ -46,11 +45,6 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 	cameraState := ui.NewCameraState()
 	cameraState.Position = engine.Vector3{X: 0, Y: 50, Z: -100}
 	cameraState.UpdateForwardFromAngles()
-
-	var debugTracker *DebugTracker
-	if a.cfg.Debug {
-		debugTracker = NewDebugTracker()
-	}
 
 	normalizedPath := normalizeSystemConfigPath(systemConfigPath)
 	sim, err := sim.NewWorld(defaultSimHz, normalizedPath)
@@ -127,7 +121,6 @@ func (a *App) newRuntimeSession(systemConfigPath string) (session *runtimeSessio
 		snapSrc:         sim, // world.World satisfies protocol.SnapshotSource
 		cameraState:     cameraState,
 		inputState:      inputState,
-		debugTracker:    debugTracker,
 		navigationOrder: navigationOrder,
 		ship:            shipInst,
 	}, nil

@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+// Package spacesim.v1 is the public contract for the Space Sim server.
+// This file carries the content-distribution surface: how a remote client
+// obtains the simulation content it needs to render without a local data/
+// directory. See docs/wip/f040-remote-client-assets-spec.md.
+package spacesim.v1;
+
+option go_package = "github.com/digital-michael/space_sim/api/gen/spacesim/v1;spacesimv1";
+
+// ─── AssetService ─────────────────────────────────────────────────────────────
+//
+// Server-authoritative simulation content, delivered as a single versioned
+// bundle. A bundle is a zip archive of data/systems, data/bodies, data/ships,
+// and data/assets, addressed by the SHA-256 of its bytes.
+//
+// data/profiles is deliberately excluded: keybinding hardware profiles are
+// client-local user configuration and a server must not overwrite them.
+//
+// Clients cache by hash. Because the identity of a bundle is its content, a
+// cached bundle can never be stale and no invalidation protocol is required.
+
+service AssetService {
+  // GetBundleInfo returns the current bundle's identity and size. Clients call
+  // this on every connect and skip FetchBundle entirely on a cache hit.
+  rpc GetBundleInfo(GetBundleInfoRequest) returns (GetBundleInfoResponse);
+
+  // FetchBundle streams the bundle archive in ordered chunks.
+  rpc FetchBundle(FetchBundleRequest) returns (stream FetchBundleResponse);
+}
+
+message GetBundleInfoRequest {
+  uint32 version = 1;
+}
+
+message GetBundleInfoResponse {
+  uint32 version = 1;
+
+  // hash is the lowercase hex-encoded SHA-256 of the complete archive. It is
+  // the bundle's identity: clients cache under it and verify received bytes
+  // against it before unpacking.
+  string hash = 2;
+
+  // size_bytes is the total archive length, for progress reporting and for
+  // rejecting an implausible payload before buffering it.
+  int64 size_bytes = 3;
+
+  // entry_count is the number of files inside the archive.
+  uint32 entry_count = 4;
+
+  // active_system_path identifies the system the server currently has loaded,
+  // as a path inside the bundle — e.g. "data/systems/solar_system". Since
+  // F-034 each system is a DIRECTORY of per-category files (system.json,
+  // stars.json, planets.json, …), not a single document.
+  //
+  // This is reported here rather than obtained from SystemService.GetActiveSystem
+  // because that handler routes through the Raylib app's command channel and is
+  // therefore unavailable on a headless server. A client needs the bundle and
+  // the active system together at connect time, so answering both in one call
+  // also removes a round trip.
+  string active_system_path = 5;
+}
+
+message FetchBundleRequest {
+  uint32 version = 1;
+
+  // expected_hash must match the server's current bundle hash. A mismatch
+  // returns FailedPrecondition rather than streaming a different bundle than
+  // the client asked for. Without this the operator changing a data file
+  // between GetBundleInfo and FetchBundle would splice two versions into one
+  // download that then fails verification for no discoverable reason.
+  string expected_hash = 2;
+}
+
+message FetchBundleResponse {
+  uint32 version = 1;
+
+  // chunk is a contiguous slice of the archive. Chunks arrive in order and are
+  // concatenated by the client; the stream carries no offsets because gRPC
+  // streams are already ordered.
+  bytes chunk = 2;
+}

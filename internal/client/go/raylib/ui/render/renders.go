@@ -2,6 +2,7 @@ package render
 
 import (
 	"math"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -59,6 +60,10 @@ type Renderer struct {
 	noLighting bool
 	lighting   lightingState
 
+	// assetRoot prefixes content paths the renderer resolves itself, such as the
+	// skysphere texture. Body textures arrive pre-resolved on ObjectMetadata.
+	assetRoot string
+
 	// atmosphere holds the rim-glow + day/night shader; atmoSphere is a
 	// lazily-loaded unit-sphere model reused for all atmosphere draw calls.
 	atmosphere       atmosphereState
@@ -101,17 +106,27 @@ type modelKey struct {
 }
 
 // New creates a Raylib renderer.
-func New(noTextures, noLighting bool) *Renderer {
+// resolveAsset maps a bundle-relative content path to where it actually lives.
+// With an empty assetRoot the path is returned unchanged, so standalone mode
+// keeps resolving against the working directory.
+func (r *Renderer) resolveAsset(rel string) string {
+	if r.assetRoot == "" || rel == "" || filepath.IsAbs(rel) {
+		return rel
+	}
+	return filepath.Join(r.assetRoot, filepath.FromSlash(rel))
+}
+
+func New(noTextures, noLighting bool, assetRoot string) *Renderer {
 	setLayoutSize(0, 0)
 	return &Renderer{
 		noTextures:     noTextures,
 		noLighting:     noLighting,
+		assetRoot:      assetRoot,
 		textureCache:   make(map[string]rl.Texture2D),
 		modelCache:     make(map[modelKey]rl.Model),
 		ringImageCache: make(map[string]*rl.Image),
 	}
 }
-
 
 func setLayoutSize(width, height int32) {
 	layoutWidth = width

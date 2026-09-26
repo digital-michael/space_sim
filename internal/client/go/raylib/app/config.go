@@ -2,7 +2,11 @@ package app
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 	"strings"
+	"sync"
 )
 
 const (
@@ -57,6 +61,16 @@ type AppConfig struct {
 }
 
 // Config holds bootstrap options for the Space Sim application.
+// profilesDir returns where shipped keybinding profiles live. In remote-renderer
+// mode that is inside the fetched content bundle; a genuinely remote client has
+// no local data/ tree, and a missing profile is fatal to startup.
+func (c Config) profilesDir() string {
+	if c.AssetRoot == "" {
+		return defaultProfilesDir
+	}
+	return filepath.Join(c.AssetRoot, filepath.FromSlash(defaultProfilesDir))
+}
+
 type Config struct {
 	PerformanceMode bool
 	Profile         string
@@ -82,6 +96,18 @@ type Config struct {
 
 	// NoTextures disables diffuse texture rendering; bodies use their fallback solid color.
 	NoTextures bool
+
+	// SessionID is the server-assigned session this client registered as. The
+	// renderer uses it to mark its own marker with "(you)" and to distinguish
+	// self from peers. Empty means unregistered, in which case every marker
+	// renders as a peer.
+	SessionID string
+
+	// AssetRoot, when non-empty, is the directory that bundle-relative content
+	// paths resolve against — a fetched asset bundle's cache directory in
+	// remote-renderer mode. Empty means paths resolve against the working
+	// directory, which is standalone mode's behaviour.
+	AssetRoot string
 
 	// NoLighting disables the Phong star-lighting shader; bodies render with
 	// Raylib's default flat diffuse shader (no inverse-square shadowing).
@@ -122,8 +148,17 @@ func ParseRenderSize(s string) (int32, int32, error) {
 	return w, h, nil
 }
 
+// legacyKeybindingsNotice ensures the migration hint is printed once per run,
+// since keybindingsPath is called from several places.
+var legacyKeybindingsNotice sync.Once
+
 // keybindingsPath returns the effective path for the keybindings config file.
-// Priority: CLI flag > app config saved preference > factory default.
+// Priority: CLI flag > app config saved preference > per-user default.
+//
+// The per-user default lives in the home directory beside the app config. A file
+// still sitting at the old working-directory-relative location is honoured, but
+// the user is told where to move it: silently ignoring it would lose their
+// bindings, and silently relocating it would be an unannounced side effect.
 func (cfg Config) keybindingsPath() string {
 	if cfg.KeybindingsPath != "" {
 		return cfg.KeybindingsPath
@@ -131,7 +166,21 @@ func (cfg Config) keybindingsPath() string {
 	if cfg.AppConfig.KeybindingsPath != "" {
 		return cfg.AppConfig.KeybindingsPath
 	}
-	return defaultKeybindingsPath
+
+	perUser := DefaultKeybindingsPathFor(defaultAppName)
+	if !fileExists(perUser) && fileExists(defaultKeybindingsPath) {
+		legacyKeybindingsNotice.Do(func() {
+			log.Printf("keybindings: using legacy %s — move it to %s so it applies from any working directory",
+				defaultKeybindingsPath, perUser)
+		})
+		return defaultKeybindingsPath
+	}
+	return perUser
+}
+
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
 }
 
 // WithDefaults returns cfg with default values filled in.

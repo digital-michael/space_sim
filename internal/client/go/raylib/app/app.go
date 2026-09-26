@@ -77,15 +77,18 @@ func New(cfg Config) (*App, error) {
 		return nil, err
 	}
 
-	km, err := input.LoadKeyMap(defaultProfilesDir, cfg.keybindingsPath())
+	render.MarkerLabelDiag = cfg.Debug
+
+	km, err := input.LoadKeyMap(cfg.profilesDir(), cfg.keybindingsPath())
 	if err != nil {
 		return nil, fmt.Errorf("keybindings: %w", err)
 	}
 
 	app := &App{
-		cfg:               cfg,
-		runtime:           NewRuntimeContext(cfg.AppConfig),
-		renderer:          render.New(cfg.NoTextures, cfg.NoLighting),
+		cfg:      cfg,
+		runtime:  NewRuntimeContext(cfg.AppConfig),
+		renderer: render.New(cfg.NoTextures, cfg.NoLighting, cfg.AssetRoot),
+
 		broadcaster:       &protocol.Broadcaster{},
 		cmdCh:             make(chan AppCmd, appCmdBufSize),
 		savedRenderConfig: savedRender,
@@ -171,7 +174,7 @@ func (a *App) Run(ctx context.Context) error {
 		return nil
 	}
 
-	a.startKeybindingsWatcher(ctx, defaultProfilesDir, a.cfg.keybindingsPath())
+	a.startKeybindingsWatcher(ctx, a.cfg.profilesDir(), a.cfg.keybindingsPath())
 	return a.runInteractive(ctx, session)
 }
 

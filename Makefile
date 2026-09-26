@@ -1,12 +1,9 @@
 # Space Sim Makefile
 #
 # Binaries:
-#   space-sim-direct  — Raylib client + in-process server (no network transport)
-#   space-sim-grpc    — Raylib client talking to embedded gRPC server via ConnectRPC
-#                       Long-term target: split into separate client and server binaries.
-#   space-sim-repl    — Interactive CLI client for a running space-sim-grpc server.
-#   space-sim-server  — Headless physics server (no Raylib); streams snapshots via gRPC.
-#   space-sim-client  — Remote Raylib renderer; connects to space-sim-server.
+#   space-sim        — Raylib renderer. Standalone (no flags) or --server host:port remote-renderer.
+#   space-sim-server — Headless physics server; streams snapshots via gRPC on :9090.
+#   space-sim-admin  — Interactive control REPL for a running space-sim-server.
 #
 # Proto generation requires buf (https://buf.build/docs/installation).
 # Run `make proto` after installing buf and adding buf.yaml / buf.gen.yaml.
@@ -14,20 +11,14 @@
 GO      := go
 BIN_DIR := bin
 
-DIRECT_BIN := $(BIN_DIR)/space-sim-direct
-DIRECT_CMD := ./cmd/space-sim-direct
-
-GRPC_BIN := $(BIN_DIR)/space-sim-grpc
-GRPC_CMD := ./cmd/space-sim-grpc
-
-REPL_BIN := $(BIN_DIR)/space-sim-repl
-REPL_CMD := ./cmd/space-sim-repl
+SIM_BIN    := $(BIN_DIR)/space-sim
+SIM_CMD    := ./cmd/space-sim
 
 SERVER_BIN := $(BIN_DIR)/space-sim-server
 SERVER_CMD := ./cmd/space-sim-server
 
-CLIENT_BIN := $(BIN_DIR)/space-sim-client
-CLIENT_CMD := ./cmd/space-sim-client
+ADMIN_BIN  := $(BIN_DIR)/space-sim-admin
+ADMIN_CMD  := ./cmd/space-sim-admin
 
 .DEFAULT_GOAL := build
 
@@ -38,64 +29,47 @@ help: ## Show available targets
 # ── Build ─────────────────────────────────────────────────────────────────────
 
 .PHONY: build
-build: build-direct build-grpc build-repl build-server build-client ## Build all binaries
+build: build-sim build-server build-admin ## Build all binaries
 
-.PHONY: build-direct
-build-direct: ## Build space-sim-direct (in-process, no gRPC)
+.PHONY: build-sim
+build-sim: ## Build space-sim (standalone or --server remote-renderer)
 	@mkdir -p $(BIN_DIR)
-	$(GO) build -o $(DIRECT_BIN) $(DIRECT_CMD)
-
-.PHONY: build-grpc
-build-grpc: ## Build space-sim-grpc (Raylib + ConnectRPC)
-	@mkdir -p $(BIN_DIR)
-	$(GO) build -o $(GRPC_BIN) $(GRPC_CMD)
-
-.PHONY: build-repl
-build-repl: ## Build space-sim-repl (CLI client)
-	@mkdir -p $(BIN_DIR)
-	$(GO) build -o $(REPL_BIN) $(REPL_CMD)
+	$(GO) build -o $(SIM_BIN) $(SIM_CMD)
 
 .PHONY: build-server
 build-server: ## Build space-sim-server (headless physics server, no Raylib)
 	@mkdir -p $(BIN_DIR)
 	$(GO) build -o $(SERVER_BIN) $(SERVER_CMD)
 
-.PHONY: build-client
-build-client: ## Build space-sim-client (remote Raylib renderer)
+.PHONY: build-admin
+build-admin: ## Build space-sim-admin (control REPL)
 	@mkdir -p $(BIN_DIR)
-	$(GO) build -o $(CLIENT_BIN) $(CLIENT_CMD)
+	$(GO) build -o $(ADMIN_BIN) $(ADMIN_CMD)
 
 # ── Run ───────────────────────────────────────────────────────────────────────
 
 .PHONY: run
-run: run-direct ## Alias for run-direct
-
-.PHONY: run-direct
-run-direct: build-direct ## Run the direct (in-process) binary
-	./$(DIRECT_BIN)
-
-.PHONY: run-grpc
-run-grpc: build-grpc ## Run the gRPC-coupled binary
-	./$(GRPC_BIN)
-
-.PHONY: run-repl
-run-repl: build-repl ## Run the REPL client (set ADDR= to override server address)
-	./$(REPL_BIN) --addr $${ADDR:-http://localhost:9090}
+run: build-sim ## Run space-sim in standalone mode
+	./$(SIM_BIN)
 
 .PHONY: run-server
 run-server: build-server ## Run the headless physics server (set ADDR= and SYSTEM= to override)
-	./$(SERVER_BIN) --addr $${ADDR:-:8080} --system-config $${SYSTEM:-data/systems/solar_system}
+	./$(SERVER_BIN) --addr $${ADDR:-:9090} --system-config $${SYSTEM:-data/systems/solar_system}
 
-.PHONY: run-client
-run-client: build-client ## Run the remote renderer (set SERVER= to override server address)
-	./$(CLIENT_BIN) --server $${SERVER:-localhost:8080}
+.PHONY: run-admin
+run-admin: build-admin ## Run the admin REPL (set ADDR= to override server address)
+	./$(ADMIN_BIN) --addr $${ADDR:-http://localhost:9090}
+
+.PHONY: run-remote
+run-remote: build-sim ## Run space-sim connected to a server (set SERVER= to override)
+	./$(SIM_BIN) --server $${SERVER:-localhost:9090}
 
 DEMO_SCRIPT := scripts/solar-tour.txt
 
 .PHONY: demo
-demo: build-repl ## Run the solar system tour demo (requires space-sim-grpc running; set ADDR= to override)
-	@echo "# Running solar tour — make sure space-sim-grpc is running first"
-	./$(REPL_BIN) --addr $${ADDR:-http://localhost:9090} --script $(DEMO_SCRIPT)
+demo: build-admin ## Run the solar system tour demo (requires space-sim-server running; set ADDR= to override)
+	@echo "# Running solar tour — make sure space-sim-server is running first"
+	./$(ADMIN_BIN) --addr $${ADDR:-http://localhost:9090} --script $(DEMO_SCRIPT)
 
 # ── Proto ─────────────────────────────────────────────────────────────────────
 
@@ -110,7 +84,7 @@ test: ## Run all unit tests with race detector
 	$(GO) test -race ./...
 
 .PHONY: test-direct
-test-direct: ## Run tests for direct/server packages only
+test-direct: ## Run tests for sim/server packages only
 	$(GO) test -race ./internal/sim/... ./internal/server/... ./internal/persist/... ./internal/protocol/...
 
 # ── Maintenance ───────────────────────────────────────────────────────────────

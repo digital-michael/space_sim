@@ -53,10 +53,6 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		a.drainCmds(session, snap)
 		state := snap.State
 
-		if session.debugTracker != nil {
-			session.debugTracker.CheckVisibility(state.Objects, "after Snapshot()")
-		}
-
 		shouldQuit = a.handleInput(session, state)
 		zoomIndicator := a.updateCameraState(session, state, dt)
 
@@ -104,39 +100,14 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 		for _, obj := range state.Objects {
 			if obj.Visible {
 				objectsToRender = append(objectsToRender, obj)
-			} else if session.debugTracker != nil && (obj.Meta.Name == "Earth" || obj.Meta.Name == "Moon") {
-				session.debugTracker.LogRenderDecision(obj, false, "obj.Visible=false")
 			}
 		}
 
 		if a.runtime.PerfConfig.FrustumCulling {
-			preCullCount := len(objectsToRender)
 			if a.runtime.PerfConfig.SpatialPartition {
 				objectsToRender = spatial.SpatialFrustumCull(objectsToRender, worldCam)
 			} else {
 				objectsToRender = spatial.FrustumCullObjects(objectsToRender, worldCam)
-			}
-
-			postCullCount := len(objectsToRender)
-			if session.debugTracker != nil && preCullCount != postCullCount {
-				for _, obj := range state.Objects {
-					if (obj.Meta.Name == "Earth" || obj.Meta.Name == "Moon") && obj.Visible {
-						found := false
-						for _, renderObj := range objectsToRender {
-							if renderObj == obj {
-								found = true
-								break
-							}
-						}
-						if !found {
-							if a.runtime.PerfConfig.SpatialPartition {
-								session.debugTracker.LogRenderDecision(obj, true, "spatial frustum culling")
-							} else {
-								session.debugTracker.LogRenderDecision(obj, true, "frustum culling")
-							}
-						}
-					}
-				}
 			}
 		}
 

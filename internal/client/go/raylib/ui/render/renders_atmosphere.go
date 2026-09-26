@@ -290,7 +290,7 @@ func (r *Renderer) DrawSky() {
 	}
 	if !r.skyLoaded {
 		r.skyLoaded = true
-		r.skyTex = r.loadTexture(skyTexPath)
+		r.skyTex = r.loadTexture(r.resolveAsset(skyTexPath))
 		if r.skyTex.ID > 0 {
 			mesh := rl.GenMeshSphere(1.0, 32, 16)
 			// UV fix for inside-sphere (sky-dome) viewing.

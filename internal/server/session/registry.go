@@ -64,7 +64,17 @@ type Registry interface {
 type Config struct {
 	MaxSessions int    // default 100
 	AdminSecret string // required when requesting ClientRoleAdmin; "" disables admin role
+
+	// Spawn places newly registered clients in the world. When nil a client
+	// lands at the origin, which in a heliocentric system is inside the star —
+	// invisible, and identical for every client.
+	Spawn SpawnFunc
 }
+
+// SpawnFunc returns a world position and a human-readable reference for where a
+// newly registered client should appear. Injected rather than computed inside the
+// registry, because the registry has no knowledge of the loaded world.
+type SpawnFunc func() (pos [3]float64, ref string)
 
 // DefaultConfig returns a Config with safe defaults.
 func DefaultConfig() Config {
@@ -112,6 +122,15 @@ func (r *inMemoryRegistry) Register(req RegisterRequest) (*ClientSession, error)
 		role = ClientRolePlayer
 	}
 
+	// Without a spawn provider a client lands at the origin, which in a
+	// heliocentric system is the centre of the star: invisible, and identical for
+	// every client.
+	var spawnPos [3]float64
+	var spawnRef string
+	if r.cfg.Spawn != nil {
+		spawnPos, spawnRef = r.cfg.Spawn()
+	}
+
 	label := req.Label
 	if len(label) > 32 {
 		label = label[:32]
@@ -128,6 +147,8 @@ func (r *inMemoryRegistry) Register(req RegisterRequest) (*ClientSession, error)
 		Label:       label,
 		Role:        role,
 		Color:       colorPalette[idx],
+		Position:    spawnPos,
+		SpawnRef:    spawnRef,
 		ConnectedAt: now,
 		LastSeen:    now,
 	}
@@ -265,13 +286,24 @@ func (r *inMemoryRegistry) notify(e SessionEvent) {
 }
 
 // allocColor returns the first available color index. Caller must hold mu.
+// colorStride walks the palette in golden-angle steps rather than sequentially.
+//
+// The palette is 100 hues at 3.6 degrees apart, so allocating index 0 then 1
+// hands the first two clients hues 3.6 degrees apart — indistinguishable reds.
+// 38 is coprime with 100 and approximates the golden angle (137.5 degrees), which
+// maximises the minimum separation for any number of clients, not just for a full
+// hundred. Two clients get roughly 137 degrees apart; three get ~137 apart each.
+const colorStride = 38
+
 func (r *inMemoryRegistry) allocColor() int {
-	for i, used := range r.colors {
-		if !used {
+	n := len(r.colors)
+	for step := 0; step < n; step++ {
+		i := (step * colorStride) % n
+		if !r.colors[i] {
 			return i
 		}
 	}
-	return 0 // should not reach here; capacity guard prevents overflow
+	return 0 // unreachable: the capacity guard prevents overflow
 }
 
 // copySession returns a shallow copy to prevent callers from mutating state.

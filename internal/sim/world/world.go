@@ -21,13 +21,22 @@ type World struct {
 	*engine.Simulation
 	beltConfigs   []*engine.FeatureConfig // belt feature configs for count queries
 	snapshotStore atomic.Value            // stores protocol.WorldSnapshot; written by sim goroutine
+	systemPath    string                  // resolved path of the loaded system
 }
+
+// DefaultSystemPath is the system loaded when no path is supplied.
+const DefaultSystemPath = "data/systems/solar_system"
+
+// SystemPath returns the resolved path of the system this world loaded, with
+// the default already applied. A headless server reports this to clients so
+// they know which system definition to read out of the asset bundle.
+func (w *World) SystemPath() string { return w.systemPath }
 
 // NewSimulation loads an environment from configPath and starts the simulation
 // process. If configPath is empty, defaults to "data/systems/solar_system".
 func NewWorld(hz float64, configPath string) (*World, error) {
 	if configPath == "" {
-		configPath = "data/systems/solar_system"
+		configPath = DefaultSystemPath
 	}
 
 	// Detect whether configPath is a directory (new v2 format) or a JSON file
@@ -154,7 +163,7 @@ func NewWorld(hz float64, configPath string) (*World, error) {
 	// created it. This happens before Start() so there is no data race.
 	dbPtr = inner.GetState()
 
-	w := &World{Simulation: inner, beltConfigs: beltConfigs}
+	w := &World{Simulation: inner, beltConfigs: beltConfigs, systemPath: configPath}
 
 	// Wire the post-tick hook so the sim goroutine builds and publishes a
 	// ready-to-render snapshot after each tick. The main render loop loads

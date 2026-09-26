@@ -13,6 +13,10 @@ import (
 
 const defaultSystemConfigPath = "data/systems/solar_system"
 
+// systemsSubdir is the bundle-relative location of system definitions. It is
+// joined with an asset root when one is configured.
+const systemsSubdir = "data/systems"
+
 type systemConfigSummary struct {
 	Name string `json:"name"`
 }
@@ -126,12 +130,26 @@ func isTestSystem(label string) bool {
 }
 
 func discoverRuntimeSystemOptions() ([]ui.SystemOption, error) {
-	return discoverSystemOptionsFromDir("data/systems")
+	return discoverSystemOptionsFromDir(systemsSubdir)
+}
+
+// systemsDir is where this app instance looks for system definitions.
+//
+// In remote-renderer mode that is the fetched content bundle, not the working
+// directory — a genuinely remote client has no local data/ tree. It is also not
+// SystemService.ListSystems: that RPC is unavailable on a headless server, whose
+// handler routes through the Raylib app's own command channel.
+func (a *App) systemsDir() string {
+	if a.cfg.AssetRoot == "" {
+		return systemsSubdir
+	}
+	return filepath.Join(a.cfg.AssetRoot, filepath.FromSlash(systemsSubdir))
 }
 
 func (a *App) openSystemSelector(inputState *ui.InputState) {
 	activePath := normalizeSystemConfigPath(a.cfg.SystemConfig)
-	options, err := discoverRuntimeSystemOptions()
+	dir := a.systemsDir()
+	options, err := discoverSystemOptionsFromDir(dir)
 	inputState.OpenSystemSelector(options, activePath)
 
 	if err != nil {
@@ -139,7 +157,7 @@ func (a *App) openSystemSelector(inputState *ui.InputState) {
 		return
 	}
 	if len(options) == 0 {
-		inputState.SetSystemSelectorStatus("No system JSON files found in data/systems.")
+		inputState.SetSystemSelectorStatus(fmt.Sprintf("No system definitions found in %s.", dir))
 	}
 }
 
