@@ -4,7 +4,7 @@
 Capture completed work after it leaves the active backlog. This is a concise delivery history, not a full commit log.
 
 ## Last Updated
-2026-06-15
+2026-06-17
 
 ## Table of Contents
 1. How to Use This File
@@ -38,6 +38,7 @@ Capture completed work after it leaves the active backlog. This is a concise del
 	5.1 Run Scripts from UI (F-019)
 	5.2 F-010 Admin REPL + F-020 Phase 3 Admin Controls
 	5.3 LLM Agent Collaboration Framework Retrofit
+	5.4 Binary Consolidation and Rename (F-020 topology cleanup)
 
 ## 1. How to Use This File
 
@@ -388,3 +389,23 @@ Enrolled space_sim in the LLM Agent Collaboration Framework (Team mode). Establi
 | `.github/copilot-instructions.md` | Thinned to bridge pointer + Copilot tool notes |
 | `docs/standards/guidance.md` | Reduced to space_sim-unique content (commit format, doc rules, performance note) |
 | `docs/standards/coding-standards.md` | Reduced to space_sim-unique content; IoC section moved to `photon-datum/library/go/` |
+
+### 5.4 Binary Consolidation and Rename — F-020 topology cleanup
+
+**End Date**: 2026-06-17
+
+Clarified the runtime topology and collapsed five binaries to three with unambiguous roles.
+
+**Retired** (deleted from disk):
+- `cmd/space-sim-grpc/` — embedded sim + renderer + gRPC server in one process; role split between `space-sim-server` and `space-sim`
+- `cmd/space-sim-client/` — merged into `space-sim --server`
+- `cmd/space-sim-repl/` — renamed to `space-sim-admin`
+
+**New / renamed**:
+- `cmd/space-sim/` — merged standalone + remote-renderer binary. No flags = embedded sim. `--server host:port` = gRPC renderer connecting to `space-sim-server`.
+- `cmd/space-sim-admin/` — control REPL (was `space-sim-repl`); default address updated to `http://localhost:9090`.
+- `cmd/space-sim-server/` — default port changed from `:8080` to `:9090`.
+
+**Future work captured** (not started):
+- `space-sim --local-server`: spawn `space-sim-server` as a child process and connect over loopback; requires process lifecycle management.
+- Sim-control commands over gRPC in `--server` mode: `setspeed`, `pause`, `system load` currently no-op in remote-renderer mode; must dispatch to `SimulationService` (tracked as `TODO(F-020)` in `cmd/space-sim/main.go`).

@@ -5,7 +5,7 @@
 Single source of truth for project goals, known requirements, and the prioritized implementation plan. Draws from `todo.md` (work items) and session planning discussions. This document describes *what* and *why*; `todo.md` carries the *how* (work items, acceptance criteria, decisions).
 
 ## Last Updated
-2026-06-02
+2026-06-17
 
 ---
 
@@ -43,8 +43,9 @@ Single source of truth for project goals, known requirements, and the prioritize
 - Symbolic / LOD representation for extreme zoom-out (scope after DEF-001 fix)
 
 ### Network / Multi-Machine
-- `space-sim-server`: headless, containerized, single gRPC port; admin access via server-local REPL or admin-role connection
-- `space-sim-client`: Raylib renderer dialing remote server; camera state fully local
+- `space-sim-server`: headless, containerized, single gRPC port (`:9090`); admin access via `space-sim-admin` REPL
+- `space-sim`: Raylib renderer — standalone (no flags) or remote-renderer (`--server host:port`); camera state always local
+- `space-sim-admin`: control REPL connecting to `space-sim-server`; sim-control commands only
 - POV frustum filtering: client sends frustum to server, server filters snapshot to relevant objects
 - Client-side interpolation between received snapshots for smooth rendering at reduced stream rate
 - Delta compression and LOD-by-distance as follow-on bandwidth mitigations
@@ -100,7 +101,7 @@ Items are ordered by the agreed priority sequence. Dependencies are noted per it
 | I | — | Game Definition (F-035 Phase 1) | 📋 Not started — **next up** |
 | J | — | Playable Scenario (F-036 Phase 1) | 📋 Not started |
 | K | — | HUD Profiles (F-038 Phase 1, absorbs F-024) | 📋 Not started |
-| F | 6, 7 | Network split + IAAM (F-010, F-011) | 🔄 In progress (F-010 Group A+B done) |
+| F | 6, 7 | Network split + IAAM (F-010, F-011) | 🔄 In progress (F-010 Group A+B done; binary consolidation complete 2026-06-17) |
 | L | — | AI/NPC Console Phase 1 (F-037) | 📋 Not started — after F-038 Phase 1 |
 | G+ | — | Object model expansion (F-009; F-008 absorbed by F-034) | 📋 Not started |
 
@@ -235,7 +236,7 @@ Migrates `runtimeSession.ShipInstance` → `ClientSession.ShipInstance` when thi
 
 Two parallel sub-tracks:
 - **Group A** `cmd/space-sim-server`: headless entrypoint, no Raylib, containerized
-- **Group B** `cmd/space-sim-client`: Raylib renderer consuming `WorldService.StreamSnapshot` over gRPC
+- **Group B** `cmd/space-sim --server`: Raylib renderer consuming `WorldService.StreamSnapshot` over gRPC (merged from retired `cmd/space-sim-client`)
 
 ---
 
@@ -468,9 +469,7 @@ F-006 ⏸ deferred to F-023 Phase 3
 
 ## 6. Multi-Client Feature Group
 
-These features together deliver a playable multi-client experience against the existing
-`space-sim-grpc` Option A binary. They are independent of F-010/F-011 and can be
-sequenced after the visual group.
+These features together deliver a playable multi-client experience against `space-sim-server` + `space-sim --server`. They are independent of F-010/F-011 and can be sequenced after the visual group.
 
 | Feature | Value | Spec |
 |---------|-------|------|
