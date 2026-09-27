@@ -21,6 +21,9 @@ vendor/
 # Go workspace file
 go.work.sum
 
+# Claude Code — per-machine settings; shared policy lives in .claude/settings.json
+.claude/settings.local.json
+
 # IDE - VSCode
 .vscode/*
 !.vscode/settings.json

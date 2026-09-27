@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(buf curl *)",
+      "Bash(git check-ignore *)",
+      "Bash(go run *)",
+      "Bash(make proto *)",
+      "Bash(ps -Ao pid,pcpu,etime,args)",
+      "Bash(ps -Ao pid,pcpu,pmem,etime,comm -r)",
+      "mcp__cortex__ledger_add_note",
+      "mcp__cortex__ledger_create_item",
+      "mcp__cortex__ledger_list_projects",
+      "mcp__cortex__ledger_project_summary",
+      "mcp__cortex__ledger_update_item",
+      "mcp__cortex__ledger_update_priority",
+      "mcp__cortex__ledger_update_status"
+    ]
+  }
+}
