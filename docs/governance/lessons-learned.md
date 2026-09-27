@@ -19,7 +19,7 @@ Framework-format index of all lessons-learned sources for this repository. This 
 
 | File | Topic | Sessions Covered |
 |---|---|---|
-| [`docs/history/lessons-learned.md`](../history/lessons-learned.md) | Performance testing, profiling methodology, visibility system bugs, UI rendering, Raylib constraints, recording/video, multi-client session layer (F-020), concurrency patterns, gitignore scope defects, F-040 asset bundle, transport boundary violations, Raylib conditional-draw diagnosis, floating-origin thresholds | Feb–May 2026, Sep 2026 |
+| [`docs/history/lessons-learned.md`](../history/lessons-learned.md) | Performance testing, profiling methodology, visibility system bugs, UI rendering, Raylib constraints, recording/video, multi-client session layer (F-020), concurrency patterns, gitignore scope defects, F-040 asset bundle, transport boundary violations, Raylib conditional-draw diagnosis, floating-origin thresholds, h2c and duplex requirements, adaptive presence publishing | Feb–May 2026, Sep 2026 |
 | [`docs/history/lessons-learned-double-buffering.md`](../history/lessons-learned-double-buffering.md) | Double-buffer clone discipline, Go pointer semantics, cross-thread deadlocks, visibility synchronization, type safety in graphics | Feb–Mar 2026 |
 
 ---
@@ -48,6 +48,8 @@ Key recurring patterns where agent behavior has been corrected or validated. See
 | A-16 | Never write a spec on a premise already in doubt — a consistent document aimed at the wrong architecture reviews as finished and buries the load-bearing assumption | lessons-learned.md #52 |
 | A-17 | When an option matrix feels bloated, find the undefined term generating the options; semantic clarification collapses design surface faster than feature-cutting | lessons-learned.md #52 |
 | A-18 | A test asserting a magic number will outlive the reason and defend the wrong behaviour — assert the invariant the number was chosen to satisfy | lessons-learned.md #54 |
+| A-19 | When recording a known limitation, name the capability it blocks — an unlinked note will not be found by whoever hits the symptom | lessons-learned.md #55 |
+| A-20 | When a formula sums two mechanisms, hold one at zero and verify the other against its closed form before trusting the combination | lessons-learned.md #57 |
 
 ---
 
@@ -82,6 +84,10 @@ Key recurring patterns where agent behavior has been corrected or validated. See
 | S-13 | Deflate crushes periodic data — a fixture needing incompressible bytes must use a seeded PRNG, not an arithmetic pattern | lessons-learned.md #45 |
 | S-14 | A conditional Raylib draw fails silently — instrument the per-element decision before theorising about why nothing appears | lessons-learned.md #53 |
 | S-15 | In a floating-origin renderer, visibility thresholds belong in screen/angular terms, not world distance; two coordinate spaces coexist and both look plausible | lessons-learned.md #54 |
+| S-16 | Cleartext gRPC in Go requires h2c; its absence is masked because unary and server-streaming are half-duplex and survive HTTP/1.1, while bidirectional streaming cannot | lessons-learned.md #55 |
+| S-17 | Locate a cost by following the call chain, not by assuming the plausible-looking loop is the hot one | lessons-learned.md #56 |
+| S-18 | Gate a lower layer on a higher-layer condition by injecting a predicate — the import you are about to add is often the mirror of a violation already filed | lessons-learned.md #56 |
+| S-19 | Express "does this matter to the viewer" in angular terms once and reuse it; pixels depend on resolution, sim units on view scale, angular size on neither | lessons-learned.md #57 |
 
 ---
 
@@ -100,3 +106,5 @@ Key recurring patterns where agent behavior has been corrected or validated. See
 | 2026-09-25 | Practitioner reframes reduce scope; re-derive rather than defend the prior framing | `llm-agent-personal/collaboration-patterns.md` P-6 |
 | 2026-09-25 | Capability is not obligation — verify a proposed demonstration runs on the machine at hand | `llm-agent-personal/collaboration-preferences.md` §What I Want |
 | 2026-09-25 | #52 Mark restatement vs addition; a definition is not a decision about use; over-reading a terse structural answer | `llm-agent-personal/collaboration-preferences.md` §Where I Tend to Fail |
+| 2026-09-26 | #55 Cleartext gRPC requires h2c; half-duplex call shapes mask its absence | `llm-agent-domains/HobbyPro/library/go/governance-overlay.md` §Cleartext gRPC Requires h2c (Go) |
+| 2026-09-26 | #56 Inject a predicate rather than importing the consumer | `llm-agent-domains/HobbyPro/library/go/governance-overlay.md` §Inversion of Control (Go) |

@@ -2634,3 +2634,62 @@ Only after all three did a diagnostic get added. It answered the question on the
 **The floating-origin trap that makes this easy to get wrong.** Since the DEF-001 fix the camera sits at `rl.Vector3{}` and every position handed to Raylib is camera-relative, while `cameraState.Position` remains a *world* position. So two coordinate spaces coexist, and a projection must pair camera-relative coordinates with the zeroed camera. Passing a world position to `GetWorldToScreenEx`, or comparing a camera-relative distance against a threshold that was chosen in world terms, both produce plausible-looking numbers and wrong results.
 
 **Rule**: in a floating-origin renderer, express visibility thresholds in screen or angular terms, not world distance. When a world-space constant is unavoidable, state which coordinate space it lives in at the definition site. And when a test asserts a magic number, make it assert the *invariant* the number was chosen to satisfy — otherwise the test will outlive the reason and defend the wrong behaviour.
+
+---
+
+### 55. **HTTP/1.1 Carries Half-Duplex gRPC but Not Bidirectional — and the Failure Looks Like a Broken Feature** [GRPC, TRANSPORT]
+
+**Date**: 2026-09-26
+
+**Context**: `SessionService.SessionStream` — the bidirectional RPC intended to carry client position and POV — had been fully implemented on both sides, had passing tests, and was **permanently unusable**. Opening it succeeded, then it died roughly one second later with `write envelope: EOF`. Meanwhile `WorldService.StreamSnapshot` worked perfectly over the same connection, which is precisely what made the cause hard to see.
+
+**Root Cause**: the server ran a plain `http.Server` with no h2c, so it spoke HTTP/1.1 in cleartext, and `golang.org/x/net` was not even a dependency. gRPC is an HTTP/2 protocol, but **unary and server-streaming calls survive over HTTP/1.1 because both are half-duplex** — request, then response or response stream. A bidirectional stream needs interleaved traffic in both directions on one connection, which HTTP/1.1 cannot provide. So gRPC over HTTP/1.1 was never conformant here, merely tolerated for the shapes that happen to fit.
+
+**The part worth remembering is not the protocol detail.** Two comments in the codebase already named the fix: `internal/transport/grpc/server.go:69` ("for non-local deployments wrap the mux with h2c") and `internal/client/repl/repl.go:54` ("connect.WithGRPC() + an h2c transport as opts"). Both were written before the bidi RPC existed. Neither was linked to any feature, so the person debugging a dead stream had no path from the symptom to the note. A documented limitation that is not connected to the thing it breaks will not be found by whoever hits it.
+
+**Fix**: wrap the server mux in `h2c.NewHandler(mux, &http2.Server{})`, and give the client an `http2.Transport` with `AllowHTTP: true` and a plain dialer. Every client connection now shares that transport, so asset and snapshot traffic is properly HTTP/2 as well.
+
+**Rules**:
+1. When one streaming RPC fails immediately while others on the same connection succeed, compare their **duplex requirements** before suspecting your own code. Half-duplex working is not evidence the transport is adequate.
+2. For cleartext gRPC in Go, h2c is **required, not a production nicety**. The absence is masked by exactly the call shapes most services start with.
+3. When recording a known limitation, name the capability it blocks. "Wrap with h2c for production" gave no clue that bidirectional streaming was impossible.
+
+---
+
+### 56. **Find the Cost in the Call Chain, and Gate It by Injection Rather Than by Importing the Consumer** [PERFORMANCE, ARCHITECTURE]
+
+**Date**: 2026-09-26
+
+**Context**: a headless server burned roughly 140% CPU with nothing attached. The ticket I had written stated that `cmd/space-sim-server` "pushes at 30 Hz and each push performs a full deep `Clone()`".
+
+**Root Cause of the near-miss**: that was wrong, and acting on it would have achieved nothing. The push goroutine calls `LatestSnapshot()`, which is an **O(1) atomic load**. The clone happens in `world.World`'s **post-tick hook, on the sim goroutine, at the physics rate of 60 Hz** — not 30. Gating the push would have skipped the fan-out, which is trivial, and none of the clone, which is the entire cost. The correct location was found by reading the call chain rather than by trusting the loop that looked like the hot path.
+
+**The second half — how to gate it.** Skipping the clone requires knowing whether anything consumes snapshots, which is transport knowledge. Importing that into `internal/sim/world` would have been the **same class of defect as the boundary violation filed days earlier**, where `internal/transport/grpc` imports the Raylib client app. Instead the world accepts an injected predicate (`SetSnapshotGate(func() bool)`); it needs to know only whether anyone is listening, never what a subscriber is. Unset means always build, which is what standalone mode requires since its render loop is the consumer.
+
+**Measured**: idle CPU fell from ~140% to ~67%. Attaching one subscriber raised it to ~108%, detaching returned it to ~67%. Note `ps %CPU` on macOS is a decaying average rather than an instantaneous sample, so treat such figures as indicative of direction and magnitude.
+
+**Rules**:
+1. Locate a cost by following the call chain to where the work actually happens. A loop running at a plausible rate is not evidence it is the expensive one.
+2. When a lower layer must respond to a higher-layer condition, inject a predicate rather than importing the higher layer. The dependency you are about to add is often the mirror image of a violation already in the backlog.
+3. What remains after an optimisation is as important as what was removed: the surviving 67% is the physics tick itself, which this change never addressed and could not.
+
+---
+
+### 57. **One Perceptual Unit Across Features, and Hold a Term at Zero to Verify Each Independently** [DESIGN, TESTING]
+
+**Date**: 2026-09-26
+
+**Context**: three separate features needed to answer the same underlying question — how much does this thing matter to a viewer right now? Marker and label visibility, body visibility during spatial decomposition, and the rate at which a client publishes its own position.
+
+**What worked**: all three resolve to **apparent angular size**, not world distance. Distance in sim units does not survive a change of view scale; angular size is what determines whether a viewer can perceive anything. For the publish rate this produces an inverse-square curve for free, because that is how angular size falls off — so the rate rises exactly when a peer becomes large enough on screen for its motion to be noticeable, and collapses to a floor when it is a distant dot. Using one unit across features that answer the same perceptual question meant the third feature needed no new reasoning, only the same formula.
+
+**The testing half.** The publish rate has two contributing terms: inverse-square on distance to the nearest peer, and a one-second closing-speed lookahead that raises the rate before distance alone would justify it. During a live two-client run **one client was flown and the other left parked**, which made the terms separable:
+
+- stationary client matched pure inverse-square to two significant figures — 19.6 su → 3.9 Hz (model 3.9), 32.2 su → 1.4 Hz (model 1.45), 8.1 su → 23.1 Hz (model 22.9)
+- moving client ran far above the model at comparable distance — 20.6 su → 13.4 Hz where inverse-square alone predicts 3.5
+
+Had both clients been moving, every sample would have contained both effects and neither could have been confirmed. The parked client was an accident of how the test was driven, not a designed control, which is worth noticing.
+
+**Rules**:
+1. When several features need to decide "does this matter to the viewer", express the threshold in angular terms once and reuse it. Pixels depend on resolution and field of view; sim units depend on view scale; angular size depends on neither.
+2. When a formula sums two mechanisms, **hold one at zero** and verify the other against its closed form before trusting the combination. Design the control deliberately rather than relying on one arriving by luck.
