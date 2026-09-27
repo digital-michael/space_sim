@@ -28,8 +28,11 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"flag"
 	"fmt"
+	"math"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -42,6 +45,8 @@ import (
 	"connectrpc.com/connect"
 	v1 "github.com/digital-michael/space_sim/api/gen/spacesim/v1"
 	"github.com/digital-michael/space_sim/api/gen/spacesim/v1/spacesimv1connect"
+	"golang.org/x/net/http2"
+
 	"github.com/google/uuid"
 
 	clientassets "github.com/digital-michael/space_sim/internal/client/assets"
@@ -136,8 +141,10 @@ func main() {
 	snapSrc := &grpcSnapshotSource{rebuild: make(chan struct{}, 1)}
 	snapSrc.setMetadata(metadataIndex{})
 
+	httpClient := h2cClient()
+
 	assetClient := spacesimv1connect.NewAssetServiceClient(
-		&http.Client{Timeout: 0}, "http://"+*serverAddr, connect.WithGRPC())
+		httpClient, "http://"+*serverAddr, connect.WithGRPC())
 
 	if err := bootstrapContent(ctx, assetClient, snapSrc, &cfg); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -150,7 +157,7 @@ func main() {
 	// appear to peers — but it must be loud, because silent anonymity is exactly
 	// the bug this wiring fixes.
 	sessionClient := spacesimv1connect.NewSessionServiceClient(
-		&http.Client{Timeout: 0}, "http://"+*serverAddr, connect.WithGRPC())
+		httpClient, "http://"+*serverAddr, connect.WithGRPC())
 
 	sessionID := registerSession(ctx, sessionClient, *nameFlag)
 	cfg.SessionID = sessionID
@@ -165,6 +172,7 @@ func main() {
 	}
 
 	go streamSnapshots(ctx, *serverAddr, snapSrc, sessionID)
+	go publishPresence(ctx, sessionClient, application, snapSrc, sessionID)
 	go watchForContentChange(ctx, assetClient, snapSrc)
 
 	runErr := application.RunWithSnapshot(ctx, snapSrc)
@@ -178,6 +186,28 @@ func main() {
 		os.Exit(1)
 	}
 	return
+}
+
+// h2cClient returns an HTTP client that speaks cleartext HTTP/2 with prior
+// knowledge, which is what gRPC requires.
+//
+// A default http.Client negotiates HTTP/1.1 against an http:// URL. Unary and
+// server-streaming calls tolerate that, but a bidirectional stream cannot be
+// carried over a half-duplex connection — SessionStream failed immediately until
+// both ends spoke HTTP/2.
+func h2cClient() *http.Client {
+	return &http.Client{
+		Timeout: 0, // streaming calls must not be cut short by a client deadline
+		Transport: &http2.Transport{
+			AllowHTTP: true,
+			// Called for https:// URLs by name, but with AllowHTTP set it is also
+			// how a cleartext connection is made — so dial plainly, no TLS.
+			DialTLSContext: func(ctx context.Context, network, addr string, _ *tls.Config) (net.Conn, error) {
+				var d net.Dialer
+				return d.DialContext(ctx, network, addr)
+			},
+		},
+	}
 }
 
 // ── session identity ──────────────────────────────────────────────────────────
@@ -503,7 +533,7 @@ func streamSnapshots(ctx context.Context, serverAddr string, g *grpcSnapshotSour
 func doStream(ctx context.Context, serverAddr string, g *grpcSnapshotSource, ownSessionID string) error {
 	baseURL := "http://" + serverAddr
 	client := spacesimv1connect.NewWorldServiceClient(
-		&http.Client{Timeout: 0},
+		h2cClient(),
 		baseURL,
 		connect.WithGRPC(),
 	)
@@ -724,4 +754,144 @@ func peerSignature(sessions []protocol.ClientSessionSnapshot, ownSessionID strin
 			s.Label, short(s.SessionID), s.Color[0], s.Color[1], s.Color[2], mark))
 	}
 	return strings.Join(parts, ", ")
+}
+
+// ── presence publishing ───────────────────────────────────────────────────────
+
+const (
+	// presenceMaxHz matches the physics tick: publishing faster than the
+	// simulation advances cannot convey new information.
+	presenceMaxHz = 60.0
+
+	// presenceMinHz is the floor. It doubles as a liveness heartbeat, which is
+	// what distinguishes a client that is far away from one that has died.
+	presenceMinHz = 1.0
+
+	// presenceFullRateSU is the distance at or below which a peer is close enough
+	// that motion must look smooth, so we publish at full rate.
+	presenceFullRateSU = 5.0
+
+	// presenceLookaheadS biases the rate by where a mover will be shortly, not
+	// where it is. Without it two clients closing quickly are both throttled, so
+	// both see stale positions and both react late.
+	presenceLookaheadS = 1.0
+)
+
+// presenceRateHz returns how often this client should publish its pose, given the
+// distance to its nearest peer and its own speed.
+//
+// The curve is inverse-square, which is how apparent angular size falls off — so
+// the rate rises exactly when a peer is large enough on screen for motion to be
+// perceptible, and collapses when it is a distant dot. dist may be +Inf, meaning
+// no peers, which yields the floor.
+func presenceRateHz(dist, speed float64) float64 {
+	d := dist - speed*presenceLookaheadS
+	if d <= presenceFullRateSU {
+		return presenceMaxHz
+	}
+	rate := presenceMaxHz * (presenceFullRateSU * presenceFullRateSU) / (d * d)
+	if rate < presenceMinHz {
+		return presenceMinHz
+	}
+	if rate > presenceMaxHz {
+		return presenceMaxHz
+	}
+	return rate
+}
+
+// nearestPeerDistance returns the distance to the closest other session, or +Inf
+// when this client is alone.
+func nearestPeerDistance(sessions []protocol.ClientSessionSnapshot, ownSessionID string, pos [3]float64) float64 {
+	best := math.Inf(1)
+	for _, s := range sessions {
+		if s.SessionID == ownSessionID {
+			continue
+		}
+		dx := s.Position[0] - pos[0]
+		dy := s.Position[1] - pos[1]
+		dz := s.Position[2] - pos[2]
+		if d := math.Sqrt(dx*dx + dy*dy + dz*dz); d < best {
+			best = d
+		}
+	}
+	return best
+}
+
+// publishPresence streams this client's pose to the server at a distance-adaptive
+// rate, so an isolated or distant client costs almost nothing while a close
+// encounter is smooth.
+func publishPresence(
+	ctx context.Context,
+	c spacesimv1connect.SessionServiceClient,
+	ap *app.App,
+	g *grpcSnapshotSource,
+	sessionID string,
+) {
+	if sessionID == "" {
+		return // unregistered: nothing to attribute a pose to
+	}
+
+	stream := c.SessionStream(ctx)
+	defer func() { _ = stream.CloseRequest() }()
+
+	// The server pushes session deltas on this stream. We take peer state from the
+	// world snapshot instead, but the receive side must still be drained or the
+	// server's sends would eventually block.
+	go func() {
+		for {
+			if _, err := stream.Receive(); err != nil {
+				return
+			}
+		}
+	}()
+
+	// Tick at the ceiling and gate each send on the adaptive interval; the ticker
+	// itself is far cheaper than the RPC it guards.
+	ticker := time.NewTicker(time.Second / presenceMaxHz)
+	defer ticker.Stop()
+
+	var lastSent time.Time
+	var lastHz float64
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+
+		pose, ok := ap.CurrentPose()
+		if !ok {
+			continue
+		}
+
+		dist := nearestPeerDistance(g.LatestSnapshot().ClientSessions, sessionID, pose.Position)
+		hz := presenceRateHz(dist, pose.Speed)
+		if time.Since(lastSent) < time.Duration(float64(time.Second)/hz) {
+			continue
+		}
+		lastSent = time.Now()
+
+		if err := stream.Send(&v1.ClientUpdate{
+			Version:   1,
+			SessionId: sessionID,
+			PosX:      pose.Position[0],
+			PosY:      pose.Position[1],
+			PosZ:      pose.Position[2],
+			PovX:      pose.Forward[0],
+			PovY:      pose.Forward[1],
+			PovZ:      pose.Forward[2],
+		}); err != nil {
+			if ctx.Err() == nil {
+				log.Printf("presence stream ended: %v", err)
+			}
+			return
+		}
+
+		// Log only on a material rate change, so the adaptive behaviour is
+		// observable without flooding at 60 Hz.
+		if lastHz == 0 || hz/lastHz > 2 || lastHz/hz > 2 {
+			log.Printf("presence rate %.1f Hz (nearest peer %.1f su)", hz, dist)
+			lastHz = hz
+		}
+	}
 }

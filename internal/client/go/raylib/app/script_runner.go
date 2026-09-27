@@ -11,8 +11,8 @@ import (
 	"github.com/digital-michael/space_sim/internal/client/commands"
 	"github.com/digital-michael/space_sim/internal/client/go/raylib/ui"
 	"github.com/digital-michael/space_sim/internal/client/script"
-	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 	protocol "github.com/digital-michael/space_sim/internal/protocol"
+	engine "github.com/digital-michael/space_sim/internal/sim/engine"
 )
 
 // scriptsDir is the directory scanned for runnable script files.

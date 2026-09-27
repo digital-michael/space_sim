@@ -78,6 +78,10 @@ func (a *App) runInteractive(ctx context.Context, session *runtimeSession) error
 			Projection: rl.CameraPerspective,
 		}
 
+		// Record this frame's viewpoint for presence publishing. Stored here,
+		// where camera state is current and owned by this goroutine.
+		a.storePose(session, dt)
+
 		// camera: floating-origin — Raylib always works near (0,0,0).
 		// All object positions are shifted by -cameraPos before being passed to Draw calls,
 		// eliminating float32 catastrophic cancellation at large camera distances (DEF-001).

@@ -29,6 +29,9 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
+
 	"github.com/digital-michael/space_sim/api/gen/spacesim/v1/spacesimv1connect"
 	"github.com/digital-michael/space_sim/internal/server/assets"
 	"github.com/digital-michael/space_sim/internal/server/session"
@@ -129,9 +132,16 @@ func main() {
 	shutdownPath, shutdownSvc := spacesimv1connect.NewShutdownServiceHandler(shutdownHandler)
 	mux.Handle(shutdownPath, shutdownSvc)
 
+	// Wrap in h2c so the server speaks cleartext HTTP/2.
+	//
+	// Required, not optional: gRPC is an HTTP/2 protocol. Unary and
+	// server-streaming calls happen to survive over HTTP/1.1 because both are
+	// half-duplex, but a BIDIRECTIONAL stream cannot — SessionStream died
+	// immediately with "write envelope: EOF" until this was wired, which is why it
+	// had been implemented but never usable.
 	httpSrv := &http.Server{
 		Addr:        *addr,
-		Handler:     mux,
+		Handler:     h2c.NewHandler(mux, &http2.Server{}),
 		IdleTimeout: 60 * time.Second,
 	}
 

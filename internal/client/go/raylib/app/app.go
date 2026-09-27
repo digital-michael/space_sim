@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"sync/atomic"
 	"time"
@@ -28,6 +29,20 @@ const (
 // Production code always calls time.NewTicker directly.
 var newTicker = time.NewTicker
 
+// Pose is this client's viewpoint in world coordinates, published for presence.
+//
+// Read it with App.CurrentPose from any goroutine: the render loop stores a fresh
+// value each frame and readers load it atomically, so no camera state is shared
+// across goroutines.
+type Pose struct {
+	Position [3]float64
+	Forward  [3]float32
+	// Speed is the magnitude of recent movement in sim units per second. A fast
+	// mover needs to publish more often than its distance alone implies, because
+	// a peer closing quickly would otherwise be reacted to late.
+	Speed float64
+}
+
 // App owns the Space Sim application's runtime orchestration.
 type App struct {
 	cfg         Config
@@ -40,6 +55,10 @@ type App struct {
 	// keyMap is the active input binding table. Swapped atomically on hot-reload;
 	// safe to read from any goroutine.
 	keyMap atomic.Pointer[input.KeyMap]
+
+	// pose is this client's latest viewpoint, stored once per frame by the render
+	// loop so other goroutines can read it without touching camera state.
+	pose atomic.Pointer[Pose]
 
 	// cmdCh is the main-thread command gate. gRPC handler goroutines send
 	// AppCmds here; the interactive loop drains it each frame (non-blocking).
@@ -210,4 +229,33 @@ func (a *App) startKeybindingsWatcher(ctx context.Context, profilesDir, configPa
 			}
 		}
 	}()
+}
+
+// CurrentPose returns this client's latest viewpoint and whether one is available.
+// Safe to call from any goroutine.
+func (a *App) CurrentPose() (Pose, bool) {
+	if p := a.pose.Load(); p != nil {
+		return *p, true
+	}
+	return Pose{}, false
+}
+
+// storePose records the viewpoint for this frame. Called on the render goroutine.
+func (a *App) storePose(session *runtimeSession, dt float32) {
+	pos := session.cameraState.Position
+	fwd := session.cameraState.Forward
+
+	speed := 0.0
+	if prev := a.pose.Load(); prev != nil && dt > 0 {
+		dx := float64(pos.X) - prev.Position[0]
+		dy := float64(pos.Y) - prev.Position[1]
+		dz := float64(pos.Z) - prev.Position[2]
+		speed = math.Sqrt(dx*dx+dy*dy+dz*dz) / float64(dt)
+	}
+
+	a.pose.Store(&Pose{
+		Position: [3]float64{float64(pos.X), float64(pos.Y), float64(pos.Z)},
+		Forward:  [3]float32{fwd.X, fwd.Y, fwd.Z},
+		Speed:    speed,
+	})
 }
